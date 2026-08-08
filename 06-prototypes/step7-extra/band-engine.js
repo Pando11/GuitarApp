@@ -149,7 +149,7 @@ function buildBand(opts) {
     const fifth = transposeName(root, 7);
     const bass1 = tone(bassFreq, beatSec * 0.9, 0.5);
     addInto(buffer, bass1, bar * barSec);
-    const bass2 = tone(noteToFreq(fifth, -1), beatSec * 0.9, 0.5);
+    const bass2 = tone(noteToFreq(fifth, 0), beatSec * 0.9, 0.5);
     addInto(buffer, bass2, bar * barSec + 2 * beatSec);
     nominal.push({ beat: 0, stem: 'bass', note: root });
     nominal.push({ beat: 2, stem: 'bass', note: fifth });
