@@ -12,12 +12,12 @@ STALE (never use): `guitar-build-plan.md`, `PLAN-app-plus-youtube-4500-2026-08-0
 | step8 packs | `cd step8 && node verify-step8.js` | 94/94 |
 | step9 YouTube | `cd step9 && node verify-step9.js` | 33/33 |
 | step6 store | `cd step6 && node verify-step6-store.js` | 22/22 |
-| F7 band (gate) | `cd step7-extra && node verify-band.js` | **18/0 but KNOWN-VACUOUS (#7/#8 below)** |
+| F7 band (gate) | `cd step7-extra && node verify-band.js` | **26/0 — REAL (#7 octave-sound + #8 tamper fixed, commit acbf158)** |
 | F7 band (engine smoke) | `cd step7-extra && node smoke-f7-fixes.js` | **9/0 — REAL fixes #2-#6 proven** |
 | F10 voice | `verify-voice.js` | **DOES NOT EXIST** (engine exists, gate missing) |
 | RevenueCat | `cd step7 && node verify-step10-revenuecat.js` | 43/0 (stub; owner-blocked on keys) |
 
-Git: `98c00fd` = F7 engine fixes #2-#6 committed + band-source.js regenerated. Working tree clean.
+Git: `acbf158` = F7 GATE hardening #7+#8 committed. `98c00fd` = F7 engine fixes #2-#6. Working tree clean.
 
 ## HOW WE GOT HERE (proven, not asserted)
 A **3rd hostile agent** (zero build context) re-verified the committed F7 engine by RUNNING
@@ -49,23 +49,29 @@ continue` and "18/0 CORE UNCHANGED" is a LIE. This is part of #8, worse than fir
 
 Verified by `smoke-f7-fixes.js` (9/9). band-source.js regenerated from the fixed engine.
 
-## F7 GATE — #7 (octave-blind) + #8 (anti-tamper) STILL OPEN — THE REAL HARDENING WORK
-The DONE BAR must be rewritten before F7 can be called "clean". Concrete plan:
+## F7 GATE — #7 (octave-blind) + #8 (anti-tamper) DONE (commit acbf158), 4th hostile pass QUEUED
+The DONE BAR rewrite landed and runs 26/0. Measured design:
 
-**#7 — make the pitch gate assert the engine's REAL output against an INDEPENDENT expected.**
-- Compute expected bass freqs from a SEPARATE octave-aware table (not `B.noteToFreq`, which
-  the engine also uses). A wrong-octave engine must FAIL.
-- Replace the octave-blind `notesMatch` pass-band with a tight check: measured bass fundamental
-  within ±1 semitone of the expected register AND within ~25 cents, using a fresh detector window
-  on the bass-only slot (t0=beat0 root, t0=beat2 fifth) with chord tones excluded.
-- Keep the audible-register guard (>=F_MIN) but make it fail LOUDLY on any sub-floor register.
+**#7 — pitch gate now asserts the engine's REAL output against an INDEPENDENT expected.**
+- Expected bass freqs come from a SEPARATE equal-temperament oracle (A2=110), NOT `B.noteToFreq`
+  (which the engine also uses) — so a register regression can't silently agree with itself.
+- Octave is proven SOUND via Goertzel energy at f vs f/2 vs f*2 (the listener math reports a low
+  note's 2nd harmonic as the "fundamental", which is why a naive cents check is octave-blind). The
+  true fundamental must beat each octave neighbor by >=1.4x AND be within 25 cents. A B1-vs-B2
+  regression FAILS. Two NEGATIVE tests (E1=41Hz and E3=165Hz) are REJECTED, proving octave-soundness.
+- Audible-register guard (>=F_MIN=55) kept, fails loudly on sub-floor bass.
 
-**#8 — make anti-tamper REAL.**
-- Add `06-prototypes/step2/engine/tuner-engine.js` + `06-prototypes/step6/store/practiceStore.js`
-  to the CORE baseline (pin their current sha256: tuner-engine `d463d6bc…`, practiceStore `226bdf13…`).
-- Fix the baseline resolver: strip the leading `*` on each line, resolve paths from the **repo root**
-  (two levels above step7-extra), not step7. Then `if (!existsSync) FAIL` (no `continue`).
-- Keep the 6 existing files. Re-run to confirm all 8 are byte-checked.
+**#8 — anti-tamper is REAL now (was fully vacuous).**
+- Root cause of the vacuity: the baseline parser kept the leading `*`, then resolved paths from
+  `step7` (not repo root), so every file missed → `continue` → false "18/0 UNCHANGED".
+- Fix: parse `^\s*([0-9a-f]{64})\s+\*(.+)$`, resolve from REPO_ROOT, and `if (!existsSync) FAIL`
+  (no silent skip). Added `tuner-engine.js` + `practiceStore.js` to the baseline (verified pins
+  `d463d6bc…` / `226bdf13…`). All 8 modules byte-checked; deletion is detected.
+- Baseline file: `06-prototypes/step8/CORE-UNTOUCHED.sha256` now lists 8 entries.
+
+Proven: `node verify-band.js` → 26 passed, 0 failed (exit 0); `node smoke-f7-fixes.js` → 9/9;
+engine file unchanged (integrity verified). 4th hostile re-review dispatched (zero build context) —
+F7 stays "in review" until that returns clean.
 
 ## F10 — VOICE CONTROLS — ENGINE EXISTS, GATE MISSING
 - Built: `06-prototypes/step7-extra/voice-command.js` (text→intent: slower/again/whats-next/
@@ -88,8 +94,8 @@ The DONE BAR must be rewritten before F7 can be called "clean". Concrete plan:
 - Flutter-vs-RN spike, teacher art, SMS cadence caps — open items, not blocking.
 
 ## NEXT ACTIONS (priority order)
-1. **F7 GATE hardening (#7 + #8)** — rewrite verify-band.js per plan above; re-run smoke + gate;
-   confirm all 8 CORE files byte-checked and a wrong-octave engine now FAILS. (Engine bugs done.)
+1. **F7 GATE hardening (#7 + #8) — DONE (acbf158).** Awaiting the 4th hostile re-review result
+   (in flight). If it returns clean, F7 → "done". If it finds a hole, fix and re-run.
 2. Build F10 `verify-voice.js` + `file://` demo, hostile-review it.
 3. Wire RevenueCat live on keys.
 4. After #7/#8: re-dispatch a 4th hostile agent on F7. Commit each step; update this handoff.
