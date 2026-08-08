@@ -224,13 +224,21 @@ function clampBpm(bpm) {
 // "E2"/"Bb1" (note letter directly followed by a bare integer, no quality token) sets
 // the register; everything else defaults to 2.
 function chordRootName(name) {
-  if (typeof name !== 'string') return { root: null, octave: 2 };
-  const m = name.match(/^([A-G][#b]?)/);
-  const root = m ? m[1] : 'C';
-  const rest = name.slice(root.length)
-    .replace(/(maj|min|m|dim|aug|sus|add|7|9|11|13|5|6)/g, ''); // strip quality tokens
-  const octMatch = rest.match(/^(\d+)$/); // only a bare integer left => octave spec
-  const octave = octMatch ? parseInt(octMatch[1], 10) : 2;
+  if (typeof name !== 'string' || !/^[A-G][#b]?/i.test(name)) return { root: null, octave: 2 };
+  const m = name.match(/^([A-G][#b]?)/i);
+  const root = m[1][0].toUpperCase() + (m[1][1] || '');
+  // 5th hostile pass hole: quality tokens that END in a digit (sus4, sus2, add9,
+  // maj7, m7) must consume the digit WITH the token — stripping "sus" from
+  // "sus4" leaves a bare "4" that parses as octave 4 (440 Hz bass squeal).
+  // And bare extension digits (7,9,11,13,5,6) are quality, NOT octaves — the
+  // original 4th-pass bug. Rule: consume quality tokens with any attached digits
+  // atomically; consume bare extension digits as quality; a REMAINING small
+  // integer (0-4, e.g. "E2", "Bb1") is a true octave spec; anything else → 2.
+  const EXT = /^(5|6|7|9|11|13)$/; // bare chord-extension digits, never octaves
+  const rest = name.slice(m[1].length)
+    .replace(/(maj|min|dim|aug|sus|add|m)[0-9]*/gi, ''); // token + its digits, atomic
+  const octMatch = rest.match(/^(\d+)$/);
+  const octave = (octMatch && !EXT.test(octMatch[1])) ? parseInt(octMatch[1], 10) : 2;
   return { root, octave };
 }
 // transpose a note name up `semi` semitones, flat/sharp aware; returns the note

@@ -84,17 +84,18 @@ function oracleFreq(name, octave) {
 }
 function parseChordRoot(name) {
   if (typeof name !== 'string') return { root: 'C', octave: 2 };
-  const m = name.match(/^([A-G][#b]?)/);
-  const root = m ? m[1] : 'C';
-  // MUST mirror band-engine.chordRootName: a chord-quality digit (7,9,11,13,5,6)
-  // is NOT an octave. Only a bare trailing integer with no quality token (e.g. "E2")
-  // sets the register; everything else defaults to 2. (Kept in sync so the gate's
-  // independent oracle expects the SAME register the engine actually emits.)
-  const rest = name.slice(root.length)
-    .replace(/(maj|min|m|dim|aug|sus|add|7|9|11|13|5|6)/g, '');
-  const octMatch = rest.match(/^(\d+)$/);
-  const octave = octMatch ? parseInt(octMatch[1], 10) : 2;
-  return { root, octave };
+  // INDEPENDENT oracle (5th-pass fix): deliberately NOT a mirror of the engine's
+  // regex pipeline — a shared parser bug lets a wrong register pass green by
+  // agreement (that's how "Asus4"→octave 4 shipped). This implementation uses a
+  // single anchored grammar instead: note letter, then the remainder is either
+  // empty, a bare small octave digit (0-4, e.g. "E2"), or quality text which we
+  // ignore wholesale. No token-stripping, so no "sus"→"4" residue.
+  const m = name.match(/^([A-Ga-g][#b]?)(.*)$/);
+  if (!m) return { root: 'C', octave: 2 };
+  const root = m[1][0].toUpperCase() + (m[1][1] || '');
+  const tail = m[2];
+  const octM = tail.match(/^[0-4]$/); // single small bare digit = register spec
+  return { root, octave: octM ? parseInt(octM[0], 10) : 2 };
 }
 function fifthNameOf(name) {
   let n = String(name).replace(/^\d+/, '');
@@ -295,6 +296,27 @@ console.log('=== F7 BAND ENGINE — DONE BAR ===');
   const m = verifyBassOctave(inTune, 0, 0.9, oracleFreq('E', 2), 25);
   check('SANITY: in-tune E2 PASSES (tolerance correctly admits correct pitch)',
     m.ok, 'measured f0=' + (m.heardFreq || 0).toFixed(1) + 'Hz cents=' + (m.cents || 0).toFixed(0));
+}
+// 4f. NEGATIVE TEST — the 5th hostile pass's HOLE 1: a sus4/add9/maj7 chord must put
+//     the bass in octave 2, NOT the octave named by the token's trailing digit.
+//     "Asus4" → A2 (110Hz), not A4 (440Hz). We MEASURE the actual synthesized band
+//     audio for an Asus4 cycle and reject if the bass lands outside the pocket.
+{
+  const loop = B.buildBand({ chordCycle: ['Asus4', 'Asus4', 'Asus4'], bpm: 60, beats: 4, bars: 3, seed: 3 });
+  const beatSec = 60 / loop.bpm;
+  const oracle = oracleFreq('A', 2); // 110 Hz — independent oracle, not the engine parser
+  const m = verifyBassOctave(loop.buffer, 0, beatSec, oracle, 25);
+  check('NEGATIVE (5th-pass hole 1): Asus4 bass sits in octave 2 (110Hz pocket, not 440Hz)',
+    m.ok, 'measured f0=' + (m.heardFreq || 0).toFixed(1) + 'Hz expected=' + oracle.toFixed(1));
+}
+// 4g. SANITY — engine parser itself: token-digit chords all parse to octave 2.
+{
+  const cases = [['Asus4', 'A', 2], ['Dsus2', 'D', 2], ['E7sus4', 'E', 2],
+    ['Bbadd9', 'Bb', 2], ['Emaj7', 'E', 2], ['G13', 'G', 2], ['em7', 'E', 2],
+    ['E7', 'E', 2], ['C#7', 'C#', 2], ['E2', 'E', 2]];
+  const bad = cases.filter(([c, r, o]) => { const p = B.chordRootName(c); return !(p.root === r && p.octave === o); });
+  check('SANITY (5th-pass): engine parser maps token-digit chords to root/octave-2',
+    bad.length === 0, bad.length ? 'WRONG: ' + JSON.stringify(bad) : '10/10 parse cases correct');
 }
 
 // 5 + 7. ORIGINAL / NO COPYRIGHT / NO AI FINGERS — code inspection
