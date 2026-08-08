@@ -67,9 +67,21 @@ function check(name, ok, detail) {
 // (demonstrated: 34/0 green with tampered engine+practiceStore+entitlementStore).
 // Spawning first, before any require of repo code, makes the hashes trustworthy.
 console.log('\n=== 0. CORE INTEGRITY (clean process, pre-require) ===');
+// 9th-pass HOLE 1 fix: scrub the child env. Default spawn inherits process.env, so
+// NODE_OPTIONS='--require evil.js' re-poisoned the "clean" child before it hashed.
+// Whitelist only what Windows/Node needs to launch; no NODE_* vars propagate.
+const CLEAN_ENV = {
+  PATH: process.env.PATH || '',
+  SystemRoot: process.env.SystemRoot,
+  WINDIR: process.env.WINDIR,
+  PATHEXT: process.env.PATHEXT,
+  TEMP: process.env.TEMP, TMP: process.env.TMP,
+  USERPROFILE: process.env.USERPROFILE, HOME: process.env.HOME,
+  COMSPEC: process.env.ComSpec || process.env.COMSPEC
+};
 let coreIntegrity = null;
 try {
-  const out = execFileSync(process.execPath, [path.join(__dirname, 'check-core-integrity.js'), CORE_BASELINE_PIN], { encoding: 'utf8' });
+  const out = execFileSync(process.execPath, [path.join(__dirname, 'check-core-integrity.js'), CORE_BASELINE_PIN], { encoding: 'utf8', env: CLEAN_ENV });
   coreIntegrity = JSON.parse(out.trim().split('\n').pop());
 } catch (e) {
   // nonzero exit -> stdout still carries the JSON report
