@@ -38,11 +38,16 @@ const PATTERNS = [
   { intent: INTENTS.WHATS_NEXT, words: ['next', "what's next", 'what is next', 'what comes next', 'move on', 'continue', 'go on', 'next part', 'next scene'] },
   { intent: INTENTS.TUNE, words: ['tune', 'tune my guitar', 'tune up', 'out of tune', 'tuning', 'detune'] },
   // Explicit out-of-scope rejection patterns (defence in depth beyond the miss-default).
-  { intent: INTENTS.IGNORE, words: ['pizza', 'weather', 'news', 'call ', 'text ', 'email', 'remind me to', 'play music', 'open '] }
+  // Pass-2 HOLE-D: dropped trailing spaces ('call '/'open ') — hasPhrase word-boundary
+  // made them dead. Pass-2 HOLE-E: IGNORE is checked FIRST in parseCommand so
+  // 'play music again'/'email slower' can't execute a lesson control.
+  { intent: INTENTS.IGNORE, words: ['pizza', 'weather', 'news', 'call', 'text', 'email', 'remind me to', 'play music', 'open', 'movie', 'tv', 'shopping'] }
 ];
 
 // Negation words — if any appear, the command is rejected (HOLE-1 fix).
-const NEGATIONS = ['don t', 'dont', 'do not', 'doesn t', 'doesnt', 'no', 'not', 'never', 'stop', 'enough'];
+// Pass-2 HOLE-A: added can't/cannot/won't/nope/nah/quit forms.
+const NEGATIONS = ['don t', 'dont', 'do not', 'doesn t', 'doesnt', 'no', 'not', 'never', 'stop', 'enough',
+  'can t', 'cant', 'cannot', 'won t', 'wont', 'nope', 'nah', 'quit'];
 
 function normalize(text) {
   return (text || '')
@@ -67,7 +72,14 @@ function parseCommand(text) {
   for (const n of NEGATIONS) {
     if (hasPhrase(t, n)) return { intent: INTENTS.IGNORE, reason: 'negated', text: t };
   }
+  // Pass-2 HOLE-E: explicit out-of-scope words beat intent words — 'play music again'
+  // must NOT fire AGAIN. IGNORE patterns are the last entry of PATTERNS; check them first.
+  const ignoreEntry = PATTERNS[PATTERNS.length - 1];
+  for (const w of ignoreEntry.words) {
+    if (hasPhrase(t, w)) return { intent: INTENTS.IGNORE, reason: 'out-of-scope-word', matched: w, text: t };
+  }
   for (const p of PATTERNS) {
+    if (p.intent === INTENTS.IGNORE) continue; // already checked above
     for (const w of p.words) {
       if (hasPhrase(t, w)) return { intent: p.intent, matched: w, text: t };
     }
@@ -87,10 +99,15 @@ function defaultAdapter() {
     },
     again: function () { return { msg: 'Playing that again from the top.' }; },
     // HOLE-3: clamp at total-1 so we never advance past the last scene.
+    // Pass-2 HOLE-B: also pull out-of-range pos back into [0, total-1].
     whatsNext: function (pos, total) {
       const next = (pos || 0) + 1;
-      if (typeof total === 'number' && next >= total) {
-        return { nextIndex: pos, msg: 'That was the last part — you made it through the lesson.' };
+      if (typeof total === 'number' && isFinite(total) && total > 0) {
+        const clamped = Math.min(Math.max(next, 0), total - 1);
+        if (clamped !== next) {
+          return { nextIndex: clamped, msg: 'That was the last part — you made it through the lesson.' };
+        }
+        return { nextIndex: next, msg: 'Next up — moving on to the next part.' };
       }
       return { nextIndex: next, msg: 'Next up — moving on to the next part.' };
     },
@@ -120,10 +137,13 @@ function execute(text, adapter, state) {
 // Stubbed here for browser-free testing; the player wires the real one (mic -> TunerEngine).
 function tuneString(freq, TunerEngine) {
   // HOLE-4: reject garbage input (0, NaN, negative, non-finite) before it hits the engine.
-  const f = Number(freq);
-  if (!isFinite(f) || f <= 0) {
+  // Pass-2 HOLE-C: strict number type (no string/array/object/boolean coercion) and
+  // a plausible-guitar-frequency band (20–5000 Hz) so degenerate magnitudes like
+  // 1e-300 ("F-1001") or 1e300 ("G992") are rejected too.
+  if (typeof freq !== 'number' || !isFinite(freq) || freq < 20 || freq > 5000) {
     return { note: null, cents: null, label: 'NO SIGNAL — play a string', invalid: true };
   }
+  const f = freq;
   const T = TunerEngine || require('../step2/engine/tuner-engine.js');
   const note = T.noteFromFreq(f);
   const cents = note.cents;

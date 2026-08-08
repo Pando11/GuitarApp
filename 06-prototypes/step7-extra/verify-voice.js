@@ -199,6 +199,31 @@ console.log('\n=== 11. INVALID TUNER INPUT — reject garbage (HOLE-4) ===');
     JSON.stringify(ok));
 }
 
+console.log('\n=== 12. PASS-2 REGRESSIONS — HOLE-A/B/C/D/E ===');
+{
+  // HOLE-A: extended negation forms
+  const negsA = ["can't tune", 'I cannot tune', "won't tune", 'quit tuning', 'tune nope', 'nah slower'];
+  const leakedA = negsA.filter(t => V.parseCommand(t).intent !== 'ignore');
+  check('HOLE-A: 6 extended negation forms ignored', leakedA.length === 0,
+    leakedA.length ? 'LEAKED: ' + JSON.stringify(leakedA) : 'all ignored');
+  // HOLE-B: clamp pulls out-of-range pos back into range
+  const a = V.defaultAdapter();
+  const over = a.whatsNext(9, 8);
+  check('HOLE-B: whatsNext(9,8) clamps to 7', over.nextIndex === 7, 'nextIndex=' + over.nextIndex);
+  const under = a.whatsNext(-3, 8);
+  check('HOLE-B: whatsNext(-3,8) clamps to 0', under.nextIndex === 0, 'nextIndex=' + under.nextIndex);
+  // HOLE-C: strict type + plausible band
+  const coerced = ['82.41', [82.41], { valueOf: () => 82.41 }, true, 1e-300, 1e300];
+  const badC = coerced.filter(f => V.tuneString(f).invalid !== true);
+  check('HOLE-C: 6 coerced/degenerate inputs rejected', badC.length === 0,
+    badC.length ? 'ACCEPTED: ' + JSON.stringify(badC) : 'all rejected');
+  // HOLE-E: out-of-scope words beat intent words
+  const mixed = ['play music again', 'email slower', 'call me next', 'open the tuner'];
+  const firedE = mixed.filter(t => V.parseCommand(t).intent !== 'ignore');
+  check('HOLE-E: 4 mixed out-of-scope phrases ignored', firedE.length === 0,
+    firedE.length ? 'FIRED: ' + JSON.stringify(firedE) : 'all ignored');
+}
+
 console.log('\n============================================================');
 console.log('F10 VOICE CONTROLS: ' + pass + ' passed, ' + fail + ' failed');
 if (fail === 0) console.log('STEP-7-EXTRA-VOICE-OK — F10 proven; tap-to-talk intents guardrailed, tuner delegation live');

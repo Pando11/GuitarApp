@@ -58,16 +58,18 @@ const PATTERNS=[
  {intent:'again',words:['again','repeat','replay','one more time','do it again','play it again']},
  {intent:'whats-next',words:['next',"what's next",'what is next','what comes next','move on','continue','go on','next part','next scene']},
  {intent:'tune-my-guitar',words:['tune','tune my guitar','tune up','out of tune','tuning','detune']},
- {intent:'ignore',words:['pizza','weather','news','call ','text ','email','remind me to','play music','open ']}
+ {intent:'ignore',words:['pizza','weather','news','call','text','email','remind me to','play music','open','movie','tv','shopping']}
 ];
-const NEGATIONS=['don t','dont','do not','doesn t','doesnt','no','not','never','stop','enough'];
+const NEGATIONS=['don t','dont','do not','doesn t','doesnt','no','not','never','stop','enough','can t','cant','cannot','won t','wont','nope','nah','quit'];
 function normalize(t){return (t||'').toLowerCase().replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();}
 function hasPhrase(t,phrase){const re=new RegExp('(?:^|\\s)'+phrase.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?:\\s|$)');return re.test(t);}
 function parseCommand(text){
   const t=normalize(text);
   if(!t)return{intent:'ignore',reason:'empty'};
   for(const n of NEGATIONS)if(hasPhrase(t,n))return{intent:'ignore',reason:'negated',text:t};
-  for(const p of PATTERNS)for(const w of p.words)if(hasPhrase(t,w))return{intent:p.intent,matched:w,text:t};
+  const ig=PATTERNS[PATTERNS.length-1];
+  for(const w of ig.words)if(hasPhrase(t,w))return{intent:'ignore',reason:'out-of-scope-word',matched:w,text:t};
+  for(const p of PATTERNS){if(p.intent==='ignore')continue;for(const w of p.words)if(hasPhrase(t,w))return{intent:p.intent,matched:w,text:t};}
   return{intent:'ignore',reason:'no-match',text:t};
 }
 
@@ -87,7 +89,7 @@ function act(text){
   let msg='';
   if(cmd.intent==='slower'){state.rate=Math.max(0.5,state.rate-0.15);msg='Slowing down a little — '+Math.round(state.rate*100)+'% speed.';}
   else if(cmd.intent==='again'){state.prog=0;msg='Playing that again from the top.';}
-  else if(cmd.intent==='whats-next'){state.scene=Math.min(state.total,state.scene+1);state.prog=0;msg='Next up — moving on to part '+state.scene+'.';}
+  else if(cmd.intent==='whats-next'){state.scene=Math.min(Math.max(state.scene+1,1),state.total);state.prog=0;msg=state.scene>=state.total?'That was the last part — you made it through the lesson.':'Next up — moving on to part '+state.scene+'.';}
   else if(cmd.intent==='tune-my-guitar'){msg="Opening the tuner — play each string and I'll tell you if it's sharp or flat.";}
   $('say').textContent=msg;render();
   log('<span class="intent">'+text+'</span> → <b>'+cmd.intent+'</b>: '+msg,'acted');
