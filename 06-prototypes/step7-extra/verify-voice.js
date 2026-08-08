@@ -254,6 +254,31 @@ console.log('\n=== 13. PASS-3 REGRESSIONS — refusal forms, pos sanitize, adapt
   check('HOLE-3: missing method returns explicit reason', r.action === null && /adapter-missing/.test(r.reason || ''), JSON.stringify(r));
 }
 
+console.log('\n=== 14. PASS-4 REGRESSIONS — total coerce, rate sanitize, refusals, throwing adapter ===');
+{
+  const a = V.defaultAdapter();
+  // HOLE-1: string totalScenes coerced, clamp applies
+  check('HOLE-1: whatsNext(7,"8") clamps to 7', a.whatsNext(7, '8').nextIndex === 7,
+    'got=' + a.whatsNext(7, '8').nextIndex);
+  check('HOLE-1: execute totalScenes:"8" clamps',
+    V.execute("what's next", a, { sceneIndex: 7, totalScenes: '8' }).action.nextIndex === 7);
+  // HOLE-2: rate sanitize
+  const r1 = V.execute('slower', a, { rate: 'abc' });
+  check('HOLE-2: garbage rate -> 0.85 not NaN', r1.action.rate === 0.85, 'rate=' + r1.action.rate);
+  check('HOLE-2: string rate "1.5" -> 1 (default) not coerced', a.slower('1.5').rate === 0.85);
+  // HOLE-3: more refusal forms
+  const refs4 = ['hold on slower', 'hang on tune my guitar', 'give me a sec slower', 'pause slower', 'shut up tune', 'later, play it again'];
+  const leaked4 = refs4.filter(t => V.parseCommand(t).intent !== 'ignore');
+  check('HOLE-3: 6 more refusal forms ignored', leaked4.length === 0,
+    leaked4.length ? 'LEAKED: ' + JSON.stringify(leaked4) : 'all ignored');
+  // HOLE-4: throwing adapter caught
+  let threw4 = false; let res4 = null;
+  try { res4 = V.execute('slower', { slower: () => { throw new Error('player exploded'); } }, { rate: 1 }); }
+  catch (e) { threw4 = true; }
+  check('HOLE-4: throwing adapter does not propagate', threw4 === false);
+  check('HOLE-4: adapter-threw reason returned', res4 && res4.reason === 'adapter-threw' && res4.action === null, JSON.stringify(res4));
+}
+
 console.log('\n============================================================');
 console.log('F10 VOICE CONTROLS: ' + pass + ' passed, ' + fail + ' failed');
 if (fail === 0) console.log('STEP-7-EXTRA-VOICE-OK — F10 proven; tap-to-talk intents guardrailed, tuner delegation live');

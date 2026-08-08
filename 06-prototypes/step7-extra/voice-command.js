@@ -47,9 +47,11 @@ const PATTERNS = [
 // Negation words — if any appear, the command is rejected (HOLE-1 fix).
 // Pass-2 HOLE-A: added can't/cannot/won't/nope/nah/quit forms.
 // Pass-3 HOLE-1: added skip/never mind/cut it out/dontcha refusal forms.
+// Pass-4 HOLE-3: added hold on/hang on/give me a sec/pause/shut up/later.
 const NEGATIONS = ['don t', 'dont', 'do not', 'doesn t', 'doesnt', 'no', 'not', 'never', 'stop', 'enough',
   'can t', 'cant', 'cannot', 'won t', 'wont', 'nope', 'nah', 'quit',
-  'skip', 'never mind', 'nevermind', 'cut it out', 'dontcha', 'don tcha', 'wait'];
+  'skip', 'never mind', 'nevermind', 'cut it out', 'dontcha', 'don tcha', 'wait',
+  'hold on', 'hang on', 'give me a sec', 'pause', 'shut up', 'later'];
 
 function normalize(text) {
   return (text || '')
@@ -96,7 +98,9 @@ function parseCommand(text) {
 function defaultAdapter() {
   return {
     slower: function (currentRate) {
-      const next = Math.max(0.5, (currentRate || 1) - 0.15);
+      // Pass-4 HOLE-2: sanitize rate — string/garbage state gave NaN or coerced speeds.
+      const cur = (typeof currentRate === 'number' && isFinite(currentRate)) ? currentRate : 1;
+      const next = Math.max(0.5, cur - 0.15);
       return { rate: next, msg: 'Slowing down a little — ' + Math.round(next * 100) + '% speed.' };
     },
     again: function () { return { msg: 'Playing that again from the top.' }; },
@@ -108,8 +112,10 @@ function defaultAdapter() {
     whatsNext: function (pos, total) {
       const p = (typeof pos === 'number' && isFinite(pos)) ? Math.trunc(pos) : 0;
       const next = p + 1;
-      if (typeof total === 'number' && isFinite(total) && total > 0) {
-        const clamped = Math.min(Math.max(next, 0), Math.trunc(total) - 1);
+      // Pass-4 HOLE-1: coerce string total ('8' from DOM dataset bypassed the clamp).
+      const t = (typeof total === 'number') ? total : Number(total);
+      if (isFinite(t) && t > 0) {
+        const clamped = Math.min(Math.max(next, 0), Math.trunc(t) - 1);
         if (clamped !== next) {
           return { nextIndex: clamped, msg: 'That was the last part — you made it through the lesson.' };
         }
@@ -140,10 +146,16 @@ function execute(text, adapter, state) {
   if (method && typeof adapter[method] !== 'function') {
     return { intent: cmd.intent, action: null, reason: 'adapter-missing-' + method };
   }
-  if (cmd.intent === INTENTS.SLOWER) action = adapter.slower(state.rate);
-  else if (cmd.intent === INTENTS.AGAIN) action = adapter.again(state.sceneIndex);
-  else if (cmd.intent === INTENTS.WHATS_NEXT) action = adapter.whatsNext(state.sceneIndex, state.totalScenes);
-  else if (cmd.intent === INTENTS.TUNE) action = adapter.tune();
+  // Pass-4 HOLE-4: an adapter that throws INTERNALLY must not propagate an uncaught
+  // exception out of a voice command — degrade to an explicit adapter-threw result.
+  try {
+    if (cmd.intent === INTENTS.SLOWER) action = adapter.slower(state.rate);
+    else if (cmd.intent === INTENTS.AGAIN) action = adapter.again(state.sceneIndex);
+    else if (cmd.intent === INTENTS.WHATS_NEXT) action = adapter.whatsNext(state.sceneIndex, state.totalScenes);
+    else if (cmd.intent === INTENTS.TUNE) action = adapter.tune();
+  } catch (e) {
+    return { intent: cmd.intent, action: null, reason: 'adapter-threw', error: String(e && e.message || e) };
+  }
   return { intent: cmd.intent, action: action };
 }
 
