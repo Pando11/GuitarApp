@@ -55,7 +55,7 @@ const CORE_BASELINE = path.join(REPO_ROOT, '06-prototypes', 'step8', 'CORE-UNTOU
 // If a core file is tampered and its one hash line rewritten, the gate goes green
 // silently. Pin the baseline file's OWN sha256 here so an attacker must also edit
 // this committed gate (visible in git diff) to bless a tampered code state.
-const CORE_BASELINE_PIN = '08477f1ce00fdb2fec4db71fbe9ee1e1c9448f460942bc40d0aa65a5eee5f57b';
+const CORE_BASELINE_PIN = '629bc03c0950901cebc98f889e22eaeeea28d22ba5b158a10163d9b4e6279bc4';
 
 let pass = 0, fail = 0;
 const fails = [];

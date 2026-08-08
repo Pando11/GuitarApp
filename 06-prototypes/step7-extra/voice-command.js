@@ -41,6 +41,9 @@ const PATTERNS = [
   { intent: INTENTS.IGNORE, words: ['pizza', 'weather', 'news', 'call ', 'text ', 'email', 'remind me to', 'play music', 'open '] }
 ];
 
+// Negation words — if any appear, the command is rejected (HOLE-1 fix).
+const NEGATIONS = ['don t', 'dont', 'do not', 'doesn t', 'doesnt', 'no', 'not', 'never', 'stop', 'enough'];
+
 function normalize(text) {
   return (text || '')
     .toLowerCase()
@@ -49,13 +52,24 @@ function normalize(text) {
     .trim();
 }
 
+// Word-boundary phrase match (HOLE-2 fix). Prevents 'against' matching 'again',
+// 'nextdoor' matching 'next'. Uses whitespace boundaries on normalized text.
+function hasPhrase(t, phrase) {
+  const re = new RegExp('(?:^|\\s)' + phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?:\\s|$)');
+  return re.test(t);
+}
+
 // Map recognized text -> intent. Deterministic: same input -> same intent.
 function parseCommand(text) {
   const t = normalize(text);
   if (!t) return { intent: INTENTS.IGNORE, reason: 'empty' };
+  // HOLE-1: negation override — "don't tune" must not fire TUNE.
+  for (const n of NEGATIONS) {
+    if (hasPhrase(t, n)) return { intent: INTENTS.IGNORE, reason: 'negated', text: t };
+  }
   for (const p of PATTERNS) {
     for (const w of p.words) {
-      if (t.indexOf(w) >= 0) return { intent: p.intent, matched: w, text: t };
+      if (hasPhrase(t, w)) return { intent: p.intent, matched: w, text: t };
     }
   }
   // No pattern matched -> out of scope, ignore (never guess a lesson control).
@@ -72,8 +86,13 @@ function defaultAdapter() {
       return { rate: next, msg: 'Slowing down a little — ' + Math.round(next * 100) + '% speed.' };
     },
     again: function () { return { msg: 'Playing that again from the top.' }; },
-    whatsNext: function (pos) {
-      return { nextIndex: (pos || 0) + 1, msg: 'Next up — moving on to the next part.' };
+    // HOLE-3: clamp at total-1 so we never advance past the last scene.
+    whatsNext: function (pos, total) {
+      const next = (pos || 0) + 1;
+      if (typeof total === 'number' && next >= total) {
+        return { nextIndex: pos, msg: 'That was the last part — you made it through the lesson.' };
+      }
+      return { nextIndex: next, msg: 'Next up — moving on to the next part.' };
     },
     tune: function () { return { msg: 'Opening the tuner — play each string and I\'ll tell you if it\'s sharp or flat.' }; }
   };
@@ -92,7 +111,7 @@ function execute(text, adapter, state) {
   let action = null;
   if (cmd.intent === INTENTS.SLOWER) action = adapter.slower(state.rate);
   else if (cmd.intent === INTENTS.AGAIN) action = adapter.again(state.sceneIndex);
-  else if (cmd.intent === INTENTS.WHATS_NEXT) action = adapter.whatsNext(state.sceneIndex);
+  else if (cmd.intent === INTENTS.WHATS_NEXT) action = adapter.whatsNext(state.sceneIndex, state.totalScenes);
   else if (cmd.intent === INTENTS.TUNE) action = adapter.tune();
   return { intent: cmd.intent, action: action };
 }
@@ -100,8 +119,13 @@ function execute(text, adapter, state) {
 // Tune delegation: use the REUSED step2 tuner engine to name a string + cents.
 // Stubbed here for browser-free testing; the player wires the real one (mic -> TunerEngine).
 function tuneString(freq, TunerEngine) {
+  // HOLE-4: reject garbage input (0, NaN, negative, non-finite) before it hits the engine.
+  const f = Number(freq);
+  if (!isFinite(f) || f <= 0) {
+    return { note: null, cents: null, label: 'NO SIGNAL — play a string', invalid: true };
+  }
   const T = TunerEngine || require('../step2/engine/tuner-engine.js');
-  const note = T.noteFromFreq(freq);
+  const note = T.noteFromFreq(f);
   const cents = note.cents;
   let label;
   if (Math.abs(cents) < 6) label = 'IN TUNE';
@@ -117,4 +141,4 @@ function selfAudit() {
   return { noNetwork: !banned.test(src), note: 'maps text->intent only; no audio capture, no STT, no network' };
 }
 
-module.exports = { INTENTS, PATTERNS, normalize, parseCommand, defaultAdapter, execute, tuneString, selfAudit };
+module.exports = { INTENTS, PATTERNS, NEGATIONS, normalize, hasPhrase, parseCommand, defaultAdapter, execute, tuneString, selfAudit };

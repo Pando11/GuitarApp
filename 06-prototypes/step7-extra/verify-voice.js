@@ -133,6 +133,72 @@ console.log('\n=== 7. NEGATIVE — spy adapter is NEVER invoked for ignored spee
     res.intent === 'ignore' && res.action === null, JSON.stringify(res));
 }
 
+console.log('\n=== 8. NEGATION — negated commands never fire (HOLE-1) ===');
+{
+  const negs = [
+    "don't tune my guitar", 'dont stop', 'do not play again', 'never tune',
+    'stop tuning', 'no', 'not today', 'enough'
+  ];
+  const leaked = negs.filter(t => V.parseCommand(t).intent !== 'ignore');
+  check('8 negated phrases all resolve to ignore', leaked.length === 0,
+    leaked.length ? 'LEAKED: ' + JSON.stringify(leaked) : 'all negated ignored');
+  // spy adapter must never fire for negated speech
+  let calls = 0;
+  const spy = { slower: () => { calls++; return {}; }, again: () => { calls++; return {}; },
+    whatsNext: () => { calls++; return {}; }, tune: () => { calls++; return {}; } };
+  negs.forEach(t => V.execute(t, spy, { rate: 1 }));
+  check('spy adapter untouched for all negated speech', calls === 0, 'calls=' + calls);
+}
+
+console.log('\n=== 9. SUBSTRING TRAPS — word-boundary matching (HOLE-2) ===');
+{
+  const traps = [
+    'play against the beat',      // contains 'again'
+    'nextdoor neighbor',          // contains 'next'
+    'against all odds',           // contains 'again'
+    'the nextdoor house',         // contains 'next'
+    'attuned to reality',         // contains 'tune' but as substring
+    'slower than molasses',       // valid — should still fire
+    'what comes next please'      // valid — should still fire
+  ];
+  const expected = ['ignore', 'ignore', 'ignore', 'ignore', 'ignore', 'slower', 'whats-next'];
+  const wrong = traps.filter((t, i) => V.parseCommand(t).intent !== expected[i]);
+  check('7 substring traps resolve correctly', wrong.length === 0,
+    wrong.length ? 'WRONG: ' + JSON.stringify(wrong.map(t => t + '->' + V.parseCommand(t).intent)) : 'all correct');
+  // whole-word still fires
+  const stillFire = ['the next string', 'play it again', 'slower please', 'tune my guitar', 'what is next'];
+  const missed = stillFire.filter(t => V.parseCommand(t).intent === 'ignore');
+  check('5 whole-word phrases still fire', missed.length === 0,
+    missed.length ? 'MISSED: ' + JSON.stringify(missed) : 'all fire');
+}
+
+console.log('\n=== 10. WHATS-NEXT CLAMP — never advance past last scene (HOLE-3) ===');
+{
+  const a = V.defaultAdapter();
+  const last = a.whatsNext(7, 8);
+  check('whatsNext(7,8) clamps at 7', last.nextIndex === 7, 'nextIndex=' + last.nextIndex);
+  check('clamp message says last part', /last part/.test(last.msg), last.msg);
+  const mid = a.whatsNext(3, 8);
+  check('whatsNext(3,8) advances normally', mid.nextIndex === 4, 'nextIndex=' + mid.nextIndex);
+  // execute() passes totalScenes through
+  const r = V.execute('what\'s next', a, { sceneIndex: 7, totalScenes: 8 });
+  check('execute() clamps via totalScenes', r.action.nextIndex === 7, 'nextIndex=' + r.action.nextIndex);
+}
+
+console.log('\n=== 11. INVALID TUNER INPUT — reject garbage (HOLE-4) ===');
+{
+  const invalids = [0, NaN, -1, 'abc', Infinity, -Infinity, null, undefined];
+  const bad = invalids.filter(f => {
+    const r = V.tuneString(f);
+    return !(r.invalid === true && r.note === null && /NO SIGNAL/.test(r.label));
+  });
+  check('8 invalid inputs all rejected', bad.length === 0,
+    bad.length ? 'NOT REJECTED: ' + JSON.stringify(bad) : 'all rejected');
+  const ok = V.tuneString(82.41);
+  check('valid E2 still works', ok.note === 'E2' && ok.cents === 0 && ok.label === 'IN TUNE',
+    JSON.stringify(ok));
+}
+
 console.log('\n============================================================');
 console.log('F10 VOICE CONTROLS: ' + pass + ' passed, ' + fail + ' failed');
 if (fail === 0) console.log('STEP-7-EXTRA-VOICE-OK — F10 proven; tap-to-talk intents guardrailed, tuner delegation live');
