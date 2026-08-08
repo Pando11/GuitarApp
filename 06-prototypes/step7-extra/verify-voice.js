@@ -224,6 +224,36 @@ console.log('\n=== 12. PASS-2 REGRESSIONS — HOLE-A/B/C/D/E ===');
     firedE.length ? 'FIRED: ' + JSON.stringify(firedE) : 'all ignored');
 }
 
+console.log('\n=== 13. PASS-3 REGRESSIONS — refusal forms, pos sanitize, adapter guard ===');
+{
+  // HOLE-1: refusal phrasings
+  const refs = ['skip the tuning', 'cut it out tune', 'dontcha tune', 'never mind the tuning', 'wait slower'];
+  const leakedR = refs.filter(t => V.parseCommand(t).intent !== 'ignore');
+  check('HOLE-1: 5 refusal phrasings ignored', leakedR.length === 0,
+    leakedR.length ? 'LEAKED: ' + JSON.stringify(leakedR) : 'all ignored');
+  // over-block check: negation words inside innocent words must not block
+  const innocent = ['stopwatch again', 'i know the next chord'];
+  const blockedI = innocent.filter(t => V.parseCommand(t).intent === 'ignore');
+  check('over-block: innocent phrases still fire', blockedI.length === 0,
+    blockedI.length ? 'BLOCKED: ' + JSON.stringify(blockedI) : 'all fire');
+  // HOLE-2: pos type sanitize
+  const a = V.defaultAdapter();
+  check('HOLE-2: whatsNext("3",8) sanitized -> 1 not "31"', a.whatsNext('3', 8).nextIndex === 1,
+    'got=' + JSON.stringify(a.whatsNext('3', 8).nextIndex));
+  check('HOLE-2: whatsNext(3.5,8) -> 4', a.whatsNext(3.5, 8).nextIndex === 4);
+  check('HOLE-2: whatsNext(Infinity) -> 1 (sanitized)', a.whatsNext(Infinity).nextIndex === 1);
+  check('HOLE-2: whatsNext(3,NaN) -> 4 (clamp disabled, pos sane)', a.whatsNext(3, NaN).nextIndex === 4);
+  check('HOLE-2: execute with string sceneIndex sanitized',
+    V.execute("what's next", a, { sceneIndex: '3', totalScenes: 8 }).action.nextIndex === 1);
+  // HOLE-3: partial adapter never throws
+  let threw = false;
+  try { V.execute('slower', {}, {}); V.execute('tune my guitar', { slower: function(){return {};} }, {}); }
+  catch (e) { threw = true; }
+  check('HOLE-3: partial adapter does not throw', threw === false);
+  const r = V.execute('slower', {}, {});
+  check('HOLE-3: missing method returns explicit reason', r.action === null && /adapter-missing/.test(r.reason || ''), JSON.stringify(r));
+}
+
 console.log('\n============================================================');
 console.log('F10 VOICE CONTROLS: ' + pass + ' passed, ' + fail + ' failed');
 if (fail === 0) console.log('STEP-7-EXTRA-VOICE-OK — F10 proven; tap-to-talk intents guardrailed, tuner delegation live');

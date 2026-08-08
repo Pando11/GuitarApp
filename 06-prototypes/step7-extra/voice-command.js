@@ -46,8 +46,10 @@ const PATTERNS = [
 
 // Negation words — if any appear, the command is rejected (HOLE-1 fix).
 // Pass-2 HOLE-A: added can't/cannot/won't/nope/nah/quit forms.
+// Pass-3 HOLE-1: added skip/never mind/cut it out/dontcha refusal forms.
 const NEGATIONS = ['don t', 'dont', 'do not', 'doesn t', 'doesnt', 'no', 'not', 'never', 'stop', 'enough',
-  'can t', 'cant', 'cannot', 'won t', 'wont', 'nope', 'nah', 'quit'];
+  'can t', 'cant', 'cannot', 'won t', 'wont', 'nope', 'nah', 'quit',
+  'skip', 'never mind', 'nevermind', 'cut it out', 'dontcha', 'don tcha', 'wait'];
 
 function normalize(text) {
   return (text || '')
@@ -100,14 +102,17 @@ function defaultAdapter() {
     again: function () { return { msg: 'Playing that again from the top.' }; },
     // HOLE-3: clamp at total-1 so we never advance past the last scene.
     // Pass-2 HOLE-B: also pull out-of-range pos back into [0, total-1].
+    // Pass-3 HOLE-2: sanitize pos type — strings from DOM dataset/JSON would concat
+    // ('3'+1='31'); non-finite/fractional positions are meaningless. Non-finite or
+    // invalid total disables clamping but pos is still sanitized.
     whatsNext: function (pos, total) {
-      const next = (pos || 0) + 1;
+      const p = (typeof pos === 'number' && isFinite(pos)) ? Math.trunc(pos) : 0;
+      const next = p + 1;
       if (typeof total === 'number' && isFinite(total) && total > 0) {
-        const clamped = Math.min(Math.max(next, 0), total - 1);
+        const clamped = Math.min(Math.max(next, 0), Math.trunc(total) - 1);
         if (clamped !== next) {
           return { nextIndex: clamped, msg: 'That was the last part — you made it through the lesson.' };
         }
-        return { nextIndex: next, msg: 'Next up — moving on to the next part.' };
       }
       return { nextIndex: next, msg: 'Next up — moving on to the next part.' };
     },
@@ -126,6 +131,15 @@ function execute(text, adapter, state) {
     return { intent: 'ignore', action: null, reason: cmd.reason || 'out-of-scope' };
   }
   let action = null;
+  // Pass-3 HOLE-3: guard dispatch — a partial player adapter must not throw an
+  // uncaught TypeError on a voice command; degrade to an explicit unsupported result.
+  const method = cmd.intent === INTENTS.SLOWER ? 'slower'
+    : cmd.intent === INTENTS.AGAIN ? 'again'
+    : cmd.intent === INTENTS.WHATS_NEXT ? 'whatsNext'
+    : cmd.intent === INTENTS.TUNE ? 'tune' : null;
+  if (method && typeof adapter[method] !== 'function') {
+    return { intent: cmd.intent, action: null, reason: 'adapter-missing-' + method };
+  }
   if (cmd.intent === INTENTS.SLOWER) action = adapter.slower(state.rate);
   else if (cmd.intent === INTENTS.AGAIN) action = adapter.again(state.sceneIndex);
   else if (cmd.intent === INTENTS.WHATS_NEXT) action = adapter.whatsNext(state.sceneIndex, state.totalScenes);
