@@ -87,7 +87,7 @@ console.log('\n=== 4. EXECUTION — intents drive the adapter; slower clamps at 
   check('20x slower CLAMPS at 0.5x (cannot decelerate into silence)', rate === 0.5, 'rate=' + rate);
   const r2 = V.execute('again', a, { sceneIndex: 3 });
   check('again returns a confirmation message', !!(r2.action && typeof r2.action.msg === 'string' && r2.action.msg.length > 0));
-  const r3 = V.execute("what's next", a, { sceneIndex: 3 });
+  const r3 = V.execute("what's next", a, { sceneIndex: 3, totalScenes: 8 });
   check('whats-next advances the scene index', r3.action && r3.action.nextIndex === 4, 'nextIndex=' + (r3.action || {}).nextIndex);
   const r4 = V.execute('tune my guitar', a, {});
   check('tune returns guidance message', !!(r4.action && r4.action.msg.length > 0));
@@ -241,8 +241,8 @@ console.log('\n=== 13. PASS-3 REGRESSIONS — refusal forms, pos sanitize, adapt
   check('HOLE-2: whatsNext("3",8) sanitized -> 1 not "31"', a.whatsNext('3', 8).nextIndex === 1,
     'got=' + JSON.stringify(a.whatsNext('3', 8).nextIndex));
   check('HOLE-2: whatsNext(3.5,8) -> 4', a.whatsNext(3.5, 8).nextIndex === 4);
-  check('HOLE-2: whatsNext(Infinity) -> 1 (sanitized)', a.whatsNext(Infinity).nextIndex === 1);
-  check('HOLE-2: whatsNext(3,NaN) -> 4 (clamp disabled, pos sane)', a.whatsNext(3, NaN).nextIndex === 4);
+  check('HOLE-2: whatsNext(Infinity) refuses (pos sanitized to 0, stays)', a.whatsNext(Infinity).nextIndex === 0);
+  check('HOLE-2: whatsNext(3,NaN) refuses to advance (stays 3)', a.whatsNext(3, NaN).nextIndex === 3);
   check('HOLE-2: execute with string sceneIndex sanitized',
     V.execute("what's next", a, { sceneIndex: '3', totalScenes: 8 }).action.nextIndex === 1);
   // HOLE-3: partial adapter never throws
@@ -277,6 +277,32 @@ console.log('\n=== 14. PASS-4 REGRESSIONS — total coerce, rate sanitize, refus
   catch (e) { threw4 = true; }
   check('HOLE-4: throwing adapter does not propagate', threw4 === false);
   check('HOLE-4: adapter-threw reason returned', res4 && res4.reason === 'adapter-threw' && res4.action === null, JSON.stringify(res4));
+}
+
+console.log('\n=== 15. PASS-5 REGRESSIONS — non-string input, fail-safe total, engine output guard ===');
+{
+  // HOLE-1: non-string input never throws
+  let threw5 = false;
+  try { V.execute(123, V.defaultAdapter(), {}); V.execute(true, V.defaultAdapter(), {}); V.execute(['slower'], {}, {}); }
+  catch (e) { threw5 = true; }
+  check('HOLE-1: non-string input does not throw', threw5 === false);
+  check('HOLE-1: numeric input -> ignore', V.execute(123, V.defaultAdapter(), {}).intent === 'ignore');
+  // HOLE-2: unparseable/invalid total refuses to advance (fail-safe)
+  const a5 = V.defaultAdapter();
+  const badTotals = ['8abc', '', 'Infinity', -5, NaN, undefined];
+  const advanced = badTotals.filter(t => a5.whatsNext(7, t).nextIndex !== 7);
+  check('HOLE-2: 6 garbage totals refuse to advance (stay at 7)', advanced.length === 0,
+    advanced.length ? 'ADVANCED: ' + JSON.stringify(advanced) : 'all refuse');
+  // HOLE-3: engine output validated
+  const nan = V.tuneString(82.41, { noteFromFreq: () => ({ name: 'E2', cents: NaN }) });
+  check('HOLE-3: NaN cents from engine -> NO SIGNAL', nan.invalid === true && /NO SIGNAL/.test(nan.label), JSON.stringify(nan));
+  let threwE = false;
+  try { V.tuneString(82.41, { noteFromFreq: () => null }); V.tuneString(82.41, { noteFromFreq: () => { throw new Error('dsp'); } }); }
+  catch (e) { threwE = true; }
+  check('HOLE-3: null/throwing engine does not crash', threwE === false);
+  // valid path still works after all guards
+  const okE = V.tuneString(82.41);
+  check('valid E2 still IN TUNE after pass-5 guards', okE.note === 'E2' && okE.label === 'IN TUNE');
 }
 
 console.log('\n============================================================');

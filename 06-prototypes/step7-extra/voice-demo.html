@@ -61,7 +61,7 @@ const PATTERNS=[
  {intent:'ignore',words:['pizza','weather','news','call','text','email','remind me to','play music','open','movie','tv','shopping']}
 ];
 const NEGATIONS=['don t','dont','do not','doesn t','doesnt','no','not','never','stop','enough','can t','cant','cannot','won t','wont','nope','nah','quit','skip','never mind','nevermind','cut it out','dontcha','don tcha','wait','hold on','hang on','give me a sec','pause','shut up','later'];
-function normalize(t){return (t||'').toLowerCase().replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();}
+function normalize(t){return String(t==null?'':t).toLowerCase().replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();}
 function hasPhrase(t,phrase){const re=new RegExp('(?:^|\\s)'+phrase.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?:\\s|$)');return re.test(t);}
 function parseCommand(text){
   const t=normalize(text);

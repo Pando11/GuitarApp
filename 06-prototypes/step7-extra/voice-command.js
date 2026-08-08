@@ -54,7 +54,9 @@ const NEGATIONS = ['don t', 'dont', 'do not', 'doesn t', 'doesnt', 'no', 'not', 
   'hold on', 'hang on', 'give me a sec', 'pause', 'shut up', 'later'];
 
 function normalize(text) {
-  return (text || '')
+  // Pass-5 HOLE-1: type guard — a corrupted STT layer passing truthy non-strings
+  // (numbers, booleans, arrays) crashed on .toLowerCase. Coerce defensively.
+  return String(text == null ? '' : text)
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, ' ')   // strip punctuation
     .replace(/\s+/g, ' ')
@@ -113,12 +115,16 @@ function defaultAdapter() {
       const p = (typeof pos === 'number' && isFinite(pos)) ? Math.trunc(pos) : 0;
       const next = p + 1;
       // Pass-4 HOLE-1: coerce string total ('8' from DOM dataset bypassed the clamp).
+      // Pass-5 HOLE-2: fail-safe on unparseable/invalid total — refuse to advance
+      // rather than open the gate ('8abc', '', 'Infinity', -5 all silently disabled
+      // the clamp and advanced past the last scene).
       const t = (typeof total === 'number') ? total : Number(total);
-      if (isFinite(t) && t > 0) {
-        const clamped = Math.min(Math.max(next, 0), Math.trunc(t) - 1);
-        if (clamped !== next) {
-          return { nextIndex: clamped, msg: 'That was the last part — you made it through the lesson.' };
-        }
+      if (!isFinite(t) || t <= 0) {
+        return { nextIndex: p, msg: 'Cannot advance — lesson state unclear. Staying on this part.' };
+      }
+      const clamped = Math.min(Math.max(next, 0), Math.trunc(t) - 1);
+      if (clamped !== next) {
+        return { nextIndex: clamped, msg: 'That was the last part — you made it through the lesson.' };
       }
       return { nextIndex: next, msg: 'Next up — moving on to the next part.' };
     },
@@ -171,7 +177,18 @@ function tuneString(freq, TunerEngine) {
   }
   const f = freq;
   const T = TunerEngine || require('../step2/engine/tuner-engine.js');
-  const note = T.noteFromFreq(f);
+  // Pass-5 HOLE-3: validate the engine's OUTPUT, not just our input — a NaN-emitting
+  // DSP layer (silent frame) produced 'FLAT by NaN cents' shown to the student, and
+  // a null/throwing engine crashed uncaught.
+  let note;
+  try {
+    note = T.noteFromFreq(f);
+  } catch (e) {
+    return { note: null, cents: null, label: 'NO SIGNAL — play a string', invalid: true };
+  }
+  if (!note || typeof note.cents !== 'number' || !isFinite(note.cents)) {
+    return { note: null, cents: null, label: 'NO SIGNAL — play a string', invalid: true };
+  }
   const cents = note.cents;
   let label;
   if (Math.abs(cents) < 6) label = 'IN TUNE';
