@@ -138,6 +138,30 @@ class PracticeStore {
     return Math.round(this.sessions.reduce((acc, s) => acc + (s.durationSec || 0), 0) / 60);
   }
 
+  // ---------- F7 band engine: last-practice tempo capture ----------
+  // The band follows the tempo the student ACTUALLY played at last, not a fixed
+  // click. This records a measured practice BPM against a session so the band
+  // engine can read lastPracticeTempo(). Clamped to a sane 30..240 BPM window
+  // (guitar practice can't be faster/slower than that; rejects garbage input).
+  // No existing field is touched, so Step 6 gates are unaffected.
+  recordPracticeTempo(sessionId, bpm) {
+    const s = this.sessions.find(x => x.id === sessionId);
+    if (!s) throw new Error('unknown session ' + sessionId);
+    const n = Number(bpm);
+    if (!isFinite(n) || n < 30 || n > 240) throw new Error('bpm out of range: ' + bpm);
+    s.practiceBpm = Math.round(n);
+    return s.practiceBpm;
+  }
+
+  // Most recent measured practice BPM across the session log (or null if never
+  // recorded). The band engine treats null as "use the lesson's default BPM".
+  lastPracticeTempo() {
+    for (let i = this.sessions.length - 1; i >= 0; i--) {
+      if (this.sessions[i].practiceBpm != null) return this.sessions[i].practiceBpm;
+    }
+    return null;
+  }
+
   lessonCompleted(lessonId) {
     return !!(this.lessonCompletion[lessonId] && this.lessonCompletion[lessonId].completed);
   }
