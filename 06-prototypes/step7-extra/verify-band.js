@@ -30,12 +30,20 @@
  *
  * Run: node verify-band.js
  */
-const B = require('./band-engine.js');
-const T = require('../step2/engine/tuner-engine.js');
-const L = require('../step5/engine/listening-engine.js');
+// 7th-pass HOLE 2: capture pristine fs/crypto bindings BEFORE requiring the engine
+// under test. An evil band-engine.js could monkey-patch fs.readFileSync at load to
+// serve forged original bytes to the tamper check (demonstrated: 34/0 green with a
+// booby-trapped on-disk engine). Snapshotting first makes the baseline hashes read
+// real disk bytes regardless of what the required modules do at load time.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const _readFileSync = fs.readFileSync.bind(fs);
+const _existsSync = fs.existsSync.bind(fs);
+const _createHash = crypto.createHash.bind(crypto);
+const B = require('./band-engine.js');
+const T = require('../step2/engine/tuner-engine.js');
+const L = require('../step5/engine/listening-engine.js');
 const { PracticeStore } = require('../step6/store/practiceStore.js');
 
 // Repo root: __dirname is .../06-prototypes/step7-extra, so two '..' land on the
@@ -47,7 +55,7 @@ const CORE_BASELINE = path.join(REPO_ROOT, '06-prototypes', 'step8', 'CORE-UNTOU
 // If a core file is tampered and its one hash line rewritten, the gate goes green
 // silently. Pin the baseline file's OWN sha256 here so an attacker must also edit
 // this committed gate (visible in git diff) to bless a tampered code state.
-const CORE_BASELINE_PIN = '104147d669e78e7efa42ab562c465fa5b5dcf472157e9893e2f1d96d7593d01f';
+const CORE_BASELINE_PIN = '08477f1ce00fdb2fec4db71fbe9ee1e1c9448f460942bc40d0aa65a5eee5f57b';
 
 let pass = 0, fail = 0;
 const fails = [];
@@ -352,7 +360,7 @@ console.log('=== F7 BAND ENGINE — DONE BAR ===');
 
 // 5 + 7. ORIGINAL / NO COPYRIGHT / NO AI FINGERS — code inspection
 {
-  const src = fs.readFileSync(path.join(__dirname, 'band-engine.js'), 'utf8');
+  const src = _readFileSync(path.join(__dirname, 'band-engine.js'), 'utf8');
   check('NO sample/audio-file load (synthesized only)', !/\.(wav|mp3|ogg|m4a|flac)\b/i.test(src) && !/(loadSample|fetchSample|decodeAudio)/.test(src));
   check('NO fretboard/AI image generation (Ban 1 scope)', !/(generateImage|drawFingers|stable-diffusion|dall|flux)/i.test(src));
 }
@@ -365,17 +373,17 @@ console.log('=== F7 BAND ENGINE — DONE BAR ===');
 
 // 8. NO CORE-CODE CHANGE — core modules byte-identical to baseline (repo-root resolve, fail on missing)
 {
-  check('CORE baseline file present', fs.existsSync(CORE_BASELINE));
+  check('CORE baseline file present', _existsSync(CORE_BASELINE));
   // HOLE-3 fix: the baseline file itself must be unmodified, else an attacker can
   // rewrite a hash line to bless a tampered core file and pass silently.
-  if (fs.existsSync(CORE_BASELINE)) {
-    const baselineHash = crypto.createHash('sha256').update(fs.readFileSync(CORE_BASELINE)).digest('hex');
+  if (_existsSync(CORE_BASELINE)) {
+    const baselineHash = _createHash('sha256').update(_readFileSync(CORE_BASELINE)).digest('hex');
     check('CORE baseline file is unmodified (self-pinned sha256)', baselineHash === CORE_BASELINE_PIN,
       'actual=' + baselineHash);
   }
-  if (fs.existsSync(CORE_BASELINE)) {
+  if (_existsSync(CORE_BASELINE)) {
     const expect = {};
-    fs.readFileSync(CORE_BASELINE, 'utf8').split('\n').forEach(line => {
+    _readFileSync(CORE_BASELINE, 'utf8').split('\n').forEach(line => {
       const m = line.trim().match(/^([0-9a-f]{64})\s+\*(.+)$/); // strip leading '*' correctly
       if (m) expect[m[2]] = m[1];
     });
@@ -389,8 +397,8 @@ console.log('=== F7 BAND ENGINE — DONE BAR ===');
     let allSame = true; const changed = []; const missing = [];
     for (const rel of rels) {
       const fp = path.join(REPO_ROOT, rel); // resolve from repo root, not step7
-      if (!fs.existsSync(fp)) { missing.push(rel); allSame = false; continue; } // FAIL on missing, no silent skip
-      const h = crypto.createHash('sha256').update(fs.readFileSync(fp)).digest('hex');
+      if (!_existsSync(fp)) { missing.push(rel); allSame = false; continue; } // FAIL on missing, no silent skip
+      const h = _createHash('sha256').update(_readFileSync(fp)).digest('hex');
       if (h !== expect[rel]) { allSame = false; changed.push(rel); }
     }
     check('NO core module deleted/missing (tamper detects deletion)', missing.length === 0, missing.join(', '));
