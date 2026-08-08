@@ -12,12 +12,30 @@ STALE (never use): `guitar-build-plan.md`, `PLAN-app-plus-youtube-4500-2026-08-0
 | step8 packs | `cd step8 && node verify-step8.js` | 94/94 |
 | step9 YouTube | `cd step9 && node verify-step9.js` | 33/33 |
 | step6 store | `cd step6 && node verify-step6-store.js` | 22/22 |
-| F7 band (gate) | `cd step7-extra && node verify-band.js` | **26/0 — REAL (#7 octave-sound + #8 tamper fixed, commit acbf158)** |
+| F7 band (gate) | `cd step7-extra && node verify-band.js` | **31/0 — REAL (#7 pitch+octave + #8 tamper sound; 4th hostile holes #1/#2/#3 all closed, commit fa71962)** |
 | F7 band (engine smoke) | `cd step7-extra && node smoke-f7-fixes.js` | **9/0 — REAL fixes #2-#6 proven** |
 | F10 voice | `verify-voice.js` | **DOES NOT EXIST** (engine exists, gate missing) |
 | RevenueCat | `cd step7 && node verify-step10-revenuecat.js` | 43/0 (stub; owner-blocked on keys) |
 
-Git: `acbf158` = F7 GATE hardening #7+#8 committed. `98c00fd` = F7 engine fixes #2-#6. Working tree clean.
+Git: `fa71962` = F7 gate + engine: close all 3 holes from 4th hostile pass. `acbf158` = F7 GATE #7+#8 first hardening. `98c00fd` = F7 engine fixes #2-#6. Working tree clean.
+
+## 4th HOSTILE PASS — VERDICT: NOT SOUND (3 holes), ALL NOW CLOSED (commit fa71962)
+The 4th agent (zero build context) attacked the committed gate and returned "NOT sound, 3 holes,
+two serious." Every hole is now FIXED and re-proven:
+
+| Hole | Finding (measured) | Fix | Proof |
+|---|---|---|---|
+| #1 (serious) | `parseChordRoot('E7')` read the chord `7` as octave 7 → gate expected 2637Hz; engine ALSO misparsed → bass emitted 2637Hz (above listener F_MIN, inaudible squeal). "26/0" agreed by shared bug. | Strip quality tokens (`7/9/11/13/5/6/m/sus/add`) before octave match in BOTH gate `parseChordRoot` AND engine `chordRootName`. Bass now E2/B2 (82/123Hz) as intended. **This was a real engine audio defect**, not just a gate artifact. | gate 31/0; bass ROOT/FIFTH/STAB all E2/B2; `band-source.js` regenerated. |
+| #2 (serious) | `cents` hard-set to `0` for the matched octave bin → 25¢ tolerance was a dead no-op; a +100¢ semitone-sharp bass PASSED. | `verifyBassOctave` now MEASURES real cents via `detectPitchSet` (F_MIN-bounded; autoCorrelate was rejected because the kick-drum sweep at the root slot fools it into ~20Hz). +100¢/+50¢ detune REJECTED; in-tune passes. Added NEGATIVE(4d)+SANITY(4e). | +100¢ & +50¢ fail; in-tune passes. |
+| #3 | Baseline not self-protected (rewrite one hash line → green) + path-traversal via `..`. | Pin baseline file's OWN sha256 inside the gate (self-check fails on tamper); reject any rel with `..` or out-of-root. | Appending `\\n` to baseline → gate FAILS (30/1), restores to 31/0. |
+
+Anti-tamper (#8) was confirmed SOUND by the 4th agent itself: delete/append-tamper any listed core
+file → hard fail; delete `teacher.js` → FAIL. The only residual (HOLE 3) was the unpinned baseline,
+now closed.
+
+Proven: `node verify-band.js` → 31 passed, 0 failed (exit 0); `node smoke-f7-fixes.js` → 9/9;
+baseline self-pin tamper test FAILS (30/1) then restores to 31/0. **5th hostile re-review queued** —
+F7 stays "in review" until that returns clean.
 
 ## HOW WE GOT HERE (proven, not asserted)
 A **3rd hostile agent** (zero build context) re-verified the committed F7 engine by RUNNING
@@ -94,11 +112,11 @@ F7 stays "in review" until that returns clean.
 - Flutter-vs-RN spike, teacher art, SMS cadence caps — open items, not blocking.
 
 ## NEXT ACTIONS (priority order)
-1. **F7 GATE hardening (#7 + #8) — DONE (acbf158).** Awaiting the 4th hostile re-review result
-   (in flight). If it returns clean, F7 → "done". If it finds a hole, fix and re-run.
-2. Build F10 `verify-voice.js` + `file://` demo, hostile-review it.
+1. **F7 GATE #7 + #8 — 4th hostile pass returned 3 holes; ALL CLOSED (fa71962).** 5th hostile
+   re-review QUEUED (zero build context, must attack all 3 fixes). If clean → F7 "done". If a hole
+   remains → fix + re-run. Either way commit and update this handoff.
+2. Build F10 `verify-voice.js` + `file://` demo, hostile-review it (F10 needs its 1st hostile pass).
 3. Wire RevenueCat live on keys.
-4. After #7/#8: re-dispatch a 4th hostile agent on F7. Commit each step; update this handoff.
 
 ## CONVENTIONS (unchanged, enforced)
 - Addy Osmani: spec→plan→build→test→review→simplify→ship. Never skip.
