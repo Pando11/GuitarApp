@@ -116,10 +116,10 @@ function defaultAdapter() {
       const next = p + 1;
       // Pass-4 HOLE-1: coerce string total ('8' from DOM dataset bypassed the clamp).
       // Pass-5 HOLE-2: fail-safe on unparseable/invalid total — refuse to advance
-      // rather than open the gate ('8abc', '', 'Infinity', -5 all silently disabled
-      // the clamp and advanced past the last scene).
+      // rather than silently unclamping past the last scene.
+      // Pass-6 HOLE-1: also reject 0 < t < 1 (fractional total would yield nextIndex -1).
       const t = (typeof total === 'number') ? total : Number(total);
-      if (!isFinite(t) || t <= 0) {
+      if (!isFinite(t) || t < 1) {
         return { nextIndex: p, msg: 'Cannot advance — lesson state unclear. Staying on this part.' };
       }
       const clamped = Math.min(Math.max(next, 0), Math.trunc(t) - 1);
@@ -162,7 +162,7 @@ function execute(text, adapter, state) {
   } catch (e) {
     return { intent: cmd.intent, action: null, reason: 'adapter-threw', error: String(e && e.message || e) };
   }
-  return { intent: cmd.intent, action: action };
+  return { intent: cmd.intent, action: action ?? null };
 }
 
 // Tune delegation: use the REUSED step2 tuner engine to name a string + cents.

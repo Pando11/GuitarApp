@@ -74,8 +74,13 @@ function parseCommand(text){
 }
 
 const state={rate:1,scene:1,total:8,prog:12};
-const $=id=>document.getElementById(id);
-function log(html,cls){$('log').innerHTML='<div class="'+cls+'">'+html+'</div>'+$('log').innerHTML;}
+const $ = id => document.getElementById(id);
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function log(html, cls) { $('log').innerHTML = '<div class="' + cls + '">' + html + '</div>' + $('log').innerHTML; }
 function render(){$('scene').textContent=state.scene;$('rate').textContent=Math.round(state.rate*100)+'%';$('prog').style.width=state.prog+'%';}
 
 function act(text){
@@ -83,7 +88,7 @@ function act(text){
   const cmd=parseCommand(text);
   if(cmd.intent==='ignore'){
     $('say').textContent='';
-    log('<span class="intent">'+text+'</span> → ignored (out of scope — no lesson control fired)','ignored');
+    log('<span class="intent">' + esc(text) + '</span> → ignored (out of scope — no lesson control fired)', 'ignored');
     return;
   }
   let msg='';
@@ -92,7 +97,7 @@ function act(text){
   else if(cmd.intent==='whats-next'){state.scene=Math.min(Math.max(state.scene+1,1),state.total);state.prog=0;msg=state.scene>=state.total?'That was the last part — you made it through the lesson.':'Next up — moving on to part '+state.scene+'.';}
   else if(cmd.intent==='tune-my-guitar'){msg="Opening the tuner — play each string and I'll tell you if it's sharp or flat.";}
   $('say').textContent=msg;render();
-  log('<span class="intent">'+text+'</span> → <b>'+cmd.intent+'</b>: '+msg,'acted');
+  log('<span class="intent">' + esc(text) + '</span> → <b>' + cmd.intent + '</b>: ' + esc(msg), 'acted');
 }
 
 document.querySelectorAll('.chip').forEach(b=>b.onclick=()=>act(b.textContent));

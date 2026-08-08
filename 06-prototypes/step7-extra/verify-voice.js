@@ -305,6 +305,17 @@ console.log('\n=== 15. PASS-5 REGRESSIONS — non-string input, fail-safe total,
   check('valid E2 still IN TUNE after pass-5 guards', okE.note === 'E2' && okE.label === 'IN TUNE');
 }
 
+// 16. PASS-6 REGRESSIONS — fractional total, adapter-threw, action ?? null
+{
+  const a = V.defaultAdapter();
+  check('PASS-6: whatsNext(0,0.5) refuses (fractional total <1)', a.whatsNext(0, 0.5).nextIndex === 0);
+  check('PASS-6: whatsNext(3,0.9) refuses', a.whatsNext(3, 0.9).nextIndex === 3);
+  // action ?? null normalization
+  const undefinedAction = { action: () => undefined };
+  const r = V.execute('again', undefinedAction, { sceneIndex: 0 });
+  check('PASS-6: undefined adapter return -> action: null', r.action === null, JSON.stringify(r));
+}
+
 console.log('\n============================================================');
 console.log('F10 VOICE CONTROLS: ' + pass + ' passed, ' + fail + ' failed');
 if (fail === 0) console.log('STEP-7-EXTRA-VOICE-OK — F10 proven; tap-to-talk intents guardrailed, tuner delegation live');
