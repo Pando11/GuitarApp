@@ -1,0 +1,14 @@
+# Pinned-baseline files must checkout with EXACT committed bytes (LF) — the
+# verify-band.js anti-tamper gate hashes raw on-disk bytes, and CRLF smudging
+# (core.autocrlf=true on Windows) false-reds a clean checkout (6th hostile pass).
+06-prototypes/step8/CORE-UNTOUCHED.sha256 text eol=lf
+06-prototypes/step0/schema/chord-theory-check.js text eol=lf
+06-prototypes/step0/schema/validate.js text eol=lf
+06-prototypes/step3/engine/teacher.js text eol=lf
+06-prototypes/step0/engine/renderer.js text eol=lf
+06-prototypes/step5/engine/listening-engine.js text eol=lf
+06-prototypes/step7/entitlementStore.js text eol=lf
+06-prototypes/step2/engine/tuner-engine.js text eol=lf
+06-prototypes/step6/store/practiceStore.js text eol=lf
+06-prototypes/step7-extra/band-engine.js text eol=lf
+06-prototypes/step7-extra/voice-command.js text eol=lf

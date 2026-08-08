@@ -237,8 +237,13 @@ function chordRootName(name) {
   const EXT = /^(5|6|7|9|11|13)$/; // bare chord-extension digits, never octaves
   const rest = name.slice(m[1].length)
     .replace(/(maj|min|dim|aug|sus|add|m)[0-9]*/gi, ''); // token + its digits, atomic
+  // 6th-pass HOLE 2: the register spec must match the gate oracle's domain
+  // EXACTLY — a single bare digit 0-4 — else "E10"→21kHz target (measured 953Hz
+  // aliased garbage), "E8"→5.3kHz squeal, "E04" diverges (engine 4, oracle 2).
+  // Anything outside [0-4] single-digit, or an EXT digit, defaults to octave 2.
   const octMatch = rest.match(/^(\d+)$/);
-  const octave = (octMatch && !EXT.test(octMatch[1])) ? parseInt(octMatch[1], 10) : 2;
+  const octave = (octMatch && /^[0-4]$/.test(octMatch[1]) && !EXT.test(octMatch[1]))
+    ? parseInt(octMatch[1], 10) : 2;
   return { root, octave };
 }
 // transpose a note name up `semi` semitones, flat/sharp aware; returns the note

@@ -47,7 +47,7 @@ const CORE_BASELINE = path.join(REPO_ROOT, '06-prototypes', 'step8', 'CORE-UNTOU
 // If a core file is tampered and its one hash line rewritten, the gate goes green
 // silently. Pin the baseline file's OWN sha256 here so an attacker must also edit
 // this committed gate (visible in git diff) to bless a tampered code state.
-const CORE_BASELINE_PIN = 'f52d851a6a2d33eab49e9ea3224205b8abc005247952cad33f503e7b6dbeb130';
+const CORE_BASELINE_PIN = '104147d669e78e7efa42ab562c465fa5b5dcf472157e9893e2f1d96d7593d01f';
 
 let pass = 0, fail = 0;
 const fails = [];
@@ -309,14 +309,45 @@ console.log('=== F7 BAND ENGINE — DONE BAR ===');
   check('NEGATIVE (5th-pass hole 1): Asus4 bass sits in octave 2 (110Hz pocket, not 440Hz)',
     m.ok, 'measured f0=' + (m.heardFreq || 0).toFixed(1) + 'Hz expected=' + oracle.toFixed(1));
 }
-// 4g. SANITY — engine parser itself: token-digit chords all parse to octave 2.
+// 4g. SANITY — engine parser over a BROAD corpus (6th-pass HOLE 1 fix): all 12 roots
+//     × the full quality-token set × registers. 264 cases — special-casing the exact
+//     probe set (the pass-6 gate-fit attack) is no longer feasible.
 {
-  const cases = [['Asus4', 'A', 2], ['Dsus2', 'D', 2], ['E7sus4', 'E', 2],
-    ['Bbadd9', 'Bb', 2], ['Emaj7', 'E', 2], ['G13', 'G', 2], ['em7', 'E', 2],
-    ['E7', 'E', 2], ['C#7', 'C#', 2], ['E2', 'E', 2]];
-  const bad = cases.filter(([c, r, o]) => { const p = B.chordRootName(c); return !(p.root === r && p.octave === o); });
-  check('SANITY (5th-pass): engine parser maps token-digit chords to root/octave-2',
-    bad.length === 0, bad.length ? 'WRONG: ' + JSON.stringify(bad) : '10/10 parse cases correct');
+  const roots = ['C', 'C#', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+  const quals = ['', 'm', '7', 'maj7', 'm7', 'sus4', 'sus2', 'add9', 'dim', 'dim7', 'aug',
+    'aug7', '6', '9', '11', '13', '5', '7sus4', '7#9', 'm7b5', 'sus4add9'];
+  const bad = [];
+  let n = 0;
+  for (const r of roots) for (const q of quals) {
+    n++;
+    const p = B.chordRootName(r + q);
+    const rootOk = p.root && p.root.toUpperCase() === r.toUpperCase();
+    if (!(rootOk && p.octave === 2)) bad.push([r + q, p]);
+  }
+  // Register specs: bare single digit 0-4 honored; everything else defaults to 2.
+  const regs = [['E0', 0], ['E1', 1], ['E2', 2], ['E3', 3], ['E4', 4], ['Bb1', 1],
+    ['E8', 2], ['E10', 2], ['E04', 2], ['E00', 2], ['E14', 2], ['E40', 2]];
+  for (const [c, o] of regs) { n++; const p = B.chordRootName(c); if (p.octave !== o) bad.push([c, p]); }
+  check('SANITY (6th-pass): parser corpus ' + n + ' cases (roots×quals×regs) all correct',
+    bad.length === 0, bad.length ? 'WRONG: ' + JSON.stringify(bad.slice(0, 5)) : n + '/' + n + ' correct');
+}
+// 4h. ORACLE CONFORMANCE — engine and gate oracle must agree on EVERY corpus case.
+{
+  const roots = ['C', 'C#', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+  const quals = ['', 'm', '7', 'maj7', 'm7', 'sus4', 'sus2', 'add9', 'dim', 'dim7', 'aug',
+    'aug7', '6', '9', '11', '13', '5', '7sus4', '7#9', 'm7b5', 'sus4add9'];
+  const extras = ['E0', 'E1', 'E2', 'E3', 'E4', 'Bb1', 'E8', 'E10', 'E04', 'E00', 'em7', 'e7', 'ASUS4'];
+  const diverge = [];
+  for (const r of roots) for (const q of quals) {
+    const c = r + q, e = B.chordRootName(c), o = parseChordRoot(c);
+    if (e.octave !== o.octave) diverge.push([c, e.octave, o.octave]);
+  }
+  for (const c of extras) {
+    const e = B.chordRootName(c), o = parseChordRoot(c);
+    if (e.octave !== o.octave) diverge.push([c, e.octave, o.octave]);
+  }
+  check('engine and oracle agree on octave for all ' + (roots.length * quals.length + extras.length) + ' corpus cases',
+    diverge.length === 0, diverge.length ? 'DIVERGE: ' + JSON.stringify(diverge.slice(0, 5)) : 'no divergence');
 }
 
 // 5 + 7. ORIGINAL / NO COPYRIGHT / NO AI FINGERS — code inspection
