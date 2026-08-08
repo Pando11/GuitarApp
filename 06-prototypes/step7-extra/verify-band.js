@@ -94,12 +94,25 @@ console.log('=== F7 BAND ENGINE — DONE BAR ===');
 {
   const r = B.buildBand(mkOpts(58));
   const beatSec = 60 / 58;
-  const root = B.verifyStemPitch(r.buffer, B.noteToFreq('E', 0), { t0: 0, windowSec: 0.3 });
-  check('BASS ROOT sounds E2 (measured)', root.ok, 'heard ' + JSON.stringify(root.heard));
-  const fifth = B.verifyStemPitch(r.buffer, B.noteToFreq('B', 0), { t0: 2 * beatSec, windowSec: 0.3 });
-  check('BASS FIFTH sounds B2 (measured)', fifth.ok, 'heard ' + JSON.stringify(fifth.heard));
-  const stab = B.verifyStemPitch(r.buffer, B.noteToFreq('E', 0), { t0: 0.05, windowSec: 0.3 });
-  check('CHORD STAB sounds E (measured)', stab.ok, 'heard ' + JSON.stringify(stab.heard));
+  // Derive expected pitches from the ENGINE's own API (noteToFreq / transposeName)
+  // at the SAME octave shift the engine uses (shift 0 -> audible register >= ~65Hz,
+  // above the detector's F_MIN=55 cutoff). This removes any hand-typed expected freq
+  // that could silently mismatch the engine's real register (the trap that makes a
+  // below-cutoff note like G1=49Hz produce a false "ok").
+  const rootName = 'E';
+  const fifthName = B.transposeName(rootName, 7); // B for E
+  const rootExp = B.noteToFreq(rootName, 0);
+  const fifthExp = B.noteToFreq(fifthName, 0);
+  const root = B.verifyStemPitch(r.buffer, rootExp, { t0: 0, windowSec: 0.3 });
+  check('BASS ROOT sounds ' + T.noteFromFreq(rootExp).name + ' (measured, audible)', root.ok, 'heard ' + JSON.stringify(root.heard));
+  const fifth = B.verifyStemPitch(r.buffer, fifthExp, { t0: 2 * beatSec, windowSec: 0.3 });
+  check('BASS FIFTH sounds ' + T.noteFromFreq(fifthExp).name + ' (measured, audible)', fifth.ok, 'heard ' + JSON.stringify(fifth.heard));
+  const stab = B.verifyStemPitch(r.buffer, rootExp, { t0: 0.05, windowSec: 0.3 });
+  check('CHORD STAB sounds ' + T.noteFromFreq(rootExp).name + ' (measured)', stab.ok, 'heard ' + JSON.stringify(stab.heard));
+  // Hard guard: the bass register must be audible (>= F_MIN=55) so the listener math
+  // can actually verify it. A sub-cutoff bass would be unverifiable -> fail loud.
+  check('BASS registers are audible (>=55Hz, above detector F_MIN)', rootExp >= 55 && fifthExp >= 55,
+    'root=' + rootExp.toFixed(1) + ' fifth=' + fifthExp.toFixed(1));
 }
 
 // 5 + 7. ORIGINAL / NO COPYRIGHT / NO AI FINGERS — code inspection

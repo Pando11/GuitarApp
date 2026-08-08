@@ -56,10 +56,18 @@
   <!-- Reused proven DSP (must load first) -->
   <script src="../step2/engine/tuner-engine.js"></script>
   <script src="../step5/engine/listening-engine.js"></script>
+
+  <!-- band-engine.js source inlined as window.__bandSrc (must load BEFORE the shim below) -->
+  <script src="band-source.js"></script>
+
   <script>
   // band-engine.js is CommonJS; under file:// classic <script> its require() fails.
   // We load it via a tiny inline CommonJS shim that exposes window.BandEngine.
   (function () {
+    if (typeof window.__bandSrc === 'undefined') {
+      document.getElementById('out').textContent = 'ERROR: band-source.js did not load (window.__bandSrc missing).';
+      return;
+    }
     const module = { exports: {} };
     const fsStub = { readFileSync: function () { return ''; } }; // selfAudit only; never network
     // Map require() to globals we already loaded.
@@ -76,14 +84,6 @@
     window.BandEngine = module.exports;
   })();
   </script>
-
-  <script>
-  // Fetch band-engine.js source as text (file:// XHR is blocked, so we embed via a
-  // separate <script> that sets window.__bandSrc). Done by band-source.js below.
-  </script>
-  <script src="band-source.js"></script>
-
-  <script>
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   let node = null, srcBuf = null;
 
