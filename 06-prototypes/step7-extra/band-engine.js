@@ -41,6 +41,9 @@ const T = require('../step2/engine/tuner-engine.js');
 const L = require('../step5/engine/listening-engine.js');
 
 const SR = 22050;
+// Hard cap on loop length: 256 bars * 4 beats is a ~34-min loop worst case; an
+// unbounded `bars` is a linear DoS (10k bars -> 3.3 GB / 80 s hang). Allegation #4 fix.
+const MAX_BARS = 256;
 
 // --- seeded PRNG (mulberry32) so the generated band is reproducible & testable ---
 function makeRng(seed) {
@@ -89,11 +92,18 @@ function noiseBurst(t0, dur, buf, hp, rng) {
   }
 }
 
-// Map a note NAME (e.g. "E", "A", "G") to a frequency: bass octave (E2=82.41) by default.
-const NOTE_BASE = { 'C': 65.41, 'C#': 69.30, 'D': 73.42, 'D#': 77.78, 'E': 82.41,
-  'F': 87.31, 'F#': 92.50, 'G': 98.00, 'G#': 103.83, 'A': 110.00, 'A#': 116.54, 'B': 123.47 };
+// Map a note NAME (e.g. "E", "A", "G", "Bb", "Eb") to a frequency in octave 2
+// (the audible bass register: Bb2=116.54, NOT E1). Flats are FIRST-CLASS so a
+// "Bb" chord sounds Bb, not B (allegation #5 fix). Unknown names fall back to C.
+const NOTE_BASE = {
+  'C': 65.41, 'C#': 69.30, 'Db': 69.30, 'D': 73.42, 'D#': 77.78, 'Eb': 77.78,
+  'E': 82.41, 'F': 87.31, 'F#': 92.50, 'Gb': 92.50, 'G': 98.00, 'G#': 103.83,
+  'Ab': 103.83, 'A': 110.00, 'A#': 116.54, 'Bb': 116.54, 'B': 123.47
+};
 function noteToFreq(name, octaveShift) {
-  const base = NOTE_BASE[name.replace(/\d+$/, '')] || 110.00;
+  // strip any trailing octave digit before table lookup (e.g. "Bb" stays "Bb")
+  const baseName = String(name).replace(/\d+$/, '');
+  const base = NOTE_BASE[baseName] || NOTE_BASE[baseName.replace(/b$/, '#')] || 65.41;
   const shift = octaveShift || 0;
   return base * Math.pow(2, shift);
 }
@@ -110,8 +120,10 @@ function buildBand(opts) {
   const bpm = (opts.bpm == null) ? clampBpm(opts.lessonDefaultBpm) : clampBpm(opts.bpm);
   const beats = (opts.beats && opts.beats >= 2 && opts.beats <= 12) ? opts.beats : 4;
   const feel = opts.feel === 'swing' ? 'swing' : 'straight';
-  const bars = (opts.bars && opts.bars >= 1) ? Math.floor(opts.bars) : chordCycle.length;
+  const bars = (opts.bars && opts.bars >= 1) ? Math.min(Math.floor(opts.bars), MAX_BARS) : chordCycle.length;
   const seed = opts.seed || 1;
+  // MASTER GAIN (#6): opts.gain now actually scales the whole mix (was ignored).
+  const masterGain = (opts.gain != null && isFinite(Number(opts.gain))) ? Number(opts.gain) : 1;
 
   const beatSec = 60 / bpm;
   const barSec = beatSec * beats;
@@ -124,12 +136,13 @@ function buildBand(opts) {
   for (let bar = 0; bar < bars; bar++) {
     const chordName = chordCycle[bar % chordCycle.length];
     const chord = (opts.chords && opts.chords[chordName]) || null;
-    const root = chordRootName(chordName); // e.g. "E7" -> "E"
-    // Bass one octave down from the chord stabs but still audible/detectable on
-    // phone speakers: root at E2=82.41 (noteToFreq shift 0). E1 (41Hz) sits below
-    // the detector's F_MIN=55 and is inaudible on small speakers, so we anchor the
-    // pocket at E2 — a believable, audible bass register that the listener math can verify.
-    const bassFreq = noteToFreq(root, 0);
+    const rootInfo = chordRootName(chordName); // e.g. "E7" -> {root:"E", octave:2}
+    const root = rootInfo.root;
+    // Bass sits in the audible register (octave 2 default => E2=82.41, >= F_MIN=55).
+    // E1 (41Hz) is below the detector floor and inaudible on phones, so we never drop
+    // to it. Flats (Bb -> Bb2=116.54) are honored, not silently sharpened (#5).
+    const bassShift = (rootInfo.octave || 2) - 2;
+    const bassFreq = noteToFreq(root, bassShift);
 
     // --- DRUMS per beat ---
     for (let b = 0; b < beats; b++) {
@@ -146,21 +159,25 @@ function buildBand(opts) {
     }
 
     // --- BASS: root on beat 1, fifth on beat 3 (root-fifth = the patient pocket) ---
-    const fifth = transposeName(root, 7);
-    const bass1 = tone(bassFreq, beatSec * 0.9, 0.5);
-    addInto(buffer, bass1, bar * barSec);
-    const bass2 = tone(noteToFreq(fifth, 0), beatSec * 0.9, 0.5);
-    addInto(buffer, bass2, bar * barSec + 2 * beatSec);
-    nominal.push({ beat: 0, stem: 'bass', note: root });
-    nominal.push({ beat: 2, stem: 'bass', note: fifth });
+    if (root) {
+      const fifth = transposeName(root, 7);
+      const bass1 = tone(bassFreq, beatSec * 0.9, 0.5);
+      addInto(buffer, bass1, bar * barSec);
+      const bass2 = tone(noteToFreq(fifth, bassShift), beatSec * 0.9, 0.5);
+      addInto(buffer, bass2, bar * barSec + 2 * beatSec);
+      nominal.push({ beat: 0, stem: 'bass', note: root });
+      nominal.push({ beat: 2, stem: 'bass', note: fifth });
+    }
 
     // --- CHORD STABS: a short strum of the chord's sounding strings, on beat 1 ---
     if (chord && Array.isArray(chord.frets)) {
       const stabSec = beatSec * 0.8;
       for (let i = 0; i < 6; i++) {
         const fret = chord.frets[i];
-        if (fret === null || fret === undefined) continue;
-        const f = OPEN[i] * Math.pow(2, fret / 12);
+        // GUARD (#2): reject non-numeric / 'x' / NaN frets so the buffer is never
+        // poisoned with NaN. Only finite numbers (incl. 0) are valid frets.
+        if (fret == null || !isFinite(Number(fret))) continue;
+        const f = OPEN[i] * Math.pow(2, Number(fret) / 12);
         const stab = tone(f, stabSec, 0.22);
         addInto(buffer, stab, bar * barSec + rng() * 0.01);
       }
@@ -168,9 +185,13 @@ function buildBand(opts) {
     }
   }
 
-  // soft clip to avoid denormal/overflow
+  // MASTER GAIN + soft clip + NaN scrub: scale the whole mix, clamp to [-1,1],
+  // and guarantee no NaN/Inf escapes (defensive double-guard on #2).
   for (let i = 0; i < buffer.length; i++) {
-    if (buffer[i] > 1) buffer[i] = 1; else if (buffer[i] < -1) buffer[i] = -1;
+    let v = buffer[i] * masterGain;
+    if (!isFinite(v)) v = 0;
+    if (v > 1) v = 1; else if (v < -1) v = -1;
+    buffer[i] = v;
   }
   return { buffer, sampleRate: SR, durationSec: totalSec, bpm, beats, feel, bars, nominal };
 }
@@ -193,17 +214,31 @@ function clampBpm(bpm) {
   return Math.round(n);
 }
 
-// "E7" -> "E", "Am" -> "A", "B7" -> "B", "C" -> "C"
+// "E7" -> {root:"E", octave:2}, "Bb" -> {root:"Bb", octave:2},
+// "Am" -> {root:"A", octave:2}, "C#7" -> {root:"C#", octave:2}, "F2" -> {root:"F", octave:2}
+// Non-string (e.g. 7) -> {root:null} so the caller can SKIP instead of crashing (#3).
 function chordRootName(name) {
-  if (!name) return 'C';
-  return name.replace(/m$/, '').replace(/[0-9].*$/, '').replace(/^([A-G]#?).*$/, '$1');
+  if (typeof name !== 'string') return { root: null, octave: 2 };
+  const cleaned = name.replace(/m$/, '').replace(/\d.*$/, '');
+  const m = cleaned.match(/^([A-G][#b]?)/);
+  const root = m ? m[1] : 'C';
+  const octMatch = name.match(/\d+/);
+  const octave = octMatch ? parseInt(octMatch[0], 10) : 2;
+  return { root, octave };
 }
-// transpose a note name up `semi` semitones within one octave (wraps)
+// transpose a note name up `semi` semitones, flat/sharp aware; returns the note
+// name (no octave). Uses the chromatic key table so e.g. Bb -> fifth F (not G).
 function transposeName(name, semi) {
   const keys = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-  let idx = keys.indexOf(name.replace(/\d+$/, ''));
+  const flatToSharp = { 'Db': 'C#', 'Eb': 'D#', 'Gb': 'F#', 'Ab': 'G#', 'Bb': 'A#' };
+  // Always normalize a flat to its sharp form for the chromatic-index lookup; the
+  // sharp and flat spell the same pitch class. (Note: noteToFreq keeps the original
+  // flat spelling via NOTE_BASE, so 'Bb' still sounds Bb — only this index needs sharp.)
+  let n = String(name).replace(/^\d+/, '');
+  if (flatToSharp[n]) n = flatToSharp[n];
+  let idx = keys.indexOf(n);
   if (idx < 0) idx = 0;
-  return keys[(idx + semi) % 12];
+  return keys[((idx + semi) % 12 + 12) % 12];
 }
 
 // --- verify a synth stem sounds its intended note (reuse listener math) ---
