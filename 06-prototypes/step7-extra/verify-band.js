@@ -43,6 +43,30 @@ const _readFileSync = fs.readFileSync.bind(fs);
 const _existsSync = fs.existsSync.bind(fs);
 const _createHash = crypto.createHash.bind(crypto);
 
+// 9th-pass HOLE 1 fix: whitelist env for child spawns (no NODE_* propagate).
+const CLEAN_ENV = {
+  PATH: process.env.PATH || '',
+  SystemRoot: process.env.SystemRoot,
+  WINDIR: process.env.WINDIR,
+  PATHEXT: process.env.PATHEXT,
+  TEMP: process.env.TEMP, TMP: process.env.TMP,
+  USERPROFILE: process.env.USERPROFILE, HOME: process.env.HOME,
+  COMSPEC: process.env.ComSpec || process.env.COMSPEC
+};
+
+// 10th-pass HOLE 1 fix: if THIS process was launched with NODE_OPTIONS (or any
+// preload vector), our own bindings may already be compromised — a preload could
+// patch child_process.execFileSync and forge the "clean" child's report, or patch
+// process.exit to force a green exit. NOTHING done in a tainted process can be
+// trusted (a patched execFileSync could even fake the re-exec below), so the only
+// sound response is to REFUSE to run. Re-invoke the gate without NODE_OPTIONS.
+if (process.env.NODE_OPTIONS !== undefined) {
+  console.error('F7 GATE REFUSES TO RUN: NODE_OPTIONS is set ("' + process.env.NODE_OPTIONS + '").');
+  console.error('Preload vectors make every in-process binding (fs, crypto, execFileSync, process.exit) untrustworthy.');
+  console.error('Re-run without NODE_OPTIONS:  node 06-prototypes/step7-extra/verify-band.js');
+  process.exit(2);
+}
+
 // Repo root: __dirname is .../06-prototypes/step7-extra, so two '..' land on the
 // GuitarApp root where the baseline's "06-prototypes/..." paths are anchored.
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
@@ -67,18 +91,22 @@ function check(name, ok, detail) {
 // (demonstrated: 34/0 green with tampered engine+practiceStore+entitlementStore).
 // Spawning first, before any require of repo code, makes the hashes trustworthy.
 console.log('\n=== 0. CORE INTEGRITY (clean process, pre-require) ===');
-// 9th-pass HOLE 1 fix: scrub the child env. Default spawn inherits process.env, so
-// NODE_OPTIONS='--require evil.js' re-poisoned the "clean" child before it hashed.
-// Whitelist only what Windows/Node needs to launch; no NODE_* vars propagate.
-const CLEAN_ENV = {
-  PATH: process.env.PATH || '',
-  SystemRoot: process.env.SystemRoot,
-  WINDIR: process.env.WINDIR,
-  PATHEXT: process.env.PATHEXT,
-  TEMP: process.env.TEMP, TMP: process.env.TMP,
-  USERPROFILE: process.env.USERPROFILE, HOME: process.env.HOME,
-  COMSPEC: process.env.ComSpec || process.env.COMSPEC
-};
+// 10th-pass HOLE 2 fix: the checker script itself must be integrity-pinned — an
+// attacker could swap its body to print a forged ok:true report (same trust class
+// as the baseline file, pinned since pass 4). Verified here with pristine bindings
+// before spawn; editing this pin requires editing this committed gate (git-visible).
+const CHECKER_PATH = path.join(__dirname, 'check-core-integrity.js');
+const CHECKER_PIN = '37fcd0a7827b688f8788c105308e1caec32d9380dc3763f49460a4c6eb928c32';
+const checkerHash = _createHash('sha256').update(_readFileSync(CHECKER_PATH)).digest('hex');
+check('integrity checker script is unmodified (self-pinned sha256)', checkerHash === CHECKER_PIN,
+  'actual=' + checkerHash);
+if (checkerHash !== CHECKER_PIN) {
+  console.log('\nF7 GATE HALT: check-core-integrity.js tampered — refusing to trust any further output.');
+  console.log('F7 BAND ENGINE: 0 passed, 1 failed');
+  process.exit(1);
+}
+// 9th-pass HOLE 1 fix: the checker child is spawned with the whitelisted CLEAN_ENV
+// (defined above) so no NODE_* or attacker env vars propagate to it.
 let coreIntegrity = null;
 try {
   const out = execFileSync(process.execPath, [path.join(__dirname, 'check-core-integrity.js'), CORE_BASELINE_PIN], { encoding: 'utf8', env: CLEAN_ENV });
