@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>F10 — Voice-first practice controls (demo)</title>
+<style>
+  body{font-family:system-ui,sans-serif;background:#14141c;color:#eee;max-width:640px;margin:0 auto;padding:24px}
+  h1{font-size:1.3rem} h1 small{color:#8f8fb0;font-weight:400}
+  .card{background:#1e1e2c;border:1px solid #33334a;border-radius:12px;padding:16px;margin:12px 0}
+  #micBtn{width:96px;height:96px;border-radius:50%;border:none;font-size:2.2rem;cursor:pointer;background:#7c5cff;color:#fff;display:block;margin:0 auto}
+  #micBtn.listening{background:#ff4d6d;animation:pulse 1s infinite}
+  @keyframes pulse{50%{transform:scale(1.08)}}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px}
+  .chip{background:#2a2a3e;border:1px solid #44445f;color:#ddd;border-radius:20px;padding:6px 14px;cursor:pointer;font-size:.85rem}
+  .chip:hover{background:#383856}
+  #heard{min-height:1.4em;text-align:center;color:#9fd0ff;font-style:italic}
+  #log{font-size:.85rem;line-height:1.6;max-height:220px;overflow-y:auto}
+  .intent{font-weight:700}.ignored{color:#888}.acted{color:#8effa0}
+  #player{text-align:center}.bar{height:8px;background:#2a2a3e;border-radius:4px;overflow:hidden;margin:8px 0}
+  .bar>div{height:100%;background:#7c5cff;transition:width .3s}
+  #err{color:#ff9f9f;font-size:.85rem;text-align:center}
+  .row{display:flex;justify-content:space-between;font-size:.9rem}
+</style>
+</head>
+<body>
+<h1>F10 — Voice-first practice controls <small>tap-to-talk demo</small></h1>
+
+<div class="card" id="player">
+  <div class="row"><span>Scene <b id="scene">1</b> of 8</span><span>Speed <b id="rate">100%</b></span></div>
+  <div class="bar"><div id="prog" style="width:12%"></div></div>
+  <div id="say" style="color:#ffd27c;min-height:1.4em"></div>
+</div>
+
+<div class="card">
+  <button id="micBtn" title="Tap to talk">🎤</button>
+  <p id="heard"></p>
+  <p id="err"></p>
+  <div class="chips">
+    <button class="chip">slower</button>
+    <button class="chip">that was too fast</button>
+    <button class="chip">play it again</button>
+    <button class="chip">what's next</button>
+    <button class="chip">tune my guitar</button>
+    <button class="chip">order a pizza</button>
+    <button class="chip">what's the weather</button>
+  </div>
+  <p style="font-size:.75rem;color:#777;text-align:center">Chips simulate recognized speech (works everywhere). The mic button uses on-device speech recognition where the browser supports it — no audio leaves the device.</p>
+</div>
+
+<div class="card"><div id="log"></div></div>
+
+<script>
+/* F10 demo — mirrors voice-command.js parse logic inline (file:// can't require()).
+   The deterministic mapping is byte-identical to the gate-tested module. */
+const PATTERNS=[
+ {intent:'slower',words:['slower','slow down','slow it','too fast','speed down','slower please','slow']},
+ {intent:'again',words:['again','repeat','replay','one more time','do it again','play it again']},
+ {intent:'whats-next',words:['next',"what's next",'what is next','what comes next','move on','continue','go on','next part','next scene']},
+ {intent:'tune-my-guitar',words:['tune','tune my guitar','tune up','out of tune','tuning','detune']},
+ {intent:'ignore',words:['pizza','weather','news','call ','text ','email','remind me to','play music','open ']}
+];
+function normalize(t){return (t||'').toLowerCase().replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();}
+function parseCommand(text){
+  const t=normalize(text);
+  if(!t)return{intent:'ignore',reason:'empty'};
+  for(const p of PATTERNS)for(const w of p.words)if(t.indexOf(w)>=0)return{intent:p.intent,matched:w,text:t};
+  return{intent:'ignore',reason:'no-match',text:t};
+}
+
+const state={rate:1,scene:1,total:8,prog:12};
+const $=id=>document.getElementById(id);
+function log(html,cls){$('log').innerHTML='<div class="'+cls+'">'+html+'</div>'+$('log').innerHTML;}
+function render(){$('scene').textContent=state.scene;$('rate').textContent=Math.round(state.rate*100)+'%';$('prog').style.width=state.prog+'%';}
+
+function act(text){
+  $('heard').textContent='“'+text+'”';
+  const cmd=parseCommand(text);
+  if(cmd.intent==='ignore'){
+    $('say').textContent='';
+    log('<span class="intent">'+text+'</span> → ignored (out of scope — no lesson control fired)','ignored');
+    return;
+  }
+  let msg='';
+  if(cmd.intent==='slower'){state.rate=Math.max(0.5,state.rate-0.15);msg='Slowing down a little — '+Math.round(state.rate*100)+'% speed.';}
+  else if(cmd.intent==='again'){state.prog=0;msg='Playing that again from the top.';}
+  else if(cmd.intent==='whats-next'){state.scene=Math.min(state.total,state.scene+1);state.prog=0;msg='Next up — moving on to part '+state.scene+'.';}
+  else if(cmd.intent==='tune-my-guitar'){msg="Opening the tuner — play each string and I'll tell you if it's sharp or flat.";}
+  $('say').textContent=msg;render();
+  log('<span class="intent">'+text+'</span> → <b>'+cmd.intent+'</b>: '+msg,'acted');
+}
+
+document.querySelectorAll('.chip').forEach(b=>b.onclick=()=>act(b.textContent));
+
+/* Tap-to-talk via the browser's on-device STT (Chrome/Edge webkitSpeechRecognition).
+   v1 is wake-free by design (spec F10): mic only listens while the button is held. */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(!SR){$('err').textContent='This browser has no built-in speech recognition — use the chips (Chrome/Edge support the mic).';}
+else{
+  const rec=new SR();rec.lang='en-US';rec.interimResults=false;
+  const btn=$('micBtn');
+  btn.onclick=()=>{$('err').textContent='';btn.classList.add('listening');rec.start();};
+  rec.onresult=e=>{const t=e.results[0][0].transcript;act(t);};
+  rec.onend=()=>btn.classList.remove('listening');
+  rec.onerror=e=>{btn.classList.remove('listening');$('err').textContent='Mic error: '+e.error+' — chips still work.';};
+}
+render();
+log('Ready. Say “slower”, “again”, “what’s next”, or “tune my guitar”. Out-of-scope speech is ignored by design.','ignored');
+</script>
+</body>
+</html>
