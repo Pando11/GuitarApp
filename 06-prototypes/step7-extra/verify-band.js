@@ -54,16 +54,29 @@ const CLEAN_ENV = {
   COMSPEC: process.env.ComSpec || process.env.COMSPEC
 };
 
-// 10th-pass HOLE 1 fix: if THIS process was launched with NODE_OPTIONS (or any
-// preload vector), our own bindings may already be compromised — a preload could
-// patch child_process.execFileSync and forge the "clean" child's report, or patch
-// process.exit to force a green exit. NOTHING done in a tainted process can be
-// trusted (a patched execFileSync could even fake the re-exec below), so the only
-// sound response is to REFUSE to run. Re-invoke the gate without NODE_OPTIONS.
+// 10th-pass HOLE 1 fix / 11th-pass HOLE 1 hardening: a NODE_OPTIONS preload runs
+// BEFORE this file and can delete process.env.NODE_OPTIONS to hide itself, then
+// patch execFileSync/process.exit — in-process JS CANNOT defend against preloads.
+// So the launch contract moves OUTSIDE this file: the gate must be invoked via
+// run-gate.sh / run-gate.cmd, which scrubs NODE_OPTIONS before node starts and
+// sets the F7_GATE_CLEAN sentinel. This check is a best-effort tripwire; the
+// sentinel (below) is the actual contract.
 if (process.env.NODE_OPTIONS !== undefined) {
   console.error('F7 GATE REFUSES TO RUN: NODE_OPTIONS is set ("' + process.env.NODE_OPTIONS + '").');
   console.error('Preload vectors make every in-process binding (fs, crypto, execFileSync, process.exit) untrustworthy.');
-  console.error('Re-run without NODE_OPTIONS:  node 06-prototypes/step7-extra/verify-band.js');
+  console.error('Run via the scrubbing wrapper:  bash 06-prototypes/step7-extra/run-gate.sh');
+  process.exit(2);
+}
+// 11th-pass HOLE 1 fix: require the wrapper sentinel. A preload that deleted
+// NODE_OPTIONS to evade the tripwire above still can't forge a CLEAN LAUNCH —
+// only the wrapper (which unsets NODE_OPTIONS before node starts) sets this.
+// Attackers controlling the launch environment itself are out of threat model
+// (they could just edit this committed gate file — git-visible trust assumption).
+if (process.env.F7_GATE_CLEAN !== '1') {
+  console.error('F7 GATE REFUSES TO RUN: missing F7_GATE_CLEAN=1 sentinel.');
+  console.error('Invoke via the scrubbing wrapper so NODE_OPTIONS is stripped BEFORE node starts:');
+  console.error('  bash 06-prototypes/step7-extra/run-gate.sh    (git-bash)');
+  console.error('  06-prototypes\\step7-extra\\run-gate.cmd        (cmd)');
   process.exit(2);
 }
 
