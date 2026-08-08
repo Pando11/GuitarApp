@@ -32,6 +32,7 @@
  */
 const B = require('./band-engine.js');
 const T = require('../step2/engine/tuner-engine.js');
+const L = require('../step5/engine/listening-engine.js');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -41,6 +42,12 @@ const { PracticeStore } = require('../step6/store/practiceStore.js');
 // GuitarApp root where the baseline's "06-prototypes/..." paths are anchored.
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const CORE_BASELINE = path.join(REPO_ROOT, '06-prototypes', 'step8', 'CORE-UNTOUCHED.sha256');
+
+// HOLE-3 fix (4th hostile pass): the baseline file itself is not self-protected.
+// If a core file is tampered and its one hash line rewritten, the gate goes green
+// silently. Pin the baseline file's OWN sha256 here so an attacker must also edit
+// this committed gate (visible in git diff) to bless a tampered code state.
+const CORE_BASELINE_PIN = 'f52d851a6a2d33eab49e9ea3224205b8abc005247952cad33f503e7b6dbeb130';
 
 let pass = 0, fail = 0;
 const fails = [];
@@ -77,10 +84,16 @@ function oracleFreq(name, octave) {
 }
 function parseChordRoot(name) {
   if (typeof name !== 'string') return { root: 'C', octave: 2 };
-  const m = name.replace(/m$/, '').match(/^([A-G][#b]?)/);
+  const m = name.match(/^([A-G][#b]?)/);
   const root = m ? m[1] : 'C';
-  const om = name.match(/\d+/);
-  const octave = om ? parseInt(om[0], 10) : 2;
+  // MUST mirror band-engine.chordRootName: a chord-quality digit (7,9,11,13,5,6)
+  // is NOT an octave. Only a bare trailing integer with no quality token (e.g. "E2")
+  // sets the register; everything else defaults to 2. (Kept in sync so the gate's
+  // independent oracle expects the SAME register the engine actually emits.)
+  const rest = name.slice(root.length)
+    .replace(/(maj|min|m|dim|aug|sus|add|7|9|11|13|5|6)/g, '');
+  const octMatch = rest.match(/^(\d+)$/);
+  const octave = octMatch ? parseInt(octMatch[1], 10) : 2;
   return { root, octave };
 }
 function fifthNameOf(name) {
@@ -110,11 +123,19 @@ function binEnergy(buffer, t0, secs, f) {
 }
 /*
  * Verify a bass-class stem at [t0, t0+secs) sounds expectedFreq in the CORRECT
- * octave. Returns {ok, fundamental, cents, energyRatio}.
- *  - fundamental = the octave (of expectedFreq) carrying the most energy.
- *  - ok requires the fundamental to be expectedFreq (within tol cents) AND that
- *    expectedFreq carries more energy than BOTH its octave-down and octave-up
- *    (ratio > MIN_RATIO), so a literal octave error is rejected.
+ * octave AND at the correct PITCH (within tolCents). Two independent checks:
+ *  (a) OCTAVE: expectedFreq must carry more energy than both its octave-down and
+ *      octave-up (ratio > OCTAVE_RATIO), so a literal octave error (E1 vs E2, or
+ *      E3 vs E2) is rejected. The listener math reports a low note's 2nd harmonic
+ *      as the "fundamental", which is why an octave-blind cents check alone is unsound.
+ *  (b) PITCH: the TRUE fundamental, read from the project's proven detectPitchSet
+ *      (F_MIN-bounded spectral-peak per pitch class — deliberately NOT autoCorrelate,
+ *      which latches onto the kick drum's 45-120Hz sweep at the root slot and reports
+ *      ~20Hz). We take the heard pitch nearest expectedFreq and require it within
+ *      tolCents. This is the fix for the 4th hostile pass's HOLE 2 — the previous
+ *      version reported cents:0 for the matched octave bin and never measured the
+ *      real detune, so a semitone-sharp bass in the correct octave slipped through.
+ * Returns {ok, fundamental, cents, e0, eLow, eHigh, heardFreq}.
  */
 const OCTAVE_RATIO = 1.4; // the true fundamental must beat each octave neighbor by >=40%
 function verifyBassOctave(buffer, t0, secs, expectedFreq, tolCents) {
@@ -122,14 +143,31 @@ function verifyBassOctave(buffer, t0, secs, expectedFreq, tolCents) {
   const e0 = binEnergy(buffer, t0, secs, e);
   const eLow = binEnergy(buffer, t0, secs, e / 2);
   const eHigh = binEnergy(buffer, t0, secs, e * 2);
-  // strongest of the three octaves is the dominant fundamental
+  // (a) octave energy gate — dominant energy must sit at the expected octave.
+  const octaveOk = e0 > eLow * OCTAVE_RATIO && e0 > eHigh * OCTAVE_RATIO;
+  // (b) pitch — read the measured fundamental from detectPitchSet (proven, F_MIN-bounded).
+  const SR = B.SR;
+  const off = Math.floor(t0 * SR);
+  const len = Math.min(Math.floor(secs * SR), buffer.length - off);
+  const win = (len > 0) ? buffer.subarray(off, off + len) : new Float32Array(1);
+  const det = L.detectPitchSet(win, SR);
+  // nearest heard pitch to expectedFreq (by Hz); detectPitchSet only reports >= F_MIN.
+  let heardFreq = null, bestDist = Infinity;
+  for (const h of det.heard) {
+    const d = Math.abs(h.freq - e);
+    if (d < bestDist) { bestDist = d; heardFreq = h.freq; }
+  }
+  // only trust a heard pitch that is plausibly the target (within ~2 octaves);
+  // otherwise the stem simply isn't the expected note -> fail loud.
+  const plausible = heardFreq != null && bestDist <= e * 2;
+  const cents = plausible ? T.centsOff(heardFreq, e) : 9999;
+  const pitchOk = plausible && Math.abs(cents) <= tolCents;
+  const ok = octaveOk && pitchOk;
+  // report the dominant octave for diagnostics
   const cand = [[e, e0], [e / 2, eLow], [e * 2, eHigh]];
   cand.sort((a, b) => b[1] - a[1]);
   const fundamental = cand[0][0];
-  // measured cents of the dominant octave relative to expected
-  const cents = (fundamental === e) ? 0 : T.centsOff(fundamental, e) % 1200;
-  const ok = Math.abs(cents) <= tolCents && e0 > eLow * OCTAVE_RATIO && e0 > eHigh * OCTAVE_RATIO;
-  return { ok, fundamental, cents, e0, eLow, eHigh };
+  return { ok, fundamental, cents, e0, eLow, eHigh, heardFreq };
 }
 
 console.log('=== F7 BAND ENGINE — DONE BAR ===');
@@ -235,6 +273,29 @@ console.log('=== F7 BAND ENGINE — DONE BAR ===');
   check('NEGATIVE: octave-high bass (E3) is REJECTED',
     !m.ok, 'dominant octave=' + m.fundamental.toFixed(1) + 'Hz (expected ~82.4)');
 }
+// 4d. NEGATIVE TEST — a SAME-OCTAVE, WRONG-PITCH bass (the 4th hostile pass's HOLE 2).
+//     A semitone-sharp E2 (+100c) and a +50c detune must BOTH be REJECTED, proving the
+//     cents check is live (not a no-op that only catches octave errors).
+{
+  const SR = B.SR;
+  const det100 = T.makeStringTone(oracleFreq('E', 2) * Math.pow(2, 100 / 1200), SR, 0.9, 0.6);
+  const m100 = verifyBassOctave(det100, 0, 0.9, oracleFreq('E', 2), 25);
+  check('NEGATIVE: semitone-sharp E2 (+100c) is REJECTED (pitch check live)',
+    !m100.ok, 'measured f0=' + (m100.heardFreq || 0).toFixed(1) + 'Hz cents=' + (m100.cents || 0).toFixed(0));
+  const det50 = T.makeStringTone(oracleFreq('E', 2) * Math.pow(2, 50 / 1200), SR, 0.9, 0.6);
+  const m50 = verifyBassOctave(det50, 0, 0.9, oracleFreq('E', 2), 25);
+  check('NEGATIVE: +50c detuned E2 is REJECTED (within 25c tolerance enforced)',
+    !m50.ok, 'measured f0=' + (m50.heardFreq || 0).toFixed(1) + 'Hz cents=' + (m50.cents || 0).toFixed(0));
+}
+// 4e. SANITY — an in-tune E2 passes the cents check (so the tolerance isn't so tight it
+//     rejects correct audio). Confirms 4d is not a false-negative trap.
+{
+  const SR = B.SR;
+  const inTune = T.makeStringTone(oracleFreq('E', 2), SR, 0.9, 0.6);
+  const m = verifyBassOctave(inTune, 0, 0.9, oracleFreq('E', 2), 25);
+  check('SANITY: in-tune E2 PASSES (tolerance correctly admits correct pitch)',
+    m.ok, 'measured f0=' + (m.heardFreq || 0).toFixed(1) + 'Hz cents=' + (m.cents || 0).toFixed(0));
+}
 
 // 5 + 7. ORIGINAL / NO COPYRIGHT / NO AI FINGERS — code inspection
 {
@@ -252,6 +313,13 @@ console.log('=== F7 BAND ENGINE — DONE BAR ===');
 // 8. NO CORE-CODE CHANGE — core modules byte-identical to baseline (repo-root resolve, fail on missing)
 {
   check('CORE baseline file present', fs.existsSync(CORE_BASELINE));
+  // HOLE-3 fix: the baseline file itself must be unmodified, else an attacker can
+  // rewrite a hash line to bless a tampered core file and pass silently.
+  if (fs.existsSync(CORE_BASELINE)) {
+    const baselineHash = crypto.createHash('sha256').update(fs.readFileSync(CORE_BASELINE)).digest('hex');
+    check('CORE baseline file is unmodified (self-pinned sha256)', baselineHash === CORE_BASELINE_PIN,
+      'actual=' + baselineHash);
+  }
   if (fs.existsSync(CORE_BASELINE)) {
     const expect = {};
     fs.readFileSync(CORE_BASELINE, 'utf8').split('\n').forEach(line => {
@@ -260,6 +328,11 @@ console.log('=== F7 BAND ENGINE — DONE BAR ===');
     });
     const rels = Object.keys(expect);
     check('CORE baseline lists ' + rels.length + ' modules (was 6; +tuner-engine +practiceStore)', rels.length >= 8, 'count=' + rels.length);
+    // HOLE-3 fix: reject path traversal — every listed rel must stay inside the
+    // repo root and contain no '..' (a baseline entry like 'step8/../step3/decoy.js'
+    // would otherwise checksum a decoy and pass).
+    const traversal = rels.filter(rel => rel.includes('..') || !path.resolve(REPO_ROOT, rel).startsWith(REPO_ROOT + path.sep));
+    check('CORE baseline has NO path-traversal entries (rejects .. and out-of-root rels)', traversal.length === 0, traversal.join(', '));
     let allSame = true; const changed = []; const missing = [];
     for (const rel of rels) {
       const fp = path.join(REPO_ROOT, rel); // resolve from repo root, not step7

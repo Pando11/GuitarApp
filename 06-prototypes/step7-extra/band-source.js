@@ -217,13 +217,20 @@ function clampBpm(bpm) {
 // "E7" -> {root:"E", octave:2}, "Bb" -> {root:"Bb", octave:2},
 // "Am" -> {root:"A", octave:2}, "C#7" -> {root:"C#", octave:2}, "F2" -> {root:"F", octave:2}
 // Non-string (e.g. 7) -> {root:null} so the caller can SKIP instead of crashing (#3).
+// CORRECTNESS FIX (4th hostile pass): a chord-quality digit (7, 9, 11, 13, 5, 6, m,
+// sus, add...) is NOT an octave. The bass must sit in the audible pocket (octave 2 by
+// default), so "E7" parses as root E, NOT E in octave 7 (which would emit a 2637 Hz
+// squeal, above the listener floor and inaudible on phones). A true octave spec like
+// "E2"/"Bb1" (note letter directly followed by a bare integer, no quality token) sets
+// the register; everything else defaults to 2.
 function chordRootName(name) {
   if (typeof name !== 'string') return { root: null, octave: 2 };
-  const cleaned = name.replace(/m$/, '').replace(/\\d.*$/, '');
-  const m = cleaned.match(/^([A-G][#b]?)/);
+  const m = name.match(/^([A-G][#b]?)/);
   const root = m ? m[1] : 'C';
-  const octMatch = name.match(/\\d+/);
-  const octave = octMatch ? parseInt(octMatch[0], 10) : 2;
+  const rest = name.slice(root.length)
+    .replace(/(maj|min|m|dim|aug|sus|add|7|9|11|13|5|6)/g, ''); // strip quality tokens
+  const octMatch = rest.match(/^(\\d+)$/); // only a bare integer left => octave spec
+  const octave = octMatch ? parseInt(octMatch[1], 10) : 2;
   return { root, octave };
 }
 // transpose a note name up \`semi\` semitones, flat/sharp aware; returns the note
