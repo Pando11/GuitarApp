@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Riff — Animated Teacher v2</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:radial-gradient(1200px 700px at 50% -10%,#2a2350 0%,#141026 45%,#0d0a18 100%);
+  color:#f3f0ff;font-family:'Nunito',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 14px 50px;overflow-x:hidden}
+h1{font-size:22px;font-weight:800;letter-spacing:-.3px}
+h1 span{background:linear-gradient(90deg,#ffd166,#ff7a59,#ff5fa2);-webkit-background-clip:text;
+  background-clip:text;-webkit-text-fill-color:transparent}
+.sub{color:#a29cc4;font-size:13px;margin-top:5px;text-align:center;max-width:540px;line-height:1.5}
+.stage{display:flex;gap:20px;margin-top:22px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+.panel{background:rgba(38,30,68,.72);border:1px solid rgba(255,255,255,.09);border-radius:22px;padding:18px;
+  backdrop-filter:blur(8px);box-shadow:0 16px 40px rgba(0,0,0,.4)}
+.label{font-size:10px;letter-spacing:1.5px;color:#8f88b8;text-transform:uppercase;margin-bottom:10px;font-weight:800}
+
+/* ============ TEACHER ============ */
+.teacher{width:310px;display:flex;flex-direction:column;align-items:center;position:relative}
+.avwrap{position:relative;width:230px;height:230px}
+#av{width:230px;height:230px;display:block;overflow:visible}
+#body{transform-origin:115px 200px;animation:idle 2.6s ease-in-out infinite}
+@keyframes idle{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-6px) rotate(-1.2deg)}}
+#head{transform-origin:115px 120px;animation:headsway 4.2s ease-in-out infinite}
+@keyframes headsway{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2.4deg)}}
+.lid{transform-origin:center;animation:blink 3.7s infinite}
+@keyframes blink{0%,92%,100%{transform:scaleY(0)}95%{transform:scaleY(1)}}
+#armL,#armR{transition:none}
+.bounce{animation:bounce .5s ease-out 2}
+@keyframes bounce{0%,100%{transform:translateY(0)}40%{transform:translateY(-16px)}}
+/* speech */
+.bubble{margin-top:8px;position:relative;background:linear-gradient(145deg,#3b2f70,#2e2559);
+  border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:14px 16px;font-size:14.5px;
+  line-height:1.55;min-height:74px;width:100%;font-weight:600;color:#f0ecff}
+.bubble:before{content:'';position:absolute;top:-9px;left:44px;width:18px;height:18px;
+  background:#3b2f70;border-left:1px solid rgba(255,255,255,.14);border-top:1px solid rgba(255,255,255,.14);
+  transform:rotate(45deg)}
+.bubble b{color:#ffd166}
+/* confetti + sparkles */
+.pop{position:absolute;width:9px;height:9px;border-radius:2px;pointer-events:none}
+/* ============ FRETBOARD ============ */
+.fb{width:440px}
+svg.board{display:block;width:100%;height:auto;overflow:visible}
+.dotg{transition:transform .5s cubic-bezier(.34,1.6,.5,1),opacity .3s}
+.dotc{fill:url(#dg);stroke:#fff;stroke-width:2.5;filter:drop-shadow(0 3px 6px rgba(255,95,162,.5))}
+.dotn{fill:#fff;font-size:16px;font-weight:800;text-anchor:middle;dominant-baseline:central}
+.muted{fill:none;stroke:#ff5f6d;stroke-width:4;stroke-linecap:round}
+.open{fill:none;stroke:#4fe3a1;stroke-width:4}
+.ring{fill:none;stroke:#ffd166;stroke-width:3;opacity:0}
+/* ============ UI ============ */
+.ctrls{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;justify-content:center}
+button{background:rgba(255,255,255,.08);color:#f3f0ff;border:1px solid rgba(255,255,255,.16);
+  padding:12px 22px;border-radius:14px;font-size:15px;cursor:pointer;font-weight:800;
+  transition:.16s;font-family:inherit}
+button:hover{background:rgba(255,255,255,.16);transform:translateY(-2px)}
+button.primary{background:linear-gradient(135deg,#ff7a59,#ff5fa2);border:none;color:#fff;
+  box-shadow:0 8px 22px rgba(255,95,162,.4)}
+button.primary:hover{box-shadow:0 12px 28px rgba(255,95,162,.55)}
+.chips{display:flex;gap:8px;margin-top:14px;justify-content:center;flex-wrap:wrap}
+.chip{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);padding:8px 17px;
+  border-radius:22px;font-size:14px;cursor:pointer;font-weight:800;transition:.16s}
+.chip.on{background:linear-gradient(135deg,#ffd166,#ff7a59);color:#2a1200;border-color:transparent}
+/* streak bar */
+.hud{display:flex;gap:14px;align-items:center;margin-top:14px;font-size:13px;font-weight:800;color:#c9c2ee}
+.bar{width:130px;height:9px;background:rgba(255,255,255,.1);border-radius:6px;overflow:hidden}
+.fill{height:100%;width:0;background:linear-gradient(90deg,#4fe3a1,#ffd166);transition:width .6s ease}
+.note{margin-top:26px;max-width:640px;font-size:12.5px;color:#8f88b8;line-height:1.65;
+  border-top:1px solid rgba(255,255,255,.09);padding-top:15px}
+.note b{color:#c9c2ee}
+</style>
+</head>
+<body>
+
+<h1>🎸 Meet <span>Riff</span></h1>
+<div class="sub">Same lesson as before — but the coach now has a face, hands, and opinions.
+Hit play; he talks, points, and celebrates.</div>
+
+<div class="stage">
+
+  <div class="panel teacher">
+    <div class="label">Your coach</div>
+    <div class="avwrap" id="avwrap">
+      <svg id="av" viewBox="0 0 230 230">
+        <defs>
+          <linearGradient id="hair" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#ff9f45"/><stop offset="1" stop-color="#e8722c"/>
+          </linearGradient>
+          <linearGradient id="shirt" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#5b8cff"/><stop offset="1" stop-color="#7b5bff"/>
+          </linearGradient>
+          <linearGradient id="dg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#ff8f6b"/><stop offset="1" stop-color="#ff5fa2"/>
+          </linearGradient>
+        </defs>
+
+        <ellipse cx="115" cy="221" rx="58" ry="9" fill="#000" opacity=".33"/>
+
+        <g id="body">
+          <!-- arms behind torso -->
+          <g id="armL"><rect x="58" y="146" width="17" height="52" rx="8.5" fill="#f2b98d"/>
+            <circle cx="66" cy="200" r="11" fill="#f7cba4"/></g>
+          <g id="armR"><rect x="155" y="146" width="17" height="52" rx="8.5" fill="#f2b98d"/>
+            <circle cx="163" cy="200" r="11" fill="#f7cba4"/></g>
+          <!-- torso -->
+          <path d="M74 210 Q70 150 115 146 Q160 150 156 210 Z" fill="url(#shirt)"/>
+          <circle cx="115" cy="172" r="7" fill="#ffd166" opacity=".9"/>
+          <!-- neck -->
+          <rect x="106" y="132" width="18" height="20" rx="8" fill="#eab183"/>
+          <!-- head -->
+          <g id="head">
+            <ellipse cx="115" cy="98" rx="50" ry="47" fill="#f7cba4"/>
+            <!-- ears -->
+            <circle cx="66" cy="100" r="9" fill="#f0bd92"/><circle cx="164" cy="100" r="9" fill="#f0bd92"/>
+            <!-- hair: messy fun -->
+            <path d="M65 88 Q62 44 115 42 Q168 44 165 88 Q166 66 150 60
+                     Q142 74 128 62 Q112 76 96 62 Q80 72 74 60 Q64 68 65 88 Z" fill="url(#hair)"/>
+            <path d="M150 46 Q166 30 172 46 Q164 42 158 52 Z" fill="url(#hair)"/>
+            <!-- brows (animate) -->
+            <path id="browL" d="M84 78 Q94 72 104 77" stroke="#b5612a" stroke-width="4.5"
+                  fill="none" stroke-linecap="round"/>
+            <path id="browR" d="M126 77 Q136 72 146 78" stroke="#b5612a" stroke-width="4.5"
+                  fill="none" stroke-linecap="round"/>
+            <!-- eyes -->
+            <g id="eyeL"><ellipse cx="95" cy="95" rx="9.5" ry="10.5" fill="#fff"/>
+              <circle id="pL" cx="96" cy="96" r="5.4" fill="#3b2412"/>
+              <circle cx="98" cy="93.5" r="2" fill="#fff"/>
+              <ellipse class="lid" cx="95" cy="95" rx="10" ry="11" fill="#f7cba4"/></g>
+            <g id="eyeR"><ellipse cx="135" cy="95" rx="9.5" ry="10.5" fill="#fff"/>
+              <circle id="pR" cx="136" cy="96" r="5.4" fill="#3b2412"/>
+              <circle cx="138" cy="93.5" r="2" fill="#fff"/>
+              <ellipse class="lid" cx="135" cy="95" rx="10" ry="11" fill="#f7cba4"/></g>
+            <!-- cheeks -->
+            <ellipse cx="80" cy="112" rx="10" ry="6.5" fill="#ff9d8a" opacity=".55"/>
+            <ellipse cx="150" cy="112" rx="10" ry="6.5" fill="#ff9d8a" opacity=".55"/>
+            <!-- mouth -->
+            <path id="mouth" d="M100 118 Q115 130 130 118" stroke="#9c3f3f" stroke-width="4"
+                  fill="#7d2f3a" stroke-linecap="round"/>
+          </g>
+        </g>
+      </svg>
+    </div>
+    <div class="bubble" id="bubble">Yo! I'm <b>Riff</b>. Hit play and let's get your first chord change sounding clean.</div>
+    <div class="hud"><span>🔥 Streak</span><div class="bar"><div class="fill" id="fill"></div></div><span id="pct">0%</span></div>
+  </div>
+
+  <div class="panel fb">
+    <div class="label">Finger position</div>
+    <svg class="board" id="board" viewBox="0 0 440 260"></svg>
+    <div class="chips" id="chips"></div>
+  </div>
+
+</div>
+
+<div class="ctrls">
+  <button class="primary" id="play">▶ Play lesson</button>
+  <button id="stop">■ Stop</button>
+</div>
+
+<div class="note">
+<b>What changed from v1.</b> Riff now has expressions (happy / thinking / surprised / proud),
+gestures (wave, point, cheer), bouncing, confetti, and a mouth that moves with the words.
+In the real app this is one <b>Rive</b> file — ~$9/mo, 43KB, state machine driven, and the mouth
+is wired to the audio automatically. Voice here is your browser's; shipped version is
+<b>OpenAI TTS</b> at ~36¢ for 200 lesson lines.
+<br><br>
+<b>Riff still never holds a guitar.</b> No mainstream app animates a hand playing — a hand hides
+the frets you're trying to see. The dots come straight from the lesson JSON, so they're
+<b>correct by construction</b>.
+</div>
+
+<script>
+/* ============ chord data ============ */
+const CHORDS={
+ "Em":{frets:[0,2,2,0,0,0],fingers:[0,2,3,0,0,0],mute:[]},
+ "C" :{frets:[0,3,2,0,1,0],fingers:[0,3,2,0,1,0],mute:[0]},
+ "G" :{frets:[3,2,0,0,0,3],fingers:[2,1,0,0,0,3],mute:[]},
+ "D" :{frets:[0,0,0,2,3,2],fingers:[0,0,0,1,3,2],mute:[0,1]}
+};
+const NS="http://www.w3.org/2000/svg";
+const board=document.getElementById('board');
+const X0=76,X1=418,Y0=44,Y1=216,NF=4;
+const sy=i=>Y0+(Y1-Y0)*i/5, fx=f=>X0+(X1-X0)*(f-.5)/NF, gx=f=>X0+(X1-X0)*f/NF;
+
+function drawBoard(){
+  board.innerHTML=`<defs><linearGradient id="dg" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#ff8f6b"/><stop offset="1" stop-color="#ff5fa2"/></linearGradient>
+    <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#3a2d55"/><stop offset="1" stop-color="#2a2040"/></linearGradient></defs>`;
+  const bg=document.createElementNS(NS,'rect');
+  bg.setAttribute('x',X0-10);bg.setAttribute('y',Y0-14);bg.setAttribute('width',X1-X0+18);
+  bg.setAttribute('height',Y1-Y0+28);bg.setAttribute('fill','url(#wood)');bg.setAttribute('rx',8);
+  board.appendChild(bg);
+  const nut=document.createElementNS(NS,'rect');
+  nut.setAttribute('x',X0-10);nut.setAttribute('y',Y0-14);nut.setAttribute('width',9);
+  nut.setAttribute('height',Y1-Y0+28);nut.setAttribute('fill','#f3f0ff');nut.setAttribute('rx',3);
+  board.appendChild(nut);
+  for(let f=1;f<=NF;f++){
+    const l=document.createElementNS(NS,'line');
+    l.setAttribute('x1',gx(f));l.setAttribute('x2',gx(f));l.setAttribute('y1',Y0-14);
+    l.setAttribute('y2',Y1+14);l.setAttribute('stroke','#6a5f92');l.setAttribute('stroke-width',3);
+    board.appendChild(l);
+    const t=document.createElementNS(NS,'text');
+    t.setAttribute('x',fx(f));t.setAttribute('y',Y1+38);t.setAttribute('fill','#8f88b8');
+    t.setAttribute('font-size','13');t.setAttribute('font-weight','800');
+    t.setAttribute('text-anchor','middle');t.textContent=f;board.appendChild(t);
+  }
+  for(let s=0;s<6;s++){
+    const l=document.createElementNS(NS,'line');
+    l.setAttribute('x1',X0-10);l.setAttribute('x2',X1);l.setAttribute('y1',sy(s));
+    l.setAttribute('y2',sy(s));l.setAttribute('stroke','#c9c2ee');
+    l.setAttribute('stroke-width',(6-s)*.42+1);l.setAttribute('opacity',.85);
+    board.appendChild(l);
+  }
+  ['E','A','D','G','B','e'].forEach((n,i)=>{
+    const t=document.createElementNS(NS,'text');
+    t.setAttribute('x',24);t.setAttribute('y',sy(i)+5);t.setAttribute('fill','#8f88b8');
+    t.setAttribute('font-size','14');t.setAttribute('font-weight','800');t.textContent=n;
+    board.appendChild(t);
+  });
+}
+drawBoard();
+
+let dots=[];
+const clearDots=()=>{dots.forEach(d=>d.remove());dots=[]};
+
+function showChord(name){
+  clearDots();const c=CHORDS[name];if(!c)return;
+  c.frets.forEach((f,s)=>{
+    const y=sy(s);
+    if(c.mute.includes(s)){
+      const g=document.createElementNS(NS,'g');
+      g.innerHTML=`<line class="muted" x1="42" y1="${y-7}" x2="56" y2="${y+7}"/>
+                   <line class="muted" x1="56" y1="${y-7}" x2="42" y2="${y+7}"/>`;
+      board.appendChild(g);dots.push(g);
+    }else if(f===0){
+      const o=document.createElementNS(NS,'circle');
+      o.setAttribute('cx',49);o.setAttribute('cy',y);o.setAttribute('r',8);
+      o.setAttribute('class','open');board.appendChild(o);dots.push(o);
+    }else{
+      const cx=fx(f);
+      const g=document.createElementNS(NS,'g');g.setAttribute('class','dotg');
+      const ci=document.createElementNS(NS,'circle');
+      ci.setAttribute('cx',cx);ci.setAttribute('cy',y);ci.setAttribute('r',16);ci.setAttribute('class','dotc');
+      const tx=document.createElementNS(NS,'text');
+      tx.setAttribute('x',cx);tx.setAttribute('y',y);tx.setAttribute('class','dotn');
+      tx.textContent=c.fingers[s];
+      g.appendChild(ci);g.appendChild(tx);
+      g.style.opacity=0;g.style.transformOrigin=`${cx}px ${y}px`;g.style.transform='scale(.2)';
+      board.appendChild(g);dots.push(g);
+      requestAnimationFrame(()=>{g.style.opacity=1;g.style.transform='scale(1)'});
+    }
+  });
+}
+
+function strum(){
+  const p=document.createElementNS(NS,'circle');
+  p.setAttribute('r',10);p.setAttribute('fill','#ffd166');p.setAttribute('cx',352);
+  p.setAttribute('filter','drop-shadow(0 0 8px #ffd166)');
+  board.appendChild(p);
+  let t=0;const iv=setInterval(()=>{
+    t+=.05;if(t>=1){clearInterval(iv);p.remove();return}
+    p.setAttribute('cy',Y0-18+(Y1-Y0+36)*t);p.setAttribute('opacity',1-t*.55);
+  },16);
+}
+
+/* ============ chips ============ */
+const chips=document.getElementById('chips');
+Object.keys(CHORDS).forEach((n,i)=>{
+  const b=document.createElement('div');b.className='chip'+(i?'':' on');b.textContent=n;
+  b.onclick=()=>{document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+    b.classList.add('on');showChord(n);setMood('happy')};
+  chips.appendChild(b);
+});
+showChord('Em');
+
+/* ============ RIFF: expressions ============ */
+const mouth=document.getElementById('mouth'),browL=document.getElementById('browL'),
+      browR=document.getElementById('browR'),avwrap=document.getElementById('avwrap'),
+      pL=document.getElementById('pL'),pR=document.getElementById('pR');
+const MOOD={
+  happy:  {m:"M100 118 Q115 131 130 118", bl:"M84 78 Q94 72 104 77", br:"M126 77 Q136 72 146 78"},
+  think:  {m:"M104 122 Q115 118 126 123", bl:"M84 74 Q94 70 104 78", br:"M126 78 Q136 71 146 75"},
+  wow:    {m:"M107 118 Q115 134 123 118", bl:"M84 72 Q94 65 104 71", br:"M126 71 Q136 65 146 72"},
+  proud:  {m:"M96 116 Q115 136 134 116", bl:"M84 74 Q94 66 104 73", br:"M126 73 Q136 66 146 74"}
+};
+function setMood(k){const s=MOOD[k]||MOOD.happy;
+  mouth.setAttribute('d',s.m);browL.setAttribute('d',s.bl);browR.setAttribute('d',s.br);}
+function gesture(g){
+  avwrap.classList.remove('wave','bounce');
+  var aL=document.getElementById('armL'),aR=document.getElementById('armR');
+  // SVG transform attribute — reliable across engines (CSS transforms on <g> are not)
+  var set=function(l,r){
+    aL.setAttribute('transform','rotate('+l+' 66 150)');
+    aR.setAttribute('transform','rotate('+r+' 163 150)');
+  };
+  if(g==='cheer'){set(-210,150);setTimeout(function(){set(0,0)},1900);}
+  else if(g==='point'){set(0,150);setTimeout(function(){set(0,0)},1900);}
+  else if(g==='wave'){
+    var n=0;var iv=setInterval(function(){n++;set(0,n%2?150:175);
+      if(n>5){clearInterval(iv);set(0,0);}},230);
+  }
+  else if(g==='bounce'){void avwrap.offsetWidth;avwrap.classList.add('bounce');
+    setTimeout(function(){avwrap.classList.remove('bounce')},1100);}
+  else set(0,0);
+}
+/* eyes follow the fretboard a bit */
+function look(dir){const dx=dir==='board'?3.2:0;
+  pL.setAttribute('cx',96+dx);pR.setAttribute('cx',136+dx);}
+
+/* lip sync */
+let mIv=null;
+function talk(on){
+  clearInterval(mIv);
+  if(!on){setMood(curMood);return}
+  mIv=setInterval(()=>{
+    const o=6+Math.random()*13;
+    mouth.setAttribute('d',`M${104-o*.25} 117 Q115 ${117+o} ${126+o*.25} 117`);
+  },92);
+}
+/* confetti */
+function confetti(){
+  const cols=['#ffd166','#ff7a59','#ff5fa2','#4fe3a1','#5b8cff'];
+  for(let i=0;i<26;i++){
+    const d=document.createElement('div');d.className='pop';
+    d.style.background=cols[i%cols.length];
+    d.style.left=(95+Math.random()*50)+'px';d.style.top='70px';
+    d.style.transform=`rotate(${Math.random()*360}deg)`;
+    avwrap.appendChild(d);
+    const ang=Math.random()*Math.PI*2,dist=70+Math.random()*90;
+    d.animate([{transform:'translate(0,0) rotate(0) scale(1)',opacity:1},
+      {transform:`translate(${Math.cos(ang)*dist}px,${Math.sin(ang)*dist+70}px) rotate(${Math.random()*700}deg) scale(.3)`,opacity:0}],
+      {duration:1100+Math.random()*500,easing:'cubic-bezier(.2,.7,.4,1)'}).onfinish=()=>d.remove();
+  }
+}
+
+/* ============ lesson script ============ */
+const LESSON=[
+ {say:"Yo! Good to see you back. Today we make your first chord change actually sound good.",mood:"happy",g:"wave"},
+ {say:"We start with E minor. Easiest chord on the whole guitar — two fingers, that's it.",mood:"happy",chord:"Em",g:"point"},
+ {say:"Finger two on the fifth string, second fret. Finger three right underneath it. Nice and curled.",mood:"think",chord:"Em"},
+ {say:"Now strum it. Let it ring out.",mood:"happy",chord:"Em",strum:true},
+ {say:"Ooh, that's the sound. Okay — now C major. This one wants three fingers.",mood:"wow",chord:"C",g:"bounce"},
+ {say:"See that red X on the bottom string? Don't play it. Start your strum from the fifth string.",mood:"think",chord:"C",strum:true},
+ {say:"Here's the trick nobody tells beginners. Don't lift every finger at once.",mood:"think",chord:"C"},
+ {say:"Keep a finger anchored and pivot around it. Em... to C. Slow.",mood:"happy",chord:"Em"},
+ {say:"And there it is!",mood:"proud",chord:"C",g:"cheer",boom:true},
+ {say:"Fifteen slow reps before you ever try it fast. That's the whole homework. See you tomorrow!",mood:"proud",g:"wave"}
+];
+
+const bubble=document.getElementById('bubble'),fill=document.getElementById('fill'),
+      pct=document.getElementById('pct');
+let idx=0,running=false,voice=null,curMood='happy';
+
+function pickVoice(){const vs=speechSynthesis.getVoices();
+  voice=vs.find(v=>/guy|daniel|matthew|alex|david|male/i.test(v.name)&&/en/i.test(v.lang))
+      ||vs.find(v=>/en-US|en-GB/i.test(v.lang))||vs[0];}
+pickVoice();speechSynthesis.onvoiceschanged=pickVoice;
+
+function step(){
+  if(!running||idx>=LESSON.length){
+    running=false;talk(false);setMood('proud');
+    bubble.innerHTML="That's the loop — <b>Riff coaches, the board shows the fingers.</b> Nobody had to film a human.";
+    return;}
+  const s=LESSON[idx++];
+  const p=Math.round(idx/LESSON.length*100);
+  fill.style.width=p+'%';pct.textContent=p+'%';
+  bubble.textContent=s.say;
+  curMood=s.mood||'happy';setMood(curMood);
+  if(s.g)gesture(s.g);
+  if(s.chord){showChord(s.chord);look('board');
+    document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c.textContent===s.chord));}
+  else look('front');
+  if(s.strum)setTimeout(strum,650);
+  if(s.boom)setTimeout(confetti,250);
+  const u=new SpeechSynthesisUtterance(s.say);
+  u.voice=voice;u.rate=.97;u.pitch=1.02;
+  u.onstart=()=>talk(true);
+  u.onend=()=>{talk(false);setTimeout(step,430)};
+  u.onerror=()=>{talk(false);setTimeout(step,1500)};
+  speechSynthesis.speak(u);
+}
+document.getElementById('play').onclick=()=>{speechSynthesis.cancel();idx=0;running=true;
+  fill.style.width='0%';setTimeout(step,120)};
+document.getElementById('stop').onclick=()=>{running=false;speechSynthesis.cancel();
+  talk(false);setMood('happy');bubble.textContent="Paused. Hit play whenever you're ready."};
+</script>
+</body>
+</html>

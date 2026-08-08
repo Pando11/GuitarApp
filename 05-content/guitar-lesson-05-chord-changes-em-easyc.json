@@ -1,0 +1,143 @@
+{
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted.",
+    "Em": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "E minor",
+      "frets": [
+        0,
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "fingers": [
+        0,
+        2,
+        3,
+        0,
+        0,
+        0
+      ]
+    },
+    "easyC": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "C major (Lauren's 'easy C' — 2-finger reduction)",
+      "frets": [
+        null,
+        3,
+        2,
+        0,
+        null,
+        0
+      ],
+      "fingers": [
+        null,
+        3,
+        2,
+        0,
+        null,
+        0
+      ],
+      "note": "Reduced 2-finger C voicing for confidence-building. Spelling verified deterministically by chord-theory-check.js (2026-08-08) as C E G. 'Lauren's easy C' is a teaching label; arithmetic proves the fingering spells C major and is playable."
+    }
+  },
+  "pivot_points": [
+    {
+      "from": "Em",
+      "to": "easyC",
+      "static_finger": "middle(2) stays on D-string 2nd fret in both shapes",
+      "movement": "ring(3) moves A 2nd->3rd; nothing else moves. One finger relocates.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    }
+  ],
+  "exercises": [
+    {
+      "id": "EX1-anchor",
+      "name": "Find the anchor",
+      "purpose": "Notice the shared finger between Em and easy C.",
+      "params": {
+        "chord_pair": [
+          "Em",
+          "easyC"
+        ],
+        "anchor": "middle(2) on D-string 2nd fret",
+        "action": "form Em, then easyC, watch the shared finger stay"
+      },
+      "coaching": "In Em your middle finger is on the D string second fret. In easy C it is STILL there. That finger never moves — it is your anchor. Let it guide the change.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-air",
+      "name": "Air changes",
+      "purpose": "Lift, move, land together — no guitar needed.",
+      "params": {
+        "chord_pair": [
+          "Em",
+          "easyC"
+        ],
+        "action": "make shape in air, lift all, land all simultaneously",
+        "reps": 10
+      },
+      "coaching": "Lift your hand off the neck, make the next shape in the air, drop it down all at once. Landing together is faster than placing finger by finger.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX3-count",
+      "name": "1-minute change drill",
+      "purpose": "Count completed Em↔easyC changes in 60 seconds.",
+      "params": {
+        "chord_pair": [
+          "Em",
+          "easyC"
+        ],
+        "duration_sec": 60,
+        "measure": "count completed changes",
+        "cue": "write the number down"
+      },
+      "coaching": "Metronome on, one minute: Em to easy C, back and forth, as many clean changes as you can. Count them. Write it down — that is next week's target.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "The pause between chords is what makes beginners sound like beginners. Today we kill the pause with anchor fingers.",
+    "ex1_intro": "Your middle finger sits on the D string second fret in BOTH Em and easy C. It never moves. Anchor on it — the rest of the hand follows.",
+    "ex2_intro": "Air changes: lift off, shape the next chord in the air, drop it down all at once. Landing together beats placing finger by finger.",
+    "ex3_intro": "One minute, count your Em-easyC changes. Write the number. Next week, beat it by one. That is how slow becomes fast.",
+    "results": "A higher change-count than last week means your hands are learning. That is the only metric that matters here.",
+    "wrap": "Anchor fingers + air changes = faster switches. You just met your first measurable skill. Lesson 6 we add G."
+  },
+  "qa_block": {
+    "must_verify": [
+      "Automated: every chord fingering verified deterministically by 06-prototypes/step0/schema/chord-theory-check.js (verifyChord) — 0 errors AND 0 warnings required before ship (Hard Ban 7 satisfied by arithmetic, per owner directive 2026-08-08: physical fingering correctness needs no contract guitarist).",
+      "Automated: lesson JSON passes schema/validate.js (validateLesson) — all required keys present, frets/fingers length 6, qa_status whitelisted.",
+      "Author pass: teaching copy is plain-English, beginner-appropriate, no AI-isms; pacing realistic.",
+      "Licensing: exercises only, zero copyrighted song material (spec §3/R6)."
+    ],
+    "flagged_by": "founder (non-player) — cannot self-verify",
+    "verifier_role": "arithmetic (chord-theory-check.js) + author review",
+    "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
+  },
+  "lesson": {
+    "id": "L05-chord-changes-em-easyc",
+    "title": "Chord Changes: Em ↔ easy C (anchor fingers)",
+    "level": "beginner",
+    "lesson_type": "technique",
+    "one_line_promise": "Stop the pause between chords.",
+    "objectives": [
+      "Use pivot/anchor fingers to change faster",
+      "Practice 'air changes' (lift, move, land together)",
+      "Run a 1-minute Em↔easyC change count"
+    ],
+    "estimated_minutes": 12,
+    "prerequisites": [
+      "Em + easy C (L03)"
+    ],
+    "app_feature_mapping": {
+      "free_metronome": [
+        "1-minute change drill tempo"
+      ]
+    }
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted.",
+    "E": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "E major",
+      "frets": [
+        0,
+        2,
+        2,
+        1,
+        0,
+        0
+      ],
+      "fingers": [
+        0,
+        2,
+        3,
+        1,
+        0,
+        0
+      ]
+    },
+    "A": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "A major",
+      "frets": [
+        null,
+        0,
+        2,
+        2,
+        2,
+        0
+      ],
+      "fingers": [
+        null,
+        0,
+        1,
+        2,
+        3,
+        0
+      ]
+    },
+    "Em": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "E minor",
+      "frets": [
+        0,
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "fingers": [
+        0,
+        2,
+        3,
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "exercises": [
+    {
+      "id": "EX1-E",
+      "name": "Make E",
+      "purpose": "Land the E shape.",
+      "params": {
+        "chord": "E",
+        "fingers": "middle(2) A 2nd, ring(3) D 2nd, index(1) G 1st",
+        "open_strings": "low E and B ring open"
+      },
+      "coaching": "E: middle on A second fret, ring on D second, index on G first. Low E and B ring open. Bright, powerful — the root of rock and blues.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-changes",
+      "name": "E↔A, A↔Em",
+      "purpose": "Connect the new chord to its neighbours.",
+      "params": {
+        "chord_cycle": [
+          "E",
+          "A",
+          "Em",
+          "A"
+        ],
+        "tempo_bpm": 70,
+        "beats": 4,
+        "cue": "one chord per 4 beats"
+      },
+      "coaching": "E to A, A to Em, back. These three share hand positions, so the changes are small. Smooth them and the cowboy set is complete.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "E completes your open-chord toolkit — the classic \"cowboy\" set. Bright, loud, the root of countless songs.",
+    "ex1_intro": "E: middle on A second, ring on D second, index on G first. Low E and B open. A big, ringing chord.",
+    "ex2_intro": "E to A, A to Em. They share hand shapes, so the moves are tiny. Smooth them and you have the full set.",
+    "results": "With E in, your open-chord vocabulary is complete. Every campfire song is now within reach.",
+    "wrap": "Cowboy set done: E, A, Em, Am, C, G, D. Lesson 17 we add color with Dm and minor progressions."
+  },
+  "qa_block": {
+    "must_verify": [
+      "Automated: every chord fingering verified deterministically by 06-prototypes/step0/schema/chord-theory-check.js (verifyChord) — 0 errors AND 0 warnings required before ship (Hard Ban 7 satisfied by arithmetic, per owner directive 2026-08-08: physical fingering correctness needs no contract guitarist).",
+      "Automated: lesson JSON passes schema/validate.js (validateLesson) — all required keys present, frets/fingers length 6, qa_status whitelisted.",
+      "Author pass: teaching copy is plain-English, beginner-appropriate, no AI-isms; pacing realistic.",
+      "Licensing: exercises only, zero copyrighted song material (spec §3/R6)."
+    ],
+    "flagged_by": "founder (non-player) — cannot self-verify",
+    "verifier_role": "arithmetic (chord-theory-check.js) + author review",
+    "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
+  },
+  "lesson": {
+    "id": "L16-new-chord-e",
+    "title": "New Chord: E + cowboy set complete",
+    "level": "beginner",
+    "lesson_type": "technique",
+    "one_line_promise": "Add E — the full cowboy set is yours.",
+    "objectives": [
+      "Form E major (020100)",
+      "Connect E↔A and A↔Em",
+      "Recognize the complete open-chord set"
+    ],
+    "estimated_minutes": 14,
+    "prerequisites": [
+      "A, Am, Em (L02,L08,L09)"
+    ],
+    "app_feature_mapping": {
+      "free_metronome": [
+        "E-A / A-Em change tempo"
+      ]
+    }
+  }
+}

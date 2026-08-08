@@ -1,0 +1,169 @@
+{
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted.",
+    "C": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "C major (standard)",
+      "frets": [
+        null,
+        3,
+        2,
+        0,
+        1,
+        0
+      ],
+      "fingers": [
+        null,
+        3,
+        2,
+        0,
+        1,
+        0
+      ]
+    },
+    "G": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "G major (3-finger / 'easy G')",
+      "frets": [
+        3,
+        2,
+        0,
+        0,
+        0,
+        3
+      ],
+      "fingers": [
+        2,
+        1,
+        0,
+        0,
+        0,
+        3
+      ]
+    },
+    "Am": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "A minor",
+      "frets": [
+        null,
+        0,
+        2,
+        2,
+        1,
+        0
+      ],
+      "fingers": [
+        null,
+        0,
+        2,
+        3,
+        1,
+        0
+      ]
+    },
+    "Em": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "E minor",
+      "frets": [
+        0,
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "fingers": [
+        0,
+        2,
+        3,
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "exercises": [
+    {
+      "id": "EX1-diagram",
+      "name": "Read the box",
+      "purpose": "Map dots to fretboard.",
+      "params": {
+        "skill": "chord diagram",
+        "rule": "vertical lines = strings (left = low E), horizontal = frets, dots = where to press, numbers = fingers",
+        "cue": "the app draws these from the lesson data — identical to what you play"
+      },
+      "coaching": "A chord box is a tiny fretboard: vertical lines are strings (left is low E), horizontal are frets, dots are where your fingers go, numbers are which finger. The app draws these from the exact data you play — no guessing.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-tab",
+      "name": "Read TAB",
+      "purpose": "Map numbers to fret numbers per string.",
+      "params": {
+        "skill": "TAB",
+        "rule": "six lines = strings (top = high e), numbers = fret to press on that string, 0 = open",
+        "cue": "read left to right, one column at a time"
+      },
+      "coaching": "TAB is six lines (top is high e). A number tells you the fret on that string; 0 means open. Read left to right, one column at a time. Melodies, not just chords.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX3-library",
+      "name": "Play one new chart",
+      "purpose": "Apply it to a library song.",
+      "params": {
+        "chord_cycle": [
+          "C",
+          "G",
+          "Am",
+          "Em"
+        ],
+        "source": "app library (exercise-only / PD charts)",
+        "tempo_bpm": 70,
+        "beats": 4,
+        "cue": "read the chart, play the loop"
+      },
+      "coaching": "Open a simple chart from the library — exercise-only, safe per licensing. Read the boxes, play the loop. You just taught yourself a song. That is the self-serve superpower.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "The goal was always independence: you reading a chart and learning a song yourself. Today we decode chord boxes and TAB.",
+    "ex1_intro": "A chord box is a mini fretboard — left line is low E, dots are fingers, numbers are which finger. The app draws these from your lesson data, so what you see is what you play.",
+    "ex2_intro": "TAB: six lines, top is high e, numbers are frets, 0 is open. Read left to right. Now you can follow melodies, not just chords.",
+    "ex3_intro": "Grab a simple library chart — exercise-only, licensing-safe. Read it, play the loop. You taught yourself a song. That is the point of all this.",
+    "results": "If you can read a box and a TAB line, no song at your level is off-limits. You are self-sufficient.",
+    "wrap": "Chart-reading done. Lesson 20: capstone — play a full song and set your habit plan."
+  },
+  "qa_block": {
+    "must_verify": [
+      "Automated: every chord fingering verified deterministically by 06-prototypes/step0/schema/chord-theory-check.js (verifyChord) — 0 errors AND 0 warnings required before ship (Hard Ban 7 satisfied by arithmetic, per owner directive 2026-08-08: physical fingering correctness needs no contract guitarist).",
+      "Automated: lesson JSON passes schema/validate.js (validateLesson) — all required keys present, frets/fingers length 6, qa_status whitelisted.",
+      "Author pass: teaching copy is plain-English, beginner-appropriate, no AI-isms; pacing realistic.",
+      "Licensing: exercises only, zero copyrighted song material (spec §3/R6).",
+      "Charts shown are generated from the lesson chord data (code-driven fretboard), so they cannot contradict the fingerings taught — Ban 1 preserved. Library songs are exercise-only/PD per spec §3/R6."
+    ],
+    "flagged_by": "founder (non-player) — cannot self-verify",
+    "verifier_role": "arithmetic (chord-theory-check.js) + author review",
+    "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
+  },
+  "lesson": {
+    "id": "L19-read-chord-chart-tab",
+    "title": "Read Any Chord Chart / TAB",
+    "level": "intermediate-ish",
+    "lesson_type": "technique",
+    "one_line_promise": "Self-serve: learn any song from a chart.",
+    "objectives": [
+      "Read a chord diagram box (dots = frets/fingers)",
+      "Understand basic TAB notation",
+      "Find and play one new simple chart from the library"
+    ],
+    "estimated_minutes": 15,
+    "prerequisites": [
+      "Core open chords (L02-L09)"
+    ],
+    "app_feature_mapping": {
+      "free_metronome": []
+    }
+  }
+}

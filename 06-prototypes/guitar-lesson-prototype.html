@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guitar School — Lesson Player Prototype (L01)</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#181b22; --panel2:#20242e; --ink:#eaeef5; --muted:#9aa3b2;
+    --accent:#ff7a3c; --accent2:#4cc2ff; --ok:#3ddc84; --warn:#ffcf5c; --line:#2a2f3a;
+    --fret:#3a3f4b; --string:#cfd6e2;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.5}
+  header{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;
+    background:linear-gradient(180deg,#161a22,#0f1115)}
+  header .logo{width:38px;height:38px;border-radius:10px;background:radial-gradient(circle at 30% 30%,#ff9a5c,var(--accent));
+    display:flex;align-items:center;justify-content:center;font-size:20px}
+  header h1{font-size:17px;margin:0}
+  header .sub{font-size:12px;color:var(--muted)}
+  .wrap{max-width:980px;margin:0 auto;padding:22px}
+  .badge{display:inline-block;font-size:11px;padding:3px 9px;border-radius:99px;background:var(--panel2);
+    color:var(--muted);border:1px solid var(--line);margin-right:6px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin:14px 0}
+  .avatar{display:flex;gap:14px;align-items:flex-start}
+  .avatar .face{width:54px;height:54px;border-radius:50%;flex:none;background:
+    radial-gradient(circle at 35% 30%,#ffd9b8,#e8a06a);position:relative;border:2px solid var(--accent)}
+  .avatar .face::before,.avatar .face::after{content:"";position:absolute;background:#3a2a1c;border-radius:9px}
+  .avatar .face::before{width:8px;height:8px;left:15px;top:20px}
+  .avatar .face::after{width:8px;height:8px;right:15px;top:20px}
+  .avatar .bubble{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:14px}
+  .avatar .name{font-size:11px;color:var(--accent);margin-top:6px;font-weight:600;letter-spacing:.04em}
+  h2{font-size:15px;margin:4px 0 10px;color:var(--accent2)}
+  .chords{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+  .chord{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
+  .chord .nm{font-size:13px;font-weight:700;margin-bottom:6px}
+  .chord .qa{font-size:10px;color:var(--muted)}
+  .nav{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 0}
+  .nav button{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:9px;
+    padding:8px 12px;cursor:pointer;font-size:13px}
+  .nav button.active{background:var(--accent);color:#1a1206;border-color:var(--accent);font-weight:700}
+  .ex{border-left:3px solid var(--accent);padding:10px 14px;background:var(--panel2);border-radius:0 10px 10px 0;margin:10px 0}
+  .ex h3{margin:0 0 4px;font-size:14px}
+  .ex .meta{font-size:12px;color:var(--muted);white-space:pre-wrap}
+  .ex .coach{margin-top:8px;font-size:13px;color:#dfe6f1;font-style:italic}
+  .pivot{border-left:3px solid var(--accent2);padding:8px 14px;background:var(--panel2);border-radius:0 10px 10px 0;margin:8px 0;font-size:13px}
+  /* fretboard */
+  .fb{display:inline-block}
+  .fb svg{display:block}
+  .legend{font-size:11px;color:var(--muted);margin-top:6px}
+  /* metronome */
+  .metro{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+  .beat{width:46px;height:46px;border-radius:50%;background:var(--panel2);border:2px solid var(--line);
+    display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);transition:.06s}
+  .beat.on{background:var(--accent);color:#1a1206;border-color:var(--accent);transform:scale(1.12)}
+  .beat.strong.on{background:var(--ok);border-color:var(--ok)}
+  .bpm{font-size:30px;font-weight:800;min-width:70px;text-align:center}
+  input[type=range]{accent-color:var(--accent)}
+  button.primary{background:var(--accent);color:#1a1206;border:none;border-radius:10px;padding:10px 18px;font-weight:700;cursor:pointer;font-size:14px}
+  button.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px 14px;cursor:pointer}
+  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .tag-ok{color:var(--ok)} .tag-warn{color:var(--warn)}
+  footer{padding:18px 22px;color:var(--muted);font-size:11px;border-top:1px solid var(--line)}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">🎸</div>
+  <div>
+    <h1>Guitar School — Lesson Player <span class="badge">PROTOTYPE</span></h1>
+    <div class="sub">Renders lessons from JSON (schema-first). Demo: L01 — Faster Chord Changes. No ML, no server.</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="card">
+    <div><span class="badge">Level 1 · Absolute Beginner</span><span class="badge">Technique</span><span class="badge">~12 min</span></div>
+    <h2 id="title" style="margin-top:10px"></h2>
+    <div id="promise" style="color:var(--muted);font-size:13px"></div>
+    <div id="objectives" style="font-size:13px;margin-top:8px"></div>
+  </div>
+
+  <div class="card">
+    <h2>Coach (synthetic avatar — text only in v1)</h2>
+    <div class="avatar">
+      <div class="face"></div>
+      <div>
+        <div class="bubble" id="coach-intro"></div>
+        <div class="name">JUNO · your coach</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Chords in this lesson (rendered from data)</h2>
+    <div class="chords" id="chords"></div>
+    <div class="legend">Finger dots are drawn from the chord <code>frets[]</code>/<code>fingers[]</code> arrays — correct by construction, not an image.</div>
+  </div>
+
+  <div class="card">
+    <h2>Exercises</h2>
+    <div id="exercises"></div>
+  </div>
+
+  <div class="card">
+    <h2>Pivot points (chord-change shortcuts)</h2>
+    <div id="pivots"></div>
+  </div>
+
+  <div class="card">
+    <h2>Practice tools — Metronome (funnel front door)</h2>
+    <div class="metro">
+      <div class="row">
+        <div class="beat strong" id="b1">1</div>
+        <div class="beat" id="b2">2</div>
+        <div class="beat" id="b3">3</div>
+        <div class="beat" id="b4">4</div>
+      </div>
+      <div class="row">
+        <div class="bpm" id="bpmval">80</div>
+        <div>
+          <input type="range" id="bpm" min="40" max="200" value="80" style="width:160px">
+          <div style="font-size:11px;color:var(--muted)">BPM</div>
+        </div>
+      </div>
+      <div class="row">
+        <button class="primary" id="startBtn">Start</button>
+        <button class="ghost" id="stopBtn">Stop</button>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-top:8px">Demo: drives EX3 chord-change drill (count changes/min against the click).</div>
+  </div>
+
+  <div class="card">
+    <h2>Content QA status (guitarist review required)</h2>
+    <div id="qa" style="font-size:13px"></div>
+  </div>
+
+</div>
+
+<footer>
+  Prototype for spec/plan validation only. Camera chord-shape check (the moat) + on-device pitch feedback are NOT in this build —
+  they are gated behind the validation interview gate (spec §7). Built from <code>guitar-lesson-01-faster-chord-changes.json</code>.
+</footer>
+
+<script>
+/* ---- LESSON DATA (embedded from L01 JSON — single source of truth) ---- */
+const LESSON = {
+  id:"L01-faster-chord-changes",
+  title:"The Real Secret to Faster Chord Changes",
+  one_line_promise:"Why your chord changes are slow — and the 3 drills that fix it.",
+  level:"absolute-beginner", lesson_type:"technique", estimated_minutes:12,
+  objectives:[
+    "Understand why chord changes feel hard (new motor pattern + tension)",
+    "Warm up hands with the spider exercise",
+    "Build finger independence with lift-off drills",
+    "Use a metronome as a scorecard for chord-change speed",
+    "Use pivot points to make Em-C and Em-G easier"
+  ],
+  avatar_coaching_copy:{
+    intro:"Slow chord changes aren't a talent problem — they're a muscle-memory problem. Today we warm up your hands and turn your metronome into a scorecard. Grab your guitar."
+  },
+  chords:{
+    Em:{name:"E minor",frets:[0,2,2,0,0,0],fingers:[0,2,3,0,0,0],qa_status:"verified-standard"},
+    C:{name:"C major (standard)",frets:[null,3,2,0,1,0],fingers:[null,3,2,0,1,0],qa_status:"verified-standard"},
+    easyC:{name:"C major (easy 2-finger)",frets:[null,3,2,0,null,0],fingers:[null,3,2,0,null,0],qa_status:"QA-PENDING"},
+    G:{name:"G major (3-finger)",frets:[3,2,0,0,0,3],fingers:[2,1,0,0,0,3],qa_status:"verified-standard (3-finger)"},
+    D:{name:"D major",frets:[null,null,0,2,3,2],fingers:[null,null,0,1,3,2],qa_status:"verified-standard"}
+  },
+  pivot_points:[
+    {from:"Em",to:"C",static_finger:"middle (2nd) stays on 4th string, 2nd fret",movement:"Ring moves 5th-2nd -> 5th-3rd; index added on 2nd-1st",qa_status:"verified"},
+    {from:"Em",to:"G",static_finger:"index (1st) stays on 5th string, 2nd fret",movement:"Ring moves 4th-2nd -> 1st-3rd; middle added on 6th-3rd",qa_status:"verified"}
+  ],
+  exercises:[
+    {id:"EX1-spider",name:"Spider exercise (finger dexterity warm-up)",
+     purpose:"Blood flow + fine-motor control.",
+     params:"Start fret 7 · fingers 1/2/3 on frets 7/8/9 · 3 picks per note, slow · ~5 min · breathe (tension = slow).",
+     coaching:"Keep fingers relaxed and close to the fretboard. Floppy feeling IS the control you're building.",
+     qa_status:"QA-PENDING"},
+    {id:"EX2-liftoff",name:"Finger lift-off ('finger push-ups')",
+     purpose:"Finger independence + retain chord shape when lifting.",
+     params:"Base chord C · lift 3rd, then 2nd, then 1st one at a time; rebuild. Few min only (tendinitis caution).",
+     coaching:"If your hand flattens when you let go, that's normal — muscle memory hasn't formed yet. Reps fix it.",
+     qa_status:"verified-concept"},
+    {id:"EX3-metronome-drill",name:"1-min chord-change drill (metronome scorecard)",
+     purpose:"Measurable speed gain; push past comfort tempo.",
+     params:"Pair Em→easyC · 60s · count completed changes · write the number down · beat it next session.",
+     coaching:"Write the number down. That's your scorecard — next week, beat it. Speed first, clean second.",
+     qa_status:"QA-PENDING (baseline 16-30/min is anecdotal)"}
+  ],
+  qa_block:{
+    must_verify_before_ship:[
+      "easyC exact fingering vs Lauren's teaching (currently placeholder).",
+      "easyG = 3-finger G 320003 assumption correct.",
+      "Spider start fret 7 = least stretch (vs 5); confirm 3 fingers not 4.",
+      "Metronome baseline 16-30 changes/min plausible for absolute beginners.",
+      "Pivot claims hold for the voicings actually shipped.",
+      "No copyrighted song material used — exercises only (licensing safe)."
+    ]
+  }
+};
+
+/* ---- RENDER ---- */
+const $ = s=>document.querySelector(s);
+$('#title').textContent = LESSON.title;
+$('#promise').textContent = "Promise: " + LESSON.one_line_promise;
+$('#objectives').innerHTML = "<b style='color:var(--muted)'>You'll learn:</b><ul style='margin:4px 0 0;padding-left:18px'>"+
+  LESSON.objectives.map(o=>`<li>${o}</li>`).join("")+"</ul>";
+$('#coach-intro').textContent = LESSON.avatar_coaching_copy.intro;
+
+// fretboard SVG from chord data
+function fretboard(chord){
+  const frets = chord.frets, fingers = chord.fingers;
+  const W=120,H=150, padX=18, padTop=22, padBot=14;
+  const nx = i => padX + i*( (W-2*padX)/5 );     // 6 strings
+  const ny = f => padTop + f*( (H-padTop-padBot)/4 ); // frets 0..4 shown
+  let svg = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`;
+  // fret lines
+  for(let f=0;f<=4;f++){ svg+=`<line x1="${padX}" y1="${ny(f)}" x2="${W-padX}" y2="${ny(f)}" stroke="var(--fret)" stroke-width="2"/>`; }
+  // string lines
+  for(let s=0;s<6;s++){ svg+=`<line x1="${nx(s)}" y1="${padTop}" x2="${nx(s)}" y2="${ny(4)}" stroke="var(--string)" stroke-width="${s===0||s===5?2:1}" opacity=".7"/>`; }
+  // nut
+  svg+=`<line x1="${padX}" y1="${padTop}" x2="${W-padX}" y2="${padTop}" stroke="#e8edf5" stroke-width="3"/>`;
+  // notes
+  for(let s=0;s<6;s++){
+    const fr=frets[s], fg=fingers[s];
+    if(fr===null){ // muted
+      svg+=`<text x="${nx(s)}" y="${padTop-6}" fill="var(--muted)" font-size="11" text-anchor="middle">✕</text>`;
+    } else if(fr===0){ // open
+      svg+=`<circle cx="${nx(s)}" cy="${padTop-7}" r="5" fill="none" stroke="var(--accent2)" stroke-width="2"/>`;
+    } else {
+      const cy = (fr<=4)? ny(fr)- (ny(1)-ny(0))/2 : ny(4); // place in fret space
+      svg+=`<circle cx="${nx(s)}" cy="${cy}" r="8" fill="var(--accent)"/>`;
+      if(fg>0) svg+=`<text x="${nx(s)}" y="${cy+3.5}" fill="#1a1206" font-size="10" text-anchor="middle" font-weight="700">${fg}</text>`;
+    }
+  }
+  svg+=`</svg>`;
+  return svg;
+}
+const cWrap = $('#chords');
+for(const [k,c] of Object.entries(LESSON.chords)){
+  const ok = c.qa_status.startsWith("verified");
+  cWrap.insertAdjacentHTML("beforeend",
+    `<div class="chord"><div class="nm">${k} · ${c.name}</div>
+      <div class="fb">${fretboard(c)}</div>
+      <div class="qa ${ok?'tag-ok':'tag-warn'}">${c.qa_status}</div></div>`);
+}
+
+// exercises
+const eWrap=$('#exercises');
+LESSON.exercises.forEach((e,i)=>{
+  eWrap.insertAdjacentHTML("beforeend",
+    `<div class="ex"><h3>${e.id} — ${e.name}</h3>
+      <div class="meta"><b>Purpose:</b> ${e.purpose}\n<b>How:</b> ${e.params}</div>
+      <div class="coach">“${e.coaching}”</div>
+      <div class="qa ${e.qa_status.startsWith('verified')?'tag-ok':'tag-warn'}" style="margin-top:6px;font-size:11px">QA: ${e.qa_status}</div>
+    </div>`);
+});
+
+// pivots
+const pWrap=$('#pivots');
+LESSON.pivot_points.forEach(p=>{
+  pWrap.insertAdjacentHTML("beforeend",
+    `<div class="pivot"><b>${p.from} → ${p.to}</b><br>
+      Static: ${p.static_finger}<br>Move: ${p.movement}<br>
+      <span class="tag-ok" style="font-size:11px">QA: ${p.qa_status}</span></div>`);
+});
+
+// qa
+$('#qa').innerHTML = "<ul style='margin:0;padding-left:18px'>"+
+  LESSON.qa_block.must_verify_before_ship.map(q=>`<li>${q}</li>`).join("")+"</ul>"+
+  `<div style="margin-top:8px;color:var(--warn);font-size:12px">⚠ Founder is a non-player — a contracted guitarist must verify every item above before ship (spec §6).</div>`;
+
+/* ---- METRONOME (Web Audio) ---- */
+let audioCtx=null, timerId=null, beat=0, bpm=80;
+const beats=[$('#b1'),$('#b2'),$('#b3'),$('#b4')];
+function tick(strong){
+  if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+  o.frequency.value = strong?1500:900; o.type="square";
+  g.gain.setValueAtTime(0.0001,audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.25,audioCtx.currentTime+0.001);
+  g.gain.exponentialRampToValueAtTime(0.0001,audioCtx.currentTime+0.05);
+  o.connect(g).connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+0.06);
+  beats.forEach(b=>b.classList.remove("on"));
+  const el = beats[beat%4]; el.classList.add("on");
+  if(beat%4===0) el.classList.add("strong");
+  beat++;
+}
+$('#bpm').addEventListener("input",e=>{ bpm=+e.target.value; $('#bpmval').textContent=bpm; if(timerId) restart(); });
+function restart(){ clearInterval(timerId); timerId=setInterval(()=>tick(beat%4===0), 60000/bpm); }
+$('#startBtn').addEventListener("click",()=>{ if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume(); restart(); });
+$('#stopBtn').addEventListener("click",()=>{ clearInterval(timerId); timerId=null; beats.forEach(b=>b.classList.remove("on")); });
+</script>
+</body>
+</html>

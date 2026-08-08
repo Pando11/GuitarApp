@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GuitarApp — Free Tuner + Metronome</title>
+<style>
+  body{font-family:system-ui,Segoe UI,Arial,sans-serif;background:#0f1420;color:#e8eefc;margin:0;padding:24px;max-width:680px;margin:auto}
+  h1{font-size:20px;letter-spacing:.5px;margin:0 0 4px}
+  .sub{color:#8ab;font-size:13px;margin-bottom:18px}
+  .card{background:#182033;border:1px solid #26324a;border-radius:12px;padding:16px;margin-bottom:14px}
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+  button{background:#243450;color:#e8eefc;border:1px solid #34466b;border-radius:8px;padding:8px 12px;font-size:14px;cursor:pointer}
+  button.active{background:#2e6df0;border-color:#2e6df0}
+  button:disabled{opacity:.5;cursor:default}
+  #big{font-size:54px;font-weight:800;text-align:center;margin:6px 0}
+  #freq{text-align:center;color:#8ab;font-size:14px}
+  #needleBox{position:relative;height:14px;background:#0c1018;border-radius:7px;margin:14px 0;overflow:hidden}
+  #needle{position:absolute;top:0;bottom:0;width:4px;background:#2e6df0;left:50%;transform:translateX(-50%)}
+  #needleBox::after{content:"";position:absolute;left:50%;top:0;bottom:0;width:2px;background:#3a4a6b;transform:translateX(-50%)}
+  #verdict{text-align:center;font-size:16px;font-weight:600;min-height:22px}
+  .inTune{color:#3ddc84}.close{color:#ffd166}.off{color:#ff6b6b}
+  #metBpm{font-size:40px;text-align:center;font-weight:800}
+  #history{font-size:13px;color:#aab;max-height:140px;overflow:auto}
+  .hint{color:#7d8bb0;font-size:12px;margin-top:8px;line-height:1.5}
+</style>
+</head>
+<body>
+  <h1>GuitarApp — Free Tuner + Metronome</h1>
+  <div class="sub">The front door. Get in tune, keep the beat. Nothing is uploaded — all audio stays on your device.</div>
+
+  <div class="card">
+    <div style="color:#8ab;font-size:13px;letter-spacing:1px;margin-bottom:6px">TUNER</div>
+    <div class="row" id="targetRow"></div>
+    <div id="big">—</div>
+    <div id="freq">play a string</div>
+    <div id="needleBox"><div id="needle"></div></div>
+    <div id="verdict"></div>
+    <div class="row" style="margin-top:12px">
+      <button id="startBtn">🎤 Start tuner</button>
+      <span id="micState" class="hint">tap Start, then play a string</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="color:#8ab;font-size:13px;letter-spacing:1px;margin-bottom:6px">METRONOME</div>
+    <div id="metBpm">100</div>
+    <div class="row" style="justify-content:center;margin:8px 0">
+      <button id="metDown">–</button>
+      <button id="metToggle">▶ Start</button>
+      <button id="metUp">+</button>
+    </div>
+    <div class="hint">Tempo holds within ±1 BPM. Audio starts only after you tap (browser autoplay policy).</div>
+  </div>
+
+  <div class="card">
+    <div style="color:#8ab;font-size:13px;letter-spacing:1px;margin-bottom:6px">WHAT I HEARD (log)</div>
+    <div id="history"><i>Nothing yet.</i></div>
+  </div>
+
+<script src="engine/tuner-engine.js"></script>
+<script>
+/* Player wiring. The DSP lives in engine/tuner-engine.js (reused from the phone app).
+   Only the mic I/O + DOM painting is here. */
+let audioCtx, analyser, buf, raf=null, target=null, lastNoteAt=0, metTimer=null, metOn=false;
+
+function log(msg){
+  const h=document.getElementById('history');
+  if(h.querySelector('i')) h.innerHTML='';
+  const t=new Date().toLocaleTimeString();
+  h.innerHTML=`<div><b>${t}</b> — ${msg}</div>`+h.innerHTML;
+}
+
+/* ---- Tuner ---- */
+function tick(){
+  analyser.getFloatTimeDomainData(buf);
+  const f=ENGINE.autoCorrelate(buf, audioCtx.sampleRate);
+  if(f>0 && f<1500){
+    const n=ENGINE.noteFromFreq(f);
+    document.getElementById('big').textContent=n.name;
+    document.getElementById('freq').textContent=f.toFixed(1)+' Hz';
+    const now=Date.now();
+    if(now-lastNoteAt>1200){lastNoteAt=now;log(`heard <b>${n.name}</b> (${f.toFixed(1)} Hz)`);}
+    if(target){
+      const v=ENGINE.tuneVerdict(f, target.freq);
+      document.getElementById('needle').style.left=(50+ENGINE.clampNeedle(v.cents))+'%';
+      const el=document.getElementById('verdict');
+      el.textContent=v.state==='inTune'?'✅ IN TUNE — beautiful!':(v.state==='close'?'🎵 '+v.label:'⬇ '+v.label);
+      el.className=v.state;
+    }
+  }
+  raf=requestAnimationFrame(tick);
+}
+async function startTuner(){
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false}});
+    audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    const src=audioCtx.createMediaStreamSource(stream);
+    analyser=audioCtx.createAnalyser(); analyser.fftSize=2048;
+    buf=new Float32Array(analyser.fftSize); src.connect(analyser);
+    document.getElementById('startBtn').disabled=true;
+    document.getElementById('micState').textContent='microphone LIVE — on-device only, nothing uploaded';
+    log('microphone started'); tick();
+  }catch(e){ document.getElementById('micState').textContent='⚠ mic blocked — allow it in the address bar, then Start again.'; }
+}
+/* ENGINE global from the imported script */
+document.getElementById('targetRow').querySelectorAll; // noop
+(function(){
+  ENGINE.STRINGS.forEach(s=>{
+    const b=document.createElement('button'); b.className='strBtn'; b.textContent=s.name;
+    b.onclick=()=>{ target=s; document.querySelectorAll('.strBtn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); log(`target: <b>${s.name}</b> (${s.freq} Hz)`); };
+    document.getElementById('targetRow').appendChild(b);
+  });
+})();
+document.getElementById('startBtn').addEventListener('click', startTuner);
+
+/* ---- Metronome (Web Audio oscillator click; no files) ---- */
+let bpm=100;
+function click(){
+  if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+  o.frequency.value=1000; o.connect(g); g.connect(audioCtx.destination);
+  const t=audioCtx.currentTime; g.gain.setValueAtTime(0.6,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.05);
+  o.start(t); o.stop(t+0.05);
+}
+function metLoop(){
+  click();
+  metTimer=setTimeout(metLoop, 60000/bpm);
+}
+document.getElementById('metDown').onclick=()=>{ bpm=Math.max(40,bpm-5); document.getElementById('metBpm').textContent=bpm; };
+document.getElementById('metUp').onclick=()=>{ bpm=Math.min(208,bpm+5); document.getElementById('metBpm').textContent=bpm; };
+document.getElementById('metToggle').onclick=()=>{
+  metOn=!metOn;
+  document.getElementById('metToggle').textContent=metOn?'■ Stop':'▶ Start';
+  if(metOn){ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); metLoop(); }
+  else { clearTimeout(metTimer); }
+};
+</script>
+</body>
+</html>

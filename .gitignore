@@ -1,0 +1,29 @@
+# vendored third-party clones (research only — NOT this project's code)
+03-research/reference-repos/
+
+# dependencies
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# secrets / keys — NEVER commit real RevenueCat / store keys
+.env
+.env.*
+*.env
+.env.local
+.env.*.local
+*secret*
+*credential*
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# build / temp
+*.log
+tmp/
+temp/
+.cache/

@@ -1,0 +1,99 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://guitarapp.local/schemas/lesson.schema.json",
+  "title": "GuitarApp Lesson JSON (Step 0)",
+  "description": "Authoritative-ish data contract for a Step 0 technique lesson. NOTE: enforcement is hand-implemented in validate.js, not by a JSON-Schema validator. Keys beginning with an underscore (e.g. chords._schema, lesson.app_feature_mapping._removed_*) are metadata and are ignored by the validator. Chord arrays are ordered low E (6th string, index 0) -> high e (1st string, index 5).",
+  "type": "object",
+  "required": ["lesson", "chords", "exercises", "avatar_coaching_copy", "qa_block"],
+  "additionalProperties": true,
+  "properties": {
+    "lesson": {
+      "type": "object",
+      "description": "Lesson metadata and framing.",
+      "required": ["id", "title", "level", "lesson_type", "objectives", "estimated_minutes"],
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "level": { "type": "string" },
+        "lesson_type": { "type": "string", "enum": ["technique"], "description": "Must be exactly 'technique' for Step 0." },
+        "objectives": { "type": "array", "minItems": 1, "items": { "type": "string" }, "description": "Non-empty array of learning objectives." },
+        "estimated_minutes": { "type": "number" },
+        "source": { "type": "object" },
+        "one_line_promise": { "type": "string" },
+        "core_concept": { "type": "string" },
+        "prerequisites": { "type": "array" },
+        "app_feature_mapping": { "type": "object", "description": "May contain underscore-prefixed keys (metadata) that are ignored." }
+      }
+    },
+    "chords": {
+      "type": "object",
+      "description": "Map of chordName -> chord object. Keys beginning with '_' (e.g. _schema) are metadata and ignored by the validator.",
+      "additionalProperties": true,
+      "properties": {
+        "_schema": { "type": "string", "description": "Optional human-readable description of the chord-array convention. Ignored." }
+      },
+      "patternProperties": {
+        "^(?!_).+": { "$ref": "#/definitions/chord" }
+      }
+    },
+    "exercises": {
+      "type": "array",
+      "description": "Ordered list of practice exercises.",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "purpose", "params", "coaching", "qa_status"],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "purpose": { "type": "string" },
+          "params": { "type": "object" },
+          "coaching": { "type": "string" },
+          "qa_status": { "type": "string" }
+        }
+      }
+    },
+    "avatar_coaching_copy": {
+      "type": "object",
+      "description": "Free-form map of scene captions (intro, ex1_intro, wrap, ...)."
+    },
+    "qa_block": {
+      "type": "object",
+      "description": "Contract-guitarist QA gate. Requires a NON-EMPTY verification list under 'must_verify' (Step 0 contract) OR 'must_verify_before_ship' (legacy real-world example). guitarist_signoff is optional (string or null).",
+      "additionalProperties": true,
+      "properties": {
+        "must_verify": { "type": "array", "minItems": 1 },
+        "must_verify_before_ship": { "type": "array", "minItems": 1 },
+        "guitarist_signoff": { "type": ["string", "null"] },
+        "flagged_by": { "type": "string" },
+        "verifier_role": { "type": "string" }
+      }
+    }
+  },
+  "definitions": {
+    "chord": {
+      "type": "object",
+      "description": "One chord voicing. frets/fingers arrays are length 6 (index 0 = low E). null in frets = muted string; 0 = open. fingers: 0 = open/none, 1..4 = fingers, null = muted.",
+      "required": ["frets", "fingers", "qa_status"],
+      "additionalProperties": true,
+      "properties": {
+        "name": { "type": "string" },
+        "frets": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 6,
+          "items": { "type": ["integer", "null"], "minimum": 0, "maximum": 24 }
+        },
+        "fingers": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 6,
+          "items": { "type": ["integer", "null"], "enum": [null, 0, 1, 2, 3, 4] }
+        },
+        "qa_status": { "type": "string" },
+        "note": { "type": "string" }
+      }
+    }
+  }
+}

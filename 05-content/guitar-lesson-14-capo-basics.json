@@ -1,0 +1,160 @@
+{
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted.",
+    "G": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "G major (3-finger / 'easy G')",
+      "frets": [
+        3,
+        2,
+        0,
+        0,
+        0,
+        3
+      ],
+      "fingers": [
+        2,
+        1,
+        0,
+        0,
+        0,
+        3
+      ]
+    },
+    "D": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "D major",
+      "frets": [
+        null,
+        null,
+        0,
+        2,
+        3,
+        2
+      ],
+      "fingers": [
+        null,
+        null,
+        0,
+        1,
+        3,
+        2
+      ]
+    },
+    "Em": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "E minor",
+      "frets": [
+        0,
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "fingers": [
+        0,
+        2,
+        3,
+        0,
+        0,
+        0
+      ]
+    },
+    "C": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "C major (standard)",
+      "frets": [
+        null,
+        3,
+        2,
+        0,
+        1,
+        0
+      ],
+      "fingers": [
+        null,
+        3,
+        2,
+        0,
+        1,
+        0
+      ]
+    }
+  },
+  "exercises": [
+    {
+      "id": "EX1-place",
+      "name": "Place the capo",
+      "purpose": "Clamp just behind the fret, straight across.",
+      "params": {
+        "tool": "capo",
+        "position": "2nd fret",
+        "action": "press firmly, all strings clear, no buzzing",
+        "cue": "behind the metal, not on top of it"
+      },
+      "coaching": "A capo is a clamp that shortens the strings. Put it just behind the 2nd fret, straight across, snug but not choking. Now your open chords sound higher.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-transpose",
+      "name": "G–D–Em–C with capo 2",
+      "purpose": "Same shapes, new key (A major).",
+      "params": {
+        "chord_cycle": [
+          "G",
+          "D",
+          "Em",
+          "C"
+        ],
+        "capo": 2,
+        "sounds_in": "A major (A E F#m D)",
+        "tempo_bpm": 70,
+        "beats": 4,
+        "cue": "play the same shapes; the capo does the transposing"
+      },
+      "coaching": "Capo on 2, play G-D-Em-C with the SAME shapes. It now sounds in A (A-E-F#m-D). You just played a song in a new key without learning new chords. That is the capo superpower.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "Can't hit the high notes? The capo lets you play the same easy shapes in any key. One clamp, and suddenly every song fits your voice.",
+    "ex1_intro": "Capo just behind the 2nd fret, straight and snug. It shortens the strings so your open chords sound higher. No new fingerings.",
+    "ex2_intro": "Capo on 2, play G-D-Em-C like always. It sounds in A now. Same shapes, new key — you can match any singer. That is the whole point.",
+    "results": "A capo means you never have to learn a song in an uncomfortable key. The shapes you already know travel anywhere.",
+    "wrap": "Capo basics done. Lesson 15 we build raw change speed — the skill that makes everything feel easy."
+  },
+  "qa_block": {
+    "must_verify": [
+      "Automated: every chord fingering verified deterministically by 06-prototypes/step0/schema/chord-theory-check.js (verifyChord) — 0 errors AND 0 warnings required before ship (Hard Ban 7 satisfied by arithmetic, per owner directive 2026-08-08: physical fingering correctness needs no contract guitarist).",
+      "Automated: lesson JSON passes schema/validate.js (validateLesson) — all required keys present, frets/fingers length 6, qa_status whitelisted.",
+      "Author pass: teaching copy is plain-English, beginner-appropriate, no AI-isms; pacing realistic.",
+      "Licensing: exercises only, zero copyrighted song material (spec §3/R6).",
+      "Capo is a transposition tool; the SHAPES taught (G-D-Em-C) are unchanged, so no new chord fingerings are introduced. This lesson introduces no new fret data."
+    ],
+    "flagged_by": "founder (non-player) — cannot self-verify",
+    "verifier_role": "arithmetic (chord-theory-check.js) + author review",
+    "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
+  },
+  "lesson": {
+    "id": "L14-capo-basics",
+    "title": "Capo Basics (play in any key)",
+    "level": "beginner",
+    "lesson_type": "technique",
+    "one_line_promise": "One clamp, sing any song in your range.",
+    "objectives": [
+      "Place a capo correctly (just behind a fret)",
+      "Understand why it raises the key",
+      "Play a transposed G–D–Em–C song with capo on 2 (sounds in A)"
+    ],
+    "estimated_minutes": 14,
+    "prerequisites": [
+      "G-D-Em-C loop (L10)"
+    ],
+    "app_feature_mapping": {
+      "free_metronome": [
+        "transposed loop tempo"
+      ]
+    }
+  }
+}

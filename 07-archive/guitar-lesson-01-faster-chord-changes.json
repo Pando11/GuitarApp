@@ -1,0 +1,246 @@
+{
+  "lesson": {
+    "id": "L01-faster-chord-changes",
+    "title": "The Real Secret to Faster Chord Changes",
+    "source": {
+      "type": "youtube",
+      "url": "https://youtu.be/HUNCx_Sr9Bo",
+      "creator": "Lauren Bateman",
+      "duration_sec": 1140,
+      "licensing": "exercise-only, no song material — safe per spec §3/R6"
+    },
+    "level": "absolute-beginner",
+    "lesson_type": "technique",
+    "one_line_promise": "Why your chord changes are slow — and the 3 drills that fix it.",
+    "core_concept": "Tension slows your hands. Speed comes from repetition that builds muscle memory, which is what lets you relax. You cannot rush the relaxation.",
+    "estimated_minutes": 12,
+    "prerequisites": [
+      "Can form Em, C, G, D open chords (even slowly)"
+    ],
+    "objectives": [
+      "Understand why chord changes feel hard (new motor pattern + tension)",
+      "Warm up hands with the spider exercise",
+      "Build finger independence with lift-off drills",
+      "Use a metronome as a scorecard for chord-change speed",
+      "Use pivot points to make Em-C and Em-G easier"
+    ],
+    "app_feature_mapping": {
+      "on_device_pitch_timing": [
+        "EX3-metronome-drill (detect change completion + count)"
+      ],
+      "free_metronome": [
+        "EX3 uses built-in metronome — funnel front door"
+      ],
+      "adaptive_loop": [
+        "Raise target changes/min week over week from logged baseline"
+      ],
+      "_removed_camera_chord_shape_check": "2026-08-07: front-camera chord-shape verification for EX2 removed — violates Hard Ban #2 (no camera) in FEATURES-LOCKED-v1. EX2-liftoff is coached textually; no camera feature ships."
+    }
+  },
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted.",
+    "Em": {
+      "name": "E minor",
+      "frets": [
+        0,
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "fingers": [
+        0,
+        2,
+        3,
+        0,
+        0,
+        0
+      ],
+      "qa_status": "verified-standard"
+    },
+    "C": {
+      "name": "C major (standard)",
+      "frets": [
+        null,
+        3,
+        2,
+        0,
+        1,
+        0
+      ],
+      "fingers": [
+        null,
+        3,
+        2,
+        0,
+        1,
+        0
+      ],
+      "qa_status": "verified-standard"
+    },
+    "easyC": {
+      "name": "C major (Lauren's 'easy C' — 2-finger reduction)",
+      "frets": [
+        null,
+        3,
+        2,
+        0,
+        null,
+        0
+      ],
+      "fingers": [
+        null,
+        3,
+        2,
+        0,
+        null,
+        0
+      ],
+      "note": "REDUCED voicing for confidence-building. Exact fingering MUST be confirmed by QA guitarist against Lauren's teaching. Placeholder = ring(3) on A-string 3rd fret + middle(2) on D-string 2nd fret, B-string left open.",
+      "qa_status": "QA-PENDING"
+    },
+    "G": {
+      "name": "G major (3-finger / 'easy G')",
+      "frets": [
+        3,
+        2,
+        0,
+        0,
+        0,
+        3
+      ],
+      "fingers": [
+        2,
+        1,
+        0,
+        0,
+        0,
+        3
+      ],
+      "qa_status": "verified-standard (3-finger variant)"
+    },
+    "D": {
+      "name": "D major",
+      "frets": [
+        null,
+        null,
+        0,
+        2,
+        3,
+        2
+      ],
+      "fingers": [
+        null,
+        null,
+        0,
+        1,
+        3,
+        2
+      ],
+      "qa_status": "verified-standard",
+      "note": "2026-08-07: finger order corrected (middle/ring were swapped) by deterministic chord-theory check."
+    }
+  },
+  "pivot_points": [
+    {
+      "from": "Em",
+      "to": "C",
+      "static_finger": "middle (2nd finger) stays on 4th string, 2nd fret",
+      "movement": "Ring(3rd) moves 5th-string-2nd -> 5th-string-3rd; index(1st) added on 2nd-string-1st.",
+      "qa_status": "verified (holds for standard C voicing)"
+    },
+    {
+      "from": "Em",
+      "to": "G",
+      "static_finger": "index (1st finger) stays on 5th string, 2nd fret",
+      "movement": "Ring(3rd) moves 4th-string-2nd -> 1st-string-3rd; middle(2nd) added on 6th-string-3rd.",
+      "qa_status": "verified (holds for 3-finger G voicing)"
+    }
+  ],
+  "exercises": [
+    {
+      "id": "EX1-spider",
+      "name": "Spider exercise (finger dexterity warm-up)",
+      "purpose": "Blood flow + fine-motor control + coordinate fretting and picking hands.",
+      "params": {
+        "start_fret": 7,
+        "fingers_used": [
+          1,
+          2,
+          3
+        ],
+        "finger_fret_map": {
+          "1": 7,
+          "2": 8,
+          "3": 9
+        },
+        "strings": "6 down to 1, then back up (low E -> high e -> low E)",
+        "picks_per_note": 3,
+        "pick": "down-pick (thumb OK if no pick)",
+        "tempo": "very slow; count '1 2 3 4', advance to next note on each 1",
+        "duration_min": 5,
+        "breathing_cue": "Breathe; don't hold breath (holding breath = tension = slow)"
+      },
+      "coaching": "Keep fingers relaxed and close to the fretboard. They'll feel floppy at first — that floppy feeling IS the control you're building.",
+      "qa_status": "QA-PENDING (confirm start fret 7 = least stretch; confirm 3 fingers not 4)"
+    },
+    {
+      "id": "EX2-liftoff",
+      "name": "Finger lift-off / 'finger push-ups'",
+      "purpose": "Finger independence + retain chord shape when lifting a finger.",
+      "params": {
+        "base_chord": "C",
+        "action": "Lift 3rd finger, then 2nd, then 1st, one at a time; rebuild. Progress to peeling all off and landing together.",
+        "air_variant": "Lift hand off guitar, make shapes in air, drop back down.",
+        "duration_min": "few minutes only (tendon caution — instructor notes tendinitis risk)"
+      },
+      "coaching": "If your hand flattens when you let go, that's normal — muscle memory hasn't formed yet. Reps fix it.",
+      "qa_status": "verified-concept"
+    },
+    {
+      "id": "EX3-metronome-drill",
+      "name": "1-2 minute chord-change drill (metronome scorecard)",
+      "purpose": "Measurable speed gain; psychological push past comfort tempo.",
+      "params": {
+        "chord_pair": [
+          "Em",
+          "easyC"
+        ],
+        "duration_sec": 60,
+        "measure": "count completed changes in the window",
+        "baseline_changes_per_min": "16-30 (anecdotal, instructor-reported — NOT validated)",
+        "push_technique": "Set tempo slightly ABOVE comfort, then return — makes comfort tempo feel slow.",
+        "clarity_rule": "During speed push, muted strings are OK; goal is finger SPEED to target, clean up later.",
+        "slow_variant": "30s slow (clarity: fingers move together + hover) + 30s fast"
+      },
+      "coaching": "Write the number down. That's your scorecard — next week, beat it. Speed first, clean second.",
+      "qa_status": "QA-PENDING (baseline range is anecdotal, not validated)"
+    }
+  ],
+  "common_mistakes": [
+    "Learning too many chords at once — teach 4 at a time (G, Em, C, D = thousands of songs).",
+    "Going too fast too soon — slow builds muscle memory; push speed only inside drills.",
+    "Practicing songs instead of transitions — dedicate a block to chord changes specifically."
+  ],
+  "avatar_coaching_copy": {
+    "intro": "Slow chord changes aren't a talent problem — they're a muscle-memory problem. Today we warm up your hands and turn your metronome into a scorecard. Grab your guitar.",
+    "ex1_intro": "First, the spider. Start at the 7th fret where it's least stretchy. One finger per fret — index, middle, ring. Three slow picks per string, top to bottom and back. Breathe. Floppy fingers are normal.",
+    "ex2_intro": "Now make a C shape and lift fingers one at a time. If your hand forgets the shape when you let go, that's expected. We're teaching your fingers where to go.",
+    "ex3_intro": "Here's the scorecard. Metronome on, Em to C, back and forth, for one minute. Count your changes. Don't worry about buzz — we're chasing speed. Write the number down.",
+    "results": "Your count this session is your baseline. Next session, beat it by one. That's how 16 becomes 30.",
+    "wrap": "You're never too old for this. Consistency beats talent. Three drills, five minutes, most days — that's the whole secret."
+  },
+  "qa_block": {
+    "must_verify_before_ship": [
+      "easyC exact fingering vs Lauren's teaching (currently placeholder).",
+      "easyG = 3-finger G 320003 assumption correct.",
+      "Spider start fret 7 = least stretch (vs 5); confirm 3 fingers not 4.",
+      "Metronome baseline 16-30 changes/min is plausible for absolute beginners.",
+      "Pivot claims hold for the voicings actually shipped.",
+      "No copyrighted song material used — exercises only (licensing safe per spec §3/R6)."
+    ],
+    "flagged_by": "founder (non-player) — cannot self-verify",
+    "verifier_role": "contract guitarist / teacher"
+  }
+}

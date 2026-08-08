@@ -1,0 +1,109 @@
+{
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted.",
+    "E7": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "E7",
+      "frets": [0, 2, 0, 1, 0, 0],
+      "fingers": [0, 2, 0, 1, 0, 0]
+    },
+    "A7": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "A7",
+      "frets": [null, 0, 2, 0, 2, 0],
+      "fingers": [null, 0, 1, 0, 3, 0]
+    },
+    "B7": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "B7",
+      "frets": [null, 2, 1, 2, 0, 2],
+      "fingers": [null, 3, 2, 1, 0, 4],
+      "note": "Barre-free B7 voicing matching the teaching prose: index(1) on G-string 2nd fret, middle(2) on D-string 1st fret, ring(3) on A-string 2nd fret, pinky(4) on high-e 2nd fret. Spelling verified deterministically by chord-theory-check.js as B D# F# A (root, 3rd, 5th, b7)."
+    }
+  },
+  "exercises": [
+    {
+      "id": "EX1-b7",
+      "name": "Make the B7 shape",
+      "purpose": "Land the turnaround chord that completes the 12-bar.",
+      "params": {
+        "chord": "B7",
+        "fingers": "index(1) on G-string 2nd fret, middle(2) on D-string 1st fret, ring(3) on A-string 2nd fret, pinky(4) on high-e 2nd fret",
+        "thumb": "rests behind neck",
+        "strings_played": "A, D, G, B, high e (low E stays quiet)"
+      },
+      "coaching": "B7 is the one that turns the blues around. Four fingers, all close together: index on the G string second fret, middle on the D string first fret, ring on the A string second fret, pinky on the high e second fret. Low E stays quiet. It looks busy but the fingers barely move — that cluster IS the sound.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-turnaround",
+      "name": "The turnaround walk",
+      "purpose": "Practice E7 to A7 to B7 — the classic blues turnaround.",
+      "params": {
+        "chord_cycle": ["E7", "A7", "B7"],
+        "tempo_bpm": 60,
+        "beats": 4,
+        "feel": "swing",
+        "cue": "one chord per 4 beats, change on the downbeat"
+      },
+      "coaching": "Walk the turnaround: E7, A7, B7 — one per four beats. Slow it right down so every change lands on the click. B7 is the tension that wants to resolve back to E7. That pull is the whole story of the blues.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX3-12bar",
+      "name": "Your first 12-bar blues",
+      "purpose": "Play the full 12-bar form top to bottom.",
+      "params": {
+        "chord_cycle": ["E7", "A7", "E7", "E7", "A7", "A7", "E7", "E7", "B7", "A7", "E7", "B7"],
+        "tempo_bpm": 60,
+        "beats": 4,
+        "feel": "swing",
+        "cue": "one chord per bar, change on bar 1; bars 9-12 are the turnaround"
+      },
+      "coaching": "Here it is — the 12-bar. E7 for four bars, A7 for two, back to E7 for two, then the turnaround: B7, A7, E7, B7. One chord per bar, on the click. Slow is fine. You are playing the form that underpins a century of music. Loop it. That is the blues.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "The payoff lesson. Three chords — E7, A7, B7 — and you can play a full 12-bar blues. This is the form behind a hundred years of music.",
+    "ex1_intro": "B7 is the turnaround chord: index on G second fret, middle on D first, ring on A second, pinky on high e second. Low E quiet. The cluster of fingers barely moves — that is the sound.",
+    "ex2_intro": "Walk the turnaround: E7, A7, B7, one per four beats, slow. B7 is the tension that wants to fall back to E7. That pull is the whole story.",
+    "ex3_intro": "The 12-bar: E7 four bars, A7 two, E7 two, then B7-A7-E7-B7. One chord per bar, on the click. Slow is fine. Loop it. That is the blues.",
+    "results": "If you can play the 12-bar without stopping, you have the backbone of the entire style. Loop it every practice — it never gets old.",
+    "wrap": "E7, A7, B7 — a full 12-bar blues in your hands. That is the Blues style pack. Play it with the shuffle, play it with feeling, and you are a blues player."
+  },
+  "qa_block": {
+    "must_verify": [
+      "Automated: every chord fingering verified deterministically by 06-prototypes/step0/schema/chord-theory-check.js (verifyChord) — 0 errors AND 0 warnings required before ship (Hard Ban 7 satisfied by arithmetic, per owner directive 2026-08-08).",
+      "Automated: lesson JSON passes schema/validate.js (validateLesson) — all required keys present, frets/fingers length 6, qa_status whitelisted.",
+      "Author pass: teaching copy is plain-English, beginner-appropriate, no AI-isms; pacing realistic.",
+      "Licensing: exercises only, zero copyrighted song material (spec §3/R6). The 12-bar form is a public-domain structure, not a specific song.",
+      "Cross-pack reference: EX3 chord_cycle uses E7/A7/B7 all defined in THIS lesson's chords block, so it needs no external dependency."
+    ],
+    "flagged_by": "founder (non-player) — cannot self-verify",
+    "verifier_role": "arithmetic (chord-theory-check.js) + author review",
+    "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
+  },
+  "lesson": {
+    "id": "B3-blues-12bar",
+    "title": "Blues Pack 3 — The 12-Bar Blues (E7, A7, B7)",
+    "level": "beginner",
+    "lesson_type": "technique",
+    "one_line_promise": "Three chords, one form, a century of music.",
+    "objectives": [
+      "Form B7 (barre-free 4-finger voicing)",
+      "Walk the E7-A7-B7 turnaround on the beat",
+      "Play a full 12-bar blues loop without stopping"
+    ],
+    "estimated_minutes": 14,
+    "prerequisites": [
+      "Blues Pack 1 — E7 (B1)",
+      "Blues Pack 2 — A7 (B2)"
+    ],
+    "app_feature_mapping": {
+      "free_metronome": [
+        "hold the 12-bar tempo (swing feel, one chord per bar)"
+      ]
+    }
+  }
+}

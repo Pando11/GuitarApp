@@ -1,0 +1,94 @@
+{
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted.",
+    "G": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "G",
+      "frets": [3, 2, 0, 0, 0, 3],
+      "fingers": [2, 1, 0, 0, 0, 3]
+    }
+  },
+  "exercises": [
+    {
+      "id": "EX1-shape",
+      "name": "Make the G shape",
+      "purpose": "Land the bright open G chord that starts a hundred country songs.",
+      "params": {
+        "chord": "G",
+        "fingers": "middle(2) on low-E 3rd fret, index(1) on A 2nd fret, ring(3) on high-e 3rd fret, rest open",
+        "thumb": "rests behind neck",
+        "strings_played": "all six ring (low E, A, D, G, B, high e)"
+      },
+      "coaching": "G is the bright, open chord at the heart of country. Middle finger on the low E, third fret; index on the A, second fret; ring on the high e, third fret; let the middle four strings ring open. That ring of open strings is the country shine.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-strum",
+      "name": "One clean down-strum",
+      "purpose": "Strum through all six strings without catching.",
+      "params": {
+        "chord": "G",
+        "action": "single downward strum, relaxed wrist",
+        "reps": 5,
+        "cue": "listen for the open D and B strings ringing bright"
+      },
+      "coaching": "Hold G and strum down across all six strings. Loose wrist. The open D and B strings give G its sparkle, so let them ring. If the low E buzzes, press your middle finger a touch closer to the fret. That full, bright G is the sound.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX3-boomchick",
+      "name": "Your first boom-chick",
+      "purpose": "Feel the country pulse under the chord.",
+      "params": {
+        "chord": "G",
+        "tempo_bpm": 100,
+        "beats": 4,
+        "feel": "boom-chick — bass note on 1 and 3, strum on 2 and 4",
+        "cue": "count 'bass - chick - bass - chick'"
+      },
+      "coaching": "Same G, now with the country pulse: pluck the low root on 1 and 3, strum the chord on 2 and 4. 'Bass - chick - bass - chick.' Set the metronome to 100 and let it sit. That boom-chick IS country rhythm. Just sit in it.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "Today you learn the brightest chord in country — G. Three fingers, all six strings ringing, and you're already in the pocket.",
+    "ex1_intro": "G: middle on low E third fret, index on A second, ring on high e third, middle four open. That ring is the shine.",
+    "ex2_intro": "Strum down all six. Loose wrist. Listen for the open D and B — that's the sparkle. Buzz? Closer to the fret.",
+    "ex3_intro": "Boom-chick: bass on 1 and 3, strum on 2 and 4. Metronome at 100. That pulse is country.",
+    "results": "If you can hold G and play a boom-chick pulse, you've got the country heartbeat. That's the door to the whole style.",
+    "wrap": "G in your hands, boom-chick in your wrist. Most people think country is fancy — it starts with one chord. Lesson 2 of the pack adds C and you get your first real change."
+  },
+  "qa_block": {
+    "must_verify": [
+      "Automated: every chord fingering verified deterministically by 06-prototypes/step0/schema/chord-theory-check.js (verifyChord) — 0 errors AND 0 warnings required before ship (Hard Ban 7 satisfied by arithmetic, per owner directive 2026-08-08).",
+      "Automated: lesson JSON passes schema/validate.js (validateLesson) — all required keys present, frets/fingers length 6, qa_status whitelisted.",
+      "Author pass: teaching copy is plain-English, beginner-appropriate, no AI-isms; pacing realistic.",
+      "Licensing: exercises only, zero copyrighted song material (spec §3/R6). The I-IV-V change is a public-domain structure, not a specific song.",
+      "Blues note: the bent 'blue note' is NOT used here (this is the country pack); chord data stays arithmetic-clean."
+    ],
+    "flagged_by": "founder (non-player) — cannot self-verify",
+    "verifier_role": "arithmetic (chord-theory-check.js) + author review",
+    "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
+  },
+  "lesson": {
+    "id": "C1-country-g",
+    "title": "Country Pack 1 — The G Chord (the bright open sound)",
+    "level": "beginner",
+    "lesson_type": "technique",
+    "one_line_promise": "One chord, and you're already playing country.",
+    "objectives": [
+      "Form G (middle low E 3, index A 2, ring high e 3, rest open)",
+      "Strum it clean across all six strings",
+      "Feel the boom-chick pulse over a metronome"
+    ],
+    "estimated_minutes": 10,
+    "prerequisites": [
+      "Em, easy C, G, D, Am (core open-chord set)"
+    ],
+    "app_feature_mapping": {
+      "free_metronome": [
+        "hold the boom-chick tempo (bass-chick feel)"
+      ]
+    }
+  }
+}

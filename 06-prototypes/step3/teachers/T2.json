@@ -1,0 +1,33 @@
+{
+  "_note": "PERSONA + ART ONLY. No lesson content may ever appear in this file.",
+  "id": "T2",
+  "name": "Ellis Nakamura",
+  "codename": "The Zen Coach",
+  "name_status": "FINAL — owner approved 2026-08-08",
+  "tagline": "Thirty years of playing, and he still practices slower than you'd expect.",
+  "teaching_style": "Ellis talks less than the other two, and he leaves gaps on purpose. He believes most beginners fail because they rush past the exact moment they were about to learn something, so he'll ask you to play one chord and then just sit with it. When something goes wrong he treats it as information rather than a verdict — a buzzing string tells you where your hand actually is, not whether you're musical. He's the one who will tell you to stop practicing for the night, and mean it. People who've quit other apps out of frustration tend to stay with Ellis.",
+  "persona": {
+    "summary": "Calm, unhurried. Frames every mistake as information, not failure.",
+    "tone": "quiet, measured, patient",
+    "catchphrase": "Breathe. Then play."
+  },
+  "voice": {
+    "provider": "openai-tts",
+    "voice_id": "shimmer",
+    "style": "soft, slow pace",
+    "rate": 0.9,
+    "pitch": -1
+  },
+  "skin": {
+    "body_type": "rig-A",
+    "palette": { "primary": "#7ed6a5", "secondary": "#13342a", "accent": "#e9f5c9" },
+    "shape": "tall-calm-creature"
+  },
+  "handoff_line": "So you're my new student. Same road, steadier pace. We continue exactly where you are.",
+  "persona_lines": {
+    "intro": "Settle in. There is no rush here.",
+    "chord": "Place each finger deliberately. Notice how it feels.",
+    "exercise": "Let the tempo carry you. Accuracy first, speed follows.",
+    "wrap": "That was good work. Let it sink in."
+  }
+}
