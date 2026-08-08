@@ -38,13 +38,10 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { execFileSync } = require('child_process');
 const _readFileSync = fs.readFileSync.bind(fs);
 const _existsSync = fs.existsSync.bind(fs);
 const _createHash = crypto.createHash.bind(crypto);
-const B = require('./band-engine.js');
-const T = require('../step2/engine/tuner-engine.js');
-const L = require('../step5/engine/listening-engine.js');
-const { PracticeStore } = require('../step6/store/practiceStore.js');
 
 // Repo root: __dirname is .../06-prototypes/step7-extra, so two '..' land on the
 // GuitarApp root where the baseline's "06-prototypes/..." paths are anchored.
@@ -59,10 +56,45 @@ const CORE_BASELINE_PIN = '629bc03c0950901cebc98f889e22eaeeea28d22ba5b158a10163d
 
 let pass = 0, fail = 0;
 const fails = [];
-function check(name, cond, detail) {
-  if (cond) { pass++; console.log('  OK  ' + name); }
-  else { fail++; fails.push(name + (detail ? ' — ' + detail : '')); console.log('  FAIL ' + name + (detail ? ' — ' + detail : '')); }
+function check(name, ok, detail) {
+  if (ok) { pass++; console.log('  OK  ' + name); }
+  else { fail++; fails.push(name); console.log('FAIL  ' + name + (detail ? '  [' + detail + ']' : '')); }
 }
+
+// 8th-pass HOLE 1 fix: run the CORE integrity check in a SEPARATE CLEAN PROCESS
+// that never requires the engine under test. An evil band-engine.js can poison
+// crypto.Hash.prototype / String / Array at load and self-bless tampered bytes
+// (demonstrated: 34/0 green with tampered engine+practiceStore+entitlementStore).
+// Spawning first, before any require of repo code, makes the hashes trustworthy.
+console.log('\n=== 0. CORE INTEGRITY (clean process, pre-require) ===');
+let coreIntegrity = null;
+try {
+  const out = execFileSync(process.execPath, [path.join(__dirname, 'check-core-integrity.js'), CORE_BASELINE_PIN], { encoding: 'utf8' });
+  coreIntegrity = JSON.parse(out.trim().split('\n').pop());
+} catch (e) {
+  // nonzero exit -> stdout still carries the JSON report
+  try { coreIntegrity = JSON.parse((e.stdout || '').trim().split('\n').pop()); }
+  catch (_) { coreIntegrity = { ok: false, errors: ['checker-crash'], stderr: String(e.stderr || e.message) }; }
+}
+check('CORE baseline file present', _existsSync(CORE_BASELINE));
+check('CORE baseline file is unmodified (self-pinned sha256, clean process)',
+  coreIntegrity.ok || !(coreIntegrity.errors || []).includes('baseline-pin-mismatch'),
+  coreIntegrity.actual ? 'actual=' + coreIntegrity.actual : JSON.stringify(coreIntegrity.errors || []));
+check('CORE baseline lists 10 modules (was 6; +tuner-engine +practiceStore)', coreIntegrity.count >= 8, 'count=' + coreIntegrity.count);
+check('CORE baseline has NO path-traversal entries (rejects .. and out-of-root rels)',
+  (coreIntegrity.traversal || []).length === 0, (coreIntegrity.traversal || []).join(', '));
+check('NO core module deleted/missing (tamper detects deletion)',
+  (coreIntegrity.missing || []).length === 0, (coreIntegrity.missing || []).join(', '));
+check('ALL CORE MODULES byte-identical to baseline (clean process)',
+  coreIntegrity.ok === true, (coreIntegrity.changed || []).concat(coreIntegrity.missing || []).join(', '));
+check('tuner-engine.js is in the protected baseline', _readFileSync(CORE_BASELINE, 'utf8').indexOf('tuner-engine.js') >= 0);
+check('practiceStore.js is in the protected baseline', _readFileSync(CORE_BASELINE, 'utf8').indexOf('practiceStore.js') >= 0);
+
+// Only NOW load the engine under test — integrity already proven by the clean process.
+const B = require('./band-engine.js');
+const T = require('../step2/engine/tuner-engine.js');
+const L = require('../step5/engine/listening-engine.js');
+const { PracticeStore } = require('../step6/store/practiceStore.js');
 
 const CHORDS = {
   E7: { frets: [0, 2, 0, 1, 0, 0] },
@@ -371,45 +403,10 @@ console.log('=== F7 BAND ENGINE — DONE BAR ===');
   check('BAN 5 — selfAudit confirms no network calls', audit.noNetwork === true);
 }
 
-// 8. NO CORE-CODE CHANGE — core modules byte-identical to baseline (repo-root resolve, fail on missing)
-{
-  check('CORE baseline file present', _existsSync(CORE_BASELINE));
-  // HOLE-3 fix: the baseline file itself must be unmodified, else an attacker can
-  // rewrite a hash line to bless a tampered core file and pass silently.
-  if (_existsSync(CORE_BASELINE)) {
-    const baselineHash = _createHash('sha256').update(_readFileSync(CORE_BASELINE)).digest('hex');
-    check('CORE baseline file is unmodified (self-pinned sha256)', baselineHash === CORE_BASELINE_PIN,
-      'actual=' + baselineHash);
-  }
-  if (_existsSync(CORE_BASELINE)) {
-    const expect = {};
-    _readFileSync(CORE_BASELINE, 'utf8').split('\n').forEach(line => {
-      const m = line.trim().match(/^([0-9a-f]{64})\s+\*(.+)$/); // strip leading '*' correctly
-      if (m) expect[m[2]] = m[1];
-    });
-    const rels = Object.keys(expect);
-    check('CORE baseline lists ' + rels.length + ' modules (was 6; +tuner-engine +practiceStore)', rels.length >= 8, 'count=' + rels.length);
-    // HOLE-3 fix: reject path traversal — every listed rel must stay inside the
-    // repo root and contain no '..' (a baseline entry like 'step8/../step3/decoy.js'
-    // would otherwise checksum a decoy and pass).
-    const traversal = rels.filter(rel => rel.includes('..') || !path.resolve(REPO_ROOT, rel).startsWith(REPO_ROOT + path.sep));
-    check('CORE baseline has NO path-traversal entries (rejects .. and out-of-root rels)', traversal.length === 0, traversal.join(', '));
-    let allSame = true; const changed = []; const missing = [];
-    for (const rel of rels) {
-      const fp = path.join(REPO_ROOT, rel); // resolve from repo root, not step7
-      if (!_existsSync(fp)) { missing.push(rel); allSame = false; continue; } // FAIL on missing, no silent skip
-      const h = _createHash('sha256').update(_readFileSync(fp)).digest('hex');
-      if (h !== expect[rel]) { allSame = false; changed.push(rel); }
-    }
-    check('NO core module deleted/missing (tamper detects deletion)', missing.length === 0, missing.join(', '));
-    check('ALL ' + rels.length + ' CORE MODULES byte-identical to baseline', allSame, changed.concat(missing).join(', '));
-    // Explicitly assert the two newly-protected files are covered (proves #8 extension landed).
-    check('tuner-engine.js is in the protected baseline', rels.some(r => r.indexOf('tuner-engine.js') >= 0));
-    check('practiceStore.js is in the protected baseline', rels.some(r => r.indexOf('practiceStore.js') >= 0));
-  } else {
-    fail++; fails.push('CORE baseline missing');
-  }
-}
+// 8. NO CORE-CODE CHANGE — now proven in section 0 (clean process, pre-require).
+// The old in-process check was removed: an evil engine could poison prototypes
+// after require and self-bless (8th-pass HOLE 1). Section 0 spawns
+// check-core-integrity.js before any repo code loads, so hashes are trustworthy.
 
 console.log('\n============================================================');
 console.log('F7 BAND ENGINE: ' + pass + ' passed, ' + fail + ' failed');
