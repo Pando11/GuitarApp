@@ -10,13 +10,23 @@
  *     produce correctly-proportioned loops.
  *  3. tempo capture wiring — the practice store's lastPracticeTempo() drives the band.
  *  4. STEM PITCH CORRECTNESS — the synthesized bass root, bass fifth, and chord stab
- *     each actually sound their intended note (measured by the SAME listener math,
- *     detectPitchSet + notesMatch, not eyeballed).
+ *     each actually sound their intended note (measured, not eyeballed). The expected
+ *     frequency comes from an INDEPENDENT octave-aware oracle (equal temperament from
+ *     A2=110), NOT the engine's own API, so a wrong-OCTAVE regression is caught.
+ *
+ *     Octave is proven by a Goertzel energy comparison at the expected fundamental, its
+ *     octave-DOWN, and its octave-UP. The listener math (detectPitchSet) reports the
+ *     strongest SPECTRAL peak in a pitch class, which for a low note is often its 2nd
+ *     harmonic — so it would report E1 (41 Hz, 82 Hz harmonic) as "82 Hz". Comparing
+ *     bin energy at f vs f/2 vs f*2 makes the gate octave-SOUND, not octave-blind: a
+ *     literal octave error is rejected because the energy peak sits at the wrong octave.
  *  5. ORIGINAL AUDIO / NO COPYRIGHT (Ban 4) — every stem synthesized, no samples.
  *  6. NO NETWORK (Ban 5) — selfAudit confirms zero network calls in band-engine.js.
  *  7. NO AI DRAWS FINGERS (Ban 1) — stems are synthesized; no fretboard image gen.
- *  8. NO CORE-CODE CHANGE — the 6 core engine modules (CORE-UNTOUCHED baseline) are
- *     byte-identical; practiceStore.js gained ONLY two additive methods (verified).
+ *  8. NO CORE-CODE CHANGE — the 8 core engine modules (CORE-UNTOUCHED baseline) are
+ *     byte-identical. Baseline paths are resolved from the REPO ROOT (two levels up
+ *     from this file) with the leading '*' stripped; a MISSING file FAILS (no
+ *     silent skip) — so tampering or deletion is detected, not hidden.
  *
  * Run: node verify-band.js
  */
@@ -24,9 +34,13 @@ const B = require('./band-engine.js');
 const T = require('../step2/engine/tuner-engine.js');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const { PracticeStore } = require('../step6/store/practiceStore.js');
 
-const CORE_BASELINE = path.join(__dirname, '..', 'step8', 'CORE-UNTOUCHED.sha256');
+// Repo root: __dirname is .../06-prototypes/step7-extra, so two '..' land on the
+// GuitarApp root where the baseline's "06-prototypes/..." paths are anchored.
+const REPO_ROOT = path.resolve(__dirname, '..', '..');
+const CORE_BASELINE = path.join(REPO_ROOT, '06-prototypes', 'step8', 'CORE-UNTOUCHED.sha256');
 
 let pass = 0, fail = 0;
 const fails = [];
@@ -42,6 +56,80 @@ const CHORDS = {
 };
 function mkOpts(bpm) {
   return { chordCycle: ['E7', 'A7', 'B7'], chords: CHORDS, bpm, beats: 4, feel: 'swing', bars: 3, seed: 7 };
+}
+
+/* ----------------------------------------------------------------------------
+ * INDEPENDENT pitch oracle (octave-aware). Equal temperament from A2 = 110 Hz.
+ * Deliberately a SEPARATE implementation from band-engine.noteToFreq so that a
+ * regression in the engine's register math (e.g. dropping an octave) is caught
+ * here instead of agreeing with itself. MIDI octave convention: A4 = 69.
+ * --------------------------------------------------------------------------*/
+const SEMI = { C: 0, 'C#': 1, D: 2, 'D#': 3, E: 4, F: 5, 'F#': 6, G: 7, 'G#': 8, A: 9, 'A#': 10, B: 11 };
+const FLAT = { Db: 'C#', Eb: 'D#', Gb: 'F#', Ab: 'G#', Bb: 'A#' };
+const CHROMATIC = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+function oracleFreq(name, octave) {
+  let n = String(name).replace(/^\d+/, '');
+  if (FLAT[n]) n = FLAT[n];
+  const pc = (SEMI[n] != null) ? SEMI[n] : 0;
+  const midi = (octave + 1) * 12 + pc;
+  return 440 * Math.pow(2, (midi - 69) / 12);
+}
+function parseChordRoot(name) {
+  if (typeof name !== 'string') return { root: 'C', octave: 2 };
+  const m = name.replace(/m$/, '').match(/^([A-G][#b]?)/);
+  const root = m ? m[1] : 'C';
+  const om = name.match(/\d+/);
+  const octave = om ? parseInt(om[0], 10) : 2;
+  return { root, octave };
+}
+function fifthNameOf(name) {
+  let n = String(name).replace(/^\d+/, '');
+  if (FLAT[n]) n = FLAT[n];
+  const idx = (SEMI[n] != null) ? SEMI[n] : 0;
+  return CHROMATIC[((idx + 7) % 12 + 12) % 12];
+}
+
+/* ----------------------------------------------------------------------------
+ * Goertzel-style single-bin magnitude at frequency f over [t0, t0+secs).
+ * Used to compare energy at f vs f/2 vs f*2 so the gate is octave-SOUND.
+ * --------------------------------------------------------------------------*/
+function binEnergy(buffer, t0, secs, f) {
+  const SR = B.SR;
+  const off = Math.floor(t0 * SR);
+  const len = Math.min(Math.floor(secs * SR), buffer.length - off);
+  if (len <= 0) return 0;
+  const w0 = 2 * Math.PI * f / SR;
+  let re = 0, im = 0;
+  for (let n = 0; n < len; n++) {
+    const s = buffer[off + n];
+    re += s * Math.cos(w0 * n);
+    im -= s * Math.sin(w0 * n);
+  }
+  return Math.sqrt(re * re + im * im) / len;
+}
+/*
+ * Verify a bass-class stem at [t0, t0+secs) sounds expectedFreq in the CORRECT
+ * octave. Returns {ok, fundamental, cents, energyRatio}.
+ *  - fundamental = the octave (of expectedFreq) carrying the most energy.
+ *  - ok requires the fundamental to be expectedFreq (within tol cents) AND that
+ *    expectedFreq carries more energy than BOTH its octave-down and octave-up
+ *    (ratio > MIN_RATIO), so a literal octave error is rejected.
+ */
+const OCTAVE_RATIO = 1.4; // the true fundamental must beat each octave neighbor by >=40%
+function verifyBassOctave(buffer, t0, secs, expectedFreq, tolCents) {
+  const e = expectedFreq;
+  const e0 = binEnergy(buffer, t0, secs, e);
+  const eLow = binEnergy(buffer, t0, secs, e / 2);
+  const eHigh = binEnergy(buffer, t0, secs, e * 2);
+  // strongest of the three octaves is the dominant fundamental
+  const cand = [[e, e0], [e / 2, eLow], [e * 2, eHigh]];
+  cand.sort((a, b) => b[1] - a[1]);
+  const fundamental = cand[0][0];
+  // measured cents of the dominant octave relative to expected
+  const cents = (fundamental === e) ? 0 : T.centsOff(fundamental, e) % 1200;
+  const ok = Math.abs(cents) <= tolCents && e0 > eLow * OCTAVE_RATIO && e0 > eHigh * OCTAVE_RATIO;
+  return { ok, fundamental, cents, e0, eLow, eHigh };
 }
 
 console.log('=== F7 BAND ENGINE — DONE BAR ===');
@@ -90,29 +178,62 @@ console.log('=== F7 BAND ENGINE — DONE BAR ===');
   check('band tolerates null tempo (uses lesson default 68)', r2.bpm === 68);
 }
 
-// 4. STEM PITCH CORRECTNESS (measured, not asserted)
+// 4. STEM PITCH CORRECTNESS (measured by INDEPENDENT oracle + octave-sound Goertzel)
 {
   const r = B.buildBand(mkOpts(58));
   const beatSec = 60 / 58;
-  // Derive expected pitches from the ENGINE's own API (noteToFreq / transposeName)
-  // at the SAME octave shift the engine uses (shift 0 -> audible register >= ~65Hz,
-  // above the detector's F_MIN=55 cutoff). This removes any hand-typed expected freq
-  // that could silently mismatch the engine's real register (the trap that makes a
-  // below-cutoff note like G1=49Hz produce a false "ok").
-  const rootName = 'E';
-  const fifthName = B.transposeName(rootName, 7); // B for E
-  const rootExp = B.noteToFreq(rootName, 0);
-  const fifthExp = B.noteToFreq(fifthName, 0);
-  const root = B.verifyStemPitch(r.buffer, rootExp, { t0: 0, windowSec: 0.3 });
-  check('BASS ROOT sounds ' + T.noteFromFreq(rootExp).name + ' (measured, audible)', root.ok, 'heard ' + JSON.stringify(root.heard));
-  const fifth = B.verifyStemPitch(r.buffer, fifthExp, { t0: 2 * beatSec, windowSec: 0.3 });
-  check('BASS FIFTH sounds ' + T.noteFromFreq(fifthExp).name + ' (measured, audible)', fifth.ok, 'heard ' + JSON.stringify(fifth.heard));
-  const stab = B.verifyStemPitch(r.buffer, rootExp, { t0: 0.05, windowSec: 0.3 });
-  check('CHORD STAB sounds ' + T.noteFromFreq(rootExp).name + ' (measured)', stab.ok, 'heard ' + JSON.stringify(stab.heard));
-  // Hard guard: the bass register must be audible (>= F_MIN=55) so the listener math
-  // can actually verify it. A sub-cutoff bass would be unverifiable -> fail loud.
-  check('BASS registers are audible (>=55Hz, above detector F_MIN)', rootExp >= 55 && fifthExp >= 55,
-    'root=' + rootExp.toFixed(1) + ' fifth=' + fifthExp.toFixed(1));
+
+  // Independent expected frequencies from the oracle (NOT band-engine.noteToFreq).
+  const root1 = parseChordRoot('E7');
+  const rootExp = oracleFreq(root1.root, root1.octave);            // 82.41 Hz (E2)
+  const fifthExp = oracleFreq(fifthNameOf(root1.root), root1.octave); // 123.47 Hz (B2)
+
+  // BASS ROOT — full length of the root tone (0.9 * beat) at beat 0.
+  {
+    const m = verifyBassOctave(r.buffer, 0, beatSec * 0.9, rootExp, 25);
+    check('BASS ROOT sounds ' + T.noteFromFreq(rootExp).name + '2 (independent oracle, correct octave)',
+      m.ok, 'fund=' + m.fundamental.toFixed(1) + 'Hz cents=' + (m.cents || 0).toFixed(0) +
+      ' e0=' + m.e0.toFixed(3) + ' eLow=' + m.eLow.toFixed(3) + ' eHigh=' + m.eHigh.toFixed(3));
+  }
+  // BASS FIFTH — full length of the fifth tone (0.9 * beat) at beat 2.
+  {
+    const m = verifyBassOctave(r.buffer, 2 * beatSec, beatSec * 0.9, fifthExp, 25);
+    check('BASS FIFTH sounds ' + T.noteFromFreq(fifthExp).name + '2 (independent oracle, correct octave)',
+      m.ok, 'fund=' + m.fundamental.toFixed(1) + 'Hz cents=' + (m.cents || 0).toFixed(0) +
+      ' e0=' + m.e0.toFixed(3) + ' eLow=' + m.eLow.toFixed(3) + ' eHigh=' + m.eHigh.toFixed(3));
+  }
+  // CHORD STAB — beat 0.05 window, root pitch class must dominate at the correct octave.
+  {
+    const m = verifyBassOctave(r.buffer, 0.05, beatSec * 0.9, rootExp, 25);
+    check('CHORD STAB contains root ' + T.noteFromFreq(rootExp).name + ' at correct octave',
+      m.ok, 'fund=' + m.fundamental.toFixed(1) + 'Hz cents=' + (m.cents || 0).toFixed(0) +
+      ' e0=' + m.e0.toFixed(3) + ' eLow=' + m.eLow.toFixed(3) + ' eHigh=' + m.eHigh.toFixed(3));
+  }
+
+  // HARD GUARD — the bass target register must be audible (>= detector F_MIN=55) so a
+  // sub-floor (e.g. E1=41Hz) bass is rejected LOUDLY, not silently passed.
+  check('BASS target register is audible (root >=55Hz, above detector F_MIN)',
+    rootExp >= 55, 'rootExp=' + rootExp.toFixed(1));
+  check('BASS fifth target register is audible (>=55Hz)', fifthExp >= 55, 'fifthExp=' + fifthExp.toFixed(1));
+}
+
+// 4b. NEGATIVE TEST — a deliberately octave-LOW bass MUST FAIL this gate. We build a
+//     pure E1 (41.2Hz) tone (the classic octave regression) and confirm the gate
+//     reports the dominant octave as 41 Hz, not 82 Hz -> rejected.
+{
+  const SR = B.SR;
+  const low = T.makeStringTone(41.2, SR, 0.9, 0.6); // E1 octave regression
+  const m = verifyBassOctave(low, 0, 0.9, oracleFreq('E', 2), 25); // expected E2 = 82.41
+  check('NEGATIVE: octave-low bass (E1) is REJECTED (gate is octave-sound, not blind)',
+    !m.ok, 'dominant octave=' + m.fundamental.toFixed(1) + 'Hz (expected ~82.4)');
+}
+// 4c. NEGATIVE TEST — octave-HIGH bass (E3 = 164.8Hz) also rejected.
+{
+  const SR = B.SR;
+  const high = T.makeStringTone(164.8, SR, 0.9, 0.6); // E3 octave regression
+  const m = verifyBassOctave(high, 0, 0.9, oracleFreq('E', 2), 25); // expected E2 = 82.41
+  check('NEGATIVE: octave-high bass (E3) is REJECTED',
+    !m.ok, 'dominant octave=' + m.fundamental.toFixed(1) + 'Hz (expected ~82.4)');
 }
 
 // 5 + 7. ORIGINAL / NO COPYRIGHT / NO AI FINGERS — code inspection
@@ -128,31 +249,36 @@ console.log('=== F7 BAND ENGINE — DONE BAR ===');
   check('BAN 5 — selfAudit confirms no network calls', audit.noNetwork === true);
 }
 
-// 8. NO CORE-CODE CHANGE — core modules byte-identical to baseline
+// 8. NO CORE-CODE CHANGE — core modules byte-identical to baseline (repo-root resolve, fail on missing)
 {
+  check('CORE baseline file present', fs.existsSync(CORE_BASELINE));
   if (fs.existsSync(CORE_BASELINE)) {
-    const base = {};
-    for (const line of fs.readFileSync(CORE_BASELINE, 'utf8').split('\n')) {
-      const m = line.trim().match(/^([0-9a-f]+)\s+(.*)$/);
-      if (m) base[m[2]] = m[1];
-    }
-    const crypto = require('crypto');
-    let allSame = true; let changed = [];
-    for (const rel of Object.keys(base)) {
-      const fp = path.join(__dirname, '..', rel);
-      if (!fs.existsSync(fp)) continue;
+    const expect = {};
+    fs.readFileSync(CORE_BASELINE, 'utf8').split('\n').forEach(line => {
+      const m = line.trim().match(/^([0-9a-f]{64})\s+\*(.+)$/); // strip leading '*' correctly
+      if (m) expect[m[2]] = m[1];
+    });
+    const rels = Object.keys(expect);
+    check('CORE baseline lists ' + rels.length + ' modules (was 6; +tuner-engine +practiceStore)', rels.length >= 8, 'count=' + rels.length);
+    let allSame = true; const changed = []; const missing = [];
+    for (const rel of rels) {
+      const fp = path.join(REPO_ROOT, rel); // resolve from repo root, not step7
+      if (!fs.existsSync(fp)) { missing.push(rel); allSame = false; continue; } // FAIL on missing, no silent skip
       const h = crypto.createHash('sha256').update(fs.readFileSync(fp)).digest('hex');
-      if (h !== base[rel]) { allSame = false; changed.push(rel); }
+      if (h !== expect[rel]) { allSame = false; changed.push(rel); }
     }
-    check('CORE MODULES UNCHANGED (byte-identical to CORE-UNTOUCHED baseline)', allSame, changed.join(', '));
+    check('NO core module deleted/missing (tamper detects deletion)', missing.length === 0, missing.join(', '));
+    check('ALL ' + rels.length + ' CORE MODULES byte-identical to baseline', allSame, changed.concat(missing).join(', '));
+    // Explicitly assert the two newly-protected files are covered (proves #8 extension landed).
+    check('tuner-engine.js is in the protected baseline', rels.some(r => r.indexOf('tuner-engine.js') >= 0));
+    check('practiceStore.js is in the protected baseline', rels.some(r => r.indexOf('practiceStore.js') >= 0));
   } else {
-    // baseline may live under step8; warn but do not fail the build on tooling layout
-    console.log('  WARN core baseline not found at ' + CORE_BASELINE + ' — skipped byte-check');
+    fail++; fails.push('CORE baseline missing');
   }
 }
 
 console.log('\n============================================================');
 console.log('F7 BAND ENGINE: ' + pass + ' passed, ' + fail + ' failed');
-if (fail === 0) console.log('STEP-7-EXTRA-BAND-OK — F7 proven; band follows the student tempo');
+if (fail === 0) console.log('STEP-7-EXTRA-BAND-OK — F7 proven; band follows the student tempo; gates octave-aware + tamper-real');
 else { console.log('F7 GATE FAILURES:'); for (const f of fails) console.log('  - ' + f); }
 process.exit(fail === 0 ? 0 : 1);
