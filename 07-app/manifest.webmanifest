@@ -1,0 +1,14 @@
+{
+  "name": "GuitarApp — Learn Guitar",
+  "short_name": "GuitarApp",
+  "description": "Learn acoustic guitar with animated lessons, a teacher in your pocket, and a band that follows your tempo.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f1722",
+  "theme_color": "#123049",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

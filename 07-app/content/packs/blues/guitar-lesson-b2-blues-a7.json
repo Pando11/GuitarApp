@@ -1,0 +1,100 @@
+{
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted.",
+    "E7": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "E7",
+      "frets": [0, 2, 0, 1, 0, 0],
+      "fingers": [0, 2, 0, 1, 0, 0]
+    },
+    "A7": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "A7",
+      "frets": [null, 0, 2, 0, 2, 0],
+      "fingers": [null, 0, 1, 0, 3, 0]
+    }
+  },
+  "exercises": [
+    {
+      "id": "EX1-shape",
+      "name": "Make the A7 shape",
+      "purpose": "Land the 7th voicing that walks up from E7.",
+      "params": {
+        "chord": "A7",
+        "fingers": "index(1) on D-string 2nd fret, ring(3) on B-string 2nd fret, low E muted",
+        "thumb": "rests behind neck",
+        "strings_played": "A, D, G, B, high e (low E stays quiet)"
+      },
+      "coaching": "A7 is a small triangle in the middle of the neck: index on the D string second fret, ring on the B string second fret. Keep the low E quiet. That 7th note is the open G string — it is what lifts this chord out of plain A. Tiny shape, big sound.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-strum",
+      "name": "One clean down-strum",
+      "purpose": "Strum the five ringing strings without catching the muted low E.",
+      "params": {
+        "chord": "A7",
+        "action": "single downward strum, relaxed wrist, skip the low E",
+        "reps": 5,
+        "cue": "listen for the open G-string 7th colour"
+      },
+      "coaching": "Hold A7 and strum down — but let the pick fall just past the low E so it stays silent. Loose wrist. Listen for the open G string; that is the 7. Buzz on the B or D? Press a touch closer to the fret. That clean A7 is the second colour of the blues.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX3-change",
+      "name": "E7 to A7 walk",
+      "purpose": "Practice the most common blues change, slowly, in time.",
+      "params": {
+        "chord_cycle": ["E7", "A7"],
+        "tempo_bpm": 64,
+        "beats": 4,
+        "feel": "swing",
+        "cue": "one chord per 4 beats, change on the downbeat"
+      },
+      "coaching": "Now walk: E7 for four beats, A7 for four. One chord per four beats, change right on the click. The metronome is slow so you can land clean. This E7-to-A7 move is in thousands of blues tunes — you just met it.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "Second colour of the blues: A7. Small shape, but it walks you right out of E7 and into a real progression.",
+    "ex1_intro": "A7 is a triangle in the middle: index on D second fret, ring on B second fret, low E quiet. The open G string is your 7th note — that lift is the sound.",
+    "ex2_intro": "Strum down but let the pick fall past the low E so it stays silent. Loose wrist. Listen for the open G string. Buzz? Closer to the fret. That clean A7 is the second blues colour.",
+    "ex3_intro": "Walk it: E7 four beats, A7 four beats, on the click. Slow metronome. That E7-to-A7 move is in countless blues songs — you just met it.",
+    "results": "If you can change E7 to A7 on the beat, you have the backbone of a 12-bar. Two colours down, one to go.",
+    "wrap": "E7 and A7 in your hands, walking in time. Lesson 3 of the pack adds B7 and you play a full 12-bar blues. For real."
+  },
+  "qa_block": {
+    "must_verify": [
+      "Automated: every chord fingering verified deterministically by 06-prototypes/step0/schema/chord-theory-check.js (verifyChord) — 0 errors AND 0 warnings required before ship (Hard Ban 7 satisfied by arithmetic, per owner directive 2026-08-08).",
+      "Automated: lesson JSON passes schema/validate.js (validateLesson) — all required keys present, frets/fingers length 6, qa_status whitelisted.",
+      "Author pass: teaching copy is plain-English, beginner-appropriate, no AI-isms; pacing realistic.",
+      "Licensing: exercises only, zero copyrighted song material (spec §3/R6). The 12-bar form is a public-domain structure, not a specific song.",
+      "Chord-cycle reference 'E7' in EX3 resolves to the E7 lesson in this pack (cross-pack reference is exercised by verify-step8.js against the pack's combined chord set)."
+    ],
+    "flagged_by": "founder (non-player) — cannot self-verify",
+    "verifier_role": "arithmetic (chord-theory-check.js) + author review",
+    "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
+  },
+  "lesson": {
+    "id": "B2-blues-a7",
+    "title": "Blues Pack 2 — The A7 Chord (walking up from E7)",
+    "level": "beginner",
+    "lesson_type": "technique",
+    "one_line_promise": "A7 + the E7 walk gives you the backbone of a 12-bar.",
+    "objectives": [
+      "Form A7 (index on D 2nd, ring on B 2nd, low E muted)",
+      "Strum it clean, skipping the muted low E",
+      "Walk E7 to A7 on the beat at a slow shuffle tempo"
+    ],
+    "estimated_minutes": 11,
+    "prerequisites": [
+      "Blues Pack 1 — E7 (B1)"
+    ],
+    "app_feature_mapping": {
+      "free_metronome": [
+        "hold the E7-A7 walk tempo (swing feel)"
+      ]
+    }
+  }
+}

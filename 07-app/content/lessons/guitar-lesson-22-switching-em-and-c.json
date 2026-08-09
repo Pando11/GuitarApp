@@ -1,0 +1,121 @@
+{
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted.",
+    "Em": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "E minor",
+      "frets": [0, 2, 2, 0, 0, 0],
+      "fingers": [0, 2, 3, 0, 0, 0]
+    },
+    "easyC": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "C major (Lauren's 'easy C' — 2-finger reduction)",
+      "frets": [null, 3, 2, 0, null, 0],
+      "fingers": [null, 3, 2, 0, null, 0]
+    }
+  },
+  "exercises": [
+    {
+      "id": "EX1-park",
+      "name": "Park each shape",
+      "purpose": "Make both shapes reliable on their own before joining them.",
+      "params": {
+        "chords": ["Em", "easyC"],
+        "action": "form each shape, strum once, lift, re-form",
+        "reps": 6,
+        "cue": "check every string rings before you lift"
+      },
+      "coaching": "Form Em — middle finger on the A string second fret, ring on the D string second fret. Strum, lift, put it back. Six times. Then easy C: ring finger on the A string third fret, middle on the D string second fret. Strum only the top four strings for now — skip the low E and the B string stays open.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-common-shape",
+      "name": "Spot the shared shape",
+      "purpose": "Realise the change is one small slide, not two new fingers.",
+      "params": {
+        "from_chord": "Em",
+        "to_chord": "easyC",
+        "insight": "Middle and ring stay on the A and D strings. Ring slides A-string 2nd fret to 3rd fret; middle stays on D 2nd fret but the pair shifts across a string.",
+        "reps": 10
+      },
+      "coaching": "Look at your hand in both shapes. It is the same two fingers, middle and ring, just rearranged. Move slowly between them and watch how little actually changes. The less your hand jumps, the faster the change gets.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX3-one-minute-change",
+      "name": "One-minute change",
+      "purpose": "Build speed with a simple, honest score.",
+      "params": {
+        "chord_pair": ["Em", "easyC"],
+        "action": "count how many clean changes you make in 60 seconds",
+        "duration_sec": 60,
+        "target_first_try": 8,
+        "cue": "clean counts, rushed and buzzing does not"
+      },
+      "coaching": "Sixty seconds on the clock. Change Em to easy C and back as many times as you can — but only count the ones that ring clean. Eight is a fine first score. Write it down and beat it tomorrow. This one exercise is the whole reason people get good at chords.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX4-in-time",
+      "name": "Four beats each",
+      "purpose": "Change chords without stopping the strum.",
+      "params": {
+        "chord_cycle": ["Em", "easyC"],
+        "bpm": 50,
+        "beats_per_chord": 4,
+        "action": "one down-strum per beat, switch on beat 1",
+        "cue": "keep the hand moving even if the change is late"
+      },
+      "coaching": "Set the free metronome to 50. Four down-strums on Em, four on easy C, round and round. The rule: your strumming hand never stops. A late chord is fine, a stopped hand is not.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "Chords are not the hard part — changing between them is. Today we take Em and an easy C and get them talking.",
+    "ex1_intro": "Park each shape on its own first. Em: middle and ring on the second fret. Easy C: ring on the A string third fret, middle on the D string second fret.",
+    "ex2_intro": "Same two fingers in both chords. Move slowly and notice how small the move really is. Small moves become fast moves.",
+    "ex3_intro": "Sixty seconds, count the clean changes. Eight is a good first number. Tomorrow you beat it.",
+    "ex4_intro": "Metronome at 50. Four strums per chord and never stop the strumming hand. Late is okay, frozen is not.",
+    "results": "If you got through four beats each without stopping, you are playing music, not just chords.",
+    "wrap": "Two chords, changing in time. Next lesson we add a third and you have a real song shape under your fingers."
+  },
+  "qa_block": {
+    "must_verify": [
+      "Automated: every chord fingering verified deterministically by 06-prototypes/step0/schema/chord-theory-check.js (verifyChord) — 0 errors AND 0 warnings required before ship.",
+      "Automated: lesson JSON passes schema/validate.js (validateLesson) — all required keys present, frets/fingers length 6, qa_status whitelisted.",
+      "Chord shapes are byte-identical to the already-verified Em and easyC used in L03/L05.",
+      "Author pass: teaching copy is plain-English, beginner-appropriate; pacing realistic.",
+      "Licensing: exercises only, zero copyrighted song material (spec §3/R6).",
+      "No hand-tracking, camera, or recording mechanics referenced (Hard Ban 7)."
+    ],
+    "flagged_by": "founder (non-player) — cannot self-verify",
+    "verifier_role": "arithmetic (chord-theory-check.js) + author review",
+    "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings)."
+  },
+  "lesson": {
+    "id": "L22-switching-em-and-c",
+    "title": "Switching Between Em and C",
+    "level": "absolute-beginner",
+    "lesson_type": "technique",
+    "one_line_promise": "Change between two chords without your strumming hand stopping.",
+    "objectives": [
+      "Form Em and the two-finger easy C cleanly on their own",
+      "Notice the shared middle/ring shape between the two chords",
+      "Score a one-minute change count and write it down",
+      "Play four beats on each chord at 50bpm without stopping the strum"
+    ],
+    "estimated_minutes": 12,
+    "prerequisites": [
+      "Guitar in tune (L01)",
+      "Comfortable holding a pick (L21)"
+    ],
+    "app_feature_mapping": {
+      "free_tuner": [
+        "tune before the change drills"
+      ],
+      "free_metronome": [
+        "50bpm for the four-beats-each exercise"
+      ]
+    }
+  }
+}

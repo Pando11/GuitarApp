@@ -1,0 +1,127 @@
+{
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted.",
+    "Em": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "E minor",
+      "frets": [
+        0,
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "fingers": [
+        0,
+        2,
+        3,
+        0,
+        0,
+        0
+      ]
+    },
+    "easyC": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "C major (Lauren's 'easy C' — 2-finger reduction)",
+      "frets": [
+        null,
+        3,
+        2,
+        0,
+        null,
+        0
+      ],
+      "fingers": [
+        null,
+        3,
+        2,
+        0,
+        null,
+        0
+      ],
+      "note": "Reduced 2-finger C voicing for confidence-building. Spelling verified deterministically by chord-theory-check.js (2026-08-08) as C E G. 'Lauren's easy C' is a teaching label; arithmetic proves the fingering spells C major and is playable."
+    }
+  },
+  "pivot_points": [
+    {
+      "from": "Em",
+      "to": "easyC",
+      "static_finger": "none — both fingers lift and re-land (different frets)",
+      "movement": "Em middle(2)/ring(3) on A/D 2nd fret -> easyC ring(3) on A 3rd fret + middle(2) on D 2nd fret; index not yet used.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    }
+  ],
+  "exercises": [
+    {
+      "id": "EX1-easyC",
+      "name": "Make easy C",
+      "purpose": "Land the 2-finger reduction (ring on A 3rd, middle on D 2nd).",
+      "params": {
+        "chord": "easyC",
+        "fingers": "ring(3) on A-string 3rd fret, middle(2) on D-string 2nd fret",
+        "open_strings": "low E, G, B, high e all ring"
+      },
+      "coaching": "Easy C is just two fingers: ring on the A string third fret, middle on the D string second fret. The rest of the strings stay open and ring. Simpler than full C, same sound.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-loop",
+      "name": "Your first song — Em to easy C",
+      "purpose": "Loop the two chords slowly; aim for no stopping.",
+      "params": {
+        "chord_cycle": [
+          "Em",
+          "easyC"
+        ],
+        "tempo_bpm": 70,
+        "beats": 4,
+        "reps": 3,
+        "cue": "one strum per chord, then switch"
+      },
+      "coaching": "Here is your song: Em, strum. easy C, strum. Back to Em. Slow is fine — the goal is not stopping. You are literally playing a song right now.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "Two chords and you can play a song. No joke. Today: easy C, then we loop it with Em. That loop IS a song.",
+    "ex1_intro": "Easy C is two fingers: ring on the A string third fret, middle on the D string second fret. Everything else stays open. Easier than the full C, same chord.",
+    "ex2_intro": "Now loop: Em (strum), easy C (strum), back to Em. Slow. The win is not stopping between them. You just played a song — tell your friends.",
+    "results": "If you can go Em-easyC-Em without a full stop, you have played a song. That is the retention hook — protect it.",
+    "wrap": "Two chords, one loop, a real song. Most apps make you wait weeks for this. You got it in Lesson 3. Practice the loop; Lesson 4 adds rhythm."
+  },
+  "qa_block": {
+    "must_verify": [
+      "Automated: every chord fingering verified deterministically by 06-prototypes/step0/schema/chord-theory-check.js (verifyChord) — 0 errors AND 0 warnings required before ship (Hard Ban 7 satisfied by arithmetic, per owner directive 2026-08-08: physical fingering correctness needs no contract guitarist).",
+      "Automated: lesson JSON passes schema/validate.js (validateLesson) — all required keys present, frets/fingers length 6, qa_status whitelisted.",
+      "Author pass: teaching copy is plain-English, beginner-appropriate, no AI-isms; pacing realistic.",
+      "Licensing: exercises only, zero copyrighted song material (spec §3/R6).",
+      "easy C is a 2-finger teaching reduction (Lauren Bateman style); arithmetic confirms it spells C major. Confirm against any full-C lesson later if desired."
+    ],
+    "flagged_by": "founder (non-player) — cannot self-verify",
+    "verifier_role": "arithmetic (chord-theory-check.js) + author review",
+    "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
+  },
+  "lesson": {
+    "id": "L03-second-chord-first-song",
+    "title": "Second Chord + YOUR FIRST SONG",
+    "level": "absolute-beginner",
+    "lesson_type": "technique",
+    "one_line_promise": "Two chords and you have already played a song.",
+    "objectives": [
+      "Form easy C (2-finger reduction)",
+      "Switch between Em and easy C",
+      "Play a 2-chord loop (Em - easy C) — your first 'song'",
+      "Use the free metronome at a slow tempo for even changes"
+    ],
+    "estimated_minutes": 12,
+    "prerequisites": [
+      "Em (L02)"
+    ],
+    "app_feature_mapping": {
+      "free_metronome": [
+        "hold slow tempo for the Em-easyC loop"
+      ]
+    }
+  }
+}

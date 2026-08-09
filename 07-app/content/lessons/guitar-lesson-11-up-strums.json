@@ -1,0 +1,161 @@
+{
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted.",
+    "G": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "G major (3-finger / 'easy G')",
+      "frets": [
+        3,
+        2,
+        0,
+        0,
+        0,
+        3
+      ],
+      "fingers": [
+        2,
+        1,
+        0,
+        0,
+        0,
+        3
+      ]
+    },
+    "D": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "D major",
+      "frets": [
+        null,
+        null,
+        0,
+        2,
+        3,
+        2
+      ],
+      "fingers": [
+        null,
+        null,
+        0,
+        1,
+        3,
+        2
+      ]
+    },
+    "Em": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "E minor",
+      "frets": [
+        0,
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "fingers": [
+        0,
+        2,
+        3,
+        0,
+        0,
+        0
+      ]
+    },
+    "C": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "C major (standard)",
+      "frets": [
+        null,
+        3,
+        2,
+        0,
+        1,
+        0
+      ],
+      "fingers": [
+        null,
+        3,
+        2,
+        0,
+        1,
+        0
+      ]
+    }
+  },
+  "exercises": [
+    {
+      "id": "EX1-up",
+      "name": "The up-strum",
+      "purpose": "Light upward brush, mute on contact.",
+      "params": {
+        "chord_cycle": [
+          "G"
+        ],
+        "tempo_bpm": 72,
+        "beats": 4,
+        "action": "down on beat, up on the \"and\"",
+        "cue": "up-strum touches only the thin strings"
+      },
+      "coaching": "An up-strum is a light upward brush — mostly the thin strings, slightly muted. Down on the beat, up on the \"and.\" Feels like a windshield wiper.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-pattern",
+      "name": "D-DU-UDU",
+      "purpose": "The most common beginner pattern.",
+      "params": {
+        "chord_cycle": [
+          "G",
+          "D",
+          "Em",
+          "C"
+        ],
+        "tempo_bpm": 72,
+        "beats": 8,
+        "pattern": "D (1) - DU (2) - UDU (3&4) per 2-beat feel; full: D D-U U-D-U",
+        "cue": "count 1 2 3 4 with the strums"
+      },
+      "coaching": "The pattern: down, down-up, up-down-up. Over G-D-Em-C. Count it out loud. This is the strum 90% of campfire songs use.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "Down-strums got you started. Up-strums make it move. Today: the D-DU-UDU pattern — the backbone of popular strumming.",
+    "ex1_intro": "Up-strum: light upward brush, mostly thin strings, slightly muted. Down on the beat, up on the \"and.\" Like a windshield wiper.",
+    "ex2_intro": "Pattern: down, down-up, up-down-up. Over the G-D-Em-C loop. Count 1-2-3-4. That groove is what makes people dance.",
+    "results": "If you can hold D-DU-UDU over the loop, your strumming sounds like songs on the radio. Big leap.",
+    "wrap": "Up-strums in. D-DU-UDU under your belt. Lesson 12 we build a small library of patterns."
+  },
+  "qa_block": {
+    "must_verify": [
+      "Automated: every chord fingering verified deterministically by 06-prototypes/step0/schema/chord-theory-check.js (verifyChord) — 0 errors AND 0 warnings required before ship (Hard Ban 7 satisfied by arithmetic, per owner directive 2026-08-08: physical fingering correctness needs no contract guitarist).",
+      "Automated: lesson JSON passes schema/validate.js (validateLesson) — all required keys present, frets/fingers length 6, qa_status whitelisted.",
+      "Author pass: teaching copy is plain-English, beginner-appropriate, no AI-isms; pacing realistic.",
+      "Licensing: exercises only, zero copyrighted song material (spec §3/R6)."
+    ],
+    "flagged_by": "founder (non-player) — cannot self-verify",
+    "verifier_role": "arithmetic (chord-theory-check.js) + author review",
+    "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
+  },
+  "lesson": {
+    "id": "L11-up-strums",
+    "title": "Up-Strums + D-DU-UDU",
+    "level": "beginner",
+    "lesson_type": "technique",
+    "one_line_promise": "Add the up-strum — now it grooves.",
+    "objectives": [
+      "Strum up across the strings (light, from the elbow)",
+      "Mute slightly on the up",
+      "Play the D-DU-UDU pattern over the L10 loop"
+    ],
+    "estimated_minutes": 14,
+    "prerequisites": [
+      "G-D-Em-C loop (L10)"
+    ],
+    "app_feature_mapping": {
+      "free_metronome": [
+        "D-DU-UDU pattern tempo"
+      ]
+    }
+  }
+}

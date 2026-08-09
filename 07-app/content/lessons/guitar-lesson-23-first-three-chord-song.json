@@ -1,0 +1,128 @@
+{
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted.",
+    "G": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "G major (3-finger / 'easy G')",
+      "frets": [3, 2, 0, 0, 0, 3],
+      "fingers": [2, 1, 0, 0, 0, 3]
+    },
+    "Em": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "E minor",
+      "frets": [0, 2, 2, 0, 0, 0],
+      "fingers": [0, 2, 3, 0, 0, 0]
+    },
+    "easyC": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "C major (Lauren's 'easy C' — 2-finger reduction)",
+      "frets": [null, 3, 2, 0, null, 0],
+      "fingers": [null, 3, 2, 0, null, 0]
+    }
+  },
+  "exercises": [
+    {
+      "id": "EX1-add-g",
+      "name": "Add the third chord",
+      "purpose": "Learn the three-finger G shape and check every string rings.",
+      "params": {
+        "chord": "G",
+        "fingers": "middle(2) on low E 3rd fret, index(1) on A-string 2nd fret, ring(3) on high e 3rd fret",
+        "strings_played": "all six",
+        "reps": 8
+      },
+      "coaching": "Middle finger on the fat low E string, third fret. Index on the A string, second fret. Ring on the thin high e string, third fret. Strum all six. Check each string one at a time — the B string usually gets muted by a lazy ring finger, so arch that knuckle.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-pairs",
+      "name": "Change in pairs",
+      "purpose": "Practise the two changes you have not drilled yet.",
+      "params": {
+        "chord_pair": ["G", "Em"],
+        "also": ["easyC", "G"],
+        "action": "one-minute change count on each pair",
+        "duration_sec": 60,
+        "cue": "clean changes only"
+      },
+      "coaching": "Two new pairs. First G to Em and back for a minute — count the clean ones. Then easy C to G for a minute. Do the pairs before the song and the song plays itself.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX3-progression",
+      "name": "The four-bar loop",
+      "purpose": "Play a real, complete-sounding progression all the way round.",
+      "params": {
+        "chord_cycle": ["G", "Em", "easyC", "G"],
+        "beats_per_chord": 4,
+        "bpm": 55,
+        "action": "four down-strums per chord, loop four times",
+        "cue": "land the change on beat 1, never stop the strumming hand"
+      },
+      "coaching": "Here is your song shape: G, Em, easy C, back to G. Four strums each, round and round. That loop is in thousands of songs, and it is yours now. Start at 55 beats per minute. Slow and steady beats fast and lumpy.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX4-play-through",
+      "name": "Play it through, no stopping",
+      "purpose": "Perform the loop start to finish without restarting.",
+      "params": {
+        "chord_cycle": ["G", "Em", "easyC", "G"],
+        "repeats": 8,
+        "bpm": 55,
+        "rule": "mistakes are allowed, stopping is not"
+      },
+      "coaching": "Eight times through, no stops. If a chord comes out fuzzy, keep going — the next bar is already coming. Playing through mistakes is a skill of its own, and it is the one that turns practice into performance.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "Three chords is all it takes to sound like you are playing a song. Today you get the third one and loop them together.",
+    "ex1_intro": "G: middle on the low E third fret, index on the A string second fret, ring on the high e third fret. Arch that ring finger so the B string still rings.",
+    "ex2_intro": "Drill the two new pairs first — G to Em, then easy C to G. One minute each, clean changes only.",
+    "ex3_intro": "Now the loop: G, Em, easy C, G. Four strums each at 55bpm. Change on beat one and keep that hand moving.",
+    "ex4_intro": "Eight times through with no stopping. Fuzzy chords are fine. Freezing is the only mistake.",
+    "results": "Round the loop without stopping and you have played a song's worth of guitar. That is the milestone.",
+    "wrap": "Three chords, one loop, no stopping. Everything from here is more shapes and better rhythm — you already know how the game works."
+  },
+  "qa_block": {
+    "must_verify": [
+      "Automated: every chord fingering verified deterministically by 06-prototypes/step0/schema/chord-theory-check.js (verifyChord) — 0 errors AND 0 warnings required before ship.",
+      "Automated: lesson JSON passes schema/validate.js (validateLesson) — all required keys present, frets/fingers length 6, qa_status whitelisted.",
+      "Chord shapes are byte-identical to the already-verified G, Em and easyC used in L03/L06/L15.",
+      "Progression G–Em–C–G is diatonic to G major; original exercise material, no copyrighted song used (spec §3/R6).",
+      "Author pass: teaching copy is plain-English, beginner-appropriate; pacing realistic.",
+      "No hand-tracking, camera, or recording mechanics referenced (Hard Ban 7)."
+    ],
+    "flagged_by": "founder (non-player) — cannot self-verify",
+    "verifier_role": "arithmetic (chord-theory-check.js) + author review",
+    "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings)."
+  },
+  "lesson": {
+    "id": "L23-first-three-chord-song",
+    "title": "Your First 3-Chord Song",
+    "level": "absolute-beginner",
+    "lesson_type": "technique",
+    "one_line_promise": "Loop three chords in time and it finally sounds like a song.",
+    "objectives": [
+      "Form the three-finger G major shape with all six strings ringing",
+      "Change cleanly between G and Em, and between easy C and G",
+      "Play the G–Em–C–G loop at four beats per chord",
+      "Get through eight repeats without stopping the strumming hand"
+    ],
+    "estimated_minutes": 14,
+    "prerequisites": [
+      "Guitar in tune (L01)",
+      "Pick grip (L21)",
+      "Em and easy C changes (L22)"
+    ],
+    "app_feature_mapping": {
+      "free_tuner": [
+        "tune before playing the loop"
+      ],
+      "free_metronome": [
+        "55bpm for the four-bar loop and the play-through"
+      ]
+    }
+  }
+}

@@ -1,0 +1,202 @@
+{
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted.",
+    "G": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "G major (3-finger / 'easy G')",
+      "frets": [
+        3,
+        2,
+        0,
+        0,
+        0,
+        3
+      ],
+      "fingers": [
+        2,
+        1,
+        0,
+        0,
+        0,
+        3
+      ]
+    },
+    "D": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "D major",
+      "frets": [
+        null,
+        null,
+        0,
+        2,
+        3,
+        2
+      ],
+      "fingers": [
+        null,
+        null,
+        0,
+        1,
+        3,
+        2
+      ]
+    },
+    "Em": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "E minor",
+      "frets": [
+        0,
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "fingers": [
+        0,
+        2,
+        3,
+        0,
+        0,
+        0
+      ]
+    },
+    "C": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "C major (standard)",
+      "frets": [
+        null,
+        3,
+        2,
+        0,
+        1,
+        0
+      ],
+      "fingers": [
+        null,
+        3,
+        2,
+        0,
+        1,
+        0
+      ]
+    },
+    "Am": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "A minor",
+      "frets": [
+        null,
+        0,
+        2,
+        2,
+        1,
+        0
+      ],
+      "fingers": [
+        null,
+        0,
+        2,
+        3,
+        1,
+        0
+      ]
+    }
+  },
+  "exercises": [
+    {
+      "id": "EX1-capstone",
+      "name": "Play the capstone",
+      "purpose": "One full song, no stopping.",
+      "params": {
+        "chord_cycle": [
+          "G",
+          "D",
+          "Em",
+          "C",
+          "Am",
+          "C"
+        ],
+        "tempo_bpm": 72,
+        "beats": 4,
+        "cue": "full pass, start to finish, even if slow"
+      },
+      "coaching": "Your capstone: G-D-Em-C-Am-C, all the way through, start to finish. Slow is fine. Finishing a whole song is the win — that is your first \"performance.\"",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-routine",
+      "name": "10-minute daily routine",
+      "purpose": "A repeatable practice plan.",
+      "params": {
+        "routine": [
+          "2 min tune + warm-up (spider)",
+          "3 min one change drill (beat last week)",
+          "3 min capstone song",
+          "2 min new chart from library"
+        ],
+        "cue": "same shape every day builds the habit"
+      },
+      "coaching": "Ten minutes, same shape daily: tune and warm up, one change drill, your capstone song, one new chart. Short, repeatable, and it compounds.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX3-plan",
+      "name": "2-week plan",
+      "purpose": "Set the next steps.",
+      "params": {
+        "plan": [
+          "Week 1: lock the capstone at 80 bpm",
+          "Week 2: add one new minor progression",
+          "Then: intermediate path (barre chords, key changes)"
+        ],
+        "cue": "write it down, one small target at a time"
+      },
+      "coaching": "Two weeks: week one, lock the capstone at 80 bpm; week two, add a minor progression. Then the intermediate path — barre chords and key changes. One small target at a time.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "Graduation day. You play a full song start-to-finish, set a daily habit, and preview what comes next. This is the capstone.",
+    "ex1_intro": "Capstone: G-D-Em-C-Am-C, all the way through. Slow is fine — finishing is the win. That is your first performance.",
+    "ex2_intro": "Ten minutes daily: warm up, one change drill, your capstone, one new chart. Same shape every day. That repetition is the habit that keeps you playing.",
+    "ex3_intro": "Two weeks: lock the capstone at 80 bpm, then add a minor progression. After that, intermediate — barre chords and key changes. Small targets, steady progress.",
+    "results": "If you finished the capstone and wrote your plan, you have graduated beginner. The streak is now your engine.",
+    "wrap": "You played a full song and made a plan. Most people quit before Lesson 5 — you did not. See you in Intermediate. Keep the streak alive."
+  },
+  "qa_block": {
+    "must_verify": [
+      "Automated: every chord fingering verified deterministically by 06-prototypes/step0/schema/chord-theory-check.js (verifyChord) — 0 errors AND 0 warnings required before ship (Hard Ban 7 satisfied by arithmetic, per owner directive 2026-08-08: physical fingering correctness needs no contract guitarist).",
+      "Automated: lesson JSON passes schema/validate.js (validateLesson) — all required keys present, frets/fingers length 6, qa_status whitelisted.",
+      "Author pass: teaching copy is plain-English, beginner-appropriate, no AI-isms; pacing realistic.",
+      "Licensing: exercises only, zero copyrighted song material (spec §3/R6).",
+      "Capstone uses only open chords already verified in earlier lessons; no new fingering introduced. Routine/plan are practice-prescription, not new musical content."
+    ],
+    "flagged_by": "founder (non-player) — cannot self-verify",
+    "verifier_role": "arithmetic (chord-theory-check.js) + author review",
+    "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
+  },
+  "lesson": {
+    "id": "L20-consolidation-performance",
+    "title": "Consolidation + Your First \"Performance\" + What's Next",
+    "level": "graduate",
+    "lesson_type": "technique",
+    "one_line_promise": "Play a full song start-to-finish. Then keep going.",
+    "objectives": [
+      "Play one full capstone song start-to-finish",
+      "Write a 10-minute daily practice routine",
+      "Set a 2-week plan and preview the intermediate path"
+    ],
+    "estimated_minutes": 20,
+    "prerequisites": [
+      "Core open chords + strumming + chart reading (L02-L19)"
+    ],
+    "app_feature_mapping": {
+      "free_metronome": [
+        "capstone song tempo"
+      ],
+      "streaks": [
+        "practice routine feeds the streak engine"
+      ]
+    }
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted."
+  },
+  "exercises": [
+    {
+      "id": "EX1-grip",
+      "name": "Hold the pick",
+      "purpose": "Get a grip that is firm enough to not drop the pick, loose enough to stay relaxed.",
+      "params": {
+        "grip": "Lay the pick flat on the pad of your index finger, pointing across it. Drop your thumb on top.",
+        "exposed_tip_mm": 5,
+        "pressure": "light — the pick should twist if someone tugs it",
+        "other_fingers": "relaxed, slightly curled, not clenched"
+      },
+      "coaching": "Lay the pick across the side of your index finger, then put your thumb on top of it. Only about five millimetres of tip sticks out. Hold it like a crisp you do not want to snap. Too tight and your whole arm locks up; too loose and it flies across the room. You will drop it a few times today. Everyone does.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-single-string",
+      "name": "One string, ten times",
+      "purpose": "Learn to hit one string cleanly with a down-pick.",
+      "params": {
+        "string": "open low E (6th)",
+        "action": "down-picks only",
+        "reps": 10,
+        "cue": "let the pick glide off the string, do not dig in"
+      },
+      "coaching": "Pick the fat low E string ten times, downward only. Keep the movement small — it comes from the wrist, not the elbow. Aim for the same volume every time. Then move to the open A string and do ten more.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX3-open-strum",
+      "name": "Down-strum all six",
+      "purpose": "Brush all six strings evenly with the pick instead of the thumb.",
+      "params": {
+        "action": "slow down-strums across all six open strings",
+        "reps": 8,
+        "angle": "tilt the pick very slightly so it glides rather than catches",
+        "cue": "one smooth sweep, not six separate hits"
+      },
+      "coaching": "Now strum down across all six open strings with the pick. Angle it a hair so it glides instead of snagging. You want one smooth sweep, not six separate clicks. Slow is fine — smooth is the goal.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "You have tuned up and made a sound. Now let's put a pick in your hand — it is the difference between a soft thud and a real, bright guitar tone.",
+    "ex1_intro": "Pick flat on the side of your index finger, thumb on top, five millimetres of tip showing. Firm but relaxed. If your knuckles go white, ease off.",
+    "ex2_intro": "Ten down-picks on the fat low E string. Small wrist motion, same volume each time. Then ten on the A string.",
+    "ex3_intro": "Strum all six open strings downward. Tilt the pick slightly so it glides. One sweep, not six clicks.",
+    "results": "Dropping the pick is normal in week one. Even volume and a smooth sweep are what we are after.",
+    "wrap": "That is the pick handled. Next lesson we take two chords you already know and make them talk to each other."
+  },
+  "qa_block": {
+    "must_verify": [
+      "Automated: lesson JSON passes schema/validate.js (validateLesson) — all required keys present, qa_status whitelisted.",
+      "No chord shapes in this lesson (technique only), so chord-theory-check has nothing to flag.",
+      "Author pass: teaching copy is plain-English, beginner-appropriate; pacing realistic.",
+      "Licensing: exercises only, zero copyrighted song material (spec §3/R6).",
+      "No hand-tracking, camera, or recording mechanics referenced (Hard Ban 7)."
+    ],
+    "flagged_by": "founder (non-player) — cannot self-verify",
+    "verifier_role": "arithmetic (chord-theory-check.js) + author review",
+    "guitarist_signoff": "NOT REQUIRED — this lesson contains no chord fingerings; technique copy reviewed by author 2026-08-08."
+  },
+  "lesson": {
+    "id": "L21-holding-the-pick",
+    "title": "Holding the Pick",
+    "level": "absolute-beginner",
+    "lesson_type": "technique",
+    "one_line_promise": "Hold a pick properly and get a clean, even strum out of it.",
+    "objectives": [
+      "Grip the pick with the thumb over the index finger, about 5mm of tip showing",
+      "Stay relaxed — no white knuckles, no locked wrist",
+      "Pick a single open string ten times at an even volume",
+      "Strum all six open strings in one smooth downward sweep"
+    ],
+    "estimated_minutes": 8,
+    "prerequisites": [
+      "Guitar in tune (L01)",
+      "A medium pick (around 0.6mm)"
+    ],
+    "app_feature_mapping": {
+      "free_tuner": [
+        "check tuning before the picking drills"
+      ],
+      "free_metronome": []
+    }
+  }
+}

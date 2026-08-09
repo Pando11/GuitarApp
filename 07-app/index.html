@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#123049" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="GuitarApp" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <title>GuitarApp — Learn Guitar</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app">
+    <header id="topbar">
+      <button id="hamburger" aria-label="Menu">☰</button>
+      <span id="brand">🎸 GuitarApp</span>
+      <span id="teacher-chip"></span>
+    </header>
+    <nav id="sidenav" class="hidden">
+      <a data-route="home">Home</a>
+      <a data-route="lessons">Lessons</a>
+      <a data-route="tuner">Tuner</a>
+      <a data-route="metronome">Metronome</a>
+      <a data-route="roster">Teachers</a>
+      <a data-route="chat">Ask Teacher</a>
+      <a data-route="plan">Practice Plan</a>
+      <a data-route="progress">Progress</a>
+      <a data-route="band">Band</a>
+      <a data-route="packs">Style Packs</a>
+      <a data-route="upgrade">Upgrade</a>
+    </nav>
+    <main id="screen"></main>
+    <footer id="tabbar">
+      <button data-route="home">🏠</button>
+      <button data-route="lessons">📚</button>
+      <button data-route="tuner">🎯</button>
+      <button data-route="roster">👤</button>
+      <button data-route="progress">🔥</button>
+    </footer>
+  </div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
