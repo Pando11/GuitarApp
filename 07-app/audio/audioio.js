@@ -2,18 +2,57 @@
 // Ban 5: audio never leaves the device. Web Speech API (STT) + Web Audio (mic) are browser-only.
 import * as T from '../core/tuner-engine.js';
 import * as L from '../core/listening-engine.js';
+import { normalizeForTTS } from './tts-normalize.js';
+import { resolveTtsPlan, clampPitchToSpeech } from './tts-plan.js';
+
+// --- Secure-context guard -------------------------------------------------
+// getUserMedia lives on navigator.mediaDevices, which browsers ONLY expose in a
+// "secure context": HTTPS or http://localhost. Over plain http://LAN-IP (the phone
+// dogfood URL) or a file:// double-click, navigator.mediaDevices is undefined, so
+// `navigator.mediaDevices.getUserMedia(...)` throws
+//   "Cannot read properties of undefined (reading 'getUserMedia')"
+// Your Windows mic permission is irrelevant there — the browser simply refuses to
+// surface the mic API. This guard turns that cryptic error into a truthful message.
+export function isMicAvailable() {
+  return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+}
+export function micUnavailableMessage() {
+  if (window.isSecureContext) {
+    return '⚠ Microphone blocked by the browser. Click the 🎤/lock icon left of the address bar, set Microphone to Allow, then Start again.';
+  }
+  const httpsUrl = (window.__LAN_HTTPS_DOGFOOD__ || window.__LAN_HTTPS__ || null);
+  const urlLine = httpsUrl
+    ? ('Open this instead: ' + httpsUrl + '  (tap it, then "Advanced → Proceed" once)')
+    : 'On your phone use the https:// address (the one printed when the server started).';
+  return '⚠ Mic needs a secure connection. ' + urlLine + ' Your Windows mic permission is already ON — this is a browser security rule, not that toggle.';
+}
 
 export class MicAnalyzer {
   constructor() { this.ctx = null; this.stream = null; this.source = null; this.analyser = null; this.sampleRate = 44100; this._buf = null; }
   async start() {
     if (this.stream) return;
+    if (!isMicAvailable()) throw new Error('MIC_UNAVAILABLE');
     this.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+    // Create + resume the AudioContext INSIDE this user-gesture handler. A context
+    // created after an `await` (mic permission) starts SUSPENDED in Chrome/Edge, and a
+    // suspended context's AnalyserNode returns all-zeros — so autoCorrelate() returns -1
+    // forever and the tuner shows "—" no matter what you play. resume() wakes it.
     this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (this.ctx.state === 'suspended') await this.ctx.resume();
     this.sampleRate = this.ctx.sampleRate;
     this.source = this.ctx.createMediaStreamSource(this.stream);
     this.analyser = this.ctx.createAnalyser();
     this.analyser.fftSize = 2048;
     this.source.connect(this.analyser);
+    // The analyser must be part of a graph that *reaches* the destination, or the
+    // Web Audio engine won't pull/pump the MediaStreamSource and getFloatTimeDomainData
+    // returns all-zeros (→ autoCorrelate returns -1 → tuner shows "—" forever, even
+    // though the mic permission was granted). Route analyser → zero-gain → destination
+    // so it's processed silently without playing the mic back to the speaker.
+    const sink = this.ctx.createGain();
+    sink.gain.value = 0;
+    this.analyser.connect(sink);
+    sink.connect(this.ctx.destination);
     this._buf = new Float32Array(this.analyser.fftSize);
   }
   stop() {
@@ -55,18 +94,36 @@ export function playBuffer(float32, sampleRate) {
   });
 }
 
-// OpenAI TTS per-call (Ban 8: paid per-call, commercial). Falls back to speechSynthesis
-// if the key isn't set yet (still ship-capable). The SPOKEN TEXT is the teacher's
-// persona_line + lesson caption (persona + coaching), never an LLM-invented judgement.
+// Voice routing. Each instructor (teacher JSON) carries a full `voice` object:
+//   { provider, voice_id, style, rate, pitch }
+// resolveTtsPlan() (see tts-plan.js) turns whatever speak() received into one plan.
+// Providers:
+//   - 'openai-tts' : per-call commercial TTS (Ban 8 — paid per call, permitted stopgap)
+//   - 'chatterbox' : THE SHIPPING realistic voice (AMENDMENT-06) — MIT, warm, emotion.
+//                     Audio is synthesized server-side (key stays off the client) and
+//                     streamed back; see /api/tts in serve.mjs.
+// The SPOKEN TEXT is the teacher's persona_line + lesson caption — never an LLM judgement.
 export async function speak(text, opts = {}) {
-  const voice = opts.voice || 'alloy';
-  const apiKey = window.__OPENAI_TTS_KEY__ || null;
-  if (apiKey) {
+  // Normalize chord symbols for SPEECH only (captions stay "Em" on screen).
+  // Without this, "Em" is read as the letters E + m → "m". See tts-normalize.js.
+  const spoken = normalizeForTTS(text);
+  const plan = resolveTtsPlan(opts);
+
+  // 1) Preferred path: a server-side voice proxy (/api/tts) when running behind serve.mjs
+  //    (always true in dogfood; in prod point __TTS_PROXY__ at your backend). Keeps the
+  //    synthesis key server-side — correct for a paid app.
+  if (window.__TTS_PROXY__ !== false) {
+    try { if (await speakViaProxy(spoken, plan)) return; }
+    catch (e) { console.warn('TTS proxy failed, using client fallback', e); }
+  }
+
+  // 2) Client-side OpenAI TTS (stopgap) if a key is present in the page.
+  if (plan.provider === 'openai-tts' && (window.__OPENAI_TTS_KEY__ || null)) {
     try {
       const res = await fetch('https://api.openai.com/v1/audio/speech', {
         method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: 'tts-1', voice, input: text, response_format: 'mp3' })
+        headers: { 'Authorization': 'Bearer ' + window.__OPENAI_TTS_KEY__, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: 'tts-1', voice: plan.voiceId, input: spoken, response_format: 'mp3' })
       });
       if (res.ok) {
         const blob = await res.blob();
@@ -75,14 +132,32 @@ export async function speak(text, opts = {}) {
         await a.play();
         return;
       }
-    } catch (e) { console.warn('TTS call failed, using local speechSynthesis', e); }
+    } catch (e) { console.warn('OpenAI TTS failed, using local speechSynthesis', e); }
   }
-  // Local fallback (still works, uses device voice).
+
+  // 3) Local fallback (still works, uses device voice, honors rate + pitch so each
+  //    instructor still sounds distinct even with no API key).
   if ('speechSynthesis' in window) {
-    const u = new SpeechSynthesisUtterance(text);
-    u.rate = opts.rate || 1;
+    const u = new SpeechSynthesisUtterance(spoken);
+    u.rate = plan.rate || 1;
+    u.pitch = clampPitchToSpeech(plan.pitch);
     window.speechSynthesis.speak(u);
   }
+}
+
+// POST to the server-side voice proxy and play the returned audio. Returns true on success.
+async function speakViaProxy(spoken, plan) {
+  const res = await fetch('/api/tts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ provider: plan.provider, voice_id: plan.voiceId, text: spoken, style: plan.style })
+  });
+  if (!res.ok) return false;
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = new Audio(url);
+  await a.play();
+  return true;
 }
 
 // Speech-to-text via Web Speech API (browser-only). Returns the recognized text.

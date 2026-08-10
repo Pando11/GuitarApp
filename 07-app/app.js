@@ -3,7 +3,7 @@ import { AppState } from './lib/storage.js';
 import { loadCoreLessons, loadPacks, loadTeachers, loadJson } from './lib/catalog.js';
 import { buildManifest, chordSVG } from './core/renderer.js';
 import { applyTeacher, validateTeacher } from './core/teacher.js';
-import { MicAnalyzer, playBuffer, speak, startListening } from './audio/audioio.js';
+import { MicAnalyzer, playBuffer, speak, startListening, isMicAvailable, micUnavailableMessage } from './audio/audioio.js';
 import * as T from './core/tuner-engine.js';
 import * as B from './core/band-engine.js';
 import * as V from './core/voice-command.js';
@@ -49,8 +49,10 @@ const routes = {
   band: renderBand, packs: renderPacks, upgrade: renderUpgrade, lesson: renderLesson,
   teacherDetail: renderTeacherDetail
 };
+let stopActiveTuner = null;  // set by renderTuner; torn down when leaving the screen
 function navigate(route, params) {
   document.getElementById('sidenav').classList.add('hidden');
+  if (stopActiveTuner) { try { stopActiveTuner(); } catch (e) {} stopActiveTuner = null; }
   const fn = routes[route] || renderHome;
   screen.innerHTML = '';
   fn(params || {});
@@ -160,7 +162,7 @@ function renderLesson(params) {
     }
     controls.querySelector('[data-pos]').textContent = (sceneIdx.i + 1) + ' / ' + (view ? view.scenes.length : manifest.scenes.length);
     // TTS the teacher's line (persona + caption) — never an LLM judgement.
-    if (view) speak(view.scenes[sceneIdx.i].speech.persona_line + ' ' + src.caption, { voice: view.voice.voice_id });
+    if (view) speak(view.scenes[sceneIdx.i].speech.persona_line + ' ' + src.caption, { voice: view.voice });
     // In-lesson listening verification (F2 full) when a chord is present and premium.
     recordStatus.textContent = '';
     if (src.chord && src.chord.frets && isPremium()) {
@@ -186,7 +188,7 @@ function renderLesson(params) {
           save();
         }
       }, 1600);
-    }).catch(e => { recordStatus.textContent = 'Mic error: ' + e.message; });
+    }).catch(e => { recordStatus.textContent = isMicAvailable() ? 'Mic blocked: click the lock icon, allow Microphone, then retry.' : micUnavailableMessage(); });
   }
 
   controls.appendChild(el('button', { class: 'btn', text: '◀ Back', onclick: () => { sceneIdx.i = Math.max(0, sceneIdx.i - 1); repaint(); } }));
@@ -195,7 +197,7 @@ function renderLesson(params) {
     if (sceneIdx.i < total - 1) { sceneIdx.i++; repaint(); }
     else { navigate('progress'); }
   } }));
-  controls.appendChild(el('button', { class: 'btn small', text: '🔊 Replay', onclick: () => { const s = view ? view.scenes[sceneIdx.i] : manifest.scenes[sceneIdx.i]; if (view) speak(s.speech.persona_line + ' ' + s.caption, { voice: view.voice.voice_id }); } }));
+  controls.appendChild(el('button', { class: 'btn small', text: '🔊 Replay', onclick: () => { const s = view ? view.scenes[sceneIdx.i] : manifest.scenes[sceneIdx.i]; if (view) speak(s.speech.persona_line + ' ' + s.caption, { voice: view.voice }); } }));
   controls.appendChild(el('span', { class: 'counter', 'data-pos': '' }));
 
   function repaint() { paint(); }
@@ -224,12 +226,43 @@ function renderTuner() {
   const noteLabel = el('div', { class: 'tuner-note', text: '—' });
   const centsLabel = el('div', { class: 'tuner-cents', text: '' });
   const micBtn = el('button', { class: 'btn primary', text: '🎤 Start tuning', onclick: startTuner });
-  screen.appendChild(noteLabel); screen.appendChild(needle); screen.appendChild(centsLabel); screen.appendChild(micBtn);
+  const stopBtn = el('button', { class: 'btn', text: '■ Stop', onclick: stopTuner });
+  screen.appendChild(noteLabel); screen.appendChild(needle); screen.appendChild(centsLabel);
+  screen.appendChild(micBtn); screen.appendChild(stopBtn);
+  const status = el('p', { class: 'muted', text: 'Tap Start, then play a string.' });
+  screen.appendChild(status);
   let mic, raf;
+  function stopTuner() {
+    if (raf) cancelAnimationFrame(raf);
+    raf = null;
+    if (mic) { try { mic.stop(); } catch (e) {} mic = null; }
+    micBtn.disabled = false;
+    status.textContent = 'Stopped. Tap Start to tune again.';
+  }
+  stopActiveTuner = stopTuner;  // let the router tear this down on navigation
   async function startTuner() {
+    if (mic) return;
     micBtn.disabled = true;
-    mic = new MicAnalyzer();
-    await mic.start();
+    status.textContent = 'Requesting microphone…';
+    try {
+      mic = new MicAnalyzer();
+      await mic.start();
+    } catch (e) {
+      micBtn.disabled = false;
+      if (isMicAvailable()) {
+        status.textContent = '⚠ Microphone blocked — click the 🎤/lock icon in the address bar, set Microphone to Allow, then Start again.';
+      } else if (window.__LAN_HTTPS_DOGFOOD__) {
+        // On an insecure http://LAN-IP context: turn the error into a one-tap link
+        // to the exact secure URL. The Windows mic toggle is already ON — the browser
+        // simply refuses to expose the mic API over plain HTTP on a LAN IP.
+        status.innerHTML = '⚠ Mic needs a secure connection. <a href="' + window.__LAN_HTTPS_DOGFOOD__ +
+          '">Tap here to open the secure version</a> (then "Advanced → Proceed" once). Your Windows mic toggle is already ON — this is a browser security rule, not that toggle.';
+      } else {
+        status.textContent = micUnavailableMessage();
+      }
+      return;
+    }
+    status.textContent = 'Listening — play a string.';
     const tick = () => {
       const f = mic.detectPitch();
       if (f > 0) {
