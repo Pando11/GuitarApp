@@ -13,6 +13,13 @@ import { extname, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { networkInterfaces } from 'node:os';
 import { buildUpstreamRequest } from './lib/tts-proxy.js';
+import { loadDotEnv } from './lib/dotenv-load.js';
+
+// A paid app keeps its synthesis key on the SERVER only (never in the client
+// bundle). loadDotEnv() reads .env (OPENAI_API_KEY / CHATTERBOX_API_URL /
+// CHATTERBOX_API_KEY) so the API voice is configurable without shell exports;
+// existing shell env always wins. Must run BEFORE the PORT/key reads below.
+loadDotEnv();
 
 // Read a JSON request body (used by POST /api/tts).
 function readBodyJson(req) {

@@ -362,6 +362,11 @@ function renderChat() {
       log.appendChild(el('div', { class: 'msg me', text }));
       const r = chatReply(app.store, app.settings.currentTeacherId, text);
       log.appendChild(el('div', { class: 'msg teacher', text: r.text }));
+      // Voice the coach reply through the SAME API proxy used by lessons, so the
+      // AI teacher speaks in chat too (not just during lesson scenes).
+      const tv = (CURRENT_TEACHER || CATALOG.teachers.find(t => t.id === app.settings.currentTeacherId) || CATALOG.teachers[0] || {}).voice;
+      if (tv) speak(r.text, { voice: tv });
+      log.appendChild(el('button', { class: 'btn small', text: '🔊 Replay', onclick: () => { if (tv) speak(r.text, { voice: tv }); } }));
       input.value = '';
     }});
     const bar = el('div', { class: 'chat-bar' }, [input, sendBtn]);
