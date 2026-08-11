@@ -95,8 +95,20 @@ const handler = async (req, res) => {
   } catch (e) { res.writeHead(404); res.end('not found'); }
 };
 
-createServer(handler).listen(PORT, () => {
+const httpServer = createServer(handler).listen(PORT, () => {
   console.log('GuitarApp PWA (HTTP)  → http://localhost:' + PORT + '/?dogfood=1');
+});
+// Fail SOFT like the HTTPS listener: a duplicate `start-lan.bat` click (port already
+// in use) must NOT crash the whole process. Without this handler, an EADDRINUSE on
+// :8080 throws an uncaught 'error' event → the server dies → the phone/desktop can't
+// open the app at all. Match the HTTPS listener's resilience so re-running the launcher
+// simply reports "already running" instead of taking the app down.
+httpServer.on('error', (e) => {
+  if (e.code === 'EADDRINUSE') {
+    console.warn('HTTP server not started (' + e.code + ' on :' + PORT + ') — an instance is already running. Leaving it alone.');
+  } else {
+    console.error('HTTP server error:', e);
+  }
 });
 
 // HTTPS (optional — only if cert.pem/key.pem exist). Required for phone/LAN mic access.
