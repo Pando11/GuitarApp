@@ -487,8 +487,27 @@ function renderPaywall(feature) {
   ]));
 }
 
+// ---------- fatal error screen ----------
+// User-visible safety net: if boot ever fails (stale cache, missing module, JSON
+// error) the phone shows a real message + the fix, never a blank white screen.
+function showFatal(msg) {
+  const screen = document.getElementById('screen');
+  if (!screen) return;
+  screen.innerHTML = '';
+  screen.appendChild(el('div', { class: 'fatal' }, [
+    el('h2', { text: "The app couldn't open" }),
+    el('p', { text: String(msg || 'Unknown error') }),
+    el('p', { class: 'fatal-fix', html: 'Fix: close this tab and re-open the full link Heidi gave you (it ends in <code>?dogfood=1</code>). If that still fails, ask Heidi to restart <code>start-lan.bat</code> on her computer.' }),
+  ]));
+}
+
 // ---------- boot ----------
 async function boot() {
+  // Never let the app silently white-screen. If any module fails to load or a
+  // boot error is thrown, show a real message (with the fix) instead of a blank
+  // page. This is the user-visible safety net for "app won't open after a change."
+  window.addEventListener('error', (ev) => { showFatal(ev.message || 'Load error'); });
+  window.addEventListener('unhandledrejection', (ev) => { showFatal((ev.reason && (ev.reason.message || ev.reason)) || 'Load error'); });
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('service-worker.js').catch(e => console.warn('SW register failed', e));
   }
@@ -509,7 +528,7 @@ async function boot() {
     CURRENT_TEACHER = CATALOG.teachers.find(t => t.id === app.settings.currentTeacherId) || CATALOG.teachers[0];
     app.entitlement.settleTrial();
     save();
-  } catch (e) { console.error('catalog load failed', e); }
+  } catch (e) { console.error('catalog load failed', e); showFatal('Content failed to load: ' + (e && e.message)); return; }
   // LOCAL dogfood unlock (labeled, opt-in via ?dogfood=1). Production paywall untouched.
   const _p = new URLSearchParams(location.search);
   if (_p.get('dogfood') === '1') setDogfood(true);
