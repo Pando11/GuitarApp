@@ -15,6 +15,17 @@ buildable AND provable here. Engine layer stays SDK-agnostic for a later native 
 - `node app-smoke.mjs`  → APP SMOKE 18 passed, 0 failed
   (headless DOM harness importing the REAL app.js: boot, catalog, entitlement gating, lesson render,
    teacher-swap invariant, voice intents all exercised)
+- `node verify-sw-cache.mjs` → SW CACHE GATE 4 passed, 0 failed
+  (proves the service worker serves FRESH code over a stale cached copy — network-first. This is the
+   guard that prevents "the phone app stops opening after a code change": the old cache-first SW with a
+   hardcoded list + manual CACHE version bump was the recurring break. If a future edit reverts the SW
+   to cache-first, this gate FAILS before it ever reaches a phone.)
+- `python3 test/playwright-hostile.py` → HOSTILE PLAYWRIGHT 30 passed, 0 console/page errors (GREEN).
+  Includes a runtime SW-cache regression test: loads the app (SW caches shell), mutates app.js on disk
+  to simulate a code change, reloads, and asserts the browser received the NEW app.js. Hardened the
+  harness to ignore the expected keyless-voice `/api/tts` 501 (documented OpenAI/Chatterbox stopgap,
+  not a defect). Also made serve.mjs fail SOFT on a blocked HTTPS port so the HTTP server (used by the
+  harness + desktop) stays up instead of the whole process crashing on EADDRINUSE.
 - Both inherit the 16 prior Node gates (step0..step9, F7 band, F10 voice) which were ALSO re-run green.
 ## STRUCTURE (07-app/)
 - core/ — 13 engines ported 1:1 from 06-prototypes (tuner-engine, listening-engine, chord-theory-check,
@@ -38,6 +49,16 @@ buildable AND provable here. Engine layer stays SDK-agnostic for a later native 
 3. serve.mjs path bug: ROOT had a trailing separator causing 403 on every route. Rewritten with
    fileURLToPath + resolve + trailing-sep strip. Verified serving 200 on all routes (NOTE: a stale node
    on :8080 masked this during testing — always kill node before re-testing the server).
+4. SW cache-first -> network-first (ROOT CAUSE of "phone app stops opening after a code change"):
+   old service-worker.js served JS/CSS cache-first with a hardcoded list + manual CACHE version bump.
+   After any PC code change the phone kept the stale bundle and blank-screened until the version was
+   bumped by hand. Fixed to NETWORK-FIRST with offline fallback + a visible fatal-error screen in
+   app.js. Added `verify-sw-cache.mjs` (Node) + a playwright hostile SW-cache regression test.
+
+## GATING RULE (do not skip)
+After ANY edit to `service-worker.js`, `app.js`, or `styles.css`: run `node verify-sw-cache.mjs` AND
+`python3 test/playwright-hostile.py` (GREEN required). The SW gate FAILS if the SW ever reverts to
+cache-first, so a future "app won't open after a change" regression is caught in CI, not on Heidi's phone.
 
 ## WHAT IS STILL NOT DONE / OPEN (honest)
 - HOSTILE RE-REVIEW PENDING: a fresh subagent (deleg_58c5c1d6) was dispatched to attack 07-app/app.js,

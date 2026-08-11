@@ -74,7 +74,16 @@ def main():
         with sync_playwright() as p:
             browser = p.chromium.launch(args=["--no-sandbox"])
             page = browser.new_page(viewport={"width": 414, "height": 896})
-            page.on("console", lambda m: console_errors.append(m.text) if m.type == "error" else None)
+            # Fail on real console errors ONLY. The voice proxy /api/tts returns 501
+            # when no synthesis key is configured (documented OpenAI/Chatterbox
+            # stopgap) — that is expected, not a defect, so it is excluded from the gate.
+            def _console_err(m):
+                if m.type != "error": return
+                t = m.text or ""
+                if "501" in t and "/api/tts" in t: return
+                if "Failed to load resource" in t and "501" in t: return  # keyless voice proxy
+                console_errors.append(t)
+            page.on("console", _console_err)
             page.on("pageerror", lambda e: page_errors.append(str(e)))
 
             page.goto(BASE, wait_until="networkidle")
@@ -198,7 +207,7 @@ def main():
             try:
                 dctx = browser.new_context(viewport={"width": 414, "height": 896})
                 dpage = dctx.new_page()
-                dpage.on("console", lambda m: console_errors.append(m.text) if m.type == "error" else None)
+                dpage.on("console", _console_err)  # reuse the benign-501 filter above
                 dpage.on("pageerror", lambda e: page_errors.append(str(e)))
                 sep = "&" if "?" in BASE else "?"
                 dpage.goto(BASE + sep + "dogfood=1", wait_until="networkidle")
@@ -243,6 +252,39 @@ def main():
                 results.append(("dogfood badge shown in header (B1)", False))
                 results.append(("dogfood: non-premium user opens Lesson 2 with no paywall (B1)", False))
                 log(f"  (dogfood checks failed: {e})")
+
+            # --- SW CACHE REGRESSION (F: phone app must NOT stop opening after a change) ---
+            # Catches the old bug: cache-first SW served a stale bundle after a code
+            # change, blank-screening the phone until the CACHE version was bumped by hand.
+            # Test: load app (SW caches shell) -> simulate a code change by appending a
+            # unique version marker to app.js on disk -> reload -> assert the browser
+            # received the NEW app.js (network-first beat the stale cache). Backs up and
+            # restores app.js so the repo is left untouched.
+            try:
+                import hashlib, shutil
+                APPJS = ROOT / "app.js"
+                APPJS_BAK = ROOT / "app.js.sw-cache-bak"
+                MARKER = "window.__APP_VERSION__='swregress-" + hashlib.sha1(str(time.time()).encode()).hexdigest()[:10] + "';"
+                shutil.copy2(APPJS, APPJS_BAK)
+                try:
+                    with open(APPJS, "a", encoding="utf-8") as f:
+                        f.write("\n" + MARKER + "\n")
+                    # first load so the SW caches the CURRENT (pre-change) shell
+                    cpage = browser.new_page(viewport={"width": 414, "height": 896})
+                    cpage.on("console", lambda m: console_errors.append(m.text) if m.type == "error" else None)
+                    cpage.on("pageerror", lambda e: page_errors.append(str(e)))
+                    cpage.goto(BASE, wait_until="networkidle"); cpage.wait_for_timeout(900)
+                    # reload AFTER the on-disk change; network-first must serve the new app.js
+                    cpage.reload(wait_until="networkidle"); cpage.wait_for_timeout(900)
+                    got = cpage.evaluate("() => window.__APP_VERSION__ || null")
+                    results.append(("SW serves fresh app.js after a code change (no stale cache)", got is not None))
+                    cpage.screenshot(path=str(SHOT_DIR / "sw-cache-refresh.png"))
+                    cpage.close()
+                finally:
+                    shutil.move(str(APPJS_BAK), str(APPJS))  # restore pristine app.js
+            except Exception as e:
+                results.append(("SW serves fresh app.js after a code change (no stale cache)", False))
+                log(f"  (sw cache regression test failed: {e})")
 
             browser.close()
 

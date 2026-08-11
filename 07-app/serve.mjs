@@ -103,7 +103,14 @@ createServer(handler).listen(PORT, () => {
 let cert, key;
 try { cert = readFileSync(resolve(ROOT, 'cert.pem')); key = readFileSync(resolve(ROOT, 'key.pem')); } catch {}
 if (cert && key) {
-  createSecureServer({ cert, key }, handler).listen(HTTPS_PORT, () => {
+  const httpsServer = createSecureServer({ cert, key }, handler);
+  // Fail SOFT: a blocked/duplicate HTTPS port must NOT crash the whole server —
+  // the HTTP server (used by the test harness and desktop) must stay up. An
+  // unhandled 'error' event here would throw and kill every listener.
+  httpsServer.on('error', (e) => {
+    console.warn('HTTPS server not started (' + e.code + ' on :' + HTTPS_PORT + ') — phone mic over LAN needs this port free. HTTP server is unaffected.');
+  });
+  httpsServer.listen(HTTPS_PORT, () => {
     console.log('GuitarApp PWA (HTTPS, mic-enabled) → https://localhost:' + HTTPS_PORT + '/?dogfood=1');
     const nics = networkInterfaces();
     for (const name of Object.keys(nics)) {
