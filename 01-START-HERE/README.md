@@ -40,6 +40,10 @@ The base spec still contains the old camera-first / audio-first decisions. It is
 AMENDMENT-02 (animated teacher + voice) → AMENDMENT-03 (AI-native movie-like lesson, open-source/
 no-fee stack, bans removed) → **AMENDMENT-04 (record-a-take critique RETIRED — sequenced lesson app).**
 AMENDMENT-04 is the current truth on product scope. Read the amendments, never the base spec alone.
+The chain continues: AMENDMENT-05 (App That Listens) → AMENDMENT-06 (avatar/voice unlock) →
+AMENDMENT-07 (Flux pipeline) → AMENDMENT-08 (Midjourney excluded) → AMENDMENT-09 (motion + Godot
+story-world) → AMENDMENT-10 (AI-drawn fingering permitted) → **AMENDMENT-11 (2026-08-11 — world-locked
+teacher + longitudinal student memory + teacher–student duet; the product thesis, with redlines).**
 
 ### C. There is a LICENSE BLOCKLIST — read it before choosing an audio library
 Essentia (AGPL-3.0), aubio (GPL-3.0), TarsosDSP (GPL-3.0), pedalboard (GPL-3.0),
@@ -138,11 +142,16 @@ no DSP, no recording, no transcription (basic-pitch/librosa only matter if a fut
    the founder never agreed to interviews. Demand is validated via the **Reddit post**
    (`guitar-reddit-recruitment.md`, rewritten same day): ask players what they liked/hated in
    other apps + gauge $12/mo interest. Informational only; no gate, no kill criterion.
-2. **Teacher character art still needed.** `06-prototypes/animated-teacher-demo-v2.html`
-   validates the FORMAT (character + fretboard, no filmed human) but the art is
-   placeholder. Next: decide teacher character art — freelance illustrator OR an
-   Apache-2.0 AI model (FLUX.1[schnell] / Qwen-Image) — per Amendment 03 §8. Rive is
-   dropped (no membership fees). Open questions for the owner are listed in Amendment 02 §6.
+2. **Teacher character art — DECIDED (AMENDMENT-07, 2026-08-10).** Reverse-engineering of
+   `black-forest-labs/flux` + `huggingface/diffusers` confirms **FLUX.1[schnell] (Apache-2.0)** is the
+   ONLY legal image generator for the paid app; dev/kontext/fill/redux/krea are **non-commercial and
+   blocked (Rule 9, copyright law)**. Editing/consistency needs → **Qwen-Image (Apache-2.0)**.
+   Pipeline: FLUX.1[schnell] server-side (cloud GPU worker) → teacher still → **TalkingHead (MIT) + RPM**
+   browser-side (the actual "video") + **Chatterbox (MIT)** voice. Fingering overlays driven from
+   `chord-theory-check.js`, never AI-drawn. Enforcement: `07-app/core/asset-job.js` (license gate,
+   hard ship gate) + `07-app/content/teachers/*.assetjob.json` + `07-app/test/asset-job.test.mjs`
+   (PASS). Open question for owner (art direction only, not model choice): freelance vs AI stills — but
+   the *generator* is now bound and license-gated regardless.
 3. **Fret buzz recording/labeling plan.** Not written yet, deliberately deferred.
    No public labeled fret-buzz dataset exists, which is exactly why it's the durable
    moat: a data-collection problem, not a coding problem. Plan is to have the
@@ -152,14 +161,58 @@ no DSP, no recording, no transcription (basic-pitch/librosa only matter if a fut
    recruitment.md` is a discussion post (what people liked/hated in other apps + $12/mo interest)
    we may put up for extra context — it is NOT a demand signal, validation, or go/no-go. The old
    `guitar-interview-script.md` is in `07-archive/`.
-5. **NEXT RESEARCH QUEUED (B):** Pickup Music + TrueFire teardown — DONE 2026-08-05
+7. **NEXT RESEARCH QUEUED (B):** Pickup Music + TrueFire teardown — DONE 2026-08-05
    (`03-research/competitors/pickup-truefire-teardown-2026-08-05.md`). Confirms our async-
    automated-unlimited critique is distinct from every incumbent (Yousician/Gibson=real-time-
    in-app; Pickup=async-HUMAN ~48h; TrueFire=live workshops). Also corrects the stale
    "Pickup 1 video/wk ~1wk" and "$39/exchange = TrueFire sub" notes.
-6. **NEXT RESEARCH QUEUED (C):** App Store Guideline 3.1.2 subscription-rejection risk for a
+7b. **MIDJOURNEY REVERSE-ENGINEERING — DONE + EXCLUDED (2026-08-10, AMENDMENT-08).** Owner
+   asked to RE Midjourney. Verdict: **not adoptable** in the paid app. No OSS analog (official
+   GitHub = 16 OSS-fork repos, 0 model; Hugging Face has no official org + only NC/OpenRAIL
+   "style-mimic" LoRAs on FLUX.1-dev). ToS forbids RE + competitive research; no embed license.
+   Excluded in `07-app/core/asset-job.js` (`BLOCKED_VENDORS=['midjourney']`, verified live).
+   Product/UX teardown + the legal OSS map live in `03-research/midjourney/` + AMENDMENT-08.
+   The actual *video* model RE (Wan2.1/LTX/Mochi/…) remains queued in the video HANDOFF
+   (`AppData\Local\hermes\handoffs\HANDOFF-reverse-engineer-video-guitarapp.md`) — AMENDMENT-09.
+8. **NEXT RESEARCH QUEUED (C):** App Store Guideline 3.1.2 subscription-rejection risk for a
    subscription guitar app (sources gathered 2026-08-05; not yet written up). Then D (basic-pitch
-   vs SwiftF0 on-device pitch), E (re-verify FLUX.1[schnell]/Qwen-Image still Apache-2.0).
+   vs SwiftF0 on-device pitch). **(E) re-verify FLUX.1[schnell]/Qwen-Image Apache-2.0 — DONE via
+   AMENDMENT-07:** schnell = Apache-2.0 confirmed from cloned `model_cards/FLUX.1-schnell.md`;
+   Qwen-Image Apache-2.0 per Stack. License gate enforced in code (`asset-job.js`).**
+8b. **MOTION + STORY-ENGINE — DONE (2026-08-10, AMENDMENT-09).** Owner: RE = whole-app technique,
+   app is a game-like story-world (teacher = one character; single example's aesthetic is NOT a
+   spec rule). Motion = **Wan2.1-I2V (Apache-2.0, verified via GitHub+HG API)**; SVD = LICENSE:other
+   → blocked (memory error corrected); LTX/Hunyuan/CogVideoX = "other" → unverified, blocked.
+   Story shell = **Godot (MIT)** chosen over Ink (Ink = story-only + dead inkjs runtime). Midjourney
+   excluded (AMENDMENT-08). asset-job.js extended: ALLOWED_VIDEO_MODELS=['wan2.1-i2v'], STORY_ENGINE='godot',
+   video jobs gated to cloud-gpu-worker + fps 8–30. Verified live (wan2.1-i2v passes, svd rejected,
+   schnell still passes). See 02-spec/guitar-app-spec-AMENDMENT-09.md.
+8c. **GODOT SCAFFOLD — BUILT (2026-08-10).** `07-app/godot/` = Godot 4.7.x project (MIT):
+   `project.godot` (main_scene=World.tscn), `world/World.gd` (story-world root, loads
+   `data/lesson_manifest.json`, `enter_lesson(id)`), `lesson/LessonScene.gd` (plays Wan2.1 clip +
+   Chatterbox voice + FingeringOverlay), `lesson/FingeringOverlay.gd`, `data/lesson_manifest.json`
+   (schema-first). Static-verified. **Godot NOT installed here** → not run-executed; owner opens in Godot 4.7.x.
+8d. **AMENDMENT-10 (owner override) — AI-drawn fingers/fretboards NOW PERMITTED.** Owner: "erase
+   rule 7, age of AI, don't limit ourselves." Lifted the no-AI-drawn-fingering restriction. AI may
+   generate fingering/fretboards. chord-theory-check.js kept as a *verification pass* (quality gate).
+   Rule 7 (recording) + Rule 9 (license law) LEFT INTACT (scope + copyright, not AI limits).
+8e. **AMENDMENT-11 (2026-08-11) — THE PRODUCT THESIS, CAPTURED WITH REDLINES.** Owner: "capture this
+   thesis — the relationship the student builds with the teacher/AI." Binds three parts: (1) **world-locked
+   teacher** — lessons 1–20 = one coherent "old village" world; the teacher is a villager, scene/hand/voice
+   share one `styleAnchor`; the *hand that reaches the neck matches the world's art* (synced to the
+   coaching words, fingering still data-correct from chord-theory-check.js). (2) **longitudinal student
+   memory** — a per-student progress profile (mastered/needs-work chords, last lesson, weak spots) fed by
+   the listening engine, so the teacher coaches *forward* ("you had E minor solid, C needs work"). (3) **teacher–student
+   duet** — the eventual payoff (teacher plays along). REDLINES (owner demanded, not rubber-stamped):
+   R1 the memory module is a REQUIRED NEW BUILD, not already-existing infra; R2 Rule 5 stays hard — the
+   "you need more C" line is generated FROM stored mastery numbers, never the LLM's vibe; R3 the duet is
+   LAST, gated on listening-engine ship + calibration (no open transcription). v1 memory capped to last 3
+   lessons + per-chord mastery + assigned practice (no behavioral profiling). See
+   `02-spec/guitar-app-spec-AMENDMENT-11.md`.
+8e. **PHONE-VIEWABLE PROTOTYPE — BUILT + VERIFIED.** `03-research/guitar-app-world-prototype-mobile.html`
+   = self-contained `file://` (no server/internet). World→lesson flow, Wan2.1 cinematic look, AI-style
+   fretboard (post-AMENDMENT-10). Node DOM-mock verified: 4 doors, fretboard draws, lesson opens, 0
+   external fetches. Transfer to phone + open in browser to view. See HANDOFF-optionA-complete.md.
 
 ---
 
