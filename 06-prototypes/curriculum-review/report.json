@@ -1,0 +1,250 @@
+{
+  "generated": "2026-08-12T21:32:33.665Z",
+  "findings": [
+    {
+      "sev": "MED",
+      "code": "C-IDENTITY-SPLIT",
+      "msg": "Two distinct chord identities exist for C: 'easyC' (2-finger) and 'C' (standard). Lessons using easyC: [3,4,5,7,15]. Lessons using standard C: [8,9,10,11,12,13,14,15,17,18,19,20]. No lesson teaches both in the same file, and the practice-engine SPINE constant still lists 'easyC' as the canonical spine token — a student who learns easyC in L03 and standard C in L08 will get TWO separate memory slots for the same musical chord, fragmenting the weak-pair review moat.",
+      "evidence": {
+        "easyCfiles": [
+          3,
+          4,
+          5,
+          7,
+          15
+        ],
+        "Cfiles": [
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          17,
+          18,
+          19,
+          20
+        ],
+        "bothFiles": [
+          15
+        ]
+      }
+    },
+    {
+      "sev": "MED",
+      "code": "NO-C-GRADUATION-LESSON",
+      "msg": "easyC (2-finger) is taught from L3 and standard C appears at L8 with NO lesson that explicitly graduates the student from one shape to the other. The only file containing both (L15) does not name a transition exercise. Result: the chord identity silently swaps at L08, and because practiceStore.js keys fluency by the literal chordName, the student's easyC progress (L03-07) does NOT carry into the C they play in L08+. This is the same root cause as C-IDENTITY-SPLIT — recommend a single canonical token (e.g. normalize 'easyC'->'C' at ingest, or a dedicated graduation lesson) so memory is continuous.",
+      "evidence": {
+        "easyCFirst": 3,
+        "cFirst": 8,
+        "bothInLessons": [
+          15
+        ]
+      }
+    },
+    {
+      "sev": "LOW",
+      "code": "SONGS-NOT-SEPARATED",
+      "msg": "§5.4/§5.6 says songs are a SEPARATE CATEGORY (moved out of the technique spine), but on-disk 1 lesson(s) still embed a song exercise inside the technique lesson: L3 (Your first song — Em to easy C). No SONGS category directory exists under 05-content or 07-app/content. The directive is documented as resolved but not executed on disk — flag for Heidi (structural, low urgency).",
+      "evidence": {
+        "embeddedSongs": [
+          {
+            "n": 3,
+            "songs": [
+              "Your first song — Em to easy C"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "inventory": [
+    {
+      "n": 1,
+      "file": "guitar-lesson-01-welcome-anatomy-tuning.json",
+      "keys": []
+    },
+    {
+      "n": 2,
+      "file": "guitar-lesson-02-first-chord-em.json",
+      "keys": [
+        "Em"
+      ]
+    },
+    {
+      "n": 3,
+      "file": "guitar-lesson-03-second-chord-first-song.json",
+      "keys": [
+        "Em",
+        "easyC"
+      ]
+    },
+    {
+      "n": 4,
+      "file": "guitar-lesson-04-strumming-in-time.json",
+      "keys": [
+        "Em",
+        "easyC"
+      ]
+    },
+    {
+      "n": 5,
+      "file": "guitar-lesson-05-chord-changes-em-easyc.json",
+      "keys": [
+        "Em",
+        "easyC"
+      ]
+    },
+    {
+      "n": 6,
+      "file": "guitar-lesson-06-new-chord-g.json",
+      "keys": [
+        "Em",
+        "G"
+      ]
+    },
+    {
+      "n": 7,
+      "file": "guitar-lesson-07-new-chord-d.json",
+      "keys": [
+        "D",
+        "Em",
+        "G",
+        "easyC"
+      ]
+    },
+    {
+      "n": 8,
+      "file": "guitar-lesson-08-new-chord-a.json",
+      "keys": [
+        "A",
+        "C",
+        "D",
+        "Em",
+        "G"
+      ]
+    },
+    {
+      "n": 9,
+      "file": "guitar-lesson-09-new-chord-am-big-four.json",
+      "keys": [
+        "Am",
+        "C",
+        "D",
+        "Em",
+        "G"
+      ]
+    },
+    {
+      "n": 10,
+      "file": "guitar-lesson-10-four-chord-songs.json",
+      "keys": [
+        "C",
+        "D",
+        "Em",
+        "G"
+      ]
+    },
+    {
+      "n": 11,
+      "file": "guitar-lesson-11-up-strums.json",
+      "keys": [
+        "C",
+        "D",
+        "Em",
+        "G"
+      ]
+    },
+    {
+      "n": 12,
+      "file": "guitar-lesson-12-strumming-patterns.json",
+      "keys": [
+        "C",
+        "D",
+        "Em",
+        "G"
+      ]
+    },
+    {
+      "n": 13,
+      "file": "guitar-lesson-13-dynamics-alternating-bass.json",
+      "keys": [
+        "C",
+        "D",
+        "Em",
+        "G"
+      ]
+    },
+    {
+      "n": 14,
+      "file": "guitar-lesson-14-capo-basics.json",
+      "keys": [
+        "C",
+        "D",
+        "Em",
+        "G"
+      ]
+    },
+    {
+      "n": 15,
+      "file": "guitar-lesson-15-faster-chord-changes.json",
+      "keys": [
+        "C",
+        "D",
+        "Em",
+        "G",
+        "easyC"
+      ]
+    },
+    {
+      "n": 16,
+      "file": "guitar-lesson-16-new-chord-e.json",
+      "keys": [
+        "A",
+        "E",
+        "Em"
+      ]
+    },
+    {
+      "n": 17,
+      "file": "guitar-lesson-17-minor-progressions-dm.json",
+      "keys": [
+        "Am",
+        "C",
+        "Dm",
+        "G"
+      ]
+    },
+    {
+      "n": 18,
+      "file": "guitar-lesson-18-fingerpicking-travis.json",
+      "keys": [
+        "C",
+        "G"
+      ]
+    },
+    {
+      "n": 19,
+      "file": "guitar-lesson-19-read-chord-chart-tab.json",
+      "keys": [
+        "Am",
+        "C",
+        "Em",
+        "G"
+      ]
+    },
+    {
+      "n": 20,
+      "file": "guitar-lesson-20-consolidation-performance.json",
+      "keys": [
+        "Am",
+        "C",
+        "D",
+        "Em",
+        "G"
+      ]
+    }
+  ]
+}
