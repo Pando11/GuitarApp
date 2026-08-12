@@ -1,11 +1,13 @@
 {
-  "generated": "2026-08-12T21:32:33.665Z",
+  "generated": "2026-08-12T21:44:29.943Z",
   "findings": [
     {
-      "sev": "MED",
+      "sev": "OK",
       "code": "C-IDENTITY-SPLIT",
-      "msg": "Two distinct chord identities exist for C: 'easyC' (2-finger) and 'C' (standard). Lessons using easyC: [3,4,5,7,15]. Lessons using standard C: [8,9,10,11,12,13,14,15,17,18,19,20]. No lesson teaches both in the same file, and the practice-engine SPINE constant still lists 'easyC' as the canonical spine token — a student who learns easyC in L03 and standard C in L08 will get TWO separate memory slots for the same musical chord, fragmenting the weak-pair review moat.",
+      "msg": "Two on-disk tokens for C exist (easyC [3,4,5,7,15] vs standard C [8,9,10,11,12,13,14,15,17,18,19,20]), but the practice memory NOW canon-ifies easyC->C (chord-canon.js), so a student's easyC progress in L03-07 shares ONE slot with the C they play from L08. Verified: canonPairKey(easyC,Em)==canonPairKey(C,Em) AND PracticeStore.getSkillMap collapses them. The weak-pair moat no longer fragments. (Finding originally MED; resolved 2026-08-12.)",
       "evidence": {
+        "sameKey": true,
+        "merged": true,
         "easyCfiles": [
           3,
           4,
@@ -26,21 +28,6 @@
           18,
           19,
           20
-        ],
-        "bothFiles": [
-          15
-        ]
-      }
-    },
-    {
-      "sev": "MED",
-      "code": "NO-C-GRADUATION-LESSON",
-      "msg": "easyC (2-finger) is taught from L3 and standard C appears at L8 with NO lesson that explicitly graduates the student from one shape to the other. The only file containing both (L15) does not name a transition exercise. Result: the chord identity silently swaps at L08, and because practiceStore.js keys fluency by the literal chordName, the student's easyC progress (L03-07) does NOT carry into the C they play in L08+. This is the same root cause as C-IDENTITY-SPLIT — recommend a single canonical token (e.g. normalize 'easyC'->'C' at ingest, or a dedicated graduation lesson) so memory is continuous.",
-      "evidence": {
-        "easyCFirst": 3,
-        "cFirst": 8,
-        "bothInLessons": [
-          15
         ]
       }
     },
@@ -57,6 +44,19 @@
             ]
           }
         ]
+      }
+    },
+    {
+      "sev": "LOW",
+      "code": "NO-C-GRADUATION-LESSON",
+      "msg": "easyC (2-finger) is taught from L3 and standard C appears at L8 with NO lesson that explicitly graduates the student from one shape to the other. The only file containing both (L15) does not name a transition exercise. NOTE: memory continuity is ALREADY solved (canonChord easyC==C, so fluency carries across the swap — verified). What's left is a pedagogical nicety: a short teaching beat that SAYS \"now \" +\n    \"we use the full C shape\" so the beginner isn't confused by the silent swap. Non-blocking; the moat is intact.",
+      "evidence": {
+        "easyCFirst": 3,
+        "cFirst": 8,
+        "bothInLessons": [
+          15
+        ],
+        "memoryContinuous": true
       }
     }
   ],

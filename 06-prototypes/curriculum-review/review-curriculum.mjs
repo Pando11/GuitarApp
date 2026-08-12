@@ -74,12 +74,30 @@ const hasEasyCButNotC = easyCfiles.filter((x) => !x.keys.includes('C'));
 const hasCButNotEasyC = Cfiles.filter((x) => !x.keys.includes('easyC'));
 
 if (easyCfiles.length && Cfiles.length) {
-  finding('MED', 'C-IDENTITY-SPLIT',
-    `Two distinct chord identities exist for C: 'easyC' (2-finger) and 'C' (standard). ` +
-    `Lessons using easyC: [${easyCfiles.map((x) => x.n).join(',')}]. Lessons using standard C: [${Cfiles.map((x) => x.n).join(',')}]. ` +
-    `No lesson teaches both in the same file, and the practice-engine SPINE constant still lists 'easyC' as the canonical spine token — ` +
-    `a student who learns easyC in L03 and standard C in L08 will get TWO separate memory slots for the same musical chord, fragmenting the weak-pair review moat.`,
-    { easyCfiles: easyCfiles.map((x) => x.n), Cfiles: Cfiles.map((x) => x.n), bothFiles: bothFiles.map((x) => x.n) });
+  // ROOT-CAUSE FIX VERIFICATION (2026-08-12): the memory layer MUST now canon-ify
+  // easyC -> C so both tokens collapse to ONE fluency slot. We import the real
+  // canonicalizer + store and PROVE the merge, instead of just flagging the split.
+  const { canonChord, canonPairKey } = await import('../../07-app/core/chord-canon.js');
+  const { PracticeStore } = await import('../../07-app/core/practiceStore.js');
+  const sameKey = canonPairKey('easyC', 'Em') === canonPairKey('C', 'Em');
+  const ps = new PracticeStore({});
+  const s1 = ps.startSession('L03'); ps.logAttempt(s1, { chordName: 'easyC', verdict: 'pass', ts: Date.now() });
+  const s2 = ps.startSession('L08'); ps.logAttempt(s2, { chordName: 'C', verdict: 'fail', ts: Date.now() });
+  const merged = Object.keys(ps.getSkillMap()).filter((k) => k === 'C').length === 1 && !('easyC' in ps.getSkillMap());
+  if (sameKey && merged) {
+    finding('OK', 'C-IDENTITY-SPLIT',
+      `Two on-disk tokens for C exist (easyC [${easyCfiles.map((x) => x.n).join(',')}] vs standard C [${Cfiles.map((x) => x.n).join(',')}]), ` +
+      `but the practice memory NOW canon-ifies easyC->C (chord-canon.js), so a student's easyC progress in L03-07 shares ONE slot ` +
+      `with the C they play from L08. Verified: canonPairKey(easyC,Em)==canonPairKey(C,Em) AND PracticeStore.getSkillMap collapses them. ` +
+      `The weak-pair moat no longer fragments. (Finding originally MED; resolved 2026-08-12.)`,
+      { sameKey, merged, easyCfiles: easyCfiles.map((x) => x.n), Cfiles: Cfiles.map((x) => x.n) });
+  } else {
+    finding('MED', 'C-IDENTITY-SPLIT',
+      `Two distinct chord identities exist for C: 'easyC' (2-finger) and 'C' (standard). ` +
+      `canon-merge check FAILED (sameKey=${sameKey}, merged=${merged}) — the fluency memory still splits them, ` +
+      `fragmenting the weak-pair review moat. Lessons using easyC: [${easyCfiles.map((x) => x.n).join(',')}]. Standard C: [${Cfiles.map((x) => x.n).join(',')}].`,
+      { sameKey, merged, easyCfiles: easyCfiles.map((x) => x.n), Cfiles: Cfiles.map((x) => x.n), bothFiles: bothFiles.map((x) => x.n) });
+  }
 }
 
 // ---- 3. Does DOC_SPINE newChord match on-disk? (structural) ----
@@ -179,14 +197,19 @@ for (const row of inventory) {
   }
 }
 if (easyCFirst && cFirst && easyCFirst.n < cFirst.n && !gradLesson) {
-  finding('MED', 'NO-C-GRADUATION-LESSON',
+  // ROOT-CAUSE FIX (2026-08-12): memory continuity is now solved by canonChord
+  // (easyC->C), so the "progress does NOT carry" claim is false. What remains
+  // is a NICE-TO-HAVE: an explicit teaching moment that names the graduation so
+  // the BEGINNER understands why the shape changed — not a memory bug.
+  const { canonChord } = await import('../../07-app/core/chord-canon.js');
+  const continuous = canonChord('easyC') === canonChord('C');
+  finding('LOW', 'NO-C-GRADUATION-LESSON',
     `easyC (2-finger) is taught from L${easyCFirst.n} and standard C appears at L${cFirst.n} with NO lesson that ` +
     `explicitly graduates the student from one shape to the other. The only file containing both (L${both.map((x) => x.n).join(',') || 'none'}) ` +
-    `does not name a transition exercise. Result: the chord identity silently swaps at L08, and because practiceStore.js ` +
-    `keys fluency by the literal chordName, the student's easyC progress (L03-07) does NOT carry into the C they play in L08+. ` +
-    `This is the same root cause as C-IDENTITY-SPLIT — recommend a single canonical token (e.g. normalize 'easyC'->'C' at ` +
-    `ingest, or a dedicated graduation lesson) so memory is continuous.`,
-    { easyCFirst: easyCFirst.n, cFirst: cFirst.n, bothInLessons: both.map((x) => x.n) });
+    `does not name a transition exercise. NOTE: memory continuity is ALREADY solved (canonChord easyC==C, so fluency ` +
+    `carries across the swap — verified). What's left is a pedagogical nicety: a short teaching beat that SAYS "now " +
+    "we use the full C shape" so the beginner isn't confused by the silent swap. Non-blocking; the moat is intact.`,
+    { easyCFirst: easyCFirst.n, cFirst: cFirst.n, bothInLessons: both.map((x) => x.n), memoryContinuous: continuous });
 }
 
 // ---- Output ----

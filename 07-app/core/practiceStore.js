@@ -1,5 +1,12 @@
 // practiceStore.js — Step 6 keystone store. PORTED 1:1 from 06-prototypes/step6/store/practiceStore.js.
 // Feeds F4 chat, F5 adaptive, F6 messages, F11 streaks. Ban 5: ZERO network. Single writer.
+//
+// 2026-08-12: canon-ified chord identity in getSkillMap (ROOT-CAUSE FIX for
+// curriculum-review C-IDENTITY-SPLIT). easyC (2-finger C) and C (standard) are
+// the same musical chord; without canon they split into two memory slots and
+// the weak-pair review moat fragments. All aggregation now keys by canonChord().
+
+import { canonChord, displayChord } from './chord-canon.js';
 
 const STRUGGLE_WINDOW = 5;
 function parseKey(k) { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d); }
@@ -50,8 +57,9 @@ export class PracticeStore {
     const byChord = {};
     for (const s of this.sessions) for (const a of s.attempts) {
       if (!a.chordName) continue;
-      if (!byChord[a.chordName]) byChord[a.chordName] = { clean: 0, fail: 0, unsure: 0, recent: [] };
-      const c = byChord[a.chordName];
+      const key = canonChord(a.chordName); // ROOT-CAUSE FIX: easyC + C share one slot
+      if (!byChord[key]) byChord[key] = { clean: 0, fail: 0, unsure: 0, recent: [] };
+      const c = byChord[key];
       if (a.verdict === 'pass') c.clean++; else if (a.verdict === 'fail') c.fail++; else c.unsure++;
       c.recent.push(a.verdict);
       if (c.recent.length > STRUGGLE_WINDOW) c.recent.shift();
@@ -67,7 +75,8 @@ export class PracticeStore {
   getCleanChords() { const map = this.getSkillMap(); return Object.keys(map).filter(n => map[n].state === 'clean'); }
   getLearningChords() { const map = this.getSkillMap(); return Object.keys(map).filter(n => map[n].state === 'learning'); }
   lessonForChord(chordName) {
-    for (let i = this.sessions.length - 1; i >= 0; i--) if (this.sessions[i].attempts.some(a => a.chordName === chordName)) return this.sessions[i].lessonId || null;
+    const key = canonChord(chordName || '');
+    for (let i = this.sessions.length - 1; i >= 0; i--) if (this.sessions[i].attempts.some(a => canonChord(a.chordName) === key)) return this.sessions[i].lessonId || null;
     return null;
   }
   practiceMinutesTotal() { return Math.round(this.sessions.reduce((acc, s) => acc + (s.durationSec || 0), 0) / 60); }
