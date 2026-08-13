@@ -12,14 +12,69 @@ export const QUALITIES = {
   'maj7': [0, 4, 7, 11],
   'sus2': [0, 2, 7],
   'sus4': [0, 5, 7],
-  '5':    [0, 7]
+  '5':    [0, 7],
+  // --- extended / alterated chords (added 2026-08-13) ---
+  'm6':   [0, 3, 7, 9], '6': [0, 4, 7, 9], '6/9': [0, 4, 7, 9, 14], 'm6/9': [0, 3, 7, 9, 14],
+  'aug':  [0, 4, 8], 'dim': [0, 3, 6], '7#5': [0, 4, 8, 10], '7b5': [0, 4, 6, 10],
+  '7sus4':[0, 5, 7, 10], 'dim7': [0, 3, 6, 9], 'm7b5': [0, 3, 6, 10],
+  '9':    [0, 4, 7, 10, 14], 'm9': [0, 3, 7, 10, 14], 'maj9': [0, 4, 7, 11, 14],
+  '11':   [0, 4, 7, 10, 14, 17], 'm11': [0, 3, 7, 10, 14, 17],
+  '13':   [0, 4, 7, 10, 14, 21], 'm13': [0, 3, 7, 10, 14, 21],
+  'add9': [0, 4, 7, 14], 'madd9':[0, 3, 7, 14]
 };
 export const REQUIRED = {
   'maj': [0, 4], 'min': [0, 3], '7': [0, 4, 10], 'min7': [0, 3, 10],
-  'maj7': [0, 4, 11], 'sus2': [0, 2], 'sus4': [0, 5], '5': [0, 7]
+  'maj7': [0, 4, 11], 'sus2': [0, 2], 'sus4': [0, 5], '5': [0, 7],
+  'm6': [0, 3, 9], '6': [0, 4, 9], '6/9': [0, 4, 9, 14], 'm6/9': [0, 3, 9, 14],
+  'aug': [0, 4, 8], 'dim': [0, 3, 6], '7#5': [0, 4, 8, 10], '7b5': [0, 4, 6, 10],
+  '7sus4': [0, 5, 7, 10], 'dim7': [0, 3, 6, 9], 'm7b5': [0, 3, 6, 10],
+  '9': [0, 4, 10, 14], 'm9': [0, 3, 10, 14], 'maj9': [0, 4, 11, 14],
+  '11': [0, 4, 10, 17], 'm11': [0, 3, 10, 17], '13': [0, 4, 10, 21], 'm13': [0, 3, 10, 21],
+  'add9': [0, 4, 14], 'madd9': [0, 3, 14]
 };
-export const KNOWN_QUALITY_TOKEN = /^(m|min|maj|maj7|m7|min7|minor|major|7|dom7|sus2|sus4|5)$/i;
-export const UNKNOWN_QUALITY_TOKEN = /^(dim|aug|6|9|11|13|add9|6\/9|m6|dim7|aug7|7sus4|7b5|7#5)$/i;
+export const KNOWN_QUALITY_TOKEN = /^(m|min|maj|maj7|m7|min7|minor|major|7|dom7|sus2|sus4|5|m6|6|6\/9|m6\/9|aug|dim|dim7|7#5|7b5|7sus4|9|m9|maj9|11|m11|13|m13|add9|madd9)$/i;
+export const UNKNOWN_QUALITY_TOKEN = /^(aug7)$/i;
+
+// Ordered (specific-first) quality-detection patterns. A label's `rest` string is
+// tested against each `re` in order; the FIRST match sets `quality`. Encoded as a
+// single table (2026-08-13 simplify) so the near-duplicate else-if ladder can't
+// drift between the CJS and ESM checker copies. dim7 deliberately excludes \bm7b5
+// (see the m7b5 entry) — that is the half-diminished (m7b5) branch, not fully-dim.
+// This table is duplicated verbatim in 06-prototypes/step0/schema/chord-theory-check.js;
+// the pre-commit hook proves the two stay 1:1. (The dim7 regex here MUST NOT include
+// \bm7b5 — the 2026-08-13 pre-commit divergence audit caught the ESM copy silently
+// degrading "Cm7b5" to dim7.)
+export const QUALITY_PATTERNS = [
+  { q: 'dim7',  re: /\bdim.*7|\bdiminished\s*7|\bhalf.?dim/ },
+  { q: 'm7b5',  re: /\bm7b5|minor\s*7\s*flat\s*5|\bm7\s*b5/ },
+  { q: 'aug',   re: /\baug|\baugmented/ },
+  { q: 'dim',   re: /\bdim|\bdiminished/ },
+  { q: '7#5',   re: /\b7#5|seven.*sharp.*five|7\s*sharp\s*5/ },
+  { q: '7b5',   re: /\b7b5|seven.*flat.*five|7\s*flat\s*5/ },
+  { q: '7sus4', re: /\b7sus4|7\s*sus\s*4|7\s*suspended\s*4/ },
+  { q: 'm6/9',  re: /\bm6\/9|\bm6\s*9/ },
+  { q: '6/9',   re: /\b6\/9|\b6\s*9/ },
+  { q: 'm6',    re: /\bminor\s*six|minor\s*6|\bm6\b/ },
+  { q: '6',     re: /\bmajor\s*six|major\s*6|\bsixth\b|\b6\b/ },
+  { q: 'madd9', re: /\bminor\s*add\s*9|\bmadd9/ },
+  { q: 'add9',  re: /\bmajor\s*add\s*9|add\s*9|add9/ },
+  { q: 'm9',    re: /\bminor\s*ninth|minor\s*9|\bm9\b/ },
+  { q: 'maj9',  re: /\bmajor\s*nine|major\s*9|\bmaj9\b/ },
+  { q: '9',     re: /\bninth|\bnine|\b9\b/ },
+  { q: 'm11',   re: /\bminor\s*eleventh|minor\s*11|\bm11\b/ },
+  { q: '11',    re: /\beleventh|\bmajor\s*11|\b11\b/ },
+  { q: 'm13',   re: /\bminor\s*thirteenth|minor\s*13|\bm13\b/ },
+  { q: '13',    re: /\bthirteenth|\bmajor\s*13|\b13\b/ },
+  // base qualities — ordered so min7/maj7 win over bare minor/major
+  { q: 'min7',  re: /\bminor\s*(seventh|7)\b|\bmin\s*7\b|\bm7\b|^m7/ },
+  { q: 'maj7',  re: /\bmajor\s*(seventh|7)\b|\bmaj\s*7\b|maj7/ },
+  { q: 'min',   re: /\bminor\b|^min\b|^m\b|\bmin\b|\bm\b/ },
+  { q: 'maj',   re: /\bmajor\b|^maj\b|\bmaj\b/ },
+  { q: 'sus2',  re: /sus\s*2/ },
+  { q: 'sus4',  re: /sus\s*4/ },
+  { q: '7',     re: /\bseventh\b|\b7\b|dom7|^7/ },
+  { q: '5',     re: /\b5\b|power|^5/ }
+];
 
 export function parseChordName(name) {
   const s = String(name || '').trim();
@@ -53,13 +108,16 @@ export function parseChordName(name) {
              .replace('Ab', 'G#').replace('Bb', 'A#');
   const rest = restStr;
   let quality = 'maj';
-  if (/^minor\s*7|^min\s*7|\bminor\s*7\b|\bmin\s*7\b|\bm7\b|^m7/.test(rest)) quality = 'min7';
-  else if (/^major\s*7|\bmajor\s*7\b|\bmaj\s*7\b|maj7/.test(rest)) quality = 'maj7';
-  else if (/\bminor\b|^min\b|^m\b|\bmin\b|\bm\b/.test(rest)) quality = 'min';
-  else if (/sus\s*2/.test(rest)) quality = 'sus2';
-  else if (/sus\s*4/.test(rest)) quality = 'sus4';
-  else if (/\b7\b|dom7|^7/.test(rest)) quality = '7';
-  else if (/\b5\b|power|^5/.test(rest)) quality = '5';
+  // Quality detection is now a single ordered table (2026-08-13 simplify pass):
+  // each {re, q} is tried in order, the FIRST match wins. This replaces the
+  // hand-written else-if ladder so the two checker copies share one shape and
+  // cannot drift — the pre-commit hook re-proves they stay 1:1.
+  // NOTE: dim7 deliberately does NOT include \bm7b5 — that is the half-diminished
+  // (m7b5) entry above. This ESM copy once wrongly had \bm7b5 in the dim7 branch,
+  // silently degrading "Cm7b5" to dim7 (caught by the 2026-08-13 divergence audit).
+  for (const { re, q } of QUALITY_PATTERNS) {
+    if (re.test(rest)) { quality = q; break; }
+  }
   return { root, quality, unknownQuality };
 }
 
@@ -173,7 +231,7 @@ export function verifyChord(key, chord) {
   };
 }
 
-export function verifyLesson(lessonJson) {
+function verifyLesson(lessonJson) {
   const results = [];
   for (const [k, c] of Object.entries(lessonJson.chords || {})) {
     if (k.startsWith('_')) continue;

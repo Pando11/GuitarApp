@@ -65,6 +65,45 @@ const REQUIRED = {
 const KNOWN_QUALITY_TOKEN = /^(m|min|maj|maj7|m7|min7|minor|major|7|dom7|sus2|sus4|5|m6|6|6\/9|m6\/9|aug|dim|dim7|7#5|7b5|7sus4|9|m9|maj9|11|m11|13|m13|add9|madd9)$/i;
 const UNKNOWN_QUALITY_TOKEN = /^(aug7)$/i;
 
+// Ordered (specific-first) quality-detection patterns. A label's `rest` string is
+// tested against each `re` in order; the FIRST match sets `quality`. Encoded as a
+// single table (2026-08-13 simplify) so the near-duplicate else-if ladder can't
+// drift between the CJS and ESM checker copies. dim7 deliberately excludes \bm7b5
+// (see the m7b5 entry) — that is the half-diminished (m7b5) branch, not fully-dim.
+// This table is duplicated verbatim in 07-app/core/chord-theory-check.js; the
+// pre-commit hook proves the two stay 1:1.
+const QUALITY_PATTERNS = [
+  { q: 'dim7',  re: /\bdim.*7|\bdiminished\s*7|\bhalf.?dim/ },
+  { q: 'm7b5',  re: /\bm7b5|minor\s*7\s*flat\s*5|\bm7\s*b5/ },
+  { q: 'aug',   re: /\baug|\baugmented/ },
+  { q: 'dim',   re: /\bdim|\bdiminished/ },
+  { q: '7#5',   re: /\b7#5|seven.*sharp.*five|7\s*sharp\s*5/ },
+  { q: '7b5',   re: /\b7b5|seven.*flat.*five|7\s*flat\s*5/ },
+  { q: '7sus4', re: /\b7sus4|7\s*sus\s*4|7\s*suspended\s*4/ },
+  { q: 'm6/9',  re: /\bm6\/9|\bm6\s*9/ },
+  { q: '6/9',   re: /\b6\/9|\b6\s*9/ },
+  { q: 'm6',    re: /\bminor\s*six|minor\s*6|\bm6\b/ },
+  { q: '6',     re: /\bmajor\s*six|major\s*6|\bsixth\b|\b6\b/ },
+  { q: 'madd9', re: /\bminor\s*add\s*9|\bmadd9/ },
+  { q: 'add9',  re: /\bmajor\s*add\s*9|add\s*9|add9/ },
+  { q: 'm9',    re: /\bminor\s*ninth|minor\s*9|\bm9\b/ },
+  { q: 'maj9',  re: /\bmajor\s*nine|major\s*9|\bmaj9\b/ },
+  { q: '9',     re: /\bninth|\bnine|\b9\b/ },
+  { q: 'm11',   re: /\bminor\s*eleventh|minor\s*11|\bm11\b/ },
+  { q: '11',    re: /\beleventh|\bmajor\s*11|\b11\b/ },
+  { q: 'm13',   re: /\bminor\s*thirteenth|minor\s*13|\bm13\b/ },
+  { q: '13',    re: /\bthirteenth|\bmajor\s*13|\b13\b/ },
+  // base qualities — ordered so min7/maj7 win over bare minor/major
+  { q: 'min7',  re: /\bminor\s*(seventh|7)\b|\bmin\s*7\b|\bm7\b|^m7/ },
+  { q: 'maj7',  re: /\bmajor\s*(seventh|7)\b|\bmaj\s*7\b|maj7/ },
+  { q: 'min',   re: /\bminor\b|^min\b|^m\b|\bmin\b|\bm\b/ },
+  { q: 'maj',   re: /\bmajor\b|^maj\b|\bmaj\b/ },
+  { q: 'sus2',  re: /sus\s*2/ },
+  { q: 'sus4',  re: /sus\s*4/ },
+  { q: '7',     re: /\bseventh\b|\b7\b|dom7|^7/ },
+  { q: '5',     re: /\b5\b|power|^5/ }
+];
+
 // Parse a chord label like "E minor", "C major (standard)", "G major (3-finger)", "Am", "D"
 // IMPORTANT: the root letter must be a STANDALONE token, not the first letter of a word.
 // "Easy C" must resolve to C, not E. (Caught by the 2026-08-07 project-wide audit.)
@@ -116,43 +155,16 @@ function parseChordName(name) {
   // Quality may also be stated in the full original string ("2-finger reduction" etc. is ignored)
   const rest = restStr;
   let quality = 'maj';
-  // --- extended / alterated chords (added 2026-08-13) ---
-  // Specific forms first so the generic maj/min/7 branches below don't swallow them.
-  // A slash in a label ("Cm6/9") is split into "m6" + "9" by the tokenizer, so we also
-  // accept the space-separated "m6 9" / "6 9" forms here. Word spellings ("ninth",
-  // "seventh", "six") are accepted alongside the numeric ones.
-  // NOTE: \bm7b5 is intentionally NOT matched here — it belongs to the half-diminished
-  // (m7b5) branch below. Including it here made the short form "Cm7b5" (no spaces)
-  // resolve to dim7 instead of m7b5 (a silent degrade, caught 2026-08-13 regression).
-  if (/\bdim.*7|\bdiminished\s*7|\bhalf.?dim/.test(rest)) quality = 'dim7';                    // fully-dim 7th
-  else if (/\bm7b5|minor\s*7\s*flat\s*5|\bm7\s*b5/.test(rest)) quality = 'm7b5';              // half-dim 7th
-  else if (/\baug|\baugmented/.test(rest)) quality = 'aug';                                   // +#5
-  else if (/\bdim|\bdiminished/.test(rest)) quality = 'dim';                                   // dim triad
-  else if (/\b7#5|seven.*sharp.*five|7\s*sharp\s*5/.test(rest)) quality = '7#5';              // dom 7 + #5
-  else if (/\b7b5|seven.*flat.*five|7\s*flat\s*5/.test(rest)) quality = '7b5';                // dom 7 + b5
-  else if (/\b7sus4|7\s*sus\s*4|7\s*suspended\s*4/.test(rest)) quality = '7sus4';            // dom 7 sus4
-  else if (/\bm6\/9|\bm6\s*9/.test(rest)) quality = 'm6/9';                                   // minor 6/9
-  else if (/\b6\/9|\b6\s*9/.test(rest)) quality = '6/9';                                       // major 6/9
-  else if (/\bminor\s*six|minor\s*6|\bm6\b/.test(rest)) quality = 'm6';                        // minor + 6
-  else if (/\bmajor\s*six|major\s*6|\bsixth\b|\b6\b/.test(rest)) quality = '6';                // major + 6
-  else if (/\bminor\s*add\s*9|\bmadd9/.test(rest)) quality = 'madd9';                          // minor triad + 9
-  else if (/\bmajor\s*add\s*9|add\s*9|add9/.test(rest)) quality = 'add9';                     // major triad + 9
-  else if (/\bminor\s*ninth|minor\s*9|\bm9\b/.test(rest)) quality = 'm9';                    // minor 9
-  else if (/\bmajor\s*nine|major\s*9|\bmaj9\b/.test(rest)) quality = 'maj9';                  // major 9
-  else if (/\bninth|\bnine|\b9\b/.test(rest)) quality = '9';                                  // dominant 9
-  else if (/\bminor\s*eleventh|minor\s*11|\bm11\b/.test(rest)) quality = 'm11';               // minor 11
-  else if (/\beleventh|\bmajor\s*11|\b11\b/.test(rest)) quality = '11';                       // dominant 11
-  else if (/\bminor\s*thirteenth|minor\s*13|\bm13\b/.test(rest)) quality = 'm13';             // minor 13
-  else if (/\bthirteenth|\bmajor\s*13|\b13\b/.test(rest)) quality = '13';                     // dominant 13
-  // --- base qualities (pre-existing, ordered so min7/maj7 win over bare minor/major) ---
-  else if (/\bminor\s*(seventh|7)\b|\bmin\s*7\b|\bm7\b|^m7/.test(rest)) quality = 'min7';
-  else if (/\bmajor\s*(seventh|7)\b|\bmaj\s*7\b|maj7/.test(rest)) quality = 'maj7';
-  else if (/\bminor\b|^min\b|^m\b|\bmin\b|\bm\b/.test(rest)) quality = 'min';
-  else if (/\bmajor\b|^maj\b|\bmaj\b/.test(rest)) quality = 'maj';
-  else if (/sus\s*2/.test(rest)) quality = 'sus2';
-  else if (/sus\s*4/.test(rest)) quality = 'sus4';
-  else if (/\bseventh\b|\b7\b|dom7|^7/.test(rest)) quality = '7';
-  else if (/\b5\b|power|^5/.test(rest)) quality = '5';
+  // Quality detection is now a single ordered table (2026-08-13 simplify pass):
+  // each {re, q} is tried in order, the FIRST match wins. This replaces the
+  // hand-written else-if ladder so the two checker copies share one shape and
+  // cannot drift — the pre-commit hook re-proves they stay 1:1.
+  // NOTE: dim7 deliberately does NOT include \bm7b5 — that is the half-diminished
+  // (m7b5) entry above. Including it made short-form "Cm7b5" resolve to dim7
+  // (a silent degrade; the bug that broke the ESM mirror copy).
+  for (const { re, q } of QUALITY_PATTERNS) {
+    if (re.test(rest)) { quality = q; break; }
+  }
   return { root, quality, unknownQuality };
 }
 
@@ -291,4 +303,4 @@ function verifyLesson(lessonJson) {
   return { lessonId: lessonJson.lesson && lessonJson.lesson.id, results, allOk: results.every(r => r.ok) };
 }
 
-module.exports = { verifyChord, verifyLesson, parseChordName, NOTES, OPEN_MIDI, QUALITIES };
+module.exports = { verifyChord, verifyLesson, parseChordName, NOTES, OPEN_MIDI, QUALITIES, REQUIRED, QUALITY_PATTERNS };
