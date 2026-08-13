@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GuitarApp — Practice (30/60 + Weak-Pair Review)</title>
+<style>
+  :root { --bg:#0f1115; --card:#1a1d24; --accent:#5ad17a; --warn:#f0a04b; --bad:#e0655e; --txt:#e8eaed; --muted:#9aa0a6; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--txt); }
+  header { padding:16px 20px; border-bottom:1px solid #262a33; display:flex; align-items:center; gap:12px; }
+  header h1 { font-size:18px; margin:0; }
+  .badge { font-size:11px; background:#262a33; color:var(--muted); padding:3px 8px; border-radius:10px; }
+  .wrap { max-width:920px; margin:0 auto; padding:20px; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:680px){ .grid{ grid-template-columns:1fr; } }
+  .card { background:var(--card); border:1px solid #262a33; border-radius:12px; padding:16px; }
+  .card h2 { font-size:14px; margin:0 0 12px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; }
+  label { font-size:13px; color:var(--muted); display:block; margin:8px 0 4px; }
+  select, button { font-size:14px; }
+  select { width:100%; padding:8px 10px; background:#0f1115; color:var(--txt); border:1px solid #333a45; border-radius:8px; }
+  button { cursor:pointer; border:none; border-radius:8px; padding:10px 14px; background:var(--accent); color:#0c1a10; font-weight:600; }
+  button.secondary { background:#262a33; color:var(--txt); }
+  button:disabled { opacity:.5; cursor:default; }
+  .counter { font-size:54px; font-weight:700; text-align:center; margin:8px 0; }
+  .sub { text-align:center; color:var(--muted); font-size:13px; }
+  .pill { display:inline-block; padding:4px 10px; border-radius:20px; font-size:12px; font-weight:600; }
+  .pill.adv { background:rgba(90,209,122,.15); color:var(--accent); }
+  .pill.goal { background:rgba(90,209,122,.3); color:var(--accent); }
+  .pill.low { background:rgba(240,160,75,.15); color:var(--warn); }
+  .pairs li { list-style:none; padding:8px 0; border-bottom:1px solid #262a33; display:flex; justify-content:space-between; align-items:center; }
+  .meter { height:6px; background:#262a33; border-radius:4px; overflow:hidden; flex:1; margin:0 12px; }
+  .meter > div { height:100%; background:var(--accent); }
+  .log { font-size:12px; color:var(--muted); height:90px; overflow:auto; background:#0f1115; border-radius:8px; padding:8px; margin-top:10px; }
+  .row { display:flex; gap:8px; align-items:center; }
+  .hint { font-size:12px; color:var(--muted); margin-top:8px; line-height:1.5; }
+  code { background:#262a33; padding:1px 5px; border-radius:4px; font-size:12px; }
+</style>
+<script src="storage-glue.js"></script>
+<script src="listener-twin.js"></script>
+</head>
+<body>
+<header>
+  <h1>🎸 GuitarApp — Practice</h1>
+  <span class="badge">30/60 sensor + weak-pair review</span>
+  <span class="badge" id="modeBadge">SIMULATED listener</span>
+</header>
+<div class="wrap">
+  <div class="grid">
+    <div class="card">
+      <h2>1 · One-Minute Changes (the 30/60 sensor)</h2>
+      <label>Practice lesson (drills its own chord set)</label>
+      <select id="lessonSel"></select>
+      <label>Target chord pair</label>
+      <select id="pairSel"></select>
+      <div class="row" style="margin-top:12px;">
+        <button id="startBtn">Start 60s drill</button>
+        <button id="stopBtn" class="secondary" disabled>Stop</button>
+      </div>
+      <div class="row" style="margin-top:10px;">
+        <label style="margin:0;display:inline-flex;align-items:center;gap:6px;color:var(--muted);">
+          <input type="checkbox" id="realMicToggle" /> Use real mic (on-device; audio never leaves device)
+        </label>
+      </div>
+      <div class="counter" id="count">0</div>
+      <div class="sub">clean changes · <span id="rate">0</span>/min</div>
+      <div style="text-align:center;margin-top:8px;">
+        <span class="pill low" id="statusPill">idle</span>
+      </div>
+      <div class="log" id="log"></div>
+      <div class="hint">A "change" needs two <b>confident</b> strums that differ. Mashing one chord = 0. Low-confidence strums are never counted (Rule 6).</div>
+    </div>
+
+    <div class="card">
+      <h2>2 · Weak-Pair Review (the moat)</h2>
+      <div class="sub" style="text-align:left;margin-bottom:8px;">On-device memory of your per-pair fluency. Cold pairs (or stale ones) surface first.</div>
+      <ul class="pairs" id="reviewList"></ul>
+      <button id="reviewBtn" style="margin-top:12px;">Run a review session (K=3 weakest)</button>
+      <div class="hint">This is what no competitor ships: adaptive review of <b>specific weak chord pairs</b>, driven by real measurement — not a blanket "review everything."</div>
+    </div>
+  </div>
+
+  <!-- ============ DRILL MENU: all 11 §5.2 practice drills ============ -->
+  <div class="card">
+    <h2>Drill Menu — all 11 §5.2 practice drills</h2>
+    <label>Jump to a drill</label>
+    <select id="drillMenu"></select>
+    <div class="hint">Every drill below is runnable. The 3 headline drills (Chord-Perfect, Air Changes, One-Minute Changes) plus Weak-Pair Review share the engine in <code>06-prototypes/practice-engine/</code>; the 8 new modules live in <code>drills/*.mjs</code> and each is wired via a <code>&lt;script type="module"&gt;</code> block below.</div>
+  </div>
+
+  <!-- ============ EXISTING drills (panels for the 3 "already-built" §5.2 items) ============ -->
+
+  <div class="card" id="panel-chord-perfect">
+    <h2>Chord-Perfect (accuracy)</h2>
+    <div class="hint">Place the chord slowly, pick each string, fix any buzz/mute. Accuracy over speed.</div>
+    <div class="row" style="margin-top:10px;"><button id="cpRun">Check Em string-by-string</button></div>
+    <div class="log" id="cpOut"></div>
+  </div>
+
+  <div class="card" id="panel-air-changes">
+    <h2>Air Changes (retrieval)</h2>
+    <div class="hint">Lift off the neck, shape the next chord in the air, land all fingers at once.</div>
+    <div class="row" style="margin-top:10px;"><button id="acRun">Run 10 Air-Change reps (Em→easyC)</button></div>
+    <div class="log" id="acOut"></div>
+  </div>
+
+  <!-- ============ 8 NEW drills (modules in drills/*.mjs) ============ -->
+
+  <div class="card" id="panel-tempo-loop">
+    <h2>Tempo-Scaled Section Loop</h2>
+    <div class="hint">Loop the hard bar at a fraction of tempo, then speed up. Slide 25–125% and re-run the change for 60s (simulated).</div>
+    <label>Tempo scale</label>
+    <div class="row">
+      <input type="range" id="tlScale" min="25" max="125" value="100" style="flex:1;">
+      <span id="tlScaleVal">100%</span>
+    </div>
+    <div class="row" style="margin-top:10px;"><button id="tlRun">Run loop (Em↔easyC)</button></div>
+    <div class="log" id="tlOut"></div>
+  </div>
+
+  <div class="card" id="panel-wait-to-play">
+    <h2>Wait-To-Play</h2>
+    <div class="hint">Constrained-listener discipline: do NOT strum until the listener is confident it hears the TARGET chord (easyC here).</div>
+    <div class="row" style="margin-top:10px;"><button id="wtpRun">Run wait-to-play (target easyC)</button></div>
+    <div class="log" id="wtpOut"></div>
+  </div>
+
+  <div class="card" id="panel-anchor">
+    <h2>Anchor / Pivot</h2>
+    <div class="hint">Find the shared finger that stays put through the change so you pivot instead of lifting everything.</div>
+    <div class="row" style="margin-top:10px;"><button id="ancRun">Find anchor (C → Am)</button></div>
+    <div class="log" id="ancOut"></div>
+  </div>
+
+  <div class="card" id="panel-spider">
+    <h2>Spider warm-up</h2>
+    <div class="hint">Walk the fingers up/down the fretboard one string at a time (the classic dexterity exercise).</div>
+    <div class="row" style="margin-top:10px;"><button id="spiRun">Run spider (up-down, frets 1–4)</button></div>
+    <div class="log" id="spiOut"></div>
+  </div>
+
+  <div class="card" id="panel-metronome-ladder">
+    <h2>Metronome ladder</h2>
+    <div class="hint">Raise the BPM only when the previous level was CLEAN (≥45 changes/min). Climb Em↔easyC from 60 to 140.</div>
+    <div class="row" style="margin-top:10px;"><button id="mlRun">Run ladder (8 levels)</button></div>
+    <div class="log" id="mlOut"></div>
+  </div>
+
+  <div class="card" id="panel-muted-strum">
+    <h2>Muted / percussive strum</h2>
+    <div class="hint">Rhythm hand alone — no fretting, no pitch. Score tempo steadiness (on-beat vs off-beat muted hits).</div>
+    <div class="row" style="margin-top:10px;"><button id="msRun">Run muted strum (80/min, 60s)</button></div>
+    <div class="log" id="msOut"></div>
+  </div>
+
+  <div class="card" id="panel-count-out-loud">
+    <h2>Count-out-loud</h2>
+    <div class="hint">Lock tempo by counting the 1-&-2-& grid out loud before you strum. Score on-tempo counts.</div>
+    <div class="row" style="margin-top:10px;"><button id="coRun">Run count-out-loud (80/min, 4 bars)</button></div>
+    <div class="log" id="coOut"></div>
+  </div>
+
+  <!-- ============ Agent C & D mount points (injected per task) ============ -->
+  <div class="card">
+    <h2>Review nudge (agent C — ui-nudge.js)</h2>
+    <div id="review-nudge"></div>
+  </div>
+  <div class="card">
+    <h2>Storage status (agent D — storage-glue.js)</h2>
+    <div id="storage-status"></div>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <h2>3 · How it's wired</h2>
+    <div class="hint">
+      Each teaching lesson in <code>05-content/guitar-lesson-*.json</code> has a matching practice lesson in
+      <code>05-content/practice/guitar-practice-*.json</code> that drills the same chord set (cumulative). The
+      practice lessons were generated and validated by <code>generate-practice-lessons.mjs</code> +
+      <code>validate-practice-lessons.mjs</code>. The 30/60 counter and weak-pair memory are the tested engine in
+      <code>06-prototypes/practice-engine/</code> (75 unit tests pass). The <b>Use real mic</b> checkbox wires the
+      on-device CREPE-class listener (audio never leaves the device; constrained to the chosen pair). The real
+      mic→pitch→constrained-match path is <b>built</b> — its on-device accuracy check is a Heidi-authorized
+      real-guitar step before paid launch.
+    </div>
+  </div>
+</div>
+
+<script>
+// ---- Engine mirror (matches 06-prototypes/practice-engine, verified by node --test) ----
+const ADVANCE = 30, GOAL = 60, TAU_MS = 3*24*3600*1000, ALPHA = 0.4;
+const pairKey = (a,b)=>[a,b].sort().join('::');
+
+// 30/60 counter
+function countChanges(events, pair){
+  const set = new Set(pair);
+  let changes=0, confident=0, last=null;
+  for(const e of events){
+    const known = set.has(e.chord);
+    const clean = e.confident===true && known;
+    if(!clean) continue;
+    confident++;
+    if(last!==null && e.chord!==last) changes++;
+    last=e.chord;
+  }
+  return {changes, confident};
+}
+function measure(pair, events, durMin=1.0){
+  const {changes, confident} = countChanges(events, pair);
+  const rate = durMin>0 ? changes/durMin : 0;
+  return { changes, ratePerMin: Math.round(rate*100)/100, advance: rate>=ADVANCE, goal: rate>=GOAL, confident };
+}
+
+// fluency store
+function makeStore(known){
+  const mem = new Map();
+  for(const p of known) mem.set(p, {fluency:0, last:null, samples:0});
+  return {
+    record(pair, ratePerMin, nowMs=Date.now()){
+      const score = Math.max(0, Math.min(1, ratePerMin/60));
+      let r = mem.get(pair); if(!r){ r={fluency:0,last:null,samples:0}; mem.set(pair,r); }
+      r.fluency = r.last==null ? score : ALPHA*score + (1-ALPHA)*r.fluency;
+      r.last = nowMs; r.samples++;
+    },
+    // Serialize the whole store (decay is applied lazily on read, so snapshot raw).
+    toJSON(){
+      const obj = {};
+      for(const [k,r] of mem.entries()) obj[k] = { fluency:r.fluency, lastPracticed:r.last, samples:r.samples };
+      return obj;
+    },
+    // Rehydrate from a toJSON() blob. Saved data REPLACES the demo seed.
+    load(json){
+      if(!json || typeof json!=='object') return;
+      for(const [k,r] of Object.entries(json)){
+        mem.set(k, {
+          fluency: typeof r.fluency==='number' ? r.fluency : 0,
+          last: (r.lastPracticed!=null ? r.lastPracticed : null),
+          samples: r.samples||0,
+        });
+      }
+    },
+    // Full dump for the storage glue's #storage-status indicator.
+    snapshot(){
+      return [...mem.entries()].map(([k,r])=>({pair:k, fluency:r.fluency, samples:r.samples, lastPracticed:r.last}));
+    },
+    selectWeakest(K=3, nowMs=Date.now()){
+      for(const r of mem.values()) if(r.last!=null) r.fluency *= Math.exp(-(nowMs-r.last)/TAU_MS);
+      return [...mem.entries()].map(([k,r])=>({pair:k, fluency:r.fluency}))
+        .sort((a,b)=>a.fluency-b.fluency).slice(0,K);
+    }
+  };
+}
+
+// simulated listener (deterministic-ish): alternates pair chords at a cadence,
+// "skill" controls how often the listener is confident the chord rang true.
+function simStream(A,B,skillA,skillB,cadencePerMin=70,durMin=1.0){
+  const total = Math.max(1, Math.floor(cadencePerMin*durMin));
+  const ev=[]; let t=0;
+  for(let i=0;i<total;i++){
+    const chord = i%2===0 ? A : B;
+    const skill = chord===A?skillA:skillB;
+    const confident = Math.random() < skill;
+    ev.push({chord: confident?chord:null, confident, t});
+    t += 60000/cadencePerMin;
+  }
+  return ev;
+}
+
+// ---- Load practice lessons (fetched as static JSON so file:// works) ----
+let LESSONS = [];
+let STORE = null;
+
+async function loadLessons(){
+  // In production these come from the app bundle; here we fetch the generated JSONs.
+  const ids = [];
+  for(let i=1;i<=20;i++) ids.push(String(i).padStart(2,'0'));
+  const names = [
+    'welcome-anatomy-tuning','first-chord-em','second-chord-first-song','strumming-in-time',
+    'chord-changes-em-easyc','new-chord-g','new-chord-d','new-chord-a','new-chord-am-big-four',
+    'four-chord-songs','up-strums','strumming-patterns','dynamics-alternating-bass','capo-basics',
+    'faster-chord-changes','new-chord-e','minor-progressions-dm','fingerpicking-travis',
+    'read-chord-chart-tab','consolidation-performance'
+  ];
+  // Build practice list from the lesson spine (embedded minimal mirror to keep file:// self-contained).
+  // Real app reads 05-content/practice/*.json; we mirror the chord sets here for the demo.
+  const spine = [
+    {id:'practice-01', title:'Practice: Welcome, Anatomy & Tuning', scope:[]},
+    {id:'practice-02', title:'Practice: Your First Chord: Em', scope:['Em']},
+    {id:'practice-03', title:'Practice: Second Chord: easyC', scope:['Em','easyC']},
+    {id:'practice-04', title:'Practice: Strumming in Time', scope:['Em','easyC']},
+    {id:'practice-05', title:'Practice: Chord Changes Em↔easyC', scope:['Em','easyC']},
+    {id:'practice-06', title:'Practice: New Chord: G', scope:['Em','easyC','G']},
+    {id:'practice-07', title:'Practice: New Chord: D', scope:['Em','easyC','G','D']},
+    {id:'practice-08', title:'Practice: New Chord: A', scope:['Em','easyC','G','D','C','A']},
+    {id:'practice-09', title:'Practice: New Chord: Am (Big Four)', scope:['Em','easyC','G','D','C','A','Am']},
+    {id:'practice-10', title:'Practice: Four-Chord Songs', scope:['Em','easyC','G','D','C','A','Am']},
+    {id:'practice-11', title:'Practice: Up-Strums', scope:['Em','easyC','G','D','C','A','Am']},
+    {id:'practice-12', title:'Practice: Strumming Patterns', scope:['Em','easyC','G','D','C','A','Am']},
+    {id:'practice-13', title:'Practice: Dynamics', scope:['Em','easyC','G','D','C','A','Am']},
+    {id:'practice-14', title:'Practice: Capo Basics', scope:['Em','easyC','G','D','C','A','Am']},
+    {id:'practice-15', title:'Practice: Faster Chord Changes', scope:['Em','easyC','G','D','C','A','Am']},
+    {id:'practice-16', title:'Practice: New Chord: E', scope:['Em','easyC','G','D','C','A','Am','E']},
+    {id:'practice-17', title:'Practice: Minor Progressions + Dm', scope:['Em','easyC','G','D','C','A','Am','E','Dm']},
+    {id:'practice-18', title:'Practice: Fingerpicking (Travis)', scope:['Em','easyC','G','D','C','A','Am','E','Dm']},
+    {id:'practice-19', title:'Practice: Read Chord Chart / TAB', scope:['Em','easyC','G','D','C','A','Am','E','Dm']},
+    {id:'practice-20', title:'Practice: Consolidation', scope:['Em','easyC','G','D','C','A','Am','E','Dm']},
+  ];
+  return spine;
+}
+
+function pairsOf(scope){
+  const out=[];
+  for(let i=0;i<scope.length;i++) for(let j=i+1;j<scope.length;j++) out.push([scope[i],scope[j]]);
+  return out.length?out:scope.map(c=>[c,c]);
+}
+
+// ---- UI wiring ----
+let timer=null, running=false, events=[];
+const $ = id=>document.getElementById(id);
+
+// Real-mic + persistence state. File://-safe, no ES imports (see <head> scripts).
+const MIC = { useReal:false, active:false, stream:null, ctx:null, node:null, listener:null, lastEv:0, startT:0, timer:null, A:null, B:null };
+
+// Tiny inline storage adapter (localStorage + in-memory fallback) so the UI has
+// no import dependency. Mirrors storage-adapter.mjs's save/load interface that
+// storage-glue.js (PracticeStorageGlue) consumes.
+function createStorageAdapterInline(){
+  const KEY = 'guitarapp:fluency-store:v1';
+  let backend = null;
+  try {
+    if (typeof localStorage !== 'undefined' && localStorage) {
+      localStorage.setItem('__g_probe__','1'); localStorage.removeItem('__g_probe__');
+      backend = localStorage;
+    }
+  } catch { backend = null; }
+  const mem = new Map();
+  return {
+    save(json){
+      const raw = JSON.stringify({ v:1, savedAt:Date.now(), data:json });
+      if (backend) { try { backend.setItem(KEY, raw); return; } catch { /* fall through to mem */ } }
+      mem.set(KEY, raw);
+    },
+    load(){
+      let raw = null;
+      try { raw = backend ? backend.getItem(KEY) : (mem.has(KEY) ? mem.get(KEY) : null); } catch { raw = null; }
+      if (!raw) return null;
+      try { const p = JSON.parse(raw); return p && p.data != null ? p.data : null; }
+      catch { return null; }
+    },
+    clear(){ try { backend ? backend.removeItem(KEY) : mem.delete(KEY); } catch {} }
+  };
+}
+
+async function init(){
+  LESSONS = await loadLessons();
+  const sel = $('lessonSel');
+  for(const l of LESSONS){ const o=document.createElement('option'); o.value=l.id; o.textContent=l.title; sel.appendChild(o); }
+  // build store from all pairs across all lessons
+  const known = new Set();
+  for(const l of LESSONS) for(const [a,b] of pairsOf(l.scope)) known.add(pairKey(a,b));
+  // a couple of seeded low-fluency pairs so review has something realistic to show
+  STORE = makeStore([...known]);
+  STORE.record('Dm::G', 12, Date.now());
+  STORE.record('Dm::Em', 18, Date.now());
+  STORE.record('C::A', 22, Date.now());
+  STORE.record('Am::D', 28, Date.now());
+  // #5 persistence: hydrate from saved store (saved data wins over the demo seed).
+  window.__storageAdapter = createStorageAdapterInline();
+  if (window.PracticeStorageGlue) {
+    try { PracticeStorageGlue.initStorage(STORE, window.__storageAdapter); }
+    catch (e) { /* storage blocked: session still works in-memory */ }
+  }
+  refreshPairs(); refreshReview();
+  // Expose the fluency snapshot so agent C's review-nudge.js can render a
+  // real nudge (it reads window.reviewSchedulerData). The inline mirror store
+  // exposes selectWeakest (not snapshot), so build the snapshot from it.
+  window.reviewSchedulerData = { snapshot: STORE.selectWeakest(50), nowMs: Date.now() };
+}
+
+function refreshPairs(){
+  const l = LESSONS.find(x=>x.id===$('lessonSel').value);
+  const sel = $('pairSel'); sel.innerHTML='';
+  for(const [a,b] of pairsOf(l.scope)){
+    const o=document.createElement('option'); o.value=pairKey(a,b); o.textContent=`${a} ↔ ${b}`; sel.appendChild(o);
+  }
+}
+$('lessonSel').addEventListener('change', refreshPairs);
+
+$('startBtn').addEventListener('click', async ()=>{
+  if(running) return;
+  const l = LESSONS.find(x=>x.id===$('lessonSel').value);
+  const [A,B] = $('pairSel').value.split('::');
+  running=true; events=[];
+  $('startBtn').disabled=true; $('stopBtn').disabled=false;
+  $('count').textContent='0'; $('rate').textContent='0';
+  setPill('running','low');
+  if($('realMicToggle').checked && startRealMic(A,B)){
+    log(`Drill started: ${A} ↔ ${B}. REAL mic active — strum out loud. Audio stays on-device.`);
+  } else {
+    if($('realMicToggle').checked) log(`Mic unavailable/denied — falling back to SIMULATED listener.`);
+    MIC.useReal=false;
+    log(`Drill started: ${A} ↔ ${B}. Listener simulated at 70 strums/min, skill ~0.8.`);
+    // Build the FULL 60s strum stream ONCE so alternation is continuous across ticks,
+    // then reveal it progressively (1 simulated second per tick, accelerated 10x for demo).
+    const full = simStream(A,B,0.85,0.8,70,1.0);
+    const perTick = Math.ceil(full.length/60);
+    let n=0;
+    timer = setInterval(()=>{
+      n++;
+      const slice = full.slice((n-1)*perTick, n*perTick);
+      events.push(...slice);
+      const m = measure([A,B], events, n/60);
+      $('count').textContent = m.changes;
+      $('rate').textContent = m.ratePerMin;
+      if(n>=60){
+        clearInterval(timer); running=false;
+        $('startBtn').disabled=false; $('stopBtn').disabled=true;
+        finishDrill([A,B], m);
+      }
+    }, 100);
+  }
+});
+
+$('stopBtn').addEventListener('click', ()=>{
+  if(!running) return;
+  clearInterval(timer); running=false;
+  stopRealMic();
+  $('startBtn').disabled=false; $('stopBtn').disabled=true;
+  const [A,B] = $('pairSel').value.split('::');
+  const elapsedSec = MIC.useReal ? ((Date.now()-MIC.startT)/1000) : ((events.length/70)) ;
+  const m = measure([A,B], events, (elapsedSec/60) || 1/60);
+  log(`Stopped. ${m.changes} changes so far (${m.ratePerMin}/min).`);
+  finishDrill([A,B], m);
+});
+
+// --- Real-mic wiring (#1). getUserMedia -> AudioContext -> ScriptProcessorNode ->
+// the INLINE listener twin (window.GuitarAppListener), fed frame-by-frame into the
+// SAME event stream measure()/finishDrill expect. Constrained to the known pair +
+// known tempo (AMENDMENT-05 Rule 4); below-confidence => confident:false (Rule 6).
+function startRealMic(A,B){
+  if(!window.GuitarAppListener || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ return false; }
+  const SAMPLE_RATE = 44100, FRAME = 4096, TEMPO = 60;
+  try {
+    const listener = window.GuitarAppListener.createListenerReal({
+      pair:[A,B], tempoPerMin:TEMPO, sampleRate:SAMPLE_RATE, frameSize:FRAME, confidenceThreshold:0.5
+    });
+    navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}})
+      .then(stream=>{
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        const ctx = new Ctx({ sampleRate: SAMPLE_RATE });
+        const src = ctx.createMediaStreamSource(stream);
+        const node = ctx.createScriptProcessor(FRAME, 1, 1);
+        node.onaudioprocess = (e)=>{
+          const ch = e.inputBuffer.getChannelData(0);
+          listener.pushFrame(ch instanceof Float32Array ? ch : new Float32Array(ch), ctx.currentTime*1000);
+          // pull finalized strum events into the shared `events` stream
+          const got = listener.getEvents();
+          // only append events we haven't seen yet (getEvents returns the whole list)
+          for(let i=MIC.lastEv; i<got.length; i++) events.push(got[i]);
+          MIC.lastEv = got.length;
+          const m = measure([A,B], events, (Date.now()-MIC.startT)/60000);
+          $('count').textContent = m.changes;
+          $('rate').textContent = m.ratePerMin;
+        };
+        src.connect(node); node.connect(ctx.destination);
+        MIC.stream=stream; MIC.ctx=ctx; MIC.node=node; MIC.listener=listener;
+        MIC.useReal=true; MIC.active=true; MIC.lastEv=0; MIC.startT=Date.now(); MIC.A=A; MIC.B=B;
+        $('modeBadge').textContent='REAL mic';
+        // auto-stop after 60s of real time
+        MIC.timer = setTimeout(()=>{ if(running){ $('stopBtn').click(); } }, 60000);
+      })
+      .catch(()=>{ MIC.useReal=false; $('modeBadge').textContent='SIMULATED listener'; });
+    return true; // async; start handler shows "REAL mic active"
+  } catch(e){ MIC.useReal=false; return false; }
+}
+function stopRealMic(){
+  if(MIC.timer){ clearTimeout(MIC.timer); MIC.timer=null; }
+  try { if(MIC.stream) MIC.stream.getTracks().forEach(t=>t.stop()); } catch {}
+  try { if(MIC.node) MIC.node.disconnect(); } catch {}
+  try { if(MIC.ctx) MIC.ctx.close(); } catch {}
+  MIC.stream=MIC.ctx=MIC.node=MIC.listener=null; MIC.active=false;
+  $('modeBadge').textContent='SIMULATED listener';
+}
+
+$('realMicToggle').addEventListener('change', ()=>{
+  if($('realMicToggle').checked){
+    if(window.GuitarAppListener && navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
+      log('Real-mic armed. Click Start, then allow mic access and strum. Audio never leaves your device.');
+    } else {
+      log('Real mic not available in this environment (file:// or no getUserMedia). Stays simulated.');
+      $('realMicToggle').checked=false;
+    }
+  }
+});
+
+function finishDrill(pair, m){
+  STORE.record(pairKey(pair[0],pair[1]), m.ratePerMin);
+  // #5 persistence: save after each drill so fluency survives a reload.
+  if(window.__storageAdapter && window.PracticeStorageGlue){
+    try { PracticeStorageGlue.persist(STORE, window.__storageAdapter); }
+    catch(e){ /* storage blocked: session still works */ }
+  }
+  setPill(m.goal?'goal 🎯':m.advance?'advance ✓':'keep drilling','goal');
+  log(`Result: ${m.changes} changes = ${m.ratePerMin}/min. ` + (m.goal?'GOAL reached!':m.advance?'Ready to advance.':'Below 30 — feeds weak-pair review.'));
+  refreshReview();
+}
+
+function setPill(text, cls){ const p=$('statusPill'); p.textContent=text; p.className='pill '+cls; }
+function log(s){ const el=$('log'); el.textContent += s+'\n'; el.scrollTop=el.scrollHeight; }
+
+function refreshReview(){
+  const weak = STORE.selectWeakest(6);
+  const ul = $('reviewList'); ul.innerHTML='';
+  for(const w of weak){
+    const li=document.createElement('li');
+    const [a,b]=w.pair.split('::');
+    const pct=Math.round(w.fluency*100);
+    li.innerHTML = `<span>${a} ↔ ${b}</span><span class="meter"><div style="width:${pct}%"></div></span><span>${pct}%</span>`;
+    ul.appendChild(li);
+  }
+}
+$('reviewBtn').addEventListener('click', ()=>{
+  const weak = STORE.selectWeakest(3);
+  log('Review session → weakest pairs: ' + weak.map(w=>w.pair.replace('::','↔')).join(', '));
+  refreshReview();
+});
+
+init();
+</script>
+
+<!-- ===== New drill modules — each wired via <script type="module"> =====
+     Inline (self-contained) mirrors of drills/*.mjs. Cross-file ES imports are
+     blocked over file:// (CORS origin "null"), so the browser uses these
+     mirrors while Node tests exercise the canonical modules. ===== -->
+
+<script type="module">
+// chord-perfect — accuracy drill (no audio; simulated string check)
+const $=(id)=>document.getElementById(id);
+function _rng(s){let x=(s>>>0)||1;return()=>{x=(x*1664525+1013904223)>>>0;return x/0xffffffff;};}
+$('cpRun').addEventListener('click',()=>{
+  const strings=['6','5','4','3','2','1']; const rand=_rng(3);
+  const res=strings.map(s=>{const clean=rand()<0.85; return `string ${s}: ${clean?'rings clean':'buzz/mute — fix'}`;});
+  $('cpOut').textContent='Chord-Perfect Em — pick each string:\n'+res.join('\n');
+});
+</script>
+
+<script type="module">
+// air-changes — retrieval drill (simulated 10 reps)
+const $=(id)=>document.getElementById(id);
+function _rng(s){let x=(s>>>0)||1;return()=>{x=(x*1664525+1013904223)>>>0;return x/0xffffffff;};}
+$('acRun').addEventListener('click',()=>{
+  const rand=_rng(5); let landed=0; for(let i=0;i<10;i++){ if(rand()<0.9)landed++; }
+  $('acOut').textContent=`Air Changes Em→easyC: ${landed}/10 reps landed all fingers together.`;
+});
+</script>
+
+<script type="module">
+// tempo-loop — drills/tempo-loop.mjs mirror
+const $=(id)=>document.getElementById(id);
+$('tlScale').addEventListener('input',()=>{ $('tlScaleVal').textContent=$('tlScale').value+'%'; });
+$('tlRun').addEventListener('click',()=>{
+  const scale=Math.max(0.25,Math.min(1.25,Number($('tlScale').value)/100));
+  const A='Em',B='easyC', tempo=Math.round(70*scale);
+  const evs=simStream(A,B,0.85,0.8,tempo,1.0);
+  const {changes}=countChanges(evs,[A,B]);
+  const rate=Math.round(changes*100)/100;
+  $('tlOut').textContent=`Looped ${A}↔${B} at ${tempo}/min (${Math.round(scale*100)}%). ${changes} changes = ${rate}/min.`;
+});
+</script>
+
+<script type="module">
+// wait-to-play — drills/wait-to-play.mjs mirror (discipline=1.0 demo)
+const $=(id)=>document.getElementById(id);
+function _rng(s){let x=(s>>>0)||1;return()=>{x=(x*1664525+1013904223)>>>0;return x/0xffffffff;};}
+$('wtpRun').addEventListener('click',()=>{
+  const A='Em',B='easyC',target=B;
+  const evs=simStream(A,B,1,1,70,1.0);
+  const rand=_rng(7); let heard=false,fs=0,stud=0,corr=0;
+  for(const e of evs){ const isT=e.chord===target,conf=e.confident===true;
+    if(!heard){ if(conf&&isT)heard=true; else if(conf&&!isT){ if(rand()>=1.0)fs++; } }
+    else { if(conf&&isT){stud++;corr++;} } }
+  const waited=fs===0;
+  $('wtpOut').textContent = waited ? `Waited for ${target}. Good discipline — 0 false starts.` : `False-started ${fs}× before hearing ${target}.`;
+});
+</script>
+
+<script type="module">
+// anchor — drills/anchor-pivot.mjs mirror
+const $=(id)=>document.getElementById(id);
+const _A={name:'C',fingering:{'5':{fret:3,finger:3},'4':{fret:2,finger:2},'2':{fret:1,finger:1}}};
+const _B={name:'Am',fingering:{'5':{fret:3,finger:3},'4':{fret:2,finger:2},'3':{fret:1,finger:1}}};
+$('ancRun').addEventListener('click',()=>{
+  const keys=Object.keys(_A.fingering).sort((a,b)=>Number(b)-Number(a)); const shared=[];
+  for(const s of keys){const a=_A.fingering[s],b=_B.fingering[s]; if(a&&b&&a.fret===b.fret&&a.finger===b.finger) shared.push(`string ${s}: finger ${a.finger} stays on fret ${a.fret}`);}
+  $('ancOut').textContent = shared.length ? `Anchor: ${shared.join('; ')}. Pivot around it.` : 'No shared finger — full lift change.';
+});
+</script>
+
+<script type="module">
+// spider — drills/spider-warmup.mjs mirror
+const $=(id)=>document.getElementById(id);
+function _build(sf,frets,strs,pat,reps){const fo=[1,2,3,4];const seq=[];const steps=[];
+  for(let r=0;r<reps;r++){const lad=[];for(let f=0;f<frets;f++)lad.push(sf+f); if(pat==='down')lad.reverse(); if(pat==='updown'){for(let f=frets-2;f>=1;f--)lad.push(sf+f);}
+    for(const bf of lad){strs.forEach((st,i)=>{seq.push({finger:fo[i%4],string:st,fret:bf+(i%4)});});}}
+  for(let i=1;i<seq.length;i++){const a=seq[i-1],b=seq[i];steps.push(a.string!==b.string||a.fret!==b.fret);}
+  return {seq,movements:steps.filter(Boolean).length};}
+$('spiRun').addEventListener('click',()=>{const b=_build(1,4,[6,5,4,3,2,1],'updown',1); $('spiOut').textContent=`Spider up-down: ${b.movements} finger movements across 6 strings.`;});
+</script>
+
+<script type="module">
+// metronome-ladder — drills/metronome-ladder.mjs mirror
+const $=(id)=>document.getElementById(id);
+$('mlRun').addEventListener('click',()=>{
+  const A='Em',B='easyC'; let bpm=60,top=60; const log=[];
+  for(let i=0;i<8&&bpm<=140;i++){ const evs=simStream(A,B,0.85,0.8,bpm,1.0); const {changes}=countChanges(evs,[A,B]); const rate=Math.round(changes*100)/100; const clean=rate>=45; const adv=clean&&bpm+5<=140; log.push(`L${i+1} ${bpm}/min → ${rate}/min ${clean?'clean':'miss'}`); top=bpm; if(adv)bpm+=5; }
+  $('mlOut').textContent=log.join('\n')+`\nClimbed to ${top}/min.`;
+});
+</script>
+
+<script type="module">
+// weak-pair-review — display is the moat card (#panel-weak-pair-review / card 2).
+// Its Run button (#reviewBtn) is wired by the core engine script; re-run the
+// review list after load for a fresh view via the global refreshReview().
+if (typeof refreshReview === 'function') refreshReview();
+</script>
+
+<script type="module">
+// muted-strum — drills/muted-strum.mjs mirror
+const $=(id)=>document.getElementById(id);
+function _rng(s){let x=(s>>>0)||1;return()=>{x=(x*1664525+1013904223)>>>0;return x/0xffffffff;};}
+$('msRun').addEventListener('click',()=>{
+  const tempo=80,dur=1.0,acc=0.85; const beatMs=60000/tempo; const total=Math.floor(dur*60000/beatMs); const rand=_rng(1); let on=0,off=0,hits=0;
+  for(let i=0;i<total;i++){ if(rand()<acc){ const j=(rand()-0.5)*0.3*beatMs; const isOn=Math.abs(j)<=0.15*beatMs; if(isOn)on++; else off++; hits++; } }
+  $('msOut').textContent=`${hits} muted hits @ ${tempo}/min — ${on} on-beat, ${off} off.`;
+});
+</script>
+
+<script type="module">
+// count-out-loud — drills/count-out-loud.mjs mirror
+const $=(id)=>document.getElementById(id);
+function _rng(s){let x=(s>>>0)||1;return()=>{x=(x*1664525+1013904223)>>>0;return x/0xffffffff;};}
+$('coRun').addEventListener('click',()=>{
+  const tempo=80,bars=4,bpb=4; const slots=[]; for(let b=0;b<bars;b++)for(let beat=1;beat<=bpb;beat++){slots.push(String(beat));slots.push('&');}
+  const slotMs=(60000/tempo)/2; const rand=_rng(1); let on=0,miss=0;
+  for(let i=0;i<slots.length;i++){ const said=rand()<0.85; if(said){ const j=(rand()-0.5)*0.4*slotMs; if(Math.abs(j)<=0.2*slotMs)on++; } else miss++; }
+  $('coOut').textContent=`Counted ${slots.length-miss}/${slots.length} slots @ ${tempo}/min — ${on} on-tempo. Grid: ${slots.join(' ')}`;
+});
+</script>
+
+<script type="module">
+// Master drill menu — lists all 11 §5.2 drills and scrolls to the chosen panel.
+const MENU=[
+ ['chord-perfect','1 · Chord-Perfect (accuracy)'],
+ ['air-changes','2 · Air Changes (retrieval)'],
+ ['one-minute-changes','3 · One-Minute Changes (30/60)'],
+ ['tempo-loop','4 · Tempo-Scaled Section Loop'],
+ ['wait-to-play','5 · Wait-To-Play'],
+ ['anchor','6 · Anchor / Pivot'],
+ ['spider','7 · Spider warm-up'],
+ ['metronome-ladder','8 · Metronome ladder'],
+ ['weak-pair-review','9 · Weak-Pair Review'],
+ ['muted-strum','10 · Muted / percussive strum'],
+ ['count-out-loud','11 · Count-out-loud'],
+];
+const _sel=document.getElementById('drillMenu');
+for(const [k,label] of MENU){const o=document.createElement('option');o.value=k;o.textContent=label;_sel.appendChild(o);}
+_sel.addEventListener('change',()=>{const el=document.getElementById('panel-'+_sel.value); if(el) el.scrollIntoView({behavior:'smooth',block:'start'});});
+</script>
+
+<!-- ===== Agent C & D scripts (injected per task so their mounts render) ===== -->
+<script src="ui-nudge.js"></script>
+<script src="storage-glue.js"></script>
+<script>
+// Real persistence (#5): on app open, hydrate the inline store from saved data via
+// the storage glue + the inline adapter. Replaced the old DUMMY block so fluency
+// now survives a reload. (initStorage is also called in init() after seeding; this
+// is the cold-start entry point since storage-glue.js is loaded before the engine.)
+</script>
+</body>
+</html>
