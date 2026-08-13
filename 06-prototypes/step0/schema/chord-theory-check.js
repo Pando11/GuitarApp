@@ -18,19 +18,52 @@ const QUALITIES = {
   'maj7': [0, 4, 7, 11],
   'sus2': [0, 2, 7],
   'sus4': [0, 5, 7],
-  '5':    [0, 7]
+  '5':    [0, 7],
+  // --- extended / alterated chords (added 2026-08-13) ---
+  // Tensions are spelled as their octave-normalized semitone offsets so the checker can
+  // verify the actual pitch a fretted string produces (9->14, 11->17, 13->21).
+  'm6':   [0, 3, 7, 9],          // minor triad + 6
+  '6':    [0, 4, 7, 9],          // major triad + 6
+  '6/9':  [0, 4, 7, 9, 14],      // major 6/9 (6 + 9)
+  'm6/9': [0, 3, 7, 9, 14],      // minor 6/9
+  'aug':  [0, 4, 8],             // +#5 (raised 5th)
+  'dim':  [0, 3, 6],             // diminished triad (no 7th)
+  '7#5':  [0, 4, 8, 10],         // dominant 7 with #5
+  '7b5':  [0, 4, 6, 10],         // dominant 7 with b5
+  '7sus4':[0, 5, 7, 10],         // dominant 7 suspended 4
+  'dim7': [0, 3, 6, 9],          // fully-diminished 7 (bb7)
+  'm7b5': [0, 3, 6, 10],         // half-diminished 7
+  '9':    [0, 4, 7, 10, 14],     // dominant 9 (7th included by definition)
+  'm9':   [0, 3, 7, 10, 14],     // minor 9
+  'maj9': [0, 4, 7, 11, 14],     // major 9
+  '11':   [0, 4, 7, 10, 14, 17], // dominant 11
+  'm11':  [0, 3, 7, 10, 14, 17], // minor 11
+  '13':   [0, 4, 7, 10, 14, 21], // dominant 13
+  'm13':  [0, 3, 7, 10, 14, 21], // minor 13
+  'add9': [0, 4, 7, 14],         // major triad + added 9, no 7th
+  'madd9':[0, 3, 7, 14]          // minor triad + added 9, no 7th
 };
 // Tones that are REQUIRED — if absent the chord is not what its name claims.
 // (2026-08-08 adversarial review: a missing 7th was only a warning, so "Am" named
 // "Am7" passed. The defining tone of the chord must be an error, not a footnote.)
+// For extended chords the DEFINING tension is required as an ERROR (you cannot call a
+// voicing "C6" if it omits the 6th, nor "C9" without the b7/9). The triad shell stays
+// required; non-defining tensions (e.g. the 9th of a 13th) are optional (warning only).
 const REQUIRED = {
   'maj': [0, 4], 'min': [0, 3], '7': [0, 4, 10], 'min7': [0, 3, 10],
-  'maj7': [0, 4, 11], 'sus2': [0, 2], 'sus4': [0, 5], '5': [0, 7]
+  'maj7': [0, 4, 11], 'sus2': [0, 2], 'sus4': [0, 5], '5': [0, 7],
+  'm6': [0, 3, 9], '6': [0, 4, 9], '6/9': [0, 4, 9, 14], 'm6/9': [0, 3, 9, 14],
+  'aug': [0, 4, 8], 'dim': [0, 3, 6], '7#5': [0, 4, 8, 10], '7b5': [0, 4, 6, 10],
+  '7sus4': [0, 5, 7, 10], 'dim7': [0, 3, 6, 9], 'm7b5': [0, 3, 6, 10],
+  '9': [0, 4, 10, 14], 'm9': [0, 3, 10, 14], 'maj9': [0, 4, 11, 14],
+  '11': [0, 4, 10, 17], 'm11': [0, 3, 10, 17], '13': [0, 4, 10, 21], 'm13': [0, 3, 10, 21],
+  'add9': [0, 4, 14], 'madd9': [0, 3, 14]
 };
 // Quality tokens we RECOGNIZE. Anything quality-looking that isn't here must FAIL CLOSED —
 // before this fix, "Cdim"/"C6"/"G9" silently degraded to major and passed (blocker).
-const KNOWN_QUALITY_TOKEN = /^(m|min|maj|maj7|m7|min7|minor|major|7|dom7|sus2|sus4|5)$/i;
-const UNKNOWN_QUALITY_TOKEN = /^(dim|aug|6|9|11|13|add9|6\/9|m6|dim7|aug7|7sus4|7b5|7#5)$/i;
+// Extended tokens moved to KNOWN on 2026-08-13 so they no longer fail-closed or degrade.
+const KNOWN_QUALITY_TOKEN = /^(m|min|maj|maj7|m7|min7|minor|major|7|dom7|sus2|sus4|5|m6|6|6\/9|m6\/9|aug|dim|dim7|7#5|7b5|7sus4|9|m9|maj9|11|m11|13|m13|add9|madd9)$/i;
+const UNKNOWN_QUALITY_TOKEN = /^(aug7)$/i;
 
 // Parse a chord label like "E minor", "C major (standard)", "G major (3-finger)", "Am", "D"
 // IMPORTANT: the root letter must be a STANDALONE token, not the first letter of a word.
@@ -83,12 +116,42 @@ function parseChordName(name) {
   // Quality may also be stated in the full original string ("2-finger reduction" etc. is ignored)
   const rest = restStr;
   let quality = 'maj';
-  if (/^minor\s*7|^min\s*7|\bminor\s*7\b|\bmin\s*7\b|\bm7\b|^m7/.test(rest)) quality = 'min7';
-  else if (/^major\s*7|\bmajor\s*7\b|\bmaj\s*7\b|maj7/.test(rest)) quality = 'maj7';
+  // --- extended / alterated chords (added 2026-08-13) ---
+  // Specific forms first so the generic maj/min/7 branches below don't swallow them.
+  // A slash in a label ("Cm6/9") is split into "m6" + "9" by the tokenizer, so we also
+  // accept the space-separated "m6 9" / "6 9" forms here. Word spellings ("ninth",
+  // "seventh", "six") are accepted alongside the numeric ones.
+  // NOTE: \bm7b5 is intentionally NOT matched here — it belongs to the half-diminished
+  // (m7b5) branch below. Including it here made the short form "Cm7b5" (no spaces)
+  // resolve to dim7 instead of m7b5 (a silent degrade, caught 2026-08-13 regression).
+  if (/\bdim.*7|\bdiminished\s*7|\bhalf.?dim/.test(rest)) quality = 'dim7';                    // fully-dim 7th
+  else if (/\bm7b5|minor\s*7\s*flat\s*5|\bm7\s*b5/.test(rest)) quality = 'm7b5';              // half-dim 7th
+  else if (/\baug|\baugmented/.test(rest)) quality = 'aug';                                   // +#5
+  else if (/\bdim|\bdiminished/.test(rest)) quality = 'dim';                                   // dim triad
+  else if (/\b7#5|seven.*sharp.*five|7\s*sharp\s*5/.test(rest)) quality = '7#5';              // dom 7 + #5
+  else if (/\b7b5|seven.*flat.*five|7\s*flat\s*5/.test(rest)) quality = '7b5';                // dom 7 + b5
+  else if (/\b7sus4|7\s*sus\s*4|7\s*suspended\s*4/.test(rest)) quality = '7sus4';            // dom 7 sus4
+  else if (/\bm6\/9|\bm6\s*9/.test(rest)) quality = 'm6/9';                                   // minor 6/9
+  else if (/\b6\/9|\b6\s*9/.test(rest)) quality = '6/9';                                       // major 6/9
+  else if (/\bminor\s*six|minor\s*6|\bm6\b/.test(rest)) quality = 'm6';                        // minor + 6
+  else if (/\bmajor\s*six|major\s*6|\bsixth\b|\b6\b/.test(rest)) quality = '6';                // major + 6
+  else if (/\bminor\s*add\s*9|\bmadd9/.test(rest)) quality = 'madd9';                          // minor triad + 9
+  else if (/\bmajor\s*add\s*9|add\s*9|add9/.test(rest)) quality = 'add9';                     // major triad + 9
+  else if (/\bminor\s*ninth|minor\s*9|\bm9\b/.test(rest)) quality = 'm9';                    // minor 9
+  else if (/\bmajor\s*nine|major\s*9|\bmaj9\b/.test(rest)) quality = 'maj9';                  // major 9
+  else if (/\bninth|\bnine|\b9\b/.test(rest)) quality = '9';                                  // dominant 9
+  else if (/\bminor\s*eleventh|minor\s*11|\bm11\b/.test(rest)) quality = 'm11';               // minor 11
+  else if (/\beleventh|\bmajor\s*11|\b11\b/.test(rest)) quality = '11';                       // dominant 11
+  else if (/\bminor\s*thirteenth|minor\s*13|\bm13\b/.test(rest)) quality = 'm13';             // minor 13
+  else if (/\bthirteenth|\bmajor\s*13|\b13\b/.test(rest)) quality = '13';                     // dominant 13
+  // --- base qualities (pre-existing, ordered so min7/maj7 win over bare minor/major) ---
+  else if (/\bminor\s*(seventh|7)\b|\bmin\s*7\b|\bm7\b|^m7/.test(rest)) quality = 'min7';
+  else if (/\bmajor\s*(seventh|7)\b|\bmaj\s*7\b|maj7/.test(rest)) quality = 'maj7';
   else if (/\bminor\b|^min\b|^m\b|\bmin\b|\bm\b/.test(rest)) quality = 'min';
+  else if (/\bmajor\b|^maj\b|\bmaj\b/.test(rest)) quality = 'maj';
   else if (/sus\s*2/.test(rest)) quality = 'sus2';
   else if (/sus\s*4/.test(rest)) quality = 'sus4';
-  else if (/\b7\b|dom7|^7/.test(rest)) quality = '7';
+  else if (/\bseventh\b|\b7\b|dom7|^7/.test(rest)) quality = '7';
   else if (/\b5\b|power|^5/.test(rest)) quality = '5';
   return { root, quality, unknownQuality };
 }

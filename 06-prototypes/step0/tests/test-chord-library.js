@@ -65,7 +65,7 @@ T('mute has finger',      'E minor', [null,2,2,0,0,0],[1,2,3,0,0,0], false);
 T('Cdim named',           'Cdim',    [null,3,2,0,1,0],[null,3,2,0,1,0], false);
 T('C6 named',             'C6',      [null,3,2,0,1,0],[null,3,2,0,1,0], false);
 T('G9 named',             'G9',      [3,2,0,0,0,1],  [3,2,0,0,0,1], false);
-T('Gadd9 named',          'Gadd9',   [3,2,0,2,0,3],  [3,2,0,1,0,4], false);
+T('Gadd11 named (still unknown -> fail closed)', 'Gadd11', [3,2,0,2,0,3], [3,2,0,1,0,4], false);
 T('unparseable name',     'Zebra',   [0,2,2,0,0,0],  [0,2,3,0,0,0], false);
 T('empty name',           '',        [0,2,2,0,0,0],  [0,2,3,0,0,0], false);
 
