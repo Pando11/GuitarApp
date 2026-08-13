@@ -3,21 +3,23 @@
 **You are an AI agent picking up this project. This file is your entry point.**
 Everything about this product lives under `Desktop/GuitarApp/`. Nothing lives outside it.
 
-Last updated: 2026-08-05
+Last updated: 2026-08-13 (re-synced to AMENDMENT-05/06/11 — see §2B chain; Android IS in v1, avatar style is OPEN)
 Owner: Heidi Hendrickson. Full autonomy — decide and execute, don't ask for sign-off.
 
 ---
 
 ## 1. WHAT THIS PROJECT IS
 
-An iOS app that teaches absolute beginners **acoustic** guitar.
+An iOS + Android app that teaches absolute beginners **acoustic** guitar.
 Avatar-led synthetic lessons in a correctly-sequenced beginner path. v1 has **no recording, no audio grading, no camera** — the record-a-take critique was RETIRED by AMENDMENT-04 (2026-08-05). The product is the pedagogy + lesson ordering + streaks, not a recorder.
 
 Business bar: **1,000 engaged monthly users in 18 months @ $12/mo** (~$144K/yr, >90% margin).
-Founder is a non-guitarist — a contracted guitarist QAs all AI-generated content.
-This is NON-NEGOTIABLE and is why the content pipeline has a human gate.
+Founder is a non-guitarist. Chord/technical correctness is verified by ARITHMETIC
+(`chord-theory-check.js`), NOT a contracted guitarist — owner directive (AMENDMENT-11 era):
+no human QA gate. Judgement calls the checker cannot decide (tone, feel, teaching quality)
+are flagged in prose, never as blocking red boxes (AGENTS.md Rule 8).
 
-Status: **SPEC AMENDED. RESEARCH PARTIAL. BUILD IN PROGRESS — Steps 0,1,2,3,4,5 DONE (Step 5 = in-lesson listening, F2 full, the $12/mo feature).** Steps 6 (chat/adaptive/messages/streaks), 7 (subscriptions), 8 (style packs), 9 (YouTube) remain. What is done: spec + 6 amendments, 11 playable prototypes, real lesson-JSON template, full audio engine (tuner/metronome/listening), 20 authored lessons, and the in-lesson listening verifier (proven browser-free, 24/24 + adversarial 0 HITS). What is NOT done: Heidi's go-ahead to ship, real-guitar mic calibration sign-off (logic proven, 2-min in-room test), teacher character art.
+Status: **SPEC AMENDED. RESEARCH PARTIAL. BUILD IN PROGRESS — Steps 0,1,2,3,4,5 DONE (Step 5 = in-lesson listening, F2 full, the $12/mo feature).** Steps 6 (chat/adaptive/messages/streaks), 7 (subscriptions), 8 (style packs), 9 (YouTube) remain. What is done: spec + 11 amendments, 11 playable prototypes, real lesson-JSON template, full audio engine (tuner/metronome/listening), 20 authored lessons (23 shipping), and the in-lesson listening verifier (proven browser-free, 24/24 + adversarial 0 HITS). What is NOT done: Heidi's go-ahead to ship, real-guitar mic calibration sign-off (logic proven, 2-min in-room test), teacher character art.
 (root) for the current state, the 3 new gap-closing docs (TAM, content-cost, App Store 3.1.2), and
 the still-open items. Note: there is NO interview validation gate — the Reddit post is optional
 extra info only, not a demand signal or validation.
@@ -111,7 +113,7 @@ GuitarApp/
 
 - Free tuner + metronome (App Store funnel front door)
 - LLM-generated beginner acoustic curriculum, guitarist-QA'd
-- One 2D cartoon avatar coach — Rive dropped 2026-08-04 (no membership fees). If a hand is ever animated it MUST be a rigged hand, IK-constrained to real fret coordinates, team-controlled and guitarist-QA'd (never AI-generated). Data-driven 2D fretboard stays the correctness source. See Amendment 03 §3.
+- One teacher coach (AVATAR STYLE OPEN per AMENDMENT-06: cartoon / realistic / photoreal all permitted) — Rive dropped 2026-08-04 (no membership fees). If a hand is ever animated it MUST be a rigged hand, IK-constrained to real fret coordinates, team-controlled and guitarist-QA'd (never AI-generated). Data-driven 2D fretboard stays the correctness source. See Amendment 03 §3.
 - **Sequenced beginner curriculum** of avatar-led lessons (LLM-generated + guitarist-QA'd), progressive
   teaching order — first 20 defined in `guitar-app-first-20-lessons-2026-08-05.md`; ordering research in
   `03-research/market/guitar-lesson-ordering-research-2026-08-05.md`.
@@ -119,7 +121,7 @@ GuitarApp/
 - NO recording, NO audio grading, NO camera in v1 (record-a-take critique RETIRED — Amendment 04, 2026-08-05).
 
 NOT in v1: camera of any kind, fret buzz diagnosis, real-time note scoring, audio recording/grading,
-Android, electric guitar, songs-as-licensed-library (licensing), live jams.
+electric guitar, songs-as-licensed-library (licensing), live jams.
 
 **Positioning:** *"The clean, correctly-sequenced path from zero to your first songs — with a coach
 who never gets impatient."* The product is a SEQUENCED LESSON APP (record-a-take critique RETIRED per
