@@ -12,6 +12,9 @@ const dom = new JSDOM(html, { url: 'https://app.local/', runScripts: 'outside-on
 const { window } = dom;
 globalThis.window = window;
 globalThis.document = window.document;
+// `location` is always present in a real browser; app.js reads location.search in boot().
+// JSDOM exposes it on window, so mirror it onto globalThis for the shim.
+globalThis.location = window.location;
 Object.defineProperty(globalThis, 'navigator', { value: { mediaDevices: { getUserMedia: async () => ({ getTracks: () => [] }) }, serviceWorker: { register: async () => ({}) } }, configurable: true });
 const _ls = (() => { let s = {}; return { getItem: k => s[k] ?? null, setItem: (k, v) => s[k] = String(v), removeItem: k => delete s[k] }; })();
 Object.defineProperty(globalThis, 'localStorage', { value: _ls, configurable: true });
@@ -43,8 +46,12 @@ const ok = (n, c, e) => { if (c) passed++; else { failed++; console.log('FAIL: '
 ok('app booted', !!APP, 'window.__APP__ missing');
 if (!APP) { console.log('BOOT FAILED'); process.exit(1); }
 
-ok('catalog 20 core lessons', APP.CATALOG.lessons.length === 20, 'got ' + APP.CATALOG.lessons.length);
-ok('catalog 3 teachers', APP.CATALOG.teachers.length === 3, 'got ' + APP.CATALOG.teachers.length);
+ok('catalog 23 core lessons', APP.CATALOG.lessons.length === 23, 'got ' + APP.CATALOG.lessons.length);
+// Roster = 3 core teachers (T1..T3) + 2 pack-guest teachers (T4 blues, T5 country)
+// injected at boot by app.js. Five is the correct post-boot count.
+ok('catalog 5 teachers (3 core + 2 pack guests)', APP.CATALOG.teachers.length === 5, 'got ' + APP.CATALOG.teachers.length);
+ok('core teachers T1..T3 present', ['T1', 'T2', 'T3'].every(id => APP.CATALOG.teachers.some(t => t.id === id)));
+ok('pack teachers T4/T5 injected', ['T4', 'T5'].every(id => APP.CATALOG.teachers.some(t => t.id === id)));
 ok('catalog 2 packs', APP.CATALOG.packs.length === 2, 'got ' + APP.CATALOG.packs.length);
 ok('teacher T1 present', APP.CATALOG.teachers.some(t => t.id === 'T1'));
 

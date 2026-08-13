@@ -14,7 +14,7 @@
 // The LAN server (serve.mjs) already sends `Cache-Control: no-cache` on every
 // response, so the only thing that was ever caching was THIS service worker.
 // Network-first respects that and keeps the app current automatically.
-const CACHE = 'guitarapp-v5'; // bumped once to drop the stale v4 cache from phones
+const CACHE = 'guitarapp-v6'; // bumped 2026-08-12: drop stale L02 E-minor audio/JSON cache (finger wording fix)
 const SHELL = ['./', './index.html', './app.js', './styles.css', './manifest.webmanifest'];
 
 self.addEventListener('install', (e) => {

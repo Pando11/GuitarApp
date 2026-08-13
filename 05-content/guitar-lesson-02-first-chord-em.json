@@ -33,7 +33,7 @@
         "thumb": "rests behind neck",
         "strings_played": "all six open + fretted"
       },
-      "coaching": "Two fingers, both on the second fret: middle on the A string, ring on the D string. Thumb behind the neck. That is Em. Easiest chord on the guitar.",
+      "coaching": "Go on, bring your hand up to the neck. Middle finger on the A string, second fret. Ring finger right next to it on the D string, also second fret. Let your thumb rest behind the neck, don't choke it from the top. If this feels like a weird stretch at first, that's totally normal — your hand just hasn't learned this yet. That right there is an E minor. Doesn't look like much, but it's a real chord, I promise you.",
       "qa_status": "verified-by-theory-check-2026-08-08"
     },
     {
@@ -46,26 +46,27 @@
         "reps": 5,
         "cue": "listen for all six strings ringing"
       },
-      "coaching": "Keep the shape and strum down across all six strings. Loose wrist. If a string buzzes, press a little closer to the fret. That clean ring is the whole point.",
+      "coaching": "Keep that shape and strum straight down across all six strings. Wrist loose, like you're brushing something off your knee. If a string buzzes, don't panic — that's normal on day one. Just press a little closer to the fret, right up against the metal. When it rings clean? That's your first real win, and it already sounds like a guitar. I'm not just saying that.",
       "qa_status": "verified-by-theory-check-2026-08-08"
     }
   ],
   "avatar_coaching_copy": {
-    "intro": "Today you play a real chord. Em is the easiest one — two fingers, and it already sounds like a song. Let's put it down.",
-    "ex1_intro": "Middle finger on the A string, second fret. Ring finger on the D string, second fret. Thumb behind the neck, not choking it. That shape is Em.",
-    "ex2_intro": "Hold it and strum down across all six strings. Relaxed wrist, like wiping a counter. Buzz? Press a touch closer to the metal. That clean chord is your first real win.",
-    "results": "If you can hold Em and strum it clean, you have played a chord. That is the door opening.",
-    "wrap": "You just played a chord. Two fingers, one shape, a real guitar sound. Lesson 3 we add a second chord and you play a song. For real."
+    "intro": "You're walking down the lane and there's a fella on the corner with a guitar, picking out something that sounds like it ought to be harder than it is. You stop. 'How do you do that?' He grins, kicks the crate beside him toward you. 'Have a seat. Watch my hands a second — this is the very first thing I ever learned. E minor. Two fingers, that's the whole trick. Nobody's born knowing it, Lord knows I wasn't. But you'll have it in two minutes, I promise you.'",
+    "ex1_intro": "Alright. Hold your guitar up like this — rest it on your knee, neck tilted up a little so your hand can just fall onto the neck. Now bring your hand up. Your middle finger drops onto the A string, second fret. Your ring finger lands right beside it on the D string, same fret. Yeah. Let your thumb sit behind the neck, don't choke it from the top — everybody does that at first, it's normal, it just makes everything harder. Feels like a weird stretch? Good. That means you're actually doing it. Look at that — that's an E minor. Doesn't look like much. But it's a real chord, and I'm not just saying that to be nice.",
+    "ex2_intro": "Now keep that shape and just... strum down across all six strings. Relaxed wrist — like you're wiping a counter, not chopping wood. Buzz somewhere? Totally normal on day one, happens to me when I get lazy with my fingers. Nine times out of ten it means press a touch closer to the metal, right up against the fret, not in the middle of the space. When it rings clean — that's the sound. That's the chord. And I mean it when I say that already sounds like a guitar.",
+    "results": "If you can hold E minor and strum it clean, you have officially played a chord. I'm serious — that's the door opening. Every song you love starts with some shape like this one. You're not 'trying guitar' anymore. You're playing it.",
+    "wrap": "You just played a chord. Two fingers, one shape, a real guitar sound coming out of your own hands. I'm genuinely chuffed for you, and I don't hand that out for free. Next time, I'll show you a second chord and we'll actually play a little song. For real this time. Pull up a crate and I'll be here."
   },
   "qa_block": {
     "must_verify": [
       "Automated: every chord fingering verified deterministically by 06-prototypes/step0/schema/chord-theory-check.js (verifyChord) — 0 errors AND 0 warnings required before ship (Hard Ban 7 satisfied by arithmetic, per owner directive 2026-08-08: physical fingering correctness needs no contract guitarist).",
       "Automated: lesson JSON passes schema/validate.js (validateLesson) — all required keys present, frets/fingers length 6, qa_status whitelisted.",
-      "Author pass: teaching copy is plain-English, beginner-appropriate, no AI-isms; pacing realistic.",
-      "Licensing: exercises only, zero copyrighted song material (spec §3/R6)."
+      "Author pass: teaching copy is plain-English, beginner-appropriate, no AI-isms; pacing realistic; written in the app's human instructor voice per VOICE-GUIDE.md (in-the-room second person, names the beginner feeling then releases it, explains the why before the how, normalizes struggle, concrete physical imagery, earned encouragement).",
+      "Licensing: exercises only, zero copyrighted song material (spec §3/R6).",
+      "Spoken copy uses NO bare chord symbols ('Em' etc.) — TTS reads them as letters ('m'). All chord names written out as words ('E minor') so normalizeForTTS() + the voice produce correct speech. On-screen captions may still show 'Em' (symbol is correct visually); only SPOKEN text is expanded."
     ],
     "flagged_by": "founder (non-player) — cannot self-verify",
-    "verifier_role": "arithmetic (chord-theory-check.js) + author review",
+    "verifier_role": "arithmetic (chord-theory-check.js) + author review + headless-browser playback check",
     "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
   },
   "lesson": {
@@ -73,7 +74,7 @@
     "title": "Your First Chord: Em + One Strum",
     "level": "absolute-beginner",
     "lesson_type": "technique",
-    "one_line_promise": "One finger, one real chord, one clean strum.",
+    "one_line_promise": "One chord, two fingers, one clean strum — and it'll sound like a guitar.",
     "objectives": [
       "Form E minor with fingers 2 and 3",
       "Place the thumb behind the neck, not wrapped over",
@@ -83,9 +84,6 @@
     "estimated_minutes": 8,
     "prerequisites": [
       "Guitar in tune (L01)"
-    ],
-    "app_feature_mapping": {
-      "free_metronome": []
-    }
+    ]
   }
 }

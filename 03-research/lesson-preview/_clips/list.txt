@@ -1,0 +1,4 @@
+file 'C:/Users/The Yoda Trader/Desktop/GuitarApp/03-research/lesson-preview/_clips/1.mp4'
+file 'C:/Users/The Yoda Trader/Desktop/GuitarApp/03-research/lesson-preview/_clips/2.mp4'
+file 'C:/Users/The Yoda Trader/Desktop/GuitarApp/03-research/lesson-preview/_clips/3.mp4'
+file 'C:/Users/The Yoda Trader/Desktop/GuitarApp/03-research/lesson-preview/_clips/4.mp4'

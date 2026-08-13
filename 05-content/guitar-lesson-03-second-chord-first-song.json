@@ -62,7 +62,7 @@
         "fingers": "ring(3) on A-string 3rd fret, middle(2) on D-string 2nd fret",
         "open_strings": "low E, G, B, high e all ring"
       },
-      "coaching": "Easy C is just two fingers: ring on the A string third fret, middle on the D string second fret. The rest of the strings stay open and ring. Simpler than full C, same sound.",
+      "coaching": "Easy C is just two fingers, and we use this smaller version on purpose so it's not a fight. Ring on the A string third fret, middle on the D string second fret. The rest of the strings stay open and ring out by themselves. Same chord as the full C, just easier to land. You'll build up to the bigger version later.",
       "qa_status": "verified-by-theory-check-2026-08-08"
     },
     {
@@ -79,24 +79,25 @@
         "reps": 3,
         "cue": "one strum per chord, then switch"
       },
-      "coaching": "Here is your song: Em, strum. easy C, strum. Back to Em. Slow is fine — the goal is not stopping. You are literally playing a song right now.",
+      "coaching": "Here's your song: E minor, strum. Easy C, strum. Back to E minor. Slow is fine — the goal is not stopping, not speed. Your fingers will fumble the change at first; that's normal, that's exactly what the loop is for. You are literally playing a song right now.",
       "qa_status": "verified-by-theory-check-2026-08-08"
     }
   ],
   "avatar_coaching_copy": {
-    "intro": "Two chords and you can play a song. No joke. Today: easy C, then we loop it with Em. That loop IS a song.",
-    "ex1_intro": "Easy C is two fingers: ring on the A string third fret, middle on the D string second fret. Everything else stays open. Easier than the full C, same chord.",
-    "ex2_intro": "Now loop: Em (strum), easy C (strum), back to Em. Slow. The win is not stopping between them. You just played a song — tell your friends.",
-    "results": "If you can go Em-easyC-Em without a full stop, you have played a song. That is the retention hook — protect it.",
-    "wrap": "Two chords, one loop, a real song. Most apps make you wait weeks for this. You got it in Lesson 3. Practice the loop; Lesson 4 adds rhythm."
+    "intro": "I grin because this is the good part — the part most apps make you wait weeks for. 'Two chords and you can play a song. No joke. Today you'll learn an easy version of C, then we loop it with the E minor you already know. That loop? That's a song. You're about to play one.'",
+    "ex1_intro": "Easy C is just two fingers, and here's the trick — we're using a smaller version so it's not a fight. Ring finger on the A string, third fret. Middle finger on the D string, second fret. Everything else stays open and rings out on its own. Easier than the full C, same chord, and you'll upgrade later. For now, this is your C.",
+    "ex2_intro": "Now the fun bit. Loop it: E minor, strum. Easy C, strum. Back to E minor. Slow's fine — the win isn't speed, it's not stopping between them. Your fingers will fumble the first few times. That's normal, that's the whole point of looping. You just played a song. Go tell somebody.",
+    "results": "If you can go E minor to easy C to E minor without a full stop, you played a song. That's the hook that keeps people coming back — protect it. It won't be smooth yet, and it's not supposed to be.",
+    "wrap": "Two chords, one loop, a real song. Most apps make you wait weeks for this — you got it in lesson three. Practice the loop a little every day. Lesson four adds the rhythm, and then it really sounds like music. See you there."
   },
   "qa_block": {
     "must_verify": [
       "Automated: every chord fingering verified deterministically by 06-prototypes/step0/schema/chord-theory-check.js (verifyChord) — 0 errors AND 0 warnings required before ship (Hard Ban 7 satisfied by arithmetic, per owner directive 2026-08-08: physical fingering correctness needs no contract guitarist).",
       "Automated: lesson JSON passes schema/validate.js (validateLesson) — all required keys present, frets/fingers length 6, qa_status whitelisted.",
-      "Author pass: teaching copy is plain-English, beginner-appropriate, no AI-isms; pacing realistic.",
+      "Author pass: teaching copy is plain-English, beginner-appropriate, no AI-isms; pacing realistic; written in the app's human instructor voice per VOICE-GUIDE.md (in-the-room second person, names the beginner feeling then releases it, explains the why before the how, normalizes struggle, concrete physical imagery, earned encouragement).",
       "Licensing: exercises only, zero copyrighted song material (spec §3/R6).",
-      "easy C is a 2-finger teaching reduction (Lauren Bateman style); arithmetic confirms it spells C major. Confirm against any full-C lesson later if desired."
+      "easy C is a 2-finger teaching reduction (Lauren Bateman style); arithmetic confirms it spells C major. Confirm against any full-C lesson later if desired.",
+      "Spoken copy uses NO bare chord symbols ('Em' etc.) — TTS reads them as letters ('m'). All chord names written out as words ('E minor', 'easy C') so normalizeForTTS() + the voice produce correct speech. Only SPOKEN text is expanded; on-screen symbols unchanged."
     ],
     "flagged_by": "founder (non-player) — cannot self-verify",
     "verifier_role": "arithmetic (chord-theory-check.js) + author review",

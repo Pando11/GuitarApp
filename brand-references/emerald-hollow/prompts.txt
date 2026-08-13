@@ -1,0 +1,43 @@
+# Emerald Hollow — Midjourney Prompt Kit
+# Run with: --ar 16:9 --style raw --v 6  (or drop flags for MJ web)
+# These reproduce the channel's exact formula. Swap ONLY the [bracketed] bits to batch.
+
+### BASE TEMPLATE (copy/paste, then vary the subject line)
+cinematic fantasy medieval [SUBJECT] deep in a snowy forest, steep snow-laden roof,
+warm golden glowing arched windows, gnarled bare twisted trees framing left and right,
+heavy falling snow, icy blue twilight, volumetric fog, cozy dark fantasy atmosphere,
+hyper-detailed, painterly, atmospheric mood, 8k --ar 16:9 --style raw --v 6
+
+### 1. Snowbound Village (matches m6R0_hEVOKc)
+SUBJECT = "stone village of timber longhouses along a snowy path with wall torches"
+
+### 2. Enchanted Forest Cottage (matches vEXRqrEuFGo)
+SUBJECT = "rough-hewn stone cottage with a tall chimney and ivy-covered stone pillars"
+
+### 3. Mystic Celtic Winter Cottages (matches Z9FEfLBLkgk)
+SUBJECT = "two Tudor-fantasy cottages with upturned eaves and diamond-pane teal windows"
+
+### 4. Hidden Cabin / Frozen Forest (matches Efi8LfSsLE4)
+SUBJECT = "hobbit-like stone cabin embraced by massive exposed tree roots"
+
+### 5. Snowy Village at Night (matches gf6H-bSNsl4)
+SUBJECT = "small rustic village receding into mist with a winding snow path"
+
+### 6. Whispers of the Frozen Night (matches MykXgp3-iGc)
+SUBJECT = "sprawling multi-gabled witch's cottage with vines woven into the walls"
+
+### GUITAR-APP VARIANTS (cozy-mystical but with a guitar / practice nook)
+G1. "warm hearth practice nook with an acoustic guitar on a stool, snowy window behind"
+G2. "cozy cabin interior, guitar resting by a glowing fireplace, snow falling outside"
+G3. "ancient tree hollow turned into a musician's nook with a guitar and lantern light"
+G4. "misty stone courtyard at dusk with a guitar leaning on a wooden bench, snow"
+
+### BANNER PROMPT (swirling mist + centered wordmark feel)
+wide cinematic banner, swirling teals deep blues and emerald greens like magical forest
+fog, a faint giant face with glowing blue eyes hidden in the mist, mysterious fantasy
+atmosphere, no text, 2560x1152 --ar 21:9 --style raw --v 6
+
+### AVATAR PROMPT (hand-made weathered emblem feel — NOT smooth AI)
+close-up of a weathered stone carving of a Green Man / Celtic face with leaf and vine
+details around eyes and mouth, mossy green teal and stone-grey lichen texture,
+archaeological mystical naturalistic, circular framing, 900x900 --ar 1:1 --style raw --v 6

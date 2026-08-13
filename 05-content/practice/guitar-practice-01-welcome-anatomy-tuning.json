@@ -1,0 +1,97 @@
+{
+  "lesson": {
+    "id": "guitar-practice-01-welcome-anatomy-tuning",
+    "title": "Practice: Welcome, Anatomy & Tuning",
+    "level": "absolute-beginner",
+    "lesson_type": "practice",
+    "practice_of": "L01-welcome-anatomy-tuning",
+    "one_line_promise": "Drill what Welcome, Anatomy & Tuning taught — many ways, one goal.",
+    "chords_in_scope": [],
+    "estimated_minutes": 10,
+    "engine": "06-prototypes/practice-engine/"
+  },
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted."
+  },
+  "exercises": [
+    {
+      "id": "L01-welcome-anatomy-tuning-PX-weakreview",
+      "name": "Weak-Pair Review (K=3)",
+      "purpose": "Drill the K weakest pairs the engine flagged from real measurement.",
+      "params": {
+        "K": 3
+      },
+      "coaching": "The engine picked these — they are your real weak spots, not a generic list.",
+      "qa_status": "verified-by-practice-engine-2026-08-12",
+      "practice_type": "weak-pair-review"
+    },
+    {
+      "id": "L01-welcome-anatomy-tuning-PX-spider",
+      "name": "Spider warm-up",
+      "purpose": "Walk fingers up/down the fretboard to loosen the fretting hand.",
+      "params": {
+        "strings": [
+          6,
+          5,
+          4,
+          3,
+          2,
+          1
+        ],
+        "frets": 4,
+        "pattern": "updown"
+      },
+      "coaching": "One finger per fret, strict alternation. Keep it even.",
+      "qa_status": "verified-by-practice-engine-2026-08-12",
+      "practice_type": "spider"
+    },
+    {
+      "id": "L01-welcome-anatomy-tuning-PX-muted",
+      "name": "Muted / percussive strum",
+      "purpose": "Rhythm hand alone — no pitch. Lock steady muted hits.",
+      "params": {
+        "tempo_per_min": 80
+      },
+      "coaching": "Mute the strings with your fretting hand and strum rhythm only. Count the beats.",
+      "qa_status": "verified-by-practice-engine-2026-08-12",
+      "practice_type": "muted-strum"
+    },
+    {
+      "id": "L01-welcome-anatomy-tuning-PX-count",
+      "name": "Count-out-loud",
+      "purpose": "Lock tempo by counting 1-&-2-& before strumming.",
+      "params": {
+        "tempo_per_min": 80,
+        "bars": 4
+      },
+      "coaching": "Say the grid out loud: 1 & 2 & 3 & 4 &. Stay on the beat.",
+      "qa_status": "verified-by-practice-engine-2026-08-12",
+      "practice_type": "count-out-loud"
+    }
+  ],
+  "practice_menu": {
+    "source": "CURRICULUM-AND-PRACTICE-STRUCTURE.md §5.2",
+    "drills": [
+      "chord-perfect",
+      "air-changes",
+      "one-minute-changes",
+      "tempo-loop",
+      "wait-to-play",
+      "anchor",
+      "spider",
+      "metronome-ladder",
+      "weak-pair-review",
+      "muted-strum",
+      "count-out-loud"
+    ],
+    "note": "Student picks any subset; app sequences warm-up -> accuracy -> retrieval -> speed -> weak-pair."
+  },
+  "qa_block": {
+    "must_verify": [
+      "Practice chord set == teaching chord set + cumulative (curriculum §5.1).",
+      "Every one-minute-changes exercise carries the exact chord_pair the 30/60 sensor counts.",
+      "No new chord fingering introduced (practice only rehearses taught chords)."
+    ],
+    "verifier_role": "arithmetic (practice-engine) + author review"
+  }
+}

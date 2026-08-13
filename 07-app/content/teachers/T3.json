@@ -26,9 +26,9 @@
   },
   "handoff_line": "So you're my new student. Good. No restarts — you keep your place and we get to work.",
   "persona_lines": {
-    "intro": "Guitar up. We start now.",
-    "chord": "Fingers on. Check every string rings.",
-    "exercise": "Reps win. Hold the tempo, no drifting.",
-    "wrap": "Solid session. Same time tomorrow."
+    "intro": "Guitar in your lap? Good. We're starting today, and I'll show you every single move — no experience needed, I've got you. Let's get to work.",
+    "chord": "Fingers down. Now check every string — if one's muffled, that's normal on day one, just nudge that finger up against the fret. All six should ring.",
+    "exercise": "Reps win. Keep the tempo steady, no drifting — slow is fine, stopping is what we're fixing. You'll feel it click.",
+    "wrap": "Solid session. Write the number down so next time you beat it. Same time tomorrow."
   }
 }

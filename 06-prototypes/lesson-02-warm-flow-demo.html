@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GuitarApp — Lesson 2 (WARM + FLOW fix) · Playable Demo</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:#0d0b14;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;overflow:hidden;color:#fff}
+  #stage{position:relative;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center}
+  #coach{position:absolute;left:6%;bottom:0;width:240px;height:340px}
+  #coach svg{width:100%;height:100%;overflow:visible}
+  #mouth{transition:transform .06s}
+  #fretWrap{position:absolute;right:6%;bottom:9%;width:42%;max-width:520px;opacity:0;transition:opacity .6s}
+  #fretTitle{color:#fff;font-size:12px;letter-spacing:1px;margin-bottom:6px;font-weight:700;opacity:.8}
+  #fret{width:100%;height:auto;display:block;filter:drop-shadow(0 10px 26px #000c)}
+  .dot{fill:#ffd166;stroke:#b8860b;stroke-width:2}
+  .finger{font:700 15px sans-serif;fill:#111;text-anchor:middle;dominant-baseline:central}
+  .openNote{fill:#fff;font:700 13px sans-serif;text-anchor:middle}
+  .caption{position:absolute;left:50%;bottom:8%;transform:translateX(-50%);max-width:72%;text-align:center;color:#fff;font-size:clamp(17px,2.2vw,27px);font-weight:600;line-height:1.4;opacity:0;transition:opacity .5s;text-shadow:0 2px 12px #000}
+  #sub{position:absolute;left:50%;bottom:3%;transform:translateX(-50%);font-size:13px;color:#ffd166cc;letter-spacing:.5px;opacity:.85}
+  #phaseTag{position:absolute;right:18px;top:64px;background:#000a;border:1px solid #ffd16655;border-radius:8px;padding:6px 12px;color:#ffd166;font-size:13px;font-weight:800;letter-spacing:1px;opacity:0;transition:opacity .4s}
+  #controls{position:absolute;top:14px;right:14px;display:flex;gap:8px;z-index:20}
+  button{background:#ffd166;color:#211;font-weight:700;border:0;border-radius:8px;padding:10px 14px;cursor:pointer;font-size:13px}
+  button.ghost{background:#ffffff22;color:#fff;border:1px solid #ffffff33}
+  #badge{position:absolute;left:14px;top:12px;font-size:11px;color:#ffd166cc;background:#0008;padding:4px 8px;border-radius:6px;border:1px solid #ffd16655;z-index:20}
+  #note{position:absolute;left:14px;bottom:12px;font-size:11px;color:#aaa;max-width:40%;line-height:1.4;z-index:20}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="badge">WARM + FLOW FIX · L02</div>
+
+  <div id="coach">
+    <svg viewBox="0 0 240 340">
+      <!-- shoulders -->
+      <ellipse cx="120" cy="265" rx="78" ry="86" fill="#5b7c99"/>
+      <!-- neck -->
+      <rect x="105" y="190" width="30" height="60" rx="14" fill="#e8b894"/>
+      <!-- head -->
+      <circle cx="120" cy="150" r="60" fill="#f0c39c"/>
+      <!-- hair -->
+      <path d="M58 150 Q120 50 182 150 Q160 95 120 92 Q80 95 58 150Z" fill="#3a2a1a"/>
+      <!-- eyes -->
+      <circle cx="98" cy="148" r="7" fill="#222"/>
+      <circle cx="142" cy="148" r="7" fill="#222"/>
+      <!-- brows (warm, slight) -->
+      <path d="M86 132 q12 -7 24 0" stroke="#3a2a1a" stroke-width="4" fill="none"/>
+      <path d="M130 132 q12 -7 24 0" stroke="#3a2a1a" stroke-width="4" fill="none"/>
+      <!-- smile -->
+      <path d="M96 172 q24 22 48 0" stroke="#7a2e2e" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <!-- mouth (animated) -->
+      <g id="mouth"><rect x="102" y="170" width="36" height="11" rx="5" fill="#7a2e2e"/></g>
+    </svg>
+  </div>
+
+  <div id="fretWrap">
+    <div id="fretTitle">FRETBOARD — code-driven from lesson JSON (correct by construction)</div>
+    <svg id="fret" viewBox="0 0 420 200">
+      <rect x="6" y="6" width="408" height="188" rx="10" fill="#2b1d12" stroke="#5a3a1f" stroke-width="3"/>
+      <g stroke="#d9c2a0" stroke-width="2">
+        <line x1="40" y1="30" x2="400" y2="30"/><line x1="40" y1="62" x2="400" y2="62"/>
+        <line x1="40" y1="94" x2="400" y2="94"/><line x1="40" y1="126" x2="400" y2="126"/>
+        <line x1="40" y1="158" x2="400" y2="158"/></g>
+      <g stroke="#b08d57" stroke-width="3">
+        <line x1="40" y1="20" x2="40" y2="180"/><line x1="100" y1="20" x2="100" y2="180"/>
+        <line x1="160" y1="20" x2="160" y2="180"/><line x1="220" y1="20" x2="220" y2="180"/>
+        <line x1="280" y1="20" x2="280" y2="180"/><line x1="340" y1="20" x2="340" y2="180"/>
+        <line x1="400" y1="20" x2="400" y2="180"/></g>
+      <g id="dots"></g>
+    </svg>
+  </div>
+
+  <div class="caption" id="caption"></div>
+  <div id="sub"></div>
+  <div id="phaseTag"></div>
+
+  <div id="controls">
+    <button id="play">▶ Play Lesson</button>
+    <button id="speak" class="ghost">🔊 Speak only</button>
+  </div>
+  <div id="note">Tap ▶ to hear it. Voice here = browser default TTS with chord normalization (no more "m"). The production app uses the warm realistic voice (Part B).</div>
+</div>
+
+<script>
+/* ---- TTS normalizer (mirrors 07-app/audio/tts-normalize.js) ---- */
+const CHORD_SPEECH_MAP = {Em:'E minor',Am:'A minor',Dm:'D minor',Bm:'B minor',C:'C major',G:'G major',D:'D major',A:'A major',E:'E major',B:'B major'};
+const CHORD_TOKENS = ['Em','Am','Dm','Bm','C','G','D','A','E','B'];
+const CHORD_TTS_RE = new RegExp('(?<![A-Za-z])(?<!easy\\s)('+CHORD_TOKENS.join('|')+')(?![A-Za-z])(?!\\s+(?:string|note)s?\\b)(?!\\s*(?:major|minor))','g');
+function normalizeForTTS(t){return t?t.replace(CHORD_TTS_RE,m=>CHORD_SPEECH_MAP[m]||m):t;}
+
+/* ---- WARM + FLOW script (rewritten copy from guitar-lesson-02 JSON) ---- */
+const SCENES = [
+  {phase:'INTRO', cap:"Hey — before we start, I want you to know something.",
+   say:"Hey, before we start — I want you to know something. Every guitarist you've ever heard started exactly here, with two fingers and a slightly awkward hand. So take the pressure off. Today we're just going to put down one chord, the easiest one there is, and make it sound good. No rush. I'll walk you through it."},
+  {phase:'TEACH', cap:"Two fingers, second fret. That shape is E minor.",
+   say:"Alright, bring your hand up to the neck. Middle finger on the A string, second fret. Ring finger right next to it on the D string, also second fret. Thumb behind the neck, nice and relaxed. Look at that — that shape is E minor. It already looks like a guitar chord, doesn't it?",
+   draw:'Em'},
+  {phase:'TEACH', cap:"Strum down across all six. That clean ring is your first win.",
+   say:"Now hold it and strum down across all six strings. Relaxed wrist, like you're wiping a counter. Buzz? Totally normal on day one — just press a touch closer to the metal. When it rings clean, that's it. That's your first chord. I mean it when I say that sounds good.",
+   draw:'Em'},
+  {phase:'PRACTICE', cap:"Your turn — play it four times. Go slow, stay loose.",
+   say:"Your turn now. Hold E minor and strum down four times. Go slow, keep your wrist loose. If it buzzes, that's fine — you're building the muscle. I'll wait.",
+   draw:'Em'},
+  {phase:'PRAISE', cap:"That's a chord. Seriously — the door is opening.",
+   say:"If you can hold E minor and strum it clean, you have officially played a chord. Seriously — that's the door opening. Everything else we do builds from this one shape."},
+  {phase:'WRAP', cap:"You just played a chord. Lesson 3, we play a song.",
+   say:"You just played a chord. Two fingers, one shape, a real guitar sound. I'm proud of that — and I mean it. Lesson 3, we add a second chord and you'll play an actual song. For real. See you there."}
+];
+
+/* ---- fretboard (code-driven) ---- */
+const CHORDS = { Em:[{string:5,fret:2,finger:2},{string:4,fret:2,finger:3}] };
+const STR_Y = {1:158,2:126,3:94,4:62,5:30,6:18};
+function drawFretboard(name){
+  const g=document.getElementById('dots'); g.innerHTML='';
+  (CHORDS[name]||[]).forEach(n=>{
+    const x=40+n.fret*60-30, y=STR_Y[n.string];
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx',x);c.setAttribute('cy',y);c.setAttribute('r',15);c.setAttribute('class','dot');
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',x);t.setAttribute('y',y);t.setAttribute('class','finger');t.textContent=n.finger;
+    g.appendChild(c);g.appendChild(t);
+  });
+}
+
+/* ---- mouth + speech ---- */
+let mouthTimer=null;
+function lipSync(on){clearInterval(mouthTimer);const m=document.getElementById('mouth');
+  if(!on){m.style.transform='scaleY(1)';return;}
+  mouthTimer=setInterval(()=>{m.style.transform='scaleY('+(0.4+Math.random()*1.1)+')';},90);}
+function speak(text){
+  const s=normalizeForTTS(text); lipSync(true);
+  if('speechSynthesis'in window){
+    const u=new SpeechSynthesisUtterance(s); u.rate=0.96; u.pitch=1.0;
+    u.onend=()=>lipSync(false);
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  } else { setTimeout(()=>lipSync(false),Math.max(1500,s.length*55)); }
+}
+function showCap(t){const c=document.getElementById('caption');c.textContent=t;c.style.opacity=1;}
+function hideCap(){document.getElementById('caption').style.opacity=0;}
+function setPhase(t){const p=document.getElementById('phaseTag');p.textContent=t;p.style.opacity=1;}
+function clearPhase(){document.getElementById('phaseTag').style.opacity=0;}
+function showFret(on){document.getElementById('fretWrap').style.opacity=on?1:0;}
+
+let playing=false;
+function playLesson(){
+  if(playing)return; playing=true;
+  document.getElementById('sub').textContent='';
+  let i=0;
+  function next(){
+    if(i>=SCENES.length){ playing=false; clearPhase(); showFret(false);
+      document.getElementById('sub').textContent='✓ Done — that was the warm, flowing L02.';
+      return; }
+    const s=SCENES[i];
+    setPhase(s.phase);
+    showFret(!!s.draw);
+    if(s.draw) drawFretboard(s.draw);
+    showCap(s.cap);
+    speak(s.say);
+    // advance after the spoken line (rough duration estimate)
+    const dur = s.say.length*62 + 1200;
+    setTimeout(()=>{ hideCap(); clearPhase(); i++; next(); }, dur);
+  }
+  next();
+}
+
+document.getElementById('play').addEventListener('click',playLesson);
+document.getElementById('speak').addEventListener('click',()=>{
+  // speak the full lesson end-to-end so you can hear the warm voice + correct chord names
+  let i=0; (function loop(){ if(i>=SCENES.length)return; speak(SCENES[i].say); const d=SCENES[i].say.length*62+1200; setTimeout(()=>{i++;loop();},d); })(0);
+});
+</script>
+</body>
+</html>

@@ -16,7 +16,7 @@ Heidi double-clicks **`start-lan.bat`** (a tiny file in the app folder). A black
 window opens and shows a line like:
 
 ```
-Open on your phone: http://192.168.1.42:8080/?dogfood=1
+Open on your phone: https://192.168.1.42:8443/?dogfood=1
 ```
 
 She reads you that address (the numbers will be different).
@@ -29,13 +29,20 @@ Make sure your phone is connected to the **same Wi-Fi network** as Heidi's compu
 In your phone's browser, type the address exactly as printed, **including the
 `?dogfood=1` at the end**, for example:
 
-```
-http://192.168.1.42:8080/?dogfood=1
+```text
+https://192.168.1.42:8443/?dogfood=1
 ```
 
 > ⚠️ **Important:** you must open it **WITH `?dogfood=1`** (don't leave that part
 > off). That's what unlocks the full free access for you and the other friends.
 > If you forget it, tap the app's feedback link or just re-open the full URL.
+
+> 🔒 **First time only — "certificate warning":** the app is served over https with a
+> free self-signed certificate, so your phone will show a privacy/security warning the
+> first time. That's expected and safe (it's Heidi's own computer on your home Wi-Fi):
+> - **iPhone (Safari):** tap **"Advanced"** at the bottom, then **"Visit this website"**.
+> - **Android (Chrome):** tap **"Advanced"**, then **"Proceed to … (unsafe)"**.
+> After that the mic works and you can install it to the home screen.
 
 ### 4. Add it to your home screen (this "installs" it)
 - **iPhone (Safari):** tap the **Share** button (the square with an arrow ↑),

@@ -1,0 +1,11 @@
+name,subject,mj_prompt_suffix,use
+snowbound-village,"stone village of timber longhouses along a snowy path with wall torches",--ar 16:9 --style raw --v 6,reference-match
+enchanted-forest-cottage,"rough-hewn stone cottage with a tall chimney and ivy-covered stone pillars",--ar 16:9 --style raw --v 6,reference-match
+mystic-celtic-cottages,"two Tudor-fantasy cottages with upturned eaves and diamond-pane teal windows",--ar 16:9 --style raw --v 6,reference-match
+hidden-cabin,"hobbit-like stone cabin embraced by massive exposed tree roots",--ar 16:9 --style raw --v 6,reference-match
+snowy-village-night,"small rustic village receding into mist with a winding snow path",--ar 16:9 --style raw --v 6,reference-match
+whispers-frozen-night,"sprawling multi-gabled witch's cottage with vines woven into the walls",--ar 16:9 --style raw --v 6,reference-match
+guitar-hearth-nook,"warm hearth practice nook with an acoustic guitar on a stool, snowy window behind",--ar 16:9 --style raw --v 6,guitar-app
+guitar-cabin-fire,"cozy cabin interior, guitar resting by a glowing fireplace, snow falling outside",--ar 16,9 --style raw --v 6,guitar-app
+guitar-tree-hollow,"ancient tree hollow turned into a musician's nook with a guitar and lantern light",--ar 16:9 --style raw --v 6,guitar-app
+guitar-courtyard-dusk,"misty stone courtyard at dusk with a guitar leaning on a wooden bench, snow",--ar 16:9 --style raw --v 6,guitar-app

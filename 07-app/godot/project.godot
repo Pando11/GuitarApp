@@ -1,0 +1,29 @@
+; Engine configuration file for GuitarApp world (Godot 4.x)
+; Format: Godot 4 project settings. Target engine: godotengine/godot 4.7.1-stable (MIT).
+; This project is the GAME-LIKE STORY-WORLD shell (AMENDMENT-09). The teacher is ONE
+; character in the world; lessons trigger as scenes. Art direction is per-lesson
+; (styleAnchor), NOT a global world rule.
+
+config_version=5
+
+[application]
+
+config/name="GuitarApp World"
+config/description="Game-like story-world shell for the GuitarApp lesson app (AMENDMENT-09)."
+run/main_scene="res://world/World.tscn"
+config/features=PackedStringArray("4.3", "GL Compatibility")
+config/icon="res://icon.svg"
+
+[display]
+
+window/size/viewport_width=720
+window/size/viewport_height=1280
+window/handheld/orientation="portrait"
+
+[input]
+
+; reserved: lesson_select, lesson_confirm, lesson_exit (bound in code, not here)
+
+[renderer]
+
+rendering/renderer/rendering_method="gl_compatibility"
