@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const APP = '07-app/content/lessons';
-const PRAC = '05-content/practice';
+const PRAC = '07-app/content/practice';
 const reApp = /guitar-lesson-(\d+)-.*\.json$/;
 const rePrac = /guitar-practice-(\d+)-.*\.json$/;
 

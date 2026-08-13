@@ -1,7 +1,12 @@
-# HANDOFF — GuitarApp PWA build (07-app) — session 2026-08-08 (overnight)
+# HANDOFF — GuitarApp PWA build (07-app)
+
+> Re-synced 2026-08-13. Original session was 2026-08-08 (overnight PWA spike). Two command paths
+> below were corrected: `verify-sw-cache.mjs` lives in `07-app/` (not `07-app/test/`), and app-smoke
+> is 20/0 (not 18/0). The defect log + structure below are accurate and kept.
 
 Owner: Heidi Hendrickson. Single source of truth for what exists, what's proven, and what's NOT done.
-Read this + `02-spec/FEATURES-LOCKED-v1-2026-08-07.md` + `PLAN-from-locked-spec-2026-08-07.md`.
+Read this + `02-spec/FEATURES-LOCKED-v1-2026-08-07.md` + `PLAN-from-locked-spec-2026-08-07.md`
++ repo-root `HANDOFF.md` (current-state pointer).
 
 ## WHAT GOT BUILT THIS SESSION
 A REAL, INSTALLABLE PWA (not another HTML prototype) under `07-app/`. Decision: spike resolved to PWA
@@ -12,10 +17,10 @@ buildable AND provable here. Engine layer stays SDK-agnostic for a later native 
 ## VERIFIED RIGHT NOW (re-run live, do not trust prior stamps)
 - `cd 07-app/test && node fidelity.mjs`  → FIDELITY GATE 48 passed, 0 failed
   (proves 07-app/core ESM ports are byte-faithful to the proven 06-prototypes Node engines)
-- `node app-smoke.mjs`  → APP SMOKE 18 passed, 0 failed
+- `cd 07-app/test && node app-smoke.mjs`  → APP SMOKE 20 passed, 0 failed
   (headless DOM harness importing the REAL app.js: boot, catalog, entitlement gating, lesson render,
    teacher-swap invariant, voice intents all exercised)
-- `node verify-sw-cache.mjs` → SW CACHE GATE 4 passed, 0 failed
+- `cd 07-app && node verify-sw-cache.mjs` → SW CACHE GATE 4 passed, 0 failed
   (proves the service worker serves FRESH code over a stale cached copy — network-first. This is the
    guard that prevents "the phone app stops opening after a code change": the old cache-first SW with a
    hardcoded list + manual CACHE version bump was the recurring break. If a future edit reverts the SW

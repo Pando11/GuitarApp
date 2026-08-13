@@ -63,7 +63,14 @@ AudioKitEX (MIT). Details in `03-research/feedback-tech/guitar-feedback-stack-re
 | 2 | `02-spec/guitar-app-spec-AMENDMENT-01.md` | **current truth** — audio-first v1 |
 | 3 | `02-spec/guitar-app-spec-AMENDMENT-02.md` | **current truth** — animated teacher + voice |
 | 3b| `02-spec/guitar-app-spec-AMENDMENT-03.md` | **current truth** — AI-native "movie-like" lesson, open-source/no-fee stack, Rules 10&11 removed |
-| 3c| `02-spec/guitar-app-spec-AMENDMENT-04.md` | **CURRENT TRUTH — product scope.** record-a-take critique RETIRED; v1 = sequenced lesson app (no recording/audio grading/camera) |
+| 3c| `02-spec/guitar-app-spec-AMENDMENT-04.md` | product scope. record-a-take critique RETIRED; v1 = sequenced lesson app (no recording/audio grading/camera) |
+| 3d| `02-spec/guitar-app-spec-AMENDMENT-05.md` | **listening returns** (constrained, in-lesson, on-device) + iOS **AND** Android, one codebase |
+| 3e| `02-spec/guitar-app-spec-AMENDMENT-06.md` | **avatar/voice UNLOCKED** — realistic/photoreal OK, fingering-demo OK; Chatterbox = shipping voice |
+| 3f| `02-spec/guitar-app-spec-AMENDMENT-07.md` | FLUX.1[schnell] (Apache-2.0) = only legal image gen; Qwen-Image for edits |
+| 3g| `02-spec/guitar-app-spec-AMENDMENT-08.md` | Midjourney EXCLUDED (no OSS/embed license) |
+| 3h| `02-spec/guitar-app-spec-AMENDMENT-09.md` | motion = Wan2.1-I2V (Apache-2.0); story-engine = Godot (MIT) |
+| 3i| `02-spec/guitar-app-spec-AMENDMENT-10.md` | AI-drawn fingers/fretboards PERMITTED (owner override); chord-theory-check.js stays a verification pass |
+| 3j| `02-spec/guitar-app-spec-AMENDMENT-11.md` | **THE PRODUCT THESIS** — world-locked teacher + longitudinal student memory + duet (redlines) |
 | 4 | `02-spec/guitar-app-spec.md` | base spec — historical, superseded in parts |
 | 5 | `02-spec/guitar-build-plan.md` | execution plan (build order superseded by Amdt 01 §7) |
 | 6 | `03-research/feedback-tech/` + `03-research/animation-voice/` | the evidence (incl. animation-repos-and-debate.md + debate/) |
@@ -75,8 +82,10 @@ AudioKitEX (MIT). Details in `03-research/feedback-tech/guitar-feedback-stack-re
 
 ```
 GuitarApp/
-├── 01-START-HERE/     ← you are here
-├── 02-spec/           spec + amendments + build plan  (CURRENT TRUTH)
+├── HANDOFF.md           ← CURRENT-STATE POINTER (read first when resuming; re-synced 2026-08-13)
+├── HANDOFF-ARCHIVE/     dated session handoffs (historical; not current state)
+├── 01-START-HERE/     ← you are here (orientation)
+├── 02-spec/           spec + amendments 01-11 + build plan  (CURRENT TRUTH)
 ├── 03-research/
 │   ├── feedback-tech/    audio stack, video feasibility, feedback competitors (2026-08-04)
 │   ├── animation-voice/  animated teacher vs filmed human, animation pipelines,
@@ -85,14 +94,14 @@ GuitarApp/
 │   ├── competitors/      Yousician/Fender/Simply/Justin teardowns + GIBSON (2026-08-05)
 │   │                     + PICKUP MUSIC & TRUEFIRE (2026-08-05)
 │   ├── market/           marketing, business models, consolidated data, build patterns
+│   ├── curriculum/       curriculum + practice structure + 2026-08-12 review (CURRICULUM-REVIEW)
 │   └── reference-repos/  alphaTab, learnhouse, react-guitar, book-of-frets-x
-│                         (READ-ONLY build references — NOT dependencies, check licenses)
+│                         (READ-ONLY build references — NOT dependencies, check licenses; gitignored)
 ├── 04-validation/     Reddit demand post (informational, no gate)  (GATE removed 2026-08-05)
-├── 05-content/        lesson JSON fixtures
-├── 06-prototypes/     playable HTML demos + README.md index
-│                         (latest: lesson-director-v4.html — "Lesson Director" AI-native pipeline;
-│                          kanban-guitar-lessons.html — interactive project kanban board,
-│                          drag-drop + localStorage, seeded with GuitarApp workstreams)
+├── 05-content/        AUTHORING SOURCE: 20 teaching lessons + generator scripts + VOICE-GUIDE.md
+│                         (promote lessons to 07-app/content/lessons; practice is GENERATED, not hand-edited)
+├── 06-prototypes/     proven Node engines (step0..step9, F7 band, F10 voice) + practice-engine + README
+├── 07-app/            LIVE PWA (what ships): core/ engines, content/, godot/ story-world, tests
 └── 07-archive/        original raw notes, superseded docs
 ```
 

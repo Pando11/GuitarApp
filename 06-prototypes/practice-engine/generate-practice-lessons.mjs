@@ -3,7 +3,7 @@
 // Reads the 20 teaching lessons in 05-content/guitar-lesson-*.json, extracts the
 // chord set each one teaches, accumulates it (matching the curriculum §5.1 rule:
 // practice drills the chord(s) taught + everything before), and emits a matching
-// PRACTICE lesson JSON per teaching lesson into 05-content/practice/.
+// PRACTICE lesson JSON per teaching lesson into 07-app/content/practice/ (shipping output).
 //
 // Each practice lesson carries the same chord set PLUS a practice menu (§5.2) so
 // there are many ways to drill the same material. The 1-minute-changes exercise
