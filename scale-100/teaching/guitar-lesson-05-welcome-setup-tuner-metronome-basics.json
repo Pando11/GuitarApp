@@ -1,0 +1,73 @@
+{
+  "lesson": {
+    "id": "L05-welcome-setup-tuner-metronome-basics",
+    "title": "Welcome & Setup — Tuner & metronome basics",
+    "level": "beginner",
+    "lesson_type": "technique",
+    "one_line_promise": "Tuner & metronome basics.",
+    "objectives": [
+      "Tuner & metronome basics",
+      "Keep changes clean before adding speed"
+    ],
+    "estimated_minutes": 9,
+    "prerequisites": [
+      "Lesson L04"
+    ],
+    "app_feature_mapping": {
+      "free_metronome": [
+        "drill tempo"
+      ]
+    }
+  },
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted."
+  },
+  "exercises": [
+    {
+      "id": "EX1-technique",
+      "name": "Tuner & metronome basics",
+      "purpose": "Tuner & metronome basics with no chord pressure — build the habit.",
+      "params": {
+        "action": "technique repetition",
+        "cue": "stay relaxed"
+      },
+      "coaching": "No chord yet. Tuner & metronome basics. Keep your shoulders down and your grip loose — tension is the enemy of flow.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-timing",
+      "name": "Timing check",
+      "purpose": "Lock the pulse with the free metronome.",
+      "params": {
+        "action": "tap / strum the beat",
+        "tempo_bpm": 70
+      },
+      "coaching": "Find the beat first. Everything we build later sits on top of a steady pulse — do not skip this.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "Group 1: Welcome & Setup. Tuner & metronome basics. No new chord today — we go deeper on what you already have.",
+    "ex1_intro": "No chord yet. Tuner & metronome basics. Keep your shoulders down and your grip loose — tension is the enemy of flow.",
+    "results": "A cleaner rep than last time means your hands are learning. That is the only metric that matters here.",
+    "wrap": "Logged. Next lesson builds on this."
+  },
+  "qa_block": {
+    "must_verify": [
+      "Automated: every chord fingering verified deterministically by 06-prototypes/step0/schema/chord-theory-check.js (verifyChord) — 0 errors AND 0 warnings required before ship (AGENTS Rule 8).",
+      "Automated: lesson JSON passes schema/validateLesson — all required keys present, frets/fingers length 6, qa_status whitelisted.",
+      "Author pass: teaching copy is plain-English, beginner-appropriate, no AI-isms; pacing realistic.",
+      "Licensing: exercises only, zero copyrighted song material.",
+      "Spoken copy expands chord names to words (no bare symbols) so TTS reads them correctly."
+    ],
+    "flagged_by": "founder (non-player) — cannot self-verify",
+    "verifier_role": "arithmetic (chord-theory-check.js) + author review + schema validate",
+    "guitarist_signoff": "NOT REQUIRED — chord fingerings verified deterministically by chord-theory-check.js on 2026-08-08."
+  },
+  "_meta": {
+    "n": 5,
+    "group": 1,
+    "newChord": null,
+    "focus": []
+  }
+}

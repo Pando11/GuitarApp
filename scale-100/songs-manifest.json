@@ -1,0 +1,512 @@
+{
+  "generated": "2026-08-13T17:39:48.449Z",
+  "songs": 54,
+  "teaching": 54,
+  "practice": 54,
+  "pairs": [
+    {
+      "file": "guitar-song-practice-01-smoke-on-the-water.json",
+      "practice_of": "S01-smoke-on-the-water",
+      "scope": [
+        "Em",
+        "G",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-02-seven-nation-army.json",
+      "practice_of": "S02-seven-nation-army",
+      "scope": [
+        "Em",
+        "G",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-03-back-in-black.json",
+      "practice_of": "S03-back-in-black",
+      "scope": [
+        "Em",
+        "G",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-04-hotel-california.json",
+      "practice_of": "S04-hotel-california",
+      "scope": [
+        "Am",
+        "D",
+        "Em",
+        "G"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-05-sweet-child-o-mine.json",
+      "practice_of": "S05-sweet-child-o-mine",
+      "scope": [
+        "Am",
+        "Em",
+        "G",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-06-bohemian-rhapsody.json",
+      "practice_of": "S06-bohemian-rhapsody",
+      "scope": [
+        "G",
+        "Em",
+        "Am",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-07-enter-sandman.json",
+      "practice_of": "S07-enter-sandman",
+      "scope": [
+        "Em",
+        "G",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-08-creep.json",
+      "practice_of": "S08-creep",
+      "scope": [
+        "G",
+        "Am",
+        "Em",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-09-crazy-train.json",
+      "practice_of": "S09-crazy-train",
+      "scope": [
+        "Em",
+        "G",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-10-comfortably-numb.json",
+      "practice_of": "S10-comfortably-numb",
+      "scope": [
+        "G",
+        "Em",
+        "Am",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-11-come-as-you-are.json",
+      "practice_of": "S11-come-as-you-are",
+      "scope": [
+        "Em",
+        "G",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-12-californication.json",
+      "practice_of": "S12-californication",
+      "scope": [
+        "Am",
+        "Em",
+        "G",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-13-chop-suey.json",
+      "practice_of": "S13-chop-suey",
+      "scope": [
+        "Em",
+        "G",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-14-fade-to-black.json",
+      "practice_of": "S14-fade-to-black",
+      "scope": [
+        "Am",
+        "Em",
+        "G",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-15-feel-good-inc.json",
+      "practice_of": "S15-feel-good-inc",
+      "scope": [
+        "Em",
+        "G",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-16-for-whom-the-bell-tolls.json",
+      "practice_of": "S16-for-whom-the-bell-tolls",
+      "scope": [
+        "Em",
+        "G",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-17-heart-shaped-box.json",
+      "practice_of": "S17-heart-shaped-box",
+      "scope": [
+        "Em",
+        "G",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-18-hysteria.json",
+      "practice_of": "S18-hysteria",
+      "scope": [
+        "Em",
+        "G",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-19-iron-man.json",
+      "practice_of": "S19-iron-man",
+      "scope": [
+        "Em",
+        "G",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-20-johnny-b-goode.json",
+      "practice_of": "S20-johnny-b-goode",
+      "scope": [
+        "G",
+        "D",
+        "Em",
+        "A"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-21-killing-in-the-name.json",
+      "practice_of": "S21-killing-in-the-name",
+      "scope": [
+        "Em",
+        "G",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-22-master-of-puppets.json",
+      "practice_of": "S22-master-of-puppets",
+      "scope": [
+        "Em",
+        "G",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-23-money.json",
+      "practice_of": "S23-money",
+      "scope": [
+        "Em",
+        "G",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-24-my-own-summer.json",
+      "practice_of": "S24-my-own-summer",
+      "scope": [
+        "Em",
+        "G",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-25-nothing-else-matters.json",
+      "practice_of": "S25-nothing-else-matters",
+      "scope": [
+        "Em",
+        "G",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-26-one.json",
+      "practice_of": "S26-one",
+      "scope": [
+        "Em",
+        "G",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-27-paranoid.json",
+      "practice_of": "S27-paranoid",
+      "scope": [
+        "Em",
+        "G",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-28-psychosocial.json",
+      "practice_of": "S28-psychosocial",
+      "scope": [
+        "Em",
+        "G",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-29-seek-and-destroy.json",
+      "practice_of": "S29-seek-and-destroy",
+      "scope": [
+        "Em",
+        "G",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-30-stairway-to-heaven.json",
+      "practice_of": "S30-stairway-to-heaven",
+      "scope": [
+        "Am",
+        "G",
+        "Em",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-31-sultans-of-swing.json",
+      "practice_of": "S31-sultans-of-swing",
+      "scope": [
+        "G",
+        "D",
+        "Em",
+        "A"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-32-do-i-wanna-know.json",
+      "practice_of": "S32-do-i-wanna-know",
+      "scope": [
+        "Em",
+        "G",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-33-everlong.json",
+      "practice_of": "S33-everlong",
+      "scope": [
+        "Em",
+        "G",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-34-can-t-stop.json",
+      "practice_of": "S34-can-t-stop",
+      "scope": [
+        "Em",
+        "G",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-35-aerials.json",
+      "practice_of": "S35-aerials",
+      "scope": [
+        "Em",
+        "G",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-36-another-one-bites-the-dust.json",
+      "practice_of": "S36-another-one-bites-the-dust",
+      "scope": [
+        "Em",
+        "G",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-37-beat-it.json",
+      "practice_of": "S37-beat-it",
+      "scope": [
+        "Em",
+        "G",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-38-backing-track.json",
+      "practice_of": "S38-backing-track",
+      "scope": [
+        "Em",
+        "G",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-39-any-instruments.json",
+      "practice_of": "S39-any-instruments",
+      "scope": [
+        "Em",
+        "G",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-40-d-tuning-for-guitar.json",
+      "practice_of": "S40-d-tuning-for-guitar",
+      "scope": [
+        "Em",
+        "G",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-41-wild-thing.json",
+      "practice_of": "S41-wild-thing",
+      "scope": [
+        "A",
+        "D",
+        "E"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-42-louie-louie.json",
+      "practice_of": "S42-louie-louie",
+      "scope": [
+        "A",
+        "D",
+        "E"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-43-twist-and-shout.json",
+      "practice_of": "S43-twist-and-shout",
+      "scope": [
+        "D",
+        "G",
+        "A"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-44-la-bamba.json",
+      "practice_of": "S44-la-bamba",
+      "scope": [
+        "G",
+        "D",
+        "easyC",
+        "A"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-45-horse-with-no-name.json",
+      "practice_of": "S45-horse-with-no-name",
+      "scope": [
+        "Em",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-46-zombie.json",
+      "practice_of": "S46-zombie",
+      "scope": [
+        "Em",
+        "G",
+        "D",
+        "easyC"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-47-knockin-on-heavens-door.json",
+      "practice_of": "S47-knockin-on-heavens-door",
+      "scope": [
+        "G",
+        "D",
+        "Am",
+        "easyC"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-48-bad-moon-rising.json",
+      "practice_of": "S48-bad-moon-rising",
+      "scope": [
+        "D",
+        "G",
+        "A"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-49-sweet-home-alabama.json",
+      "practice_of": "S49-sweet-home-alabama",
+      "scope": [
+        "G",
+        "D",
+        "easyC",
+        "A"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-50-yellow.json",
+      "practice_of": "S50-yellow",
+      "scope": [
+        "G",
+        "D",
+        "Em",
+        "easyC"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-51-wonderwall.json",
+      "practice_of": "S51-wonderwall",
+      "scope": [
+        "Em",
+        "G",
+        "D",
+        "A"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-52-hey-there-delilah.json",
+      "practice_of": "S52-hey-there-delilah",
+      "scope": [
+        "G",
+        "D",
+        "Em",
+        "easyC"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-53-riptide.json",
+      "practice_of": "S53-riptide",
+      "scope": [
+        "Am",
+        "G",
+        "easyC",
+        "D"
+      ]
+    },
+    {
+      "file": "guitar-song-practice-54-hallelujah.json",
+      "practice_of": "S54-hallelujah",
+      "scope": [
+        "Am",
+        "G",
+        "Em",
+        "D"
+      ]
+    }
+  ]
+}
