@@ -7,20 +7,24 @@ Auto-loaded project context. Also read `01-START-HERE/README.md` before acting.
 1. **`02-spec/` AMENDMENTS override `02-spec/guitar-app-spec.md`.**
    AMENDMENT-01 (audio-first v1), AMENDMENT-02 (animated teacher + voice),
    AMENDMENT-03 (AI-native movie-like lesson + open-source/no-fee stack; removed the
-   old hand/AI-video bans), AMENDMENT-04 (sequenced lesson app), AMENDMENT-05
-   (2026-08-07 — "The App That Listens"), and **AMENDMENT-06 (2026-08-09 — UNLOCKED the
+   AMENDMENT-04 (sequenced lesson app), AMENDMENT-05
+   (2026-08-07 — "The App That Listens"), AMENDMENT-06 (2026-08-09 — UNLOCKED the
    avatar + voice stack: cartoon-only mandate REMOVED, fingering-demo ban REMOVED,
-   realistic/photoreal avatars + TalkingHead/RPM now IN SCOPE, Chatterbox = shipping voice)**
-   are current truth. The base spec is historical — never cite it without checking all
-   amendments; **AMENDMENT-06 is the latest word.**
+   realistic/photoreal avatars + TalkingHead/RPM now IN SCOPE, Chatterbox = shipping voice),
+   AMENDMENT-07 (FLUX.1[schnell] only legal image gen), AMENDMENT-08 (Midjourney excluded),
+   AMENDMENT-09 (Wan2.1-I2V motion + Godot story-world), AMENDMENT-10 (AI-drawn fingers/fretboards
+   PERMITTED), and **AMENDMENT-11 (2026-08-11 — the product thesis: world-locked teacher +
+   longitudinal student memory + teacher–student duet, with redlines)** are current truth.
+   amendments; **AMENDMENT-11 is the latest word.**
    ⚠️ Where AMENDMENT-05 §8 or the older guardrails mandate CARTOON teachers or ban
    fingering demonstration, **AMENDMENT-06 overrides them.** Do not re-impose those limits.
 2. **Listening is BACK as the headline (AMENDMENT-05, 2026-08-07) — constrained form only.**
    The mic hears the student play and checks against the KNOWN target chord/note + tempo
    (never open-ended transcription — Rule 4). On-device, audio never uploaded, confidence
-   honesty (Rule 6). Still NO camera, NO hand tracking, NO AI-drawn fingers. The old
-   "record-a-take → send for critique" mechanic stays retired; what returned is live
-   in-lesson verification, owner-directed.
+   honesty (Rule 6). Still NO camera, NO hand tracking. AI-drawn fingers/fretboards are
+   PERMITTED (AMENDMENT-10) so long as they're driven from the arithmetically-verified
+   `chord-theory-check.js` data (not free-generated). The old "record-a-take → send for
+   critique" mechanic stays retired; what returned is live in-lesson verification, owner-directed.
 3. **License blocklist — never propose these:** Essentia (AGPL), aubio (GPL),
    TarsosDSP (GPL), pedalboard (GPL), dtw-python (GPL), madmom (non-commercial).
    Approved: basic-pitch (Apache-2.0), librosa (ISC), CREPE (MIT), AudioKitEX (MIT).
