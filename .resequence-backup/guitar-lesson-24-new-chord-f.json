@@ -1,0 +1,126 @@
+{
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted.",
+    "F": {
+      "qa_status": "verified-by-theory-check-2026-08-14",
+      "name": "F major",
+      "frets": [null, null, 3, 2, 1, 1],
+      "fingers": [null, null, 4, 3, 1, 1]
+    },
+    "C": {
+      "qa_status": "verified-by-theory-check-2026-08-14",
+      "name": "C major",
+      "frets": [null, 3, 2, 0, 1, 0],
+      "fingers": [null, 3, 2, 0, 1, 0]
+    },
+    "Am": {
+      "qa_status": "verified-by-theory-check-2026-08-14",
+      "name": "A minor",
+      "frets": [null, 0, 2, 2, 1, 0],
+      "fingers": [null, 0, 2, 3, 1, 0]
+    },
+    "G": {
+      "qa_status": "verified-by-theory-check-2026-08-14",
+      "name": "G major",
+      "frets": [3, 2, 0, 0, 0, 3],
+      "fingers": [2, 1, 0, 0, 0, 3]
+    }
+  },
+  "exercises": [
+    {
+      "id": "EX1-F-index-bar",
+      "name": "The two-string index bar",
+      "purpose": "Train the one new physical skill F needs before adding the other fingers.",
+      "params": {
+        "action": "Lay the index finger flat across the B and high e strings at the 1st fret",
+        "strings": "B (2) and high e (1) only",
+        "cue": "roll the finger slightly onto its side, toward the headstock",
+        "duration_sec": 90
+      },
+      "coaching": "Before the whole chord, just this. Lay your index finger flat across the two thinnest strings at the first fret. Not the tip — the side. Roll it a little toward the headstock so the bony edge does the work, not the soft pad. Strum just those two strings. Both should ring. This one move is the only genuinely new thing in F.",
+      "qa_status": "verified-by-theory-check-2026-08-14"
+    },
+    {
+      "id": "EX2-F-four-string",
+      "name": "Make F (four-string version)",
+      "purpose": "Land a clean, honest F without the full barre.",
+      "params": {
+        "chord": "F",
+        "fingers": "index(1) bars B and high e at 1st, ring(3) G 2nd, pinky(4) D 3rd",
+        "muted": "low E (6) and A (5) are NOT played",
+        "cue": "strum only the top four strings"
+      },
+      "coaching": "Keep that index bar. Now add ring finger on the G string, second fret, and pinky on the D string, third fret. Strum only the top four strings — skip the two fattest. That is a real F major. It has every note the chord needs. The full six-string barre F exists, but it is not required here and it stops more beginners than any other shape. This version is the one you will actually use.",
+      "qa_status": "verified-by-theory-check-2026-08-14"
+    },
+    {
+      "id": "EX3-C-F-change",
+      "name": "C ↔ F, the change that matters",
+      "purpose": "Make the F usable in real time, not just static.",
+      "params": {
+        "chord_cycle": ["C", "F", "C", "F"],
+        "tempo_bpm": 60,
+        "beats": 4,
+        "cue": "one chord per 4 beats, slow"
+      },
+      "coaching": "C to F and back. Watch what your index finger does — in C it is on the B string first fret, and in F it stays on that same fret and just lies down flat. That is the whole trick. Do not lift and rebuild the hand; let the index pivot. Sixty beats a minute, one chord per four beats. Slow is the point.",
+      "qa_status": "verified-by-theory-check-2026-08-14"
+    },
+    {
+      "id": "EX4-am-f-c-g",
+      "name": "Am – F – C – G",
+      "purpose": "Put F straight into the most common loop in popular music.",
+      "params": {
+        "chord_cycle": ["Am", "F", "C", "G"],
+        "tempo_bpm": 68,
+        "beats": 4,
+        "cue": "loop it without stopping"
+      },
+      "coaching": "Am, F, C, G. Round and round. This exact four-chord loop turns up in an enormous number of records, which means the moment this is smooth you are one strum pattern away from sounding like music instead of homework. If F is the chord that breaks the loop, slow the whole loop down until it does not.",
+      "qa_status": "verified-by-theory-check-2026-08-14"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "F is the chord that makes people quit. We are not going to do it the way that makes people quit. No full barre today — a four-string F that sounds right and that your hand can actually hold.",
+    "ex1_intro": "One new skill first: the index finger lying flat across the two thin strings. Roll onto the side of the finger, not the pad.",
+    "ex2_intro": "Now add ring on G, pinky on D, and strum only the top four strings. That is F major, complete.",
+    "ex3_intro": "C to F. Notice your index barely moves — it lies down rather than jumping. Let it pivot.",
+    "ex4_intro": "Am, F, C, G. The loop behind a startling number of songs. Get this smooth and a lot of doors open at once.",
+    "results": "You have F. Not a compromise F — a real one with every note in it, on four strings.",
+    "wrap": "F was the wall. It is behind you. Next we add A7, and after that the Mystery Songs open up."
+  },
+  "qa_block": {
+    "must_verify": [
+      "Automated: every chord fingering verified deterministically by 06-prototypes/step0/schema/chord-theory-check.js (verifyChord) — 0 errors AND 0 warnings required before ship (Hard Ban 7 satisfied by arithmetic, per owner directive 2026-08-08: physical fingering correctness needs no contract guitarist).",
+      "Automated: lesson JSON passes schema/validate.js (validateLesson) — all required keys present, frets/fingers length 6, qa_status whitelisted.",
+      "Automated: this lesson is what makes F 'taught' for the Mystery Song unlock gate — tools/derive-chord-prereqs.js must show F in first_taught, and tools/verify-song-progressions.js must go green.",
+      "Author pass: teaching copy is plain-English, beginner-appropriate, no AI-isms; pacing realistic.",
+      "Licensing: exercises only, zero copyrighted song material (spec §3/R6). The Am-F-C-G loop is bare functional harmony (AMENDMENT-12), not a reproduction of any recording."
+    ],
+    "flagged_by": "founder (non-player) — cannot self-verify",
+    "verifier_role": "arithmetic (chord-theory-check.js) + author review",
+    "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
+  },
+  "lesson": {
+    "id": "L24-new-chord-f",
+    "title": "New Chord: F (the four-string way)",
+    "level": "beginner",
+    "lesson_type": "technique",
+    "one_line_promise": "Get F without the barre that makes people quit.",
+    "objectives": [
+      "Bar the index finger across two strings cleanly",
+      "Form a four-string F major (xx3211)",
+      "Pivot C↔F without rebuilding the hand",
+      "Play Am-F-C-G as a continuous loop"
+    ],
+    "estimated_minutes": 18,
+    "prerequisites": [
+      "C, Am, G (L03, L09, L06)",
+      "Faster chord changes (L15)"
+    ],
+    "app_feature_mapping": {
+      "free_metronome": ["C-F change tempo", "Am-F-C-G loop tempo"]
+    },
+    "unlocks": ["Mystery Songs requiring F: Californication, House of the Rising Sun, Stairway to Heaven"]
+  }
+}

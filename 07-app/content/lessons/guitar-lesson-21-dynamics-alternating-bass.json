@@ -1,0 +1,164 @@
+{
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted.",
+    "G": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "G major (3-finger / 'easy G')",
+      "frets": [
+        3,
+        2,
+        0,
+        0,
+        0,
+        3
+      ],
+      "fingers": [
+        2,
+        1,
+        0,
+        0,
+        0,
+        3
+      ]
+    },
+    "D": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "D major",
+      "frets": [
+        null,
+        null,
+        0,
+        2,
+        3,
+        2
+      ],
+      "fingers": [
+        null,
+        null,
+        0,
+        1,
+        3,
+        2
+      ]
+    },
+    "Em": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "E minor",
+      "frets": [
+        0,
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "fingers": [
+        0,
+        2,
+        3,
+        0,
+        0,
+        0
+      ]
+    },
+    "C": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "C major (standard)",
+      "frets": [
+        null,
+        3,
+        2,
+        0,
+        1,
+        0
+      ],
+      "fingers": [
+        null,
+        3,
+        2,
+        0,
+        1,
+        0
+      ]
+    }
+  },
+  "exercises": [
+    {
+      "id": "EX1-dynamics",
+      "name": "Loud and soft",
+      "purpose": "Shape volume to the phrase.",
+      "params": {
+        "chord_cycle": [
+          "G",
+          "D",
+          "Em",
+          "C"
+        ],
+        "tempo_bpm": 70,
+        "beats": 4,
+        "action": "strum harder on the chorus feel, softer on verse",
+        "cue": "use arm weight, not speed"
+      },
+      "coaching": "Dynamics are just loud and soft on purpose. Push the arm weight on the strong beats, ease off on the weak ones. Music breathes.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-bass",
+      "name": "Alternating bass",
+      "purpose": "Thumb between the two bass strings of each chord.",
+      "params": {
+        "chord_cycle": [
+          "G",
+          "D",
+          "Em",
+          "C"
+        ],
+        "tempo_bpm": 70,
+        "beats": 4,
+        "pattern": "thumb lowest root string, then the other bass string, repeat under the chord",
+        "cue": "root string for G/D/Em/C: low-E? G=low-E&A, D=A&low-E, Em=A&low-E, C=A&low-E"
+      },
+      "coaching": "THE pattern: your thumb alternates between the two bass strings of each chord while the fingers brush. G walks low-E to A, D walks A to low-E. That moving bass is pure country-folk gold.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "Strumming the same volume forever is flat. Today: dynamics (loud/soft) and the alternating bass \"pattern\" — the thumb trick that makes chords walk.",
+    "ex1_intro": "Dynamics = loud and soft on purpose. Push arm weight on strong beats, ease on weak. The song starts to breathe.",
+    "ex2_intro": "THE pattern: thumb alternates the two bass strings under each chord — G walks low-E to A, D walks A to low-E. That moving bass is the sound of folk and country.",
+    "results": "A moving bass line under your chords sounds 10x more musical. You are arranging now, not just strumming.",
+    "wrap": "Dynamics + alternating bass. Lesson 14: the capo — play those same shapes in any key."
+  },
+  "qa_block": {
+    "must_verify": [
+      "Automated: every chord fingering verified deterministically by 06-prototypes/step0/schema/chord-theory-check.js (verifyChord) — 0 errors AND 0 warnings required before ship (Hard Ban 7 satisfied by arithmetic, per owner directive 2026-08-08: physical fingering correctness needs no contract guitarist).",
+      "Automated: lesson JSON passes schema/validate.js (validateLesson) — all required keys present, frets/fingers length 6, qa_status whitelisted.",
+      "Author pass: teaching copy is plain-English, beginner-appropriate, no AI-isms; pacing realistic.",
+      "Licensing: exercises only, zero copyrighted song material (spec §3/R6)."
+    ],
+    "flagged_by": "founder (non-player) — cannot self-verify",
+    "verifier_role": "arithmetic (chord-theory-check.js) + author review",
+    "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
+  },
+  "lesson": {
+    "id": "L21-dynamics-alternating-bass",
+    "title": "Dynamics + \"THE Pattern\" (alternating bass)",
+    "level": "beginner",
+    "lesson_type": "technique",
+    "one_line_promise": "Loud, soft, and a moving bass — make it musical.",
+    "objectives": [
+      "Play with intentional dynamics (loud/soft)",
+      "Use the alternating bass \"pattern\" (thumb)",
+      "Add a moving bass line under the L13 loop"
+    ],
+    "estimated_minutes": 16,
+    "prerequisites": [
+      "Boom-chick (L15)"
+    ],
+    "app_feature_mapping": {
+      "free_metronome": [
+        "alternating bass tempo"
+      ]
+    }
+  }
+}

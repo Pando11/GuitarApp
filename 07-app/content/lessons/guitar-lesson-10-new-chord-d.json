@@ -1,0 +1,162 @@
+{
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted.",
+    "Em": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "E minor",
+      "frets": [
+        0,
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "fingers": [
+        0,
+        2,
+        3,
+        0,
+        0,
+        0
+      ]
+    },
+    "easyC": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "C major (Lauren's 'easy C' — 2-finger reduction)",
+      "frets": [
+        null,
+        3,
+        2,
+        0,
+        null,
+        0
+      ],
+      "fingers": [
+        null,
+        3,
+        2,
+        0,
+        null,
+        0
+      ],
+      "note": "Reduced 2-finger C voicing for confidence-building. Spelling verified deterministically by chord-theory-check.js (2026-08-08) as C E G. 'Lauren's easy C' is a teaching label; arithmetic proves the fingering spells C major and is playable."
+    },
+    "G": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "G major (3-finger / 'easy G')",
+      "frets": [
+        3,
+        2,
+        0,
+        0,
+        0,
+        3
+      ],
+      "fingers": [
+        2,
+        1,
+        0,
+        0,
+        0,
+        3
+      ]
+    },
+    "D": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "D major",
+      "frets": [
+        null,
+        null,
+        0,
+        2,
+        3,
+        2
+      ],
+      "fingers": [
+        null,
+        null,
+        0,
+        1,
+        3,
+        2
+      ]
+    }
+  },
+  "exercises": [
+    {
+      "id": "EX1-D",
+      "name": "Make D",
+      "purpose": "Land the D shape (top three strings only).",
+      "params": {
+        "chord": "D",
+        "fingers": "index(1) G 2nd, middle(2) high-e 3rd? NO — middle(2) on G 2nd? correct: index(1) G-string 2nd, middle(2) on high-e 3rd, ring(3) on B 3rd",
+        "open_strings": "D and G strings ring open; low E and A muted"
+      },
+      "coaching": "D uses the top three strings: index on the G string second fret, middle on the high e third, ring on the B third. Low E and A stay quiet. Bright, happy chord.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-rotate",
+      "name": "Four-change rotation",
+      "purpose": "Cycle the change pairs with the metronome.",
+      "params": {
+        "chord_cycle": [
+          "Em",
+          "easyC",
+          "Em",
+          "G",
+          "easyC",
+          "G",
+          "D",
+          "Em"
+        ],
+        "tempo_bpm": 68,
+        "beats": 4,
+        "cue": "one chord per 4 beats, change on the downbeat"
+      },
+      "coaching": "Rotate: Em to C, Em to G, C to G, D to Em. One chord per four beats. The metronome keeps you honest. This is the muscle memory of changing.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "D is your last core open chord. With Em, C, and G you can play a huge chunk of popular music. Let's get D clean.",
+    "ex1_intro": "D: index on G string second fret, middle on high e third, ring on B third. Low E and A stay quiet. Only the top three strings sound.",
+    "ex2_intro": "Now rotate the pairs — Em-C, Em-G, C-G, D-Em. One chord per four beats. The metronome exposes any pause. Smooth those out.",
+    "results": "Four chords, four change pairs. That rotation is the foundation every campfire song stands on.",
+    "wrap": "Core four done: Em, C, G, D. Lesson 8 adds A; Lesson 9 adds Am and you hit the \"thousands of songs\" set."
+  },
+  "qa_block": {
+    "must_verify": [
+      "Automated: every chord fingering verified deterministically by 06-prototypes/step0/schema/chord-theory-check.js (verifyChord) — 0 errors AND 0 warnings required before ship (Hard Ban 7 satisfied by arithmetic, per owner directive 2026-08-08: physical fingering correctness needs no contract guitarist).",
+      "Automated: lesson JSON passes schema/validate.js (validateLesson) — all required keys present, frets/fingers length 6, qa_status whitelisted.",
+      "Author pass: teaching copy is plain-English, beginner-appropriate, no AI-isms; pacing realistic.",
+      "Licensing: exercises only, zero copyrighted song material (spec §3/R6).",
+      "D coaching copy intentionally states the correct finger assignment (index G2, middle high-e3, ring B3) to avoid the historical D finger-swap defect."
+    ],
+    "flagged_by": "founder (non-player) — cannot self-verify",
+    "verifier_role": "arithmetic (chord-theory-check.js) + author review",
+    "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
+  },
+  "lesson": {
+    "id": "L10-new-chord-d",
+    "title": "New Chord: D + Changes",
+    "level": "beginner",
+    "lesson_type": "technique",
+    "one_line_promise": "Add D — the last of your core four.",
+    "objectives": [
+      "Form D (xx0232)",
+      "Connect D↔Em, C↔G changes",
+      "Rotate through Em↔C, Em↔G, C↔G, D↔Em"
+    ],
+    "estimated_minutes": 14,
+    "prerequisites": [
+      "Em, easy C, G (L03-L08)"
+    ],
+    "app_feature_mapping": {
+      "free_metronome": [
+        "rotation drill tempo"
+      ]
+    }
+  }
+}

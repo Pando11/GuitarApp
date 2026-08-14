@@ -19,7 +19,7 @@ Founder is a non-guitarist. Chord/technical correctness is verified by ARITHMETI
 no human QA gate. Judgement calls the checker cannot decide (tone, feel, teaching quality)
 are flagged in prose, never as blocking red boxes (AGENTS.md Rule 8).
 
-Status: **SPEC AMENDED. RESEARCH PARTIAL. BUILD IN PROGRESS — Steps 0,1,2,3,4,5 DONE (Step 5 = in-lesson listening, F2 full, the $12/mo feature).** Steps 6 (chat/adaptive/messages/streaks), 7 (subscriptions), 8 (style packs), 9 (YouTube) remain. What is done: spec + 11 amendments, 11 playable prototypes, real lesson-JSON template, full audio engine (tuner/metronome/listening), 20 authored lessons (23 shipping), and the in-lesson listening verifier (proven browser-free, 24/24 + adversarial 0 HITS). What is NOT done: Heidi's go-ahead to ship, real-guitar mic calibration sign-off (logic proven, 2-min in-room test), teacher character art.
+Status: **SPEC AMENDED. RESEARCH PARTIAL. BUILD IN PROGRESS — Steps 0,1,2,3,4,5 DONE (Step 5 = in-lesson listening, F2 full, the $12/mo feature).** Steps 6 (chat/adaptive/messages/streaks), 7 (subscriptions), 8 (style packs), 9 (YouTube) remain. What is done: spec + 11 amendments, 11 playable prototypes, real lesson-JSON template, full audio engine (tuner/metronome/listening), 22 authored lessons (25 shipping), and the in-lesson listening verifier (proven browser-free, 24/24 + adversarial 0 HITS). What is NOT done: Heidi's go-ahead to ship, real-guitar mic calibration sign-off (logic proven, 2-min in-room test), teacher character art.
 (root) for the current state, the 3 new gap-closing docs (TAM, content-cost, App Store 3.1.2), and
 the still-open items. Note: there is NO interview validation gate — the Reddit post is optional
 extra info only, not a demand signal or validation.
@@ -224,6 +224,12 @@ no DSP, no recording, no transcription (basic-pitch/librosa only matter if a fut
    = self-contained `file://` (no server/internet). World→lesson flow, Wan2.1 cinematic look, AI-style
    fretboard (post-AMENDMENT-10). Node DOM-mock verified: 4 doors, fretboard draws, lesson opens, 0
    external fetches. Transfer to phone + open in browser to view. See HANDOFF-optionA-complete.md.
+8f. **AMENDMENT-15 (2026-08-14) — CURRICULUM RE-SEQUENCE + ORDERING GATE.** F L24→L17, A7 L25→L19, three
+   absolute-beginner lessons pulled from after the capstone to L2/L6/L9; capstone now LAST (L25). All 10
+   `unlock_after_lesson` recomputed. New permanent gate `node tools/verify-curriculum-order.js` (0 errors),
+   proven to bite by `bash tools/test-curriculum-order.sh` (9/9: 8 adversarial RED + 1 pristine control GREEN).
+   The 10 progressions remain **musically unverified** (reviewer timed out) — do not claim verified.
+   Spec: `02-spec/guitar-app-spec-AMENDMENT-15.md`.
 
 ---
 

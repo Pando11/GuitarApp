@@ -6,8 +6,8 @@ Auto-loaded project context. Also read `01-START-HERE/README.md` before acting.
 
 1. **`02-spec/` AMENDMENTS override `02-spec/guitar-app-spec.md`.**
    AMENDMENT-01 (audio-first v1), AMENDMENT-02 (animated teacher + voice),
-   AMENDMENT-03 (AI-native movie-like lesson + open-source/no-fee stack; removed the
-   AMENDMENT-04 (sequenced lesson app), AMENDMENT-05
+   AMENDMENT-03 (AI-native movie-like lesson + open-source/no-fee stack; superseded
+   AMENDMENT-04's sequenced-lesson-app direction), AMENDMENT-05
    (2026-08-07 — "The App That Listens"), AMENDMENT-06 (2026-08-09 — UNLOCKED the
    avatar + voice stack: cartoon-only mandate REMOVED, fingering-demo ban REMOVED,
    realistic/photoreal avatars + TalkingHead/RPM now IN SCOPE, Chatterbox = shipping voice),
@@ -15,7 +15,46 @@ Auto-loaded project context. Also read `01-START-HERE/README.md` before acting.
    AMENDMENT-09 (Wan2.1-I2V motion + Godot story-world), AMENDMENT-10 (AI-drawn fingers/fretboards
    PERMITTED), and **AMENDMENT-11 (2026-08-11 — the product thesis: world-locked teacher +
    longitudinal student memory + teacher–student duet, with redlines)** are current truth.
-   amendments; **AMENDMENT-11 is the latest word.**
+   **AMENDMENT-15 is the latest word.**
+   **AMENDMENT-15 (2026-08-14) — CURRICULUM RE-SEQUENCE + ORDERING GATE.** F moved L24→L17,
+   A7 L25→L19, and three absolute-beginner lessons (holding-the-pick, switching-Em-and-C,
+   first-three-chord-song) pulled from after the L20 capstone to L2/L6/L9 where they belong;
+   capstone now LAST at L25. All 10 song `unlock_after_lesson` values recomputed (F→L17,
+   A7→L19). New permanent gate `node tools/verify-curriculum-order.js` (0 errors) enforces
+   filename/manifest/id triple-agreement, no-forward-prereqs, pedagogical ordering invariants,
+   capstone-last, and no-absolute-beginner-after-graduate; proven to bite by
+   `bash tools/test-curriculum-order.sh` (9/9: 8 adversarial RED + 1 pristine control GREEN).
+   ✅ Music accuracy VERIFIED 2026-08-14 by a knowledge-only second-party review: 10/10
+   progressions match the recordings' harmony, 11/11 shapes spell correctly, both physical
+   teaching claims (C↔F index-finger pivot; A→A7 lift-off-the-G-string) TRUE. Two minor fixes
+   applied (SP03 key D→G major; SP06 honest_claim softened for recording copyright) and the gate
+   re-greened. **AMENDMENT-14 remains current truth on the song track and its legal position**
+   (incl. counsel sign-off before paid launch — that is a legal, not accuracy, gate).
+   **AMENDMENT-12 (2026-08-14) — SONG-PROGRESSION TRACK + MYSTERY MODE.** Chord
+   PROGRESSIONS and factual song TITLES are teachable; RIFFS, MELODIES, LYRICS and TAB
+   are NOT — and renaming a song does NOT launder its riff (explicitly rejected). Content:
+   `07-app/content/song-progressions/`. Gate: `node tools/verify-song-progressions.js`
+   (0 errors AND 0 warnings), proven to bite by `bash tools/test-song-progression-gate.sh`.
+   Every progression must carry an `honest_claim` field. One song (House of the Rising Sun)
+   is public domain and unrestricted.
+   **AMENDMENT-13 (2026-08-14) — MYSTERY-MODE READINESS GATE.** Mystery Mode is an opt-in
+   ADVANCED lane for students already in the program; a song may only be offered once every
+   chord it uses has been taught. The curriculum now has 25 lessons (24 teaches F, 25 teaches
+   A7), so all ten progressions are fully within the taught set. `unlock_after_lesson` must
+   equal the last-taught chord's lesson; `tools/verify-song-progressions.js` enforces this and
+   re-derives the prereq map from the lesson manifest, so it cannot drift.
+   **AMENDMENT-14 (2026-08-14) — HOSTILE-REVIEW CORRECTIONS. Read this before touching the
+   song-progression track.** Three reviewers found three CRITICALs: a protected LYRIC paraphrase
+   in a mystery hint (a regex cannot detect this — a human/second-agent lyric read-through is a
+   REQUIRED step), a legal-redline regex evaded seven ways (now hardened, proven by
+   `bash tools/test-legal-redline.sh`, 22/22), and a gate that TRUSTED `chord-prereqs.json`
+   while claiming to re-derive it (now genuinely re-derived in-process; tamper cases prove it).
+   Also: **band names are TRADEMARKS** — nominative use only, and a "not affiliated / not
+   endorsed" disclaimer is REQUIRED on any screen naming songs or artists; never use the
+   possessive "Y's X" framing. Distinctive progressions tied to one famous recording are NOT a
+   safe harbour (cf. *Williams v. Gaye*) and need counsel sign-off before paid launch. The gate
+   proves mechanics, NOT legal safety. ⚠️ The 10 progressions are still **UNREVIEWED for musical
+   accuracy** by a second party (that review timed out). Do not claim they are verified.
    ⚠️ Where AMENDMENT-05 §8 or the older guardrails mandate CARTOON teachers or ban
    fingering demonstration, **AMENDMENT-06 overrides them.** Do not re-impose those limits.
 2. **Listening is BACK as the headline (AMENDMENT-05, 2026-08-07) — constrained form only.**

@@ -1,0 +1,164 @@
+{
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted.",
+    "G": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "G major (3-finger / 'easy G')",
+      "frets": [
+        3,
+        2,
+        0,
+        0,
+        0,
+        3
+      ],
+      "fingers": [
+        2,
+        1,
+        0,
+        0,
+        0,
+        3
+      ]
+    },
+    "D": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "D major",
+      "frets": [
+        null,
+        null,
+        0,
+        2,
+        3,
+        2
+      ],
+      "fingers": [
+        null,
+        null,
+        0,
+        1,
+        3,
+        2
+      ]
+    },
+    "Em": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "E minor",
+      "frets": [
+        0,
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "fingers": [
+        0,
+        2,
+        3,
+        0,
+        0,
+        0
+      ]
+    },
+    "C": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "C major (standard)",
+      "frets": [
+        null,
+        3,
+        2,
+        0,
+        1,
+        0
+      ],
+      "fingers": [
+        null,
+        3,
+        2,
+        0,
+        1,
+        0
+      ]
+    }
+  },
+  "exercises": [
+    {
+      "id": "EX1-island",
+      "name": "Island strum",
+      "purpose": "The relaxed reggae-ish bounce.",
+      "params": {
+        "chord_cycle": [
+          "G",
+          "D",
+          "Em",
+          "C"
+        ],
+        "tempo_bpm": 76,
+        "beats": 8,
+        "pattern": "D - DU - UD - U (skipped downbeats create the bounce)",
+        "cue": "leave space, let it breathe"
+      },
+      "coaching": "Island strum: down, rest, down-up, up-down, up. The missing downbeats create the bounce. Relaxed, spacey — great for slower songs.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-boomchick",
+      "name": "Boom-chick",
+      "purpose": "Bass note then chop.",
+      "params": {
+        "chord_cycle": [
+          "G",
+          "D",
+          "Em",
+          "C"
+        ],
+        "tempo_bpm": 76,
+        "beats": 4,
+        "pattern": "bass (lowest fretted string) on 1, light strum on 2, bass on 3, strum on 4",
+        "cue": "thumb the bass, fingers brush the chord"
+      },
+      "coaching": "Boom-chick: thumb the bass note on the beat, light brush on the off-beat. Country and folk live here. Switch patterns between sections of a song.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "One pattern is fine; a small library makes you musical. Today: the island strum and boom-chick. Feel matters more than perfection.",
+    "ex1_intro": "Island strum skips some downbeats for a bouncy, relaxed feel. Space is part of the rhythm — let it breathe.",
+    "ex2_intro": "Boom-chick: thumb the bass on the beat, brush the chord off-beat. Switch patterns between verse and chorus. Pick your favourite and live in it.",
+    "results": "Two more patterns means you can match a song's mood. That is musicianship, not just mechanics.",
+    "wrap": "Patterns library started. Lesson 13 adds dynamics — loud and soft on purpose."
+  },
+  "qa_block": {
+    "must_verify": [
+      "Automated: every chord fingering verified deterministically by 06-prototypes/step0/schema/chord-theory-check.js (verifyChord) — 0 errors AND 0 warnings required before ship (Hard Ban 7 satisfied by arithmetic, per owner directive 2026-08-08: physical fingering correctness needs no contract guitarist).",
+      "Automated: lesson JSON passes schema/validate.js (validateLesson) — all required keys present, frets/fingers length 6, qa_status whitelisted.",
+      "Author pass: teaching copy is plain-English, beginner-appropriate, no AI-isms; pacing realistic.",
+      "Licensing: exercises only, zero copyrighted song material (spec §3/R6)."
+    ],
+    "flagged_by": "founder (non-player) — cannot self-verify",
+    "verifier_role": "arithmetic (chord-theory-check.js) + author review",
+    "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
+  },
+  "lesson": {
+    "id": "L15-strumming-patterns",
+    "title": "Strumming Patterns Library",
+    "level": "beginner",
+    "lesson_type": "technique",
+    "one_line_promise": "Three go-to patterns, feel over precision.",
+    "objectives": [
+      "Learn the island strum and boom-chick",
+      "Switch patterns per song section",
+      "Pick a favourite and own it"
+    ],
+    "estimated_minutes": 15,
+    "prerequisites": [
+      "D-DU-UDU (L14)"
+    ],
+    "app_feature_mapping": {
+      "free_metronome": [
+        "pattern-switching tempo"
+      ]
+    }
+  }
+}

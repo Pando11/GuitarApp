@@ -1,0 +1,19 @@
+{
+  "_purpose": "Maps every chord shape to the lesson that FIRST teaches it, derived from 07-app/content/lessons/manifest.json order. Mystery Mode is an OPT-IN ADVANCED mode for students already in the program (owner directive 2026-08-14), so a mystery song may only unlock once the student has been taught EVERY chord it uses. tools/verify-song-progressions.js RE-DERIVES this in-process and fails if this file disagrees.",
+  "_derivation": "node tools/derive-chord-prereqs.js — regenerate whenever lessons/manifest.json changes.",
+  "total_lessons": 25,
+  "first_taught": {
+    "Em": 3,
+    "C": 4,
+    "Ceasy": 4,
+    "G": 8,
+    "D": 10,
+    "A": 11,
+    "Am": 12,
+    "E": 18,
+    "Dm": 20,
+    "Feasy": 17,
+    "A7": 19
+  },
+  "not_yet_taught": {}
+}

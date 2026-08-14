@@ -1,0 +1,139 @@
+{
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted.",
+    "A7": {
+      "qa_status": "verified-by-theory-check-2026-08-14",
+      "name": "A7",
+      "frets": [null, 0, 2, 0, 2, 0],
+      "fingers": [null, 0, 2, 0, 3, 0]
+    },
+    "A": {
+      "qa_status": "verified-by-theory-check-2026-08-14",
+      "name": "A major",
+      "frets": [null, 0, 2, 2, 2, 0],
+      "fingers": [null, 0, 1, 2, 3, 0]
+    },
+    "D": {
+      "qa_status": "verified-by-theory-check-2026-08-14",
+      "name": "D major",
+      "frets": [null, null, 0, 2, 3, 2],
+      "fingers": [null, null, 0, 1, 3, 2]
+    },
+    "E": {
+      "qa_status": "verified-by-theory-check-2026-08-14",
+      "name": "E major",
+      "frets": [0, 2, 2, 1, 0, 0],
+      "fingers": [0, 2, 3, 1, 0, 0]
+    },
+    "Em": {
+      "qa_status": "verified-by-theory-check-2026-08-14",
+      "name": "E minor",
+      "frets": [0, 2, 2, 0, 0, 0],
+      "fingers": [0, 2, 3, 0, 0, 0]
+    },
+    "G": {
+      "qa_status": "verified-by-theory-check-2026-08-14",
+      "name": "G major",
+      "frets": [3, 2, 0, 0, 0, 3],
+      "fingers": [2, 1, 0, 0, 0, 3]
+    }
+  },
+  "exercises": [
+    {
+      "id": "EX1-A7-from-A",
+      "name": "Make A7 by taking a finger off",
+      "purpose": "Learn A7 as a subtraction from a chord already known — the easiest new chord in the course.",
+      "params": {
+        "chord": "A7",
+        "fingers": "middle(2) D 2nd, ring(3) B 2nd — G string left OPEN",
+        "from": "start from A major and lift the finger on the G string",
+        "cue": "listen to how the sound changes when the finger comes off"
+      },
+      "coaching": "Play an A major. Now lift the finger sitting on the G string and let it ring open. That is A7. That is the entire lesson's new shape — you already had it. Strum it and listen. It sounds unfinished, like it is leaning somewhere. That leaning is the whole point of a seventh chord.",
+      "qa_status": "verified-by-theory-check-2026-08-14"
+    },
+    {
+      "id": "EX2-hear-the-pull",
+      "name": "Hear what a 7th does",
+      "purpose": "Understand a seventh chord by function, not by name.",
+      "params": {
+        "chord_cycle": ["A", "D", "A7", "D"],
+        "tempo_bpm": 66,
+        "beats": 4,
+        "cue": "compare how A and A7 each move to D"
+      },
+      "coaching": "A to D. Now A7 to D. Same destination, different pull. Plain A strolls to D. A7 gets dragged there — it creates a little tension that D resolves. That is all a seventh chord is: a chord that wants to go somewhere. Nothing to memorize. Just notice the difference and you will start hearing it in records.",
+      "qa_status": "verified-by-theory-check-2026-08-14"
+    },
+    {
+      "id": "EX3-twelve-bar",
+      "name": "The 12-bar blues form",
+      "purpose": "Put A7 to work in the oldest, most reusable form in popular music.",
+      "params": {
+        "form": ["A", "A", "A", "A7", "D", "D", "A", "A", "E", "D", "A", "A"],
+        "bars": 12,
+        "tempo_bpm": 80,
+        "beats": 4,
+        "cue": "count bars out loud, not chords"
+      },
+      "coaching": "Twelve bars, three chords, and the A7 lands in bar four to shove you into the D. Count bars out loud — one-two-three-four, two-two-three-four — because the form is about time, not about the chords. This structure is older than rock and roll and it built rock and roll. Once you own it you can play with strangers and nobody has to explain anything.",
+      "qa_status": "verified-by-theory-check-2026-08-14"
+    },
+    {
+      "id": "EX4-em-a7",
+      "name": "Em ↔ A7 (the aching one)",
+      "purpose": "Practice the change used in slower, spacious songs.",
+      "params": {
+        "chord_cycle": ["Em", "G", "Em", "A7"],
+        "tempo_bpm": 58,
+        "beats": 8,
+        "cue": "let each chord ring the full 8 beats"
+      },
+      "coaching": "Em, G, Em, A7 — eight beats each, slow, let them ring out. This is a different use of A7: not driving a blues, just aching quietly. Do not rush it. Playing slowly on purpose is a skill, and this is where it gets practiced.",
+      "qa_status": "verified-by-theory-check-2026-08-14"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "A7 is the cheapest chord you will ever learn. You already know it — you just have one finger too many on the fretboard.",
+    "ex1_intro": "Play A. Lift the finger off the G string. Done. That is A7.",
+    "ex2_intro": "Now hear what it does. A to D strolls. A7 to D gets pulled. Sevenths want to move.",
+    "ex3_intro": "Twelve bars, three chords, A7 in bar four. Count bars out loud, not chords.",
+    "ex4_intro": "Em, G, Em, A7 — slow and ringing. Same chord, completely different job.",
+    "results": "One finger lifted and you gained a whole family of sounds and the 12-bar blues.",
+    "wrap": "F and A7 are both in now. That means the Mystery Songs are unlocked — every chord in them is a chord you have been taught."
+  },
+  "qa_block": {
+    "must_verify": [
+      "Automated: every chord fingering verified deterministically by 06-prototypes/step0/schema/chord-theory-check.js (verifyChord) — 0 errors AND 0 warnings required before ship (Hard Ban 7 satisfied by arithmetic, per owner directive 2026-08-08).",
+      "Automated: lesson JSON passes schema/validate.js (validateLesson) — all required keys present, frets/fingers length 6, qa_status whitelisted.",
+      "Automated: this lesson is what makes A7 'taught' for the Mystery Song unlock gate — tools/derive-chord-prereqs.js must show A7 in first_taught (NOT aliased to A), and tools/verify-song-progressions.js must go green.",
+      "Author pass: teaching copy is plain-English, beginner-appropriate, no AI-isms; pacing realistic.",
+      "Licensing: exercises only, zero copyrighted song material (spec §3/R6). The 12-bar blues form is a public structure, not any artist's composition (AMENDMENT-12)."
+    ],
+    "flagged_by": "founder (non-player) — cannot self-verify",
+    "verifier_role": "arithmetic (chord-theory-check.js) + author review",
+    "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
+  },
+  "lesson": {
+    "id": "L25-new-chord-a7",
+    "title": "New Chord: A7 + the 12-bar blues",
+    "level": "beginner",
+    "lesson_type": "technique",
+    "one_line_promise": "Lift one finger, gain a whole new sound — and the 12-bar blues.",
+    "objectives": [
+      "Form A7 (x02020) as a subtraction from A major",
+      "Hear what a dominant 7th does — tension that wants to resolve",
+      "Play the 12-bar blues form counting bars, not chords",
+      "Change Em↔A7 slowly and cleanly"
+    ],
+    "estimated_minutes": 16,
+    "prerequisites": [
+      "A, D, E, Em, G (L08, L07, L16, L02, L06)",
+      "New Chord: F (L24)"
+    ],
+    "app_feature_mapping": {
+      "free_metronome": ["12-bar blues tempo", "Em-A7 slow ring-out"]
+    },
+    "unlocks": ["Mystery Songs requiring A7: Johnny B. Goode, Wish You Were Here"]
+  }
+}
