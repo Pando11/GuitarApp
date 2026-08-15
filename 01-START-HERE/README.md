@@ -3,7 +3,7 @@
 **You are an AI agent picking up this project. This file is your entry point.**
 Everything about this product lives under `Desktop/GuitarApp/`. Nothing lives outside it.
 
-Last updated: 2026-08-13 (re-synced to AMENDMENT-05/06/11 — see §2B chain; Android IS in v1, avatar style is OPEN)
+Last updated: 2026-08-15 (re-synced to AMENDMENT-15 — chain through 15; Android IS in v1, avatar style is OPEN)
 Owner: Heidi Hendrickson. Full autonomy — decide and execute, don't ask for sign-off.
 
 ---
@@ -19,7 +19,7 @@ Founder is a non-guitarist. Chord/technical correctness is verified by ARITHMETI
 no human QA gate. Judgement calls the checker cannot decide (tone, feel, teaching quality)
 are flagged in prose, never as blocking red boxes (AGENTS.md Rule 8).
 
-Status: **SPEC AMENDED. RESEARCH PARTIAL. BUILD IN PROGRESS — Steps 0,1,2,3,4,5 DONE (Step 5 = in-lesson listening, F2 full, the $12/mo feature).** Steps 6 (chat/adaptive/messages/streaks), 7 (subscriptions), 8 (style packs), 9 (YouTube) remain. What is done: spec + 11 amendments, 11 playable prototypes, real lesson-JSON template, full audio engine (tuner/metronome/listening), 22 authored lessons (25 shipping), and the in-lesson listening verifier (proven browser-free, 24/24 + adversarial 0 HITS). What is NOT done: Heidi's go-ahead to ship, real-guitar mic calibration sign-off (logic proven, 2-min in-room test), teacher character art.
+Status: **SPEC AMENDED. RESEARCH PARTIAL. BUILD IN PROGRESS — Steps 0,1,2,3,4,5 DONE (Step 5 = in-lesson listening, F2 full, the $12/mo feature).** Steps 6 (chat/adaptive/messages/streaks), 7 (subscriptions), 8 (style packs), 9 (YouTube) remain. What is done: spec + 11 amendments, 11 playable prototypes, real lesson-JSON template, full audio engine (tuner/metronome/listening), 20 authored lessons (25 shipping), and the in-lesson listening verifier (proven browser-free, 24/24 + adversarial 0 HITS). What is NOT done: Heidi's go-ahead to ship, real-guitar mic calibration sign-off (logic proven, 2-min in-room test), teacher character art.
 (root) for the current state, the 3 new gap-closing docs (TAM, content-cost, App Store 3.1.2), and
 the still-open items. Note: there is NO interview validation gate — the Reddit post is optional
 extra info only, not a demand signal or validation.
@@ -72,7 +72,7 @@ AudioKitEX (MIT). Details in `03-research/feedback-tech/guitar-feedback-stack-re
 | 3g| `02-spec/guitar-app-spec-AMENDMENT-08.md` | Midjourney EXCLUDED (no OSS/embed license) |
 | 3h| `02-spec/guitar-app-spec-AMENDMENT-09.md` | motion = Wan2.1-I2V (Apache-2.0); story-engine = Godot (MIT) |
 | 3i| `02-spec/guitar-app-spec-AMENDMENT-10.md` | AI-drawn fingers/fretboards PERMITTED (owner override); chord-theory-check.js stays a verification pass |
-| 3j| `02-spec/guitar-app-spec-AMENDMENT-11.md` | **THE PRODUCT THESIS** — world-locked teacher + longitudinal student memory + duet (redlines) |
+| 3j| `02-spec/guitar-app-spec-AMENDMENT-11.md` | **THE PRODUCT THESIS** — world-locked teacher + longitudinal student memory + duet (redlines). **The chain continues through AMENDMENT-15** (2026-08-14 — curriculum re-sequence + ordering gate; 12–14 cover song-progression / mystery-mode / hostile-review). Latest amendment wins. See §7 (8f) + AGENTS.md. |
 | 4 | `02-spec/guitar-app-spec.md` | base spec — historical, superseded in parts |
 | 5 | `02-spec/guitar-build-plan.md` | execution plan (build order superseded by Amdt 01 §7) |
 | 6 | `03-research/feedback-tech/` + `03-research/animation-voice/` | the evidence (incl. animation-repos-and-debate.md + debate/) |
@@ -87,7 +87,7 @@ GuitarApp/
 ├── HANDOFF.md           ← CURRENT-STATE POINTER (read first when resuming; re-synced 2026-08-13)
 ├── HANDOFF-ARCHIVE/     dated session handoffs (historical; not current state)
 ├── 01-START-HERE/     ← you are here (orientation)
-├── 02-spec/           spec + amendments 01-11 + build plan  (CURRENT TRUTH)
+├── 02-spec/           spec + amendments 01-15 + build plan  (CURRENT TRUTH)
 ├── 03-research/
 │   ├── feedback-tech/    audio stack, video feasibility, feedback competitors (2026-08-04)
 │   ├── animation-voice/  animated teacher vs filmed human, animation pipelines,
@@ -228,7 +228,7 @@ no DSP, no recording, no transcription (basic-pitch/librosa only matter if a fut
    absolute-beginner lessons pulled from after the capstone to L2/L6/L9; capstone now LAST (L25). All 10
    `unlock_after_lesson` recomputed. New permanent gate `node tools/verify-curriculum-order.js` (0 errors),
    proven to bite by `bash tools/test-curriculum-order.sh` (9/9: 8 adversarial RED + 1 pristine control GREEN).
-   The 10 progressions remain **musically unverified** (reviewer timed out) — do not claim verified.
+   **UPDATE (2026-08-14):** musical accuracy now **VERIFIED** — `02-spec/MUSIC-ACCURACY-REVIEW-2026-08-14.md`: 10/10 progressions match recordings' harmony, 11/11 shapes spell correctly, both physical teaching claims TRUE. Legal (counsel) sign-off still required before paid launch.
    Spec: `02-spec/guitar-app-spec-AMENDMENT-15.md`.
 
 ---

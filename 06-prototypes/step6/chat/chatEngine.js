@@ -2,17 +2,17 @@
 /*
  * chatEngine.js — F4 teacher chat (Step 6).
  * - Answers in the CURRENT teacher's persona (T1 Maggie Cole / T2 Ellis Nakamura / T3 Ray Boudreaux).
- * - Ban 6: cites ONLY real practice-data keys from the store (struggled/clean chords).
- *   The store records a verdict (pass|fail) ONLY — it never records WHY a chord failed
- *   (buzzing vs muted vs wrong shape). So replies are phrased ONLY from the recorded
- *   verdict ("not clean yet" / "sounding clean"). They NEVER invent a physical diagnosis.
- * - Off-topic input -> canned redirect (hard rule). Implemented as DENY-BY-DEFAULT:
- *   a message is on-topic only if it mentions a practice subject AND does not mention a
- *   known non-guitar subject (stock/football/rent/etc). This closes the "guitar company
- *   stock" bypass where a keyword allow-list leaked guitar advice into an off-topic question.
- * - Ban 5: no network. This module only READS the store; it does not call an LLM.
+ * - Ban 6: cites ONLY real practice-data keys from the store (struggled/clean chords)
+ *   and ONLY real lesson data from drillSelector (exercise name, coaching, chord pair).
+ *   It NEVER invents a physical diagnosis or a drill that isn't in the curriculum.
+ * - Off-topic input -> canned redirect (hard rule). Implemented as DENY-BY-DEFAULT.
+ * - Ban 5: no network. This module reads the local store + local lesson files only.
+ * - Loop A (TASK-A1): a struggle message OR a named chord triggers studentRequested()
+ *   (so Loop C2 can follow up on the exact thing) AND serves a real drill from the
+ *   lesson JSON via drillSelector. If no drill matches, falls back to encouragement text.
  *   (The real app pipes `reply()` text through OpenAI TTS; the logic here is proven first.)
  */
+const { findDrillForChord, drillForStruggle, loadLessons } = require('../drillSelector.js');
 const PERSONA = {
   T1: { name: 'Maggie Cole', style: 'bestfriend',
         open: "You've got this!",
@@ -63,6 +63,35 @@ function reply(store, teacherId, message) {
   if (!isOnTopic(message)) {
     return { persona: p.name, offTopic: true, text: OFFTOPIC };
   }
+
+  // Loop A (TASK-A1): detect a struggle signal or a named chord, then serve a REAL
+  // drill from the lesson data + record the ask (so Loop C2 can follow up on it).
+  const struggleSignal = /\b(can'?t|can not|struggl|stuck|hard|difficult|getting|get it|figure|won'?t|not ringing|not clean|muted|buzz)\b/i.test(message);
+  const namedChord = (message.match(CHORD_NAME) || [])[0];
+  const targetChord = namedChord || (struggleSignal ? (store.getStruggledChords()[0] || null) : null);
+
+  if (targetChord) {
+    const lessons = loadLessons();
+    const drill = findDrillForChord(targetChord, lessons) || drillForStruggle(store, lessons);
+    if (drill) {
+      // Record the ask against the REAL chord the drill is for (not a false-positive
+      // chord name from the message) so Loop C2 follows up on the right thing.
+      const realChord = drill.chordPair.includes(targetChord) ? targetChord : drill.chordPair[0];
+      try { store.studentRequested(realChord); } catch (e) { /* non-fatal */ }
+      const drillText =
+        `Let's work on your ${realChord}. Try this: "${drill.exerciseName}"` +
+        (drill.coaching ? ` — ${drill.coaching}` : '') +
+        ` (Lesson ${drill.lessonId}). Run it a few times and tell me how it goes.`;
+      return { persona: p.name, offTopic: false, drill: drill, text: drillText };
+    }
+    // No drill found -> fall back to data-derived encouragement (Ban 6 safe).
+    const struggled = store.getStruggledChords();
+    const clean = store.getCleanChords();
+    const fb = struggled.length ? p.struggled(struggled[0]) : (clean.length ? p.clean(clean[0]) : p.open + " Let's get your hands on the guitar — open Lesson 1.");
+    return { persona: p.name, offTopic: false, text: fb };
+  }
+
+  // No specific chord targeted -> generic data-derived encouragement.
   const struggled = store.getStruggledChords();
   const clean = store.getCleanChords();
   let text;

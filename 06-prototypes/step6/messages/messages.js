@@ -44,4 +44,47 @@ function send(store, channel, opts = {}) {
   return { sent: !!message, message, reason: message ? 'ok' : 'muted' };
 }
 
-module.exports = { factBody, withinCap, send };
+// --- Loop C2: student-initiated follow-up (the "you asked about X" message) ---
+// Distinct from factBody (Loop C1). This ONLY fires for a chord the student
+// explicitly asked about, and it references that exact chord by name so the app
+// reads as "I remembered what you asked" rather than a generic struggle blast.
+// It must NOT invent a physical diagnosis (Ban 6) — it only cites the request.
+function loopC2Body(store, request) {
+  const c = request.chordName;
+  // lessonForChord returns the real lessonId the chord was last practiced in, or
+  // 'L01' if it was never logged. NOTE: do NOT fall back to getStruggledChords()[0]
+  // — that returns a CHORD NAME, not a lesson id, which would produce a broken
+  // deep link like "lesson/B7". 'L01' is the safe default (matches reviewPrompt).
+  const lesson = store.lessonForChord(c) || 'L01';
+  return `That ${c} you asked about — how's it going? Here's another drill if you want it. Open lesson/${lesson} when you're ready.`;
+}
+
+function sendLoopC2(store, channel, requestTs, opts = {}) {
+  const maxPerDay = opts.maxPerDay || 2;
+  const pending = store.getPendingHelpRequests();
+  if (!pending.length) return { sent: false, reason: 'no-pending-request' };
+  const req = pending[0];
+  if (store.isMuted(channel)) return { sent: false, reason: 'muted' };
+  if (!withinCap(store, channel, maxPerDay, requestTs)) return { sent: false, reason: 'capped' };
+  const body = loopC2Body(store, req);
+  const link = /lesson\/(L\w+)/.exec(body);
+  const deep = link ? link[1] : null;
+  const message = store.recordMessage({ channel, body, lessonDeepLink: deep });
+  if (!message) return { sent: false, reason: 'muted' };
+  store.markHelpRequestFollowedUp(req.chordName);
+  return { sent: true, message, reason: 'ok', referencedChord: req.chordName };
+}
+
+// --- Loop B: next-lesson "got it? want to review?" prompt ---
+// Backed by the struggled-chords record (not an invented guess). Returns null when
+// there is nothing the student has struggled with yet, so the lesson-start hook can
+// simply skip the prompt instead of showing a meaningless one.
+function reviewPrompt(store) {
+  const struggled = store.getStruggledChords();
+  if (!struggled.length) return null;
+  const c = struggled[0];
+  const lesson = store.lessonForChord(c) || 'L01';
+  return { chord: c, lesson, prompt: `Last time your ${c} was giving you trouble. Got it now, or want a quick review?`, deepLink: lesson };
+}
+
+module.exports = { factBody, withinCap, send, loopC2Body, sendLoopC2, reviewPrompt };

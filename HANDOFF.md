@@ -1,37 +1,41 @@
-# HANDOFF — GuitarApp (current state, re-synced 2026-08-13)
+# HANDOFF — GuitarApp (current state, re-synced 2026-08-15 — weekly OS-hygiene SOP re-run)
 
 Single source-of-truth pointer file (per owner preference). The current TRUTH is:
 `02-spec/FEATURES-LOCKED-v1-2026-08-07.md` + `PLAN-from-locked-spec-2026-08-07.md`,
-the amendment chain through **AMENDMENT-11**, the live PWA in `07-app/`, and this file.
+the amendment chain through **AMENDMENT-15** (curriculum re-sequence + ordering gate, 2026-08-14), the live PWA in `07-app/`, and this file.
 
 > This file was RE-WRITTEN on 2026-08-13. The prior version was frozen at the Aug-8 PWA spike
 > and did NOT reflect AMENDMENT-09/10/11, the Godot story-world, or the practice-engine (Aug 12).
 > Dated session handoffs are archived under `HANDOFF-ARCHIVE/` — they are history, not current state.
 
-## VERIFIED STATE RIGHT NOW (re-run 2026-08-13, real output)
+## VERIFIED STATE RIGHT NOW (re-run 2026-08-15, REAL output — weekly OS-hygiene SOP)
 | Gate | Command | Result |
 |---|---|---|
-| PWA engine fidelity | `cd 07-app/test && node fidelity.mjs` | **48/0** |
-| PWA app smoke | `cd 07-app/test && node app-smoke.mjs` | **20/0** |
-| PWA SW cache (no stale-phone break) | `cd 07-app && node verify-sw-cache.mjs` | **4/0** |
-| Chord arithmetic (shipping 23-lesson set) | `cd 06-prototypes/step0 && node run-chord-check.js` | **23 lessons / 71 chords / 0 err / 0 warn** |
-| Practice engine (node) | `cd 06-prototypes/practice-engine && node practice-engine.test.mjs` | **17/0** |
+| PWA engine fidelity | `cd 07-app/test && node fidelity.mjs` | **47/1 ❌ FAIL** — `chat.reply` port ≠ reference (owner flag, see below) |
+| PWA app smoke | `cd 07-app/test && node app-smoke.mjs` | **19/1 ❌ FAIL** — test asserts 23 lessons; app ships 25 (post-AMENDMENT-15); stale test constant, not engine defect |
+| PWA SW cache (no stale-phone break) | `cd 07-app && node verify-sw-cache.mjs` | **4/0 ✅** |
+| Chord arithmetic (shipping 25-lesson set) | `cd 06-prototypes/step0 && node run-chord-check.js` | **25 lessons / 81 chords / 0 err / 0 warn ✅** |
+| Practice engine (node) | `cd 06-prototypes/practice-engine && node practice-engine.test.mjs` | **17/0 ✅** |
+| Curriculum ordering (AMENDMENT-15 gate) | `node tools/verify-curriculum-order.js` | **25 lessons / 0 errors ✅** (new permanent gate) |
 | F7 band (gate) | `cd 06-prototypes/step7-extra && node verify-band.js` | 31/0 (proven clean) |
-| F10 voice (gate) | `cd 06-prototypes/step7-extra && node verify-voice.js` | present, green (was MISSING before; built Aug 9–12) |
+| F10 voice (gate) | `cd 06-prototypes/step7-extra && node verify-voice.js` | present, green (built Aug 9–12) |
 | RevenueCat | `cd 06-prototypes/step7 && node verify-step10-revenuecat.js` | 43/0 stub (owner-blocked on live keys) |
 
-All prototype gates (step0..step9, F7, F10, practice-engine) re-run GREEN. Working tree
-managed via git; commit as you go.
+**3 of 5 headline PWA gates GREEN; `fidelity` and `app-smoke` are currently RED (owner flags below).**
+All prototype Node gates (step0..step9, F7, F10, practice-engine) + chord-check + ordering gate re-run GREEN.
+Working tree managed via git; commit as you go.
 
 ## WHAT EXISTS (as of 2026-08-13)
 - **Live PWA: `07-app/`** — installable on iOS Safari + Android Chrome. Runs the proven engines
   via Web Audio + mic + Web Speech. Engine layer stays SDK-agnostic for a later native rewrite.
   Detail in `07-app/HANDOFF-07app.md`.
-- **Spec + 11 amendments** (`02-spec/`), appendix chain ending at **AMENDMENT-11** (world-locked
-  teacher + longitudinal student memory + teacher–student duet; the product thesis, with redlines).
+- **Spec + 15 amendments** (`02-spec/`, AMENDMENT-01..15), appendix chain ending at **AMENDMENT-15**
+  (curriculum re-sequence + ordering gate; AMENDMENT-11 = world-locked teacher + longitudinal student
+  memory + teacher–student duet, the product thesis, with redlines).
 - **20 authored lessons** in `05-content/guitar-lesson-*.json` (authoring source) → shipped as
-  `07-app/content/lessons/guitar-lesson-01..23.json` (23 = 20 spine + L21 Holding the Pick,
-  L22 Em↔C switch, L23 first 3-chord song).
+  **25 lessons** in `07-app/content/lessons/` (re-sequenced by AMENDMENT-15; capstone now L25
+  `consolidation-performance`; order enforced by `tools/verify-curriculum-order.js`). Authoritative
+  order lives in `07-app/content/lessons/manifest.json`.
 - **Practice engine** (`06-prototypes/practice-engine/`): 30/60 weak-pair review + longitudinal
   memory moat. Generates `07-app/content/practice/*.json` (29 pair drills) via
   `05-content/scripts/generate-practice-lessons.mjs`.
@@ -67,6 +71,8 @@ Practice drills are GENERATED (never hand-edited) — rerun the generator after 
 5. **Teacher art** — generator locked to FLUX.1[schnell] (Apache-2.0) + Qwen-Image; license-gated in
    `07-app/core/asset-job.js`. Freelance-vs-AI-stills = art-direction call, not generator choice.
 6. **No YouTube channel name/handle yet.**
+7. **⚠️ GATE FLAGS (weekly OS-hygiene re-run 2026-08-15):** `fidelity.mjs` 47/1 — `chat.reply` port (`07-app/core/chatEngine.js`) diverges from its reference (`06-prototypes/step6/chat/chatEngine.js`, UNCOMMITTED/WIP in the tree). `app-smoke.mjs` 19/1 — test asserts 23 lessons, app ships 25 (post-AMENDMENT-15). Neither silently patched; both need owner reconciliation.
+8. **SOP assumption drift:** this weekly SOP assumed "AMENDMENT-11 / 23-lesson set" — repo is actually at **AMENDMENT-15 / 25-lesson set**. Docs re-synced to real HEAD (c4bfa8b).
 
 ## CONVENTIONS (unchanged, enforced)
 - Addy Osmani: spec→plan→build→test→review→simplify→ship. Never skip.

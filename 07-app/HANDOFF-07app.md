@@ -1,6 +1,6 @@
 # HANDOFF — GuitarApp PWA build (07-app)
 
-> Re-synced 2026-08-13. Original session was 2026-08-08 (overnight PWA spike). Two command paths
+> Re-synced 2026-08-15 (weekly OS-hygiene SOP re-run). Original session was 2026-08-08 (overnight PWA spike). Two command paths
 > below were corrected: `verify-sw-cache.mjs` lives in `07-app/` (not `07-app/test/`), and app-smoke
 > is 20/0 (not 18/0). The defect log + structure below are accurate and kept.
 
@@ -15,9 +15,12 @@ Speech). This host has Node 24 but NO Flutter/Dart/RN/Android SDK, so PWA is the
 buildable AND provable here. Engine layer stays SDK-agnostic for a later native rewrite.
 
 ## VERIFIED RIGHT NOW (re-run live, do not trust prior stamps)
-- `cd 07-app/test && node fidelity.mjs`  → FIDELITY GATE 48 passed, 0 failed
+- `cd 07-app/test && node fidelity.mjs`  → FIDELITY GATE **47 passed, 1 failed ❌** (re-run 2026-08-15)
   (proves 07-app/core ESM ports are byte-faithful to the proven 06-prototypes Node engines)
-- `cd 07-app/test && node app-smoke.mjs`  → APP SMOKE 20 passed, 0 failed
+  ⚠️ FAIL: `chat.reply` — port (`07-app/core/chatEngine.js`) no longer matches reference
+  (`06-prototypes/step6/chat/chatEngine.js`, UNCOMMITTED/WIP in tree). Owner flag — do not silently "fix" to 48/0.
+- `cd 07-app/test && node app-smoke.mjs`  → APP SMOKE **19 passed, 1 failed ❌** (re-run 2026-08-15)
+  ⚠️ FAIL: test asserts "23 core lessons" but app ships **25** (post-AMENDMENT-15). Stale test constant, NOT an engine defect.
   (headless DOM harness importing the REAL app.js: boot, catalog, entitlement gating, lesson render,
    teacher-swap invariant, voice intents all exercised)
 - `cd 07-app && node verify-sw-cache.mjs` → SW CACHE GATE 4 passed, 0 failed
@@ -31,7 +34,7 @@ buildable AND provable here. Engine layer stays SDK-agnostic for a later native 
   harness to ignore the expected keyless-voice `/api/tts` 501 (documented OpenAI/Chatterbox stopgap,
   not a defect). Also made serve.mjs fail SOFT on a blocked HTTPS port so the HTTP server (used by the
   harness + desktop) stays up instead of the whole process crashing on EADDRINUSE.
-- Both inherit the 16 prior Node gates (step0..step9, F7 band, F10 voice) which were ALSO re-run green.
+- The 16 prior Node prototype gates (step0..step9, F7 band, F10 voice) re-run green. NOTE: the two PWA-level gates above (fidelity 47/1, app-smoke 19/1) are currently RED — owner flags, not silently patched.
 ## STRUCTURE (07-app/)
 - core/ — 13 engines ported 1:1 from 06-prototypes (tuner-engine, listening-engine, chord-theory-check,
   schema/validate, renderer, band-engine, voice-command, teacher, entitlementStore, practiceStore,

@@ -53,8 +53,11 @@ Auto-loaded project context. Also read `01-START-HERE/README.md` before acting.
    endorsed" disclaimer is REQUIRED on any screen naming songs or artists; never use the
    possessive "Y's X" framing. Distinctive progressions tied to one famous recording are NOT a
    safe harbour (cf. *Williams v. Gaye*) and need counsel sign-off before paid launch. The gate
-   proves mechanics, NOT legal safety. ⚠️ The 10 progressions are still **UNREVIEWED for musical
-   accuracy** by a second party (that review timed out). Do not claim they are verified.
+   proves mechanics, NOT legal safety. ✅ Musical accuracy is now **VERIFIED** (2026-08-14,
+   knowledge-only second-party review — `02-spec/MUSIC-ACCURACY-REVIEW-2026-08-14.md`): 10/10
+   progressions match the recordings' harmony, 11/11 shapes spell correctly, both physical teaching
+   claims TRUE). The gate proves mechanics; this review proves the data is right. Legal sign-off
+   (below) is still required before paid launch.
    ⚠️ Where AMENDMENT-05 §8 or the older guardrails mandate CARTOON teachers or ban
    fingering demonstration, **AMENDMENT-06 overrides them.** Do not re-impose those limits.
 2. **Listening is BACK as the headline (AMENDMENT-05, 2026-08-07) — constrained form only.**

@@ -49,6 +49,7 @@ class PracticeStore {
     this.lessonCompletion = { ...(i.lessonCompletion || {}) };
     this.mute = { messages: false, sms: false, email: false, ...(i.mute || {}) };
     this.messageLog = (i.messageLog || []).map(m => ({ ...m }));
+    this.helpRequests = (i.helpRequests || []).map(r => ({ ...r })); // Loop C2: student-asked help
     this._nextId = i._nextId || 1;
     this.currentTeacherId = i.currentTeacherId || 'T1';
   }
@@ -219,11 +220,30 @@ class PracticeStore {
     return this.messageLog.filter(m => m.ts >= ts && m.channel === channel).length;
   }
 
+  // ---------- Loop C2: student-initiated help requests (the "you asked about X" trail) ----------
+  // A student reaches out ("I can't get this barre chord") -> we record it so a later
+  // follow-up can reference THE EXACT THING THEY NAMED, not a generic struggle blast.
+  // This is what makes Loop C2 distinct from Loop C1 (app-initiated encouragement).
+  studentRequested(chordName, ts = Date.now()) {
+    if (!chordName || typeof chordName !== 'string' || !chordName.trim()) throw new Error('bad chordName: ' + chordName);
+    this.helpRequests.push({ chordName: chordName.trim(), ts, followedUp: false });
+  }
+  getPendingHelpRequests() {
+    return this.helpRequests.filter(r => !r.followedUp).map(r => ({ ...r }));
+  }
+  // Mark the oldest pending request for this chord as followed-up so we don't re-nudge the same ask.
+  markHelpRequestFollowedUp(chordName) {
+    for (const r of this.helpRequests) {
+      if (!r.followedUp && r.chordName === chordName) { r.followedUp = true; return true; }
+    }
+    return false;
+  }
+
   // ---------- persistence (local only; Ban 5) ----------
   toJSON() {
     return {
       sessions: this.sessions, lessonCompletion: this.lessonCompletion, mute: this.mute,
-      messageLog: this.messageLog, _nextId: this._nextId, currentTeacherId: this.currentTeacherId
+      messageLog: this.messageLog, helpRequests: this.helpRequests, _nextId: this._nextId, currentTeacherId: this.currentTeacherId
     };
   }
   static fromJSON(o) { return new PracticeStore(o); }
