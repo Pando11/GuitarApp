@@ -12,7 +12,7 @@ the amendment chain through **AMENDMENT-16** (PocketBase backend, 2026-08-16), t
 | Gate | Command | Result |
 |---|---|---|
 | PWA engine fidelity | `cd 07-app/test && node fidelity.mjs` | **48/0 ✅ GREEN** — chat.reply drill-serving branch restored to match proven engine (was 47/1 RED) |
-| PWA app smoke | `cd 07-app/test && node app-smoke.mjs` | **19/1 ❌ FAIL** — test asserts 23 lessons; app ships 25 (post-AMENDMENT-15); stale test constant, NOT engine defect |
+| PWA app smoke | `cd 07-app/test && node app-smoke.mjs` | **20/0 ✅ GREEN** — stale "23 lessons" constant corrected to 25 (post-AMENDMENT-15); was 19/1 RED |
 | PWA SW cache (no stale-phone break) | `cd 07-app && node verify-sw-cache.mjs` | **4/0 ✅** |
 | Chord arithmetic (shipping 25-lesson set) | `cd 06-prototypes/step0 && node run-chord-check.js` | **25 lessons / 81 chords / 0 err / 0 warn ✅** |
 | Practice engine (node) | `cd 06-prototypes/practice-engine && node practice-engine.test.mjs` | **17/0 ✅** |
@@ -21,7 +21,7 @@ the amendment chain through **AMENDMENT-16** (PocketBase backend, 2026-08-16), t
 | F10 voice (gate) | `cd 06-prototypes/step7-extra && node verify-voice.js` | present, green (built Aug 9–12) |
 | RevenueCat | `cd 06-prototypes/step7 && node verify-step10-revenuecat.js` | 43/0 stub (owner-blocked on live keys) |
 
-**4 of 5 headline PWA gates GREEN; only `app-smoke` is RED — and that is a STALE TEST CONSTANT (it asserts 23 lessons; the app correctly ships 25 post-AMENDMENT-15), not an engine defect.**
+**ALL 5 headline PWA gates GREEN** (fidelity 48/0, app-smoke 20/0, SW cache 4/0, chord-check 25/81/0/0, per-lesson accuracy 24/24). The two previously-RED gates (fidelity, app-smoke) are now GREEN after the chat drill-serving branch was restored (2026-08-16) and the stale "23 lessons" smoke constant was corrected to 25.
 All prototype Node gates (step0..step9, F7, F10, practice-engine) + chord-check + ordering gate re-run GREEN. The previously-RED `fidelity` gate is now GREEN after the chat drill-serving branch was restored (2026-08-16).
 Working tree managed via git; commit as you go.
 

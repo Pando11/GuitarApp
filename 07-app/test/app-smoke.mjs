@@ -46,7 +46,7 @@ const ok = (n, c, e) => { if (c) passed++; else { failed++; console.log('FAIL: '
 ok('app booted', !!APP, 'window.__APP__ missing');
 if (!APP) { console.log('BOOT FAILED'); process.exit(1); }
 
-ok('catalog 23 core lessons', APP.CATALOG.lessons.length === 23, 'got ' + APP.CATALOG.lessons.length);
+ok('catalog 25 core lessons', APP.CATALOG.lessons.length === 25, 'got ' + APP.CATALOG.lessons.length);
 // Roster = 3 core teachers (T1..T3) + 2 pack-guest teachers (T4 blues, T5 country)
 // injected at boot by app.js. Five is the correct post-boot count.
 ok('catalog 5 teachers (3 core + 2 pack guests)', APP.CATALOG.teachers.length === 5, 'got ' + APP.CATALOG.teachers.length);
