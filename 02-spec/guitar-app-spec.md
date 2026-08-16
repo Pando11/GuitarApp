@@ -32,7 +32,7 @@ Working title: TBD
 - Target price: $12/mo. No free tier beyond tuner/metronome.
 - Contract guitarist QA of all AI-generated content. NON-NEGOTIABLE
   (founder cannot verify guitar correctness — see §6).
-- Backend: Supabase + RevenueCat + Cloudflare Workers + PostHog + Sentry.
+- Backend: PocketBase (MIT, self-hosted) + RevenueCat + Cloudflare Workers + PostHog + Sentry. (Supabase replaced by PocketBase 2026-08-16 — see AMENDMENT-16.)
 
 ================================================================
 1. PRODUCT DEFINITION
@@ -151,10 +151,13 @@ iOS: Swift + SwiftUI.
 - Avatar: Rive or Lottie state machine driven by lesson/coaching state.
 
 Backend (boring-cheapest; the backend is NOT the product):
-- Supabase: Postgres + auth + storage + RLS. Free tier → $25/mo Pro.
+- PocketBase (MIT, self-hosted): single Go binary — embedded SQLite + auth +
+  file storage + RLS + realtime (cross-device sync). FREE to self-host, no $25/mo
+  Pro tier. Chosen over Supabase 2026-08-16 (see AMENDMENT-16). Student *learning*
+  progress stays on-device per AMENDMENT-11 — PocketBase holds auth/subs/content/sync only.
 - RevenueCat: subscriptions. Non-negotiable (StoreKit edge cases are a
   solo-dev rabbit hole). Free to $2.5K MTR.
-- Cloudflare Workers (or Supabase Edge Functions): stateless LLM coaching
+- Cloudflare Workers (or PocketBase API rules/hooks): stateless LLM coaching
   endpoint — practice summary in, coaching text out. Scales to zero.
 - PostHog free tier: funnels + retention (needed for the v3 jam decision).
 - Sentry free tier: crash reporting.

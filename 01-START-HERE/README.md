@@ -3,7 +3,7 @@
 **You are an AI agent picking up this project. This file is your entry point.**
 Everything about this product lives under `Desktop/GuitarApp/`. Nothing lives outside it.
 
-Last updated: 2026-08-15 (re-synced to AMENDMENT-15 — chain through 15; Android IS in v1, avatar style is OPEN)
+Last updated: 2026-08-16 (re-synced to AMENDMENT-16 — PocketBase backend; chain through 16; Android IS in v1, avatar style is OPEN)
 Owner: Heidi Hendrickson. Full autonomy — decide and execute, don't ask for sign-off.
 
 ---
@@ -45,7 +45,7 @@ AMENDMENT-04 is the current truth on product scope. Read the amendments, never t
 The chain continues: AMENDMENT-05 (App That Listens) → AMENDMENT-06 (avatar/voice unlock) →
 AMENDMENT-07 (Flux pipeline) → AMENDMENT-08 (Midjourney excluded) → AMENDMENT-09 (motion + Godot
 story-world) → AMENDMENT-10 (AI-drawn fingering permitted) → **AMENDMENT-11 (2026-08-11 — world-locked
-teacher + longitudinal student memory + teacher–student duet; the product thesis, with redlines).**
+teacher + longitudinal student memory + teacher–student duet; the product thesis, with redlines).** The chain continues → AMENDMENT-12 (song-progression track + mystery mode) → AMENDMENT-13 (mystery-mode readiness gate) → AMENDMENT-14 (hostile-review corrections) → AMENDMENT-15 (curriculum re-sequence + ordering gate, 2026-08-14) → **AMENDMENT-16 (2026-08-16 — PocketBase backend replacing Supabase).**
 
 ### C. There is a LICENSE BLOCKLIST — read it before choosing an audio library
 Essentia (AGPL-3.0), aubio (GPL-3.0), TarsosDSP (GPL-3.0), pedalboard (GPL-3.0),
@@ -73,6 +73,7 @@ AudioKitEX (MIT). Details in `03-research/feedback-tech/guitar-feedback-stack-re
 | 3h| `02-spec/guitar-app-spec-AMENDMENT-09.md` | motion = Wan2.1-I2V (Apache-2.0); story-engine = Godot (MIT) |
 | 3i| `02-spec/guitar-app-spec-AMENDMENT-10.md` | AI-drawn fingers/fretboards PERMITTED (owner override); chord-theory-check.js stays a verification pass |
 | 3j| `02-spec/guitar-app-spec-AMENDMENT-11.md` | **THE PRODUCT THESIS** — world-locked teacher + longitudinal student memory + duet (redlines). **The chain continues through AMENDMENT-15** (2026-08-14 — curriculum re-sequence + ordering gate; 12–14 cover song-progression / mystery-mode / hostile-review). Latest amendment wins. See §7 (8f) + AGENTS.md. |
+| 3k| `02-spec/guitar-app-spec-AMENDMENT-16.md` | **BACKEND** — PocketBase replaces Supabase (2026-08-16). MIT, self-hosted Go binary + SQLite, no $25/mo Pro tier. Covers auth/accounts, subscription entitlement, content delivery, cross-device sync. Student *learning* progress stays on-device (audio never uploaded). Current backend truth. |
 | 4 | `02-spec/guitar-app-spec.md` | base spec — historical, superseded in parts |
 | 5 | `02-spec/guitar-build-plan.md` | execution plan (build order superseded by Amdt 01 §7) |
 | 6 | `03-research/feedback-tech/` + `03-research/animation-voice/` | the evidence (incl. animation-repos-and-debate.md + debate/) |
@@ -230,6 +231,7 @@ no DSP, no recording, no transcription (basic-pitch/librosa only matter if a fut
    proven to bite by `bash tools/test-curriculum-order.sh` (9/9: 8 adversarial RED + 1 pristine control GREEN).
    **UPDATE (2026-08-14):** musical accuracy now **VERIFIED** — `02-spec/MUSIC-ACCURACY-REVIEW-2026-08-14.md`: 10/10 progressions match recordings' harmony, 11/11 shapes spell correctly, both physical teaching claims TRUE. Legal (counsel) sign-off still required before paid launch.
    Spec: `02-spec/guitar-app-spec-AMENDMENT-15.md`.
+8g. **AMENDMENT-16 (2026-08-16) — BACKEND: PocketBase replaces Supabase.** MIT, self-hosted Go binary + SQLite, no $25/mo Pro tier. Covers auth/accounts, subscription entitlement (paired with RevenueCat), content delivery, cross-device sync of the student profile. Student *learning* progress stays on-device (audio never uploaded). Current backend truth — supersedes all prior Supabase references. See `02-spec/guitar-app-spec-AMENDMENT-16.md`.
 
 ---
 

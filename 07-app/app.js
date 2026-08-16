@@ -7,7 +7,7 @@ import { MicAnalyzer, playBuffer, speak, startListening, isMicAvailable, micUnav
 import * as T from './core/tuner-engine.js';
 import * as B from './core/band-engine.js';
 import * as V from './core/voice-command.js';
-import { reply as chatReply } from './core/chatEngine.js';
+import { reply as chatReply, setLessons as setChatLessons } from './core/chatEngine.js';
 import { buildTomorrowPlan } from './core/adaptivePlan.js';
 import { readout as progressReadout } from './core/streaks.js';
 import { isDogfood, setDogfood } from './lib/dogfood.js';
@@ -526,6 +526,20 @@ async function boot() {
     }
     CATALOG.teachers.sort((a, b) => a.id.localeCompare(b.id));
     CURRENT_TEACHER = CATALOG.teachers.find(t => t.id === app.settings.currentTeacherId) || CATALOG.teachers[0];
+    // Feed the loaded curriculum into the chat engine so the F4 "Ask Teacher"
+    // feature serves REAL drills from the lesson JSON (Loop A), matching the
+    // proven 06-prototypes engine. Catalog shape ({id,title,raw}) is normalized
+    // to the drill matcher's expectation ({lessonId,title,exercises}).
+    const chatLessons = [];
+    for (const l of CATALOG.lessons) {
+      if (l && l.raw) chatLessons.push({ lessonId: l.id, title: l.title, exercises: (l.raw.exercises || []) });
+    }
+    for (const pack of CATALOG.packs) {
+      for (const pl of (pack.lessons || [])) {
+        if (pl && pl.raw) chatLessons.push({ lessonId: pl.id, title: pl.title, exercises: (pl.raw.exercises || []) });
+      }
+    }
+    setChatLessons(chatLessons);
     app.entitlement.settleTrial();
     save();
   } catch (e) { console.error('catalog load failed', e); showFatal('Content failed to load: ' + (e && e.message)); return; }

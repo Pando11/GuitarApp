@@ -1,18 +1,18 @@
-# HANDOFF — GuitarApp (current state, re-synced 2026-08-15 — weekly OS-hygiene SOP re-run)
+# HANDOFF — GuitarApp (current state, re-synced 2026-08-16 — AMENDMENT-16 PocketBase + fidelity gate GREEN)
 
 Single source-of-truth pointer file (per owner preference). The current TRUTH is:
 `02-spec/FEATURES-LOCKED-v1-2026-08-07.md` + `PLAN-from-locked-spec-2026-08-07.md`,
-the amendment chain through **AMENDMENT-15** (curriculum re-sequence + ordering gate, 2026-08-14), the live PWA in `07-app/`, and this file.
+the amendment chain through **AMENDMENT-16** (PocketBase backend, 2026-08-16), the live PWA in `07-app/`, and this file.
 
 > This file was RE-WRITTEN on 2026-08-13. The prior version was frozen at the Aug-8 PWA spike
 > and did NOT reflect AMENDMENT-09/10/11, the Godot story-world, or the practice-engine (Aug 12).
 > Dated session handoffs are archived under `HANDOFF-ARCHIVE/` — they are history, not current state.
 
-## VERIFIED STATE RIGHT NOW (re-run 2026-08-15, REAL output — weekly OS-hygiene SOP)
+## VERIFIED STATE RIGHT NOW (re-run 2026-08-16, REAL output — chat fix applied)
 | Gate | Command | Result |
 |---|---|---|
-| PWA engine fidelity | `cd 07-app/test && node fidelity.mjs` | **47/1 ❌ FAIL** — `chat.reply` port ≠ reference (owner flag, see below) |
-| PWA app smoke | `cd 07-app/test && node app-smoke.mjs` | **19/1 ❌ FAIL** — test asserts 23 lessons; app ships 25 (post-AMENDMENT-15); stale test constant, not engine defect |
+| PWA engine fidelity | `cd 07-app/test && node fidelity.mjs` | **48/0 ✅ GREEN** — chat.reply drill-serving branch restored to match proven engine (was 47/1 RED) |
+| PWA app smoke | `cd 07-app/test && node app-smoke.mjs` | **19/1 ❌ FAIL** — test asserts 23 lessons; app ships 25 (post-AMENDMENT-15); stale test constant, NOT engine defect |
 | PWA SW cache (no stale-phone break) | `cd 07-app && node verify-sw-cache.mjs` | **4/0 ✅** |
 | Chord arithmetic (shipping 25-lesson set) | `cd 06-prototypes/step0 && node run-chord-check.js` | **25 lessons / 81 chords / 0 err / 0 warn ✅** |
 | Practice engine (node) | `cd 06-prototypes/practice-engine && node practice-engine.test.mjs` | **17/0 ✅** |
@@ -21,8 +21,8 @@ the amendment chain through **AMENDMENT-15** (curriculum re-sequence + ordering 
 | F10 voice (gate) | `cd 06-prototypes/step7-extra && node verify-voice.js` | present, green (built Aug 9–12) |
 | RevenueCat | `cd 06-prototypes/step7 && node verify-step10-revenuecat.js` | 43/0 stub (owner-blocked on live keys) |
 
-**3 of 5 headline PWA gates GREEN; `fidelity` and `app-smoke` are currently RED (owner flags below).**
-All prototype Node gates (step0..step9, F7, F10, practice-engine) + chord-check + ordering gate re-run GREEN.
+**4 of 5 headline PWA gates GREEN; only `app-smoke` is RED — and that is a STALE TEST CONSTANT (it asserts 23 lessons; the app correctly ships 25 post-AMENDMENT-15), not an engine defect.**
+All prototype Node gates (step0..step9, F7, F10, practice-engine) + chord-check + ordering gate re-run GREEN. The previously-RED `fidelity` gate is now GREEN after the chat drill-serving branch was restored (2026-08-16).
 Working tree managed via git; commit as you go.
 
 ## WHAT EXISTS (as of 2026-08-13)

@@ -29,6 +29,7 @@ export class PracticeStore {
     this.lessonCompletion = { ...(i.lessonCompletion || {}) };
     this.mute = { messages: false, sms: false, email: false, ...(i.mute || {}) };
     this.messageLog = (i.messageLog || []).map(m => ({ ...m }));
+    this.helpRequests = Array.isArray(i.helpRequests) ? i.helpRequests.map(r => ({ ...r })) : [];
     this._nextId = i._nextId || 1;
     this.currentTeacherId = i.currentTeacherId || 'T1';
   }
@@ -123,8 +124,25 @@ export class PracticeStore {
   }
   messageCountSince(ts) { return this.messageLog.filter(m => m.ts >= ts).length; }
   messageCountSinceChannel(ts, channel) { return this.messageLog.filter(m => m.ts >= ts && m.channel === channel).length; }
+  // ---------- Loop C2: student-initiated help requests (the "you asked about X" trail) ----------
+  // A student reaches out ("I can't get this barre chord") -> we record it so a later
+  // follow-up can reference THE EXACT THING THEY NAMED, not a generic struggle blast.
+  // PORTED 1:1 from 06-prototypes/step6/store/practiceStore.js.
+  studentRequested(chordName, ts = Date.now()) {
+    if (!chordName || typeof chordName !== 'string' || !chordName.trim()) throw new Error('bad chordName: ' + chordName);
+    this.helpRequests.push({ chordName: chordName.trim(), ts, followedUp: false });
+  }
+  getPendingHelpRequests() {
+    return this.helpRequests.filter(r => !r.followedUp).map(r => ({ ...r }));
+  }
+  markHelpRequestFollowedUp(chordName) {
+    for (const r of this.helpRequests) {
+      if (!r.followedUp && r.chordName === chordName) { r.followedUp = true; return true; }
+    }
+    return false;
+  }
   toJSON() {
-    return { sessions: this.sessions, lessonCompletion: this.lessonCompletion, mute: this.mute, messageLog: this.messageLog, _nextId: this._nextId, currentTeacherId: this.currentTeacherId };
+    return { sessions: this.sessions, lessonCompletion: this.lessonCompletion, mute: this.mute, messageLog: this.messageLog, helpRequests: this.helpRequests, _nextId: this._nextId, currentTeacherId: this.currentTeacherId };
   }
   static fromJSON(o) { return new PracticeStore(o); }
 }

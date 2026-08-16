@@ -48,3 +48,17 @@ Then stand up the cloud GPU worker for FLUX + Wan2.2.
 - `02-spec/RESEARCH-godot-engine.md`
 - `02-spec/RESEARCH-wan2.2-i2v.md`
 - `02-spec/RESEARCH-chatterbox-tts.md`
+
+## Prompt-craft reference (how to phrase world briefs for FLUX/Wan2.2)
+When building a world, we (Heidi + agent) write the scene description that FLUX.1[schnell] paints and
+Wan2.2 animates. A reference demo of *how to word those prompts well* is saved here:
+- **Video:** "Best AI Video Prompt Generator 2026 (FREE)" — https://youtu.be/oT-2VO8Jzpk
+- **Captured artifacts + brief:** `brand-references/worlds/prompt-craft-ref_youtubepromptgenerator.md`
+  (montage.jpg + data.json in the same folder).
+- **Use it for:** the *structure* of a good scene prompt (place, time-of-day, light source, camera
+  move, mood, what the teacher is doing). **Do NOT copy its look** — it is cold/dark/green with
+  near-zero warm light, the opposite of our warm livable worlds. Keep our palette lock from the real
+  reference worlds (Elderwick / Avalon / Celtic / Emerald Vale).
+- **Re-capture on a new machine:** see the `## Re-capture on a new machine` section of that brief
+  (yt-see skill: `yt_see.py` + `yt_analyze.py`).
+- **USE THE SKILL:** `world-building-prompt` (in the Hermes skill set — say "**world building prompt skill**"). It is the distilled method from BOTH prompt videos — the 5-level ladder (L5 = locked teacher/world instances = AMENDMENT-11). Load it whenever we START a new world; fill its `templates/world-brief-template.md`.

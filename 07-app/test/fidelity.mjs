@@ -41,6 +41,15 @@ const TE = await import(fileUrl(SRC + '/teacher.js'));
 const EN = await import(fileUrl(SRC + '/entitlementStore.js'));
 const ST = await import(fileUrl(SRC + '/practiceStore.js'));
 const CA = await import(fileUrl(SRC + '/chatEngine.js'));
+
+// The proven original's chat reads its drills from 05-content via
+// drillSelector.loadLessons(); the ported chat is browser-safe and receives
+// lessons via setLessons(). To compare them faithfully, inject the SAME source
+// the original uses (the 05-content authoring directory) into the port.
+try {
+  const ds = require(CJS + '/step6/drillSelector.js');
+  CA.setLessons(ds.loadLessons());
+} catch (e) { /* non-fatal: if lessons can't load, drills simply won't serve */ }
 const AD = await import(fileUrl(SRC + '/adaptivePlan.js'));
 const MS = await import(fileUrl(SRC + '/messages.js'));
 const SK = await import(fileUrl(SRC + '/streaks.js'));
