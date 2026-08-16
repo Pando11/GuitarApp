@@ -8,12 +8,14 @@
 // FLUX.1 [dev], kontext-dev, krea-dev, flux-dev-fill, redux = NON-COMMERCIAL => BLOCKED.
 export const ALLOWED_IMAGE_MODELS = ['flux.1-schnell', 'qwen-image'];
 
-// AMENDMENT-09: VIDEO MOTION allowlist. Verified via GitHub/HF API this session:
-//   Wan2.1-I2V = Apache-2.0 (Wan-Video/Wan2.1 GitHub license API: "Apache License 2.0";
-//                Wan-AI/Wan2.1-I2V-14B-480P HF cardData license = apache-2.0). Commercial-clean.
-//   SVD (Stable Video Diffusion) = license:other (OpenRAIL-M-class) => BLOCKED, same as FLUX dev.
-//   LTX-Video / HunyuanVideo / CogVideoX = license "other" => UNVERIFIED, blocked until LICENSE read.
-export const ALLOWED_VIDEO_MODELS = ['wan2.1-i2v'];
+// AMENDMENT-09: VIDEO MOTION allowlist. Verified against actual license files 2026-08-15:
+//   Wan2.1-I2V = Apache-2.0 (Wan-Video/Wan2.1 GitHub license API + HF cardData) — commercial-clean.
+//   Wan2.2-I2V = Apache-2.0 (Wan-Video/Wan2.2 GitHub license API + HF cardData) — RECOMMENDED:
+//                same $0 license, visibly better cinematic motion/detail than 2.1. Use this.
+//   Mochi-1 (Apache-2.0) is Text-to-Video, NOT I2V => does not fit "still -> camera drift", excluded.
+//   SVD (license:other/OpenRAIL-M) / LTX-Video / HunyuanVideo / CogVideoX (license "other") =>
+//     BLOCKED (non-commercial / unverified). Runway/Kling/Luma/Pika = paid subscription => excluded.
+export const ALLOWED_VIDEO_MODELS = ['wan2.1-i2v', 'wan2.2-i2v'];
 
 // AMENDMENT-08: vendors that are contractually/legally non-adoptable in a paid app.
 // midjourney = closed-source + ToS forbids RE/competitive research + no embed license.

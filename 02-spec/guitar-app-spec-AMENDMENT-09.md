@@ -5,6 +5,12 @@
 **Source of truth:** this session's reverse-engineering — `gh api` + HF API license checks; Godot/Ink repo inspection; `07-app/core/asset-job.js` (extended gate).
 **Vision correction (owner, this session):** "reverse engineer X" = whole-app technique/tooling. The app is a **game-like story-world the student enters**; lessons are embedded in the narrative; the **teacher is one character**, not the product. A single reference video's aesthetic (e.g. medieval village) is the owner's *taste for that example* — **NOT a spec rule**. Do not bake "all lessons must be X-world" into this amendment.
 
+> **UPDATE 2026-08-15 (live 4-agent license+quality research, verified against actual license files):**
+> - **Motion model bumped to Wan2.2-I2V** (Apache-2.0, same $0 license as 2.1, visibly better cinematic motion/detail). Wan2.1-I2V stays allowlisted as a fallback; Wan2.2 is the recommended pick. `07-app/core/asset-job.js` `ALLOWED_VIDEO_MODELS` now = `['wan2.1-i2v','wan2.2-i2v']`.
+> - **Ink/inkjs correction:** the "inkjs is dead (last push 2022)" claim in §3 is **WRONG** — inkjs is maintained, zero-dependency, runs in all browsers. It may be used *alongside* Godot for branching lesson dialogue (MIT, complements rather than replaces Godot). The Godot pick stands.
+> - Full owner one-pager: `02-spec/MODEL-PIPELINE-DECISIONS.md`. Detailed reports: `RESEARCH-godot-engine.md`, `RESEARCH-wan2.2-i2v.md`, `RESEARCH-chatterbox-tts.md`.
+> - All four pipeline tools (FLUX.1[schnell], Wan2.2-I2V, Chatterbox, Godot 4.7) confirmed **free + commercial-clean** (Apache-2.0 / MIT). No subscription, royalty, or per-seat fee. Rejected paid leaders: Midjourney (image, sub+commercial-ban), Runway/Kling/Luma/Pika (video, sub), ElevenLabs (voice, sub), Unity (Pro sub), Unreal (5% royalty).
+
 ---
 
 ## 1. DECISION
