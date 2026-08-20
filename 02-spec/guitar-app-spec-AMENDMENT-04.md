@@ -23,7 +23,7 @@ mechanic. It is **RETIRED**. v1 is a **structured, sequentially-ordered beginner
 - **README positioning "Record it. Know exactly what to fix."** → replaced (README patched).
 - **HANDOFF.md "Gap I — audio-moat tech spike"** → RETIRED. No tech spike; the spike was gated on a
   feature that no longer exists.
-- **AGENTS Rule 7 "no feedback-engine code"** → re-pointed: the audio/recording feedback engine is
+- **Former AGENTS Rule 7 "no feedback-engine code" (deleted 2026-08-16 by owner)** → still re-pointed: the audio/recording feedback engine is
   retired; do not reintroduce recording-based features without explicit owner go-ahead.
 
 ## 3. What stays the same

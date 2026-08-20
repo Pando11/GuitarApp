@@ -29,7 +29,7 @@ func setup(lesson: Dictionary) -> void:
 
 # Fingering overlay may be driven from arithmetic-verified data OR AI-drawn art.
 # AMENDMENT-10 lifted the old "never AI-drawn" ban. (The original citation here —
-# "AMENDMENT-05 §8 + Rule 7" — was WRONG: Rule 7 is the *recording* ban, unrelated.)
+# "AMENDMENT-05 §8 + Rule 7" — was WRONG: Rule 7 was the *recording* ban (deleted 2026-08-16 by owner), unrelated to fingering. AMENDMENT-10 governs AI-drawn fingering.)
 # chord-theory-check.js still runs as a verification pass, not a hard ban.
 func _apply_fingering(fingering: Array) -> void:
 	var overlay := get_node_or_null(FINGER_OVERLAY)

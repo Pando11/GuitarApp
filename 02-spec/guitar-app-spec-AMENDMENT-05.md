@@ -2,7 +2,7 @@
 
 Date: 2026-08-07 · Owner: Heidi Hendrickson · Status: ACTIVE — current truth on product scope.
 Overrides AMENDMENT-04 where it retired audio listening; reintroduces listening as a *new,
-owner-directed* feature in constrained form (per AGENTS Rule 7's "fresh owner amendment" clause).
+owner-directed* feature in constrained form (reintroduced by this owner amendment; the prior "fresh owner amendment" clause lived in the now-deleted AGENTS Rule 7).
 
 ## 1. What changed today (owner's words, plain)
 "This is the age of AI — what could we offer in this app that is AI, what could be different,
@@ -14,7 +14,7 @@ listening** as the headline feature.
 ## 2. THE NINE AI FEATURES (owner-approved, 2026-08-07)
 1. **The app listens.** Microphone hears the student play; app confirms "clean Em" or
    "3rd string buzzing — press nearer the fret." CONSTRAINED matching against the known
-   target chord/note + tempo only (AGENTS Rule 4 stands — never open-ended transcription).
+   target chord/note + tempo only — constrained matching. (Note: the former AGENTS Rule 4 hard ban on open-ended transcription was deleted by owner direction 2026-08-16; this amendment keeps the constrained listener by design, not by that rule.)
    On-device processing; audio never uploaded.
 2. **Talk-to-the-coach chat.** Student asks "why does this chord sound dead" at 11pm; coach
    answers in plain words, aware of lesson position + recent struggles. LLM writes prose only,

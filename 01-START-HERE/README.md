@@ -207,7 +207,7 @@ no DSP, no recording, no transcription (basic-pitch/librosa only matter if a fut
 8d. **AMENDMENT-10 (owner override) — AI-drawn fingers/fretboards NOW PERMITTED.** Owner: "erase
    rule 7, age of AI, don't limit ourselves." Lifted the no-AI-drawn-fingering restriction. AI may
    generate fingering/fretboards. chord-theory-check.js kept as a *verification pass* (quality gate).
-   Rule 7 (recording) + Rule 9 (license law) LEFT INTACT (scope + copyright, not AI limits).
+   Rule 7 (recording / camera / hand-tracking) was DELETED entirely by owner direction 2026-08-16 (the fingering-lift in AMENDMENT-10 was a partial step; the full rule is now gone). Rule 9 (license law) LEFT INTACT (copyright, not AI limits).
 8e. **AMENDMENT-11 (2026-08-11) — THE PRODUCT THESIS, CAPTURED WITH REDLINES.** Owner: "capture this
    thesis — the relationship the student builds with the teacher/AI." Binds three parts: (1) **world-locked
    teacher** — lessons 1–20 = one coherent "old village" world; the teacher is a villager, scene/hand/voice

@@ -17,7 +17,7 @@ The restriction **"demonstrated fingering / fretboards must be drawn ONLY from `
 ## 2. WHAT IS PRESERVED (not erased)
 
 - **`chord-theory-check.js` arithmetic verification remains a QUALITY GATE**, not a *sole legal source* for visuals. It still catches wrong chords (it already caught the D-major middle/ring swap). It is now a *correctness check that runs alongside* AI-drawn fingering, not a hard ban on AI drawing.
-- **Rule 7 (no audio-recording / camera / hand-tracking in v1)** — NOT touched by this amendment. It is a *product-scope* decision (sequenced lesson app), not an "AI limitation." Owner may separately lift it; this amendment does not.
+- **Former Rule 7 (no audio-recording / camera / hand-tracking in v1) — DELETED by owner direction 2026-08-16.** Its camera/hand-tracking portion now lives in AGENTS Rule 2 ("Still NO camera, NO hand tracking"). This amendment never touched that scope; the deletion is separate and owner-directed.
 - **Rule 9 (license blocklist = copyright law)** — NOT touched. Midjourney / SVD / FLUX dev-krea / LTX-Hunyuan-CogVideoX(unverified) stay BLOCKED. "Age of AI" does not override copyright; that survives all amendments.
 - **Server-side-only for heavy gen** (Wan2.1 14B > on-device) — unchanged.
 
@@ -34,6 +34,6 @@ The original ban existed because AI-drawn fingers were *unreliable* (extra finge
 
 ## 5. WHAT THIS AMENDMENT DOES NOT DO
 
-- Does not reintroduce recording/camera (Rule 7 scope untouched).
+- Does not reintroduce recording/camera. (Note: the prior Rule 7 citation is stale — Rule 7 was deleted 2026-08-16; camera/hand-tracking remain barred via AGENTS Rule 2.)
 - Does not relax any license gate (Rule 9 / AMENDMENT-08 survive).
 - Does not change the bound stack (Flux-schnell + Wan2.1-I2V + Chatterbox + Godot).

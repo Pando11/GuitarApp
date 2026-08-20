@@ -75,6 +75,45 @@ export function computeStreak(snapshot = [], nowMs = Date.now()) {
   return streak;
 }
 
+// ---------------------------------------------------------------------------
+// Churn-risk / "save your streak" nudge  (feature #6: churn-prediction nudges).
+// Given the current practice STREAK and how many calendar DAYS have elapsed
+// since the last practice, decide whether to fire a comeback nudge and what
+// to say. Pure + total. Mirrored in ui-nudge.js (keep the two in sync).
+//   - practiced today               -> nothing to fire (streak safe)
+//   - idle within grace window       -> SAVE day, streak still alive -> nudge
+//   - idle past the grace window     -> streak has lapsed -> restart nudge
+// ---------------------------------------------------------------------------
+export const COMEBACK_DEFAULTS = {
+  graceDays: 1, // idle for <= this many days and the streak is still alive
+};
+
+export function comebackNudge(streakDays = 0, daysSinceLastPractice = 0, opts = {}) {
+  const { graceDays = COMEBACK_DEFAULTS.graceDays } = opts;
+
+  // No streak yet -> nothing to protect.
+  if (streakDays <= 0) return { atRisk: false, broken: false, message: null };
+
+  // Already practiced today -> streak safe right now, no nudge.
+  if (daysSinceLastPractice === 0) {
+    return { atRisk: false, broken: false, message: null };
+  }
+  // Within the grace window (e.g. yesterday) -> today is the SAVE day.
+  if (daysSinceLastPractice <= graceDays) {
+    return {
+      atRisk: true,
+      broken: false,
+      message: `Practice today to protect your ${streakDays}-day streak 🔥`,
+    };
+  }
+  // Idle past the grace window -> the streak has lapsed.
+  return {
+    atRisk: true,
+    broken: true,
+    message: `Your ${streakDays}-day streak slipped — 5 minutes restarts it 💪`,
+  };
+}
+
 // Main entry: the full review/streak/nudge state for the UI (or any consumer).
 export function computeReviewState(snapshot = [], nowMs = Date.now(), opts = {}) {
   const o = { ...DEFAULTS, ...opts };

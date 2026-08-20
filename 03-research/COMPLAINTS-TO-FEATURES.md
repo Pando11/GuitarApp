@@ -26,12 +26,13 @@ THE LIST — complaint -> our fix -> proof it is built
    - Simply Guitar: registered a COUGH as an Fmaj7; "you can play an entire song
      crappily and still pass." Fender Feedback Mode still labelled BETA.
    - ROOT CAUSE: open-ended audio transcription is ~50% accurate industry-wide.
-   -> OUR FIX: We NEVER do open-ended transcription. We do CONSTRAINED matching
-      against the KNOWN target chord + tempo only (AGENTS hard Rule 4, Rule 7).
-      On-device, audio never uploaded.
-   -> PROOF: AGENTS.md Rule 4 ("Never do open-ended audio transcription");
-      Rule 7 ("No audio-recording / transcription"). Enforced as a hard ban,
-      not a feature we hope to add.
+   -> OUR FIX: We do CONSTRAINED matching
+      against the KNOWN target chord + tempo only (on-device, audio never uploaded).
+      NOTE: the former AGENTS Rule 4 / Rule 7 hard bans on open-ended transcription and
+      recording were DELETED by owner direction 2026-08-16. Constrained matching remains
+      our design choice for accuracy, not a rule-enforced ban.
+   -> PROOF: AGENTS Rule 2 still requires on-device processing with audio never uploaded;
+      the accuracy rationale (open transcription ~50%) stands as a product-quality guide.
 
 2. COMPLAINT: False confidence / false red X — apps mark you wrong with no honesty.
    - Users distrust apps because the judgement is binary and wrong.
@@ -73,7 +74,7 @@ THE LIST — complaint -> our fix -> proof it is built
    failures (thumb over neck, collapsed wrist, fretting too far from the fret) are
    invisible to audio.
    -> OUR FIX (honest): We do NOT use the camera in v1 either — that mechanic was
-      RETIRED (AMENDMENT-04/AGENTS Rule 7: no camera, no hand tracking). So we do
+      RETIRED (AMENDMENT-04; camera/hand-tracking now barred by AGENTS Rule 2). So we do
       NOT claim to fix this with vision. Our different answer:
         - Fingering is shown by CORRECT-BY-CONSTRUCTION diagrams driven from the
           arithmetically-verified chord-theory-check.js data (AMENDMENT-10 permits
@@ -95,7 +96,7 @@ THE LIST — complaint -> our fix -> proof it is built
       rationed human. We are honest that we do not ship unlimited async human-style
       critique at v1.
    -> PROOF: AMENDMENT-11 thesis (world-locked teacher + longitudinal memory + duet);
-      AGENTS Rule 7 retired mechanic.
+      AGENTS Rule 7 retired mechanic (Rule 7 deleted 2026-08-16; the recording ban it held is gone, but the retirement decision stands).
 
 7. COMPLAINT: Walled curriculum — incumbents only grade their own content.
    -> OUR FIX (honest / future): v1 is a sequenced lesson app on our own 20-lesson
@@ -139,11 +140,11 @@ idea is red-lined [IN] (allowed for v1, buildable on existing parts) or
   speed or new angle. Safe — driven by math, not guessed (AMENDMENT-10).
 
 [OUT] 7. Camera watches their hands to see the mistake.
-  RETIRED for v1 (AGENTS Rule 7: no camera, no hand tracking). Natural answer
+  RETIRED for v1 (camera/hand-tracking now barred by AGENTS Rule 2). Natural answer
   but blocked; a later-version arm only. Do NOT promise.
 
 [OUT] 8. Record their playing and critique the take.
-  Also RETIRED by Rule 7. Do NOT reintroduce "send us your recording."
+  Also RETIRED (the recording ban it held was in Rule 7, deleted 2026-08-16 by owner; the retirement decision stands). Do NOT reintroduce "send us your recording" without explicit owner go-ahead.
 
 [OUT] 9. Free AI tutor that diagnoses WHY a chord sounds bad.
   Our rules say the AI may only repeat facts from the practice record — never

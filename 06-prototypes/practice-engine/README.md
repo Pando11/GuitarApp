@@ -55,6 +55,6 @@ node 06-prototypes/practice-engine/spine-check.mjs   # full-spine demo
 
 `listener-sim.mjs` is replaced by: mic → CREPE-class autocorrelation (approved:
 basic-pitch Apache-2.0 / CREPE MIT) → match each strum against the KNOWN pair only
-(AMENDMENT-05 Rule 4) emitting `{chord, confident, t}`. Everything downstream (counting,
+(AMENDMENT-05) emitting `{chord, confident, t}`. Everything downstream (counting,
 memory, review) is already written and tested and never touches the audio bytes — so the
 "audio never uploaded" rule holds by construction.

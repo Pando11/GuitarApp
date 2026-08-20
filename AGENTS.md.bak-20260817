@@ -39,8 +39,8 @@ Auto-loaded project context. Also read `01-START-HERE/README.md` before acting.
    is public domain and unrestricted.
    **AMENDMENT-13 (2026-08-14) — MYSTERY-MODE READINESS GATE.** Mystery Mode is an opt-in
    ADVANCED lane for students already in the program; a song may only be offered once every
-   chord it uses has been taught. The curriculum now has 25 lessons (17 teaches F, 19 teaches
-   A7 — per the AMENDMENT-15 re-sequence), so all ten progressions are fully within the taught set.
+   chord it uses has been taught. The curriculum now has 25 lessons (24 teaches F, 25 teaches
+   A7), so all ten progressions are fully within the taught set. `unlock_after_lesson` must
    equal the last-taught chord's lesson; `tools/verify-song-progressions.js` enforces this and
    re-derives the prereq map from the lesson manifest, so it cannot drift.
    **AMENDMENT-14 (2026-08-14) — HOSTILE-REVIEW CORRECTIONS. Read this before touching the
@@ -133,6 +133,6 @@ from stack 2026-08-04 — $9/mo Cadet shipping fee violates the no-subscription 
 Lottie + native canvas for the avatar layer. Teacher roster (AMENDMENT-05/owner 2026-08-07):
 multiple cartoon teacher characters as skins over one shared curriculum + shared skeleton/rig;
 voice = OpenAI TTS per-call. Images: FLUX.1[schnell]/Qwen-Image (Apache-2.0).
-Backend: PocketBase (MIT, self-hosted — AMENDMENT-16, replaces Supabase), RevenueCat, Cloudflare Workers, PostHog, Sentry.
+Backend: Supabase, RevenueCat, Cloudflare Workers, PostHog, Sentry.
 Listening: constrained target-matching only (AMENDMENT-05), on-device, audio never uploaded.
 Uploads: NONE for audio (on-device). If video ever lands, process on-device and discard.

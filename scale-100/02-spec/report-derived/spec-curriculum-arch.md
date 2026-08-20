@@ -15,7 +15,7 @@ This spec is about **lesson ORDERING/SEQUENCING**, not chord content.
 - **No chord data exists in the source.** In all 18 rows of `FINAL_curriculum_arch.jl`, the `chord_mention` field is *identical to* `title` (one row differs only by surrounding whitespace: `\n Courses \n`). **Zero rows contain an actual chord symbol.** This file is therefore evidence for *structure*, never for chords, voicings, or progressions. Do not cite it as a chord source.
 - **Do not invent chords.** Because the source carries none, this spec never infers chord symbols for the competitor and never fills GuitarApp lesson content with fabricated chords. GuitarApp's chord truth comes only from `06-prototypes/step0/schema/chord-theory-check.js` (arithmetic proof) — per AGENTS.md Rule 8.
 - **Legal line (intact):** SONGS lessons use ORIGINAL 8-chord loops only. Song *names* and *structure* are facts (permitted); tabs/lyrics/audio are never scraped or reproduced. chord voicings = chord *shapes* (facts). public_domain = title catalog only.
-- **Listening:** constrained target-matching only, on-device, audio never uploaded (AGENTS.md Rule 4/7, AMENDMENT-05).
+- **Listening:** constrained target-matching only, on-device, audio never uploaded (AMENDMENT-05; the former AGENTS Rule 4/7 citation was deleted by owner 2026-08-16, but the constrained, on-device design remains).
 - This is a **report-derived** analysis, not an AMENDMENT. It does not change bound decisions; it proposes a sequencing convention for skill tracks.
 
 ---
@@ -115,7 +115,7 @@ For each skill track, author to the 5-phase template:
 | Phase | GuitarApp lesson count | Per-lesson requirement |
 |-------|------------------------|------------------------|
 | Frame | 1–2 | Goal + setup; no new primitive. |
-| Isolate | 6–8 | **One concept each.** Each lesson carries a constrained listening check (on-device chord/tempo match) gated per AGENTS Rule 4/7. |
+| Isolate | 6–8 | **One concept each.** Each lesson carries a constrained listening check (on-device chord/tempo match) per AMENDMENT-05 (the former AGENTS Rule 4/7 citation was deleted 2026-08-16). |
 | Combine | 2–3 | Recombine *only* previously isolated blocks into musical material (original 8-chord loops for the SONGS track). |
 | Synthesize | 1–2 | Learner produces original material; teacher coaches forward from stored mastery. |
 | Bonus | 0–1 (unnumbered) | Optional advanced; off critical path. |

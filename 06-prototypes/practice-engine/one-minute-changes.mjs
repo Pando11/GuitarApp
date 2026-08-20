@@ -1,6 +1,6 @@
 // measureOneMinute / countChanges — the 30/60 SENSOR.
 //
-// Contract: the constrained listener (AMENDMENT-05 Rule 4) has ALREADY matched
+// Contract: the constrained listener (AMENDMENT-05) has ALREADY matched
 // each strum against the KNOWN target pair. Every event carries the actual chord
 // name it heard plus a confidence flag:
 //   { chord: <name> | null, confident: bool, t: ms }

@@ -46,7 +46,7 @@ These are binding constraints on the build. The assistant attached them and the 
 - This keeps the memory honest and inside the license/architecture already locked. Nobody "improves" the teacher by letting it freelance.
 
 **RED LINE 3 — The duet is the LAST stage, gated on the listening engine being proven.**
-- Teacher-plays-along requires the app to know, in real time, that the student is in time / on-chord. That is the constrained listening loop (AMENDMENT-05), NOT open transcription (banned by Rule 4).
+- Teacher-plays-along requires the app to know, in real time, that the student is in time / on-chord. That is the constrained listening loop (AMENDMENT-05), NOT open transcription. (The former Rule 4 ban on open transcription was deleted 2026-08-16; this duet still uses the constrained loop by design.)
 - Mark the duet as **"dependent on listening-engine ship + calibration sign-off"** — not "free to promise at v1." Selling duet before the listener works reproduces the #1 competitor complaint we specifically built to avoid.
 
 ---
@@ -64,7 +64,7 @@ The *village guy remembering you* is the magic — but cap v1 memory so it stays
 
 - DOES: bind the world-locked-teacher + longitudinal-student-memory + teacher–student-duet thesis as product truth; bind the "hand matches the world" visual rule; attach the 3 redlines + the v1 memory cap.
 - DOES NOT: imply the memory module or duet already exist — both are flagged as builds gated per Red Lines 1 and 3.
-- DOES NOT: relax Rule 4 (no open transcription), Rule 5 (LLM prose-only), Rule 7 (no v1 recording/camera/hand-tracking), or Rule 9 (license blocklist = copyright law — Midjourney/SVD/FLUX-dev-krea/LTX-Hunyuan-CogVideoX stay BLOCKED).
+- DOES NOT: relax Rule 2 (NO camera, NO hand tracking), Rule 5 (LLM prose-only), or Rule 9 (license blocklist = copyright law — Midjourney/SVD/FLUX-dev-krea/LTX-Hunyuan-CogVideoX stay BLOCKED). (Former Rules 4 and 7 — open transcription / recording bans — were deleted by owner direction 2026-08-16; their constraints no longer apply.)
 - DOES NOT: change the bound stack (Flux-schnell + Wan2.1-I2V + Chatterbox + Godot) or AMENDMENT-07/08/09/10.
 
 ## 6. FOLLOW-UP TASKS (open, not yet built)

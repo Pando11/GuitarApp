@@ -1,10 +1,10 @@
 # listener-real.mjs — real on-device constrained mic listener
 
 **Replaces** `listener-sim.mjs` (the deterministic test stand-in) with a working
-pitch-detection path. Per AMENDMENT-05 Rule 4 it is **CONSTRAINED**: it only ever
+pitch-detection path. Per AMENDMENT-05 it is **CONSTRAINED**: it only ever
 matches incoming audio against the **KNOWN target chord pair {A, B}** at a
 **KNOWN tempo**. It never does open-ended transcription. Audio **never leaves the
-device** (Rule 4) and below-confidence strums are reported as `confident:false`
+device** and below-confidence strums are reported as `confident:false`
 ("play that again") rather than a false red X (Rule 6).
 
 ## Output contract (unchanged engine math)

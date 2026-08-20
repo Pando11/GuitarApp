@@ -134,6 +134,20 @@
     };
   }
 
+  // ---- churn-risk / "save your streak" nudge (mirror of review-scheduler.mjs) ----
+  var COMEBACK_DEFAULTS = { graceDays: 1 };
+
+  function comebackNudge(streakDays, daysSinceLastPractice, opts) {
+    opts = opts || {};
+    var graceDays = opts.graceDays != null ? opts.graceDays : COMEBACK_DEFAULTS.graceDays;
+    if (streakDays <= 0) return { atRisk: false, broken: false, message: null };
+    if (daysSinceLastPractice === 0) return { atRisk: false, broken: false, message: null };
+    if (daysSinceLastPractice <= graceDays) {
+      return { atRisk: true, broken: false, message: 'Practice today to protect your ' + streakDays + '-day streak 🔥' };
+    }
+    return { atRisk: true, broken: true, message: 'Your ' + streakDays + '-day streak slipped — 5 minutes restarts it 💪' };
+  }
+
   // ---- rendering ----
   function renderReviewNudge(state, targetEl) {
     if (!targetEl) return;
@@ -190,7 +204,9 @@
     computeStreak: computeStreak,
     pairNeedsReview: pairNeedsReview,
     DEFAULTS: DEFAULTS,
-    renderReviewNudge: renderReviewNudge
+    renderReviewNudge: renderReviewNudge,
+    comebackNudge: comebackNudge,
+    COMEBACK_DEFAULTS: COMEBACK_DEFAULTS
   };
 
   if (document.readyState === 'loading') {

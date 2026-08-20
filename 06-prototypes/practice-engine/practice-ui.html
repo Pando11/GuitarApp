@@ -435,7 +435,7 @@ $('stopBtn').addEventListener('click', ()=>{
 // --- Real-mic wiring (#1). getUserMedia -> AudioContext -> ScriptProcessorNode ->
 // the INLINE listener twin (window.GuitarAppListener), fed frame-by-frame into the
 // SAME event stream measure()/finishDrill expect. Constrained to the known pair +
-// known tempo (AMENDMENT-05 Rule 4); below-confidence => confident:false (Rule 6).
+// known tempo (AMENDMENT-05); below-confidence => confident:false (Rule 6).
 function startRealMic(A,B){
   if(!window.GuitarAppListener || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ return false; }
   const SAMPLE_RATE = 44100, FRAME = 4096, TEMPO = 60;

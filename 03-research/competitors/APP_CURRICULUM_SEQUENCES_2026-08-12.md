@@ -173,7 +173,7 @@ teaches barre chords to absolute beginners.
   Level→Lesson→Exercise. Our genre is beginner-acoustic only, so we skip the genre sprawl.
 - **Simply's adaptive + arpeggiate-diagnostic** is the closest audio competitor; our AMENDMENT-05/06
   listening layer (constrained target-matching, ears-only) is the parallel — but we deliberately do
-  NOT do open-ended transcription (AGENTS.md Rule 4).
+  NOT do open-ended transcription as a design choice. (The former AGENTS Rule 4 hard ban was deleted by owner direction 2026-08-16; our constrained listener remains the chosen design.)
 - **Gap none of the three fill:** camera/hand geometry verification. That remains our differentiated
   layer per `COMPETITOR_TEARDOWN.md` — though note AMENDMENT-06 opened teacher presentation and
   fingering demo; the *audio-only* feedback of all three is the bar we must meet, not exceed, at v1.

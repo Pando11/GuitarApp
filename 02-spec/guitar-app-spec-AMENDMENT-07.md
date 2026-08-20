@@ -95,5 +95,5 @@ chord-theory-check.js ──> demonstrated fingering overlay (NEVER AI-drawn)
 
 - Does **not** add Flux to voice (Chatterbox only).
 - Does **not** use dev/kontext/fill/redux/krea anywhere in the paid build (illegal).
-- Does **not** let AI draw fingers/fretboards (AMENDMENT-05 §8 + Rule 7).
+- Does **not** let AI draw fingers/fretboards (AMENDMENT-05 §8). (The "Rule 7" citation here is stale — Rule 7 was deleted 2026-08-16; AI-drawn fingering is now governed by AMENDMENT-10, which permits it subject to the chord-theory-check arithmetic gate.)
 - Does **not** change the teacher.js hard invariant (teacher = cosmetic; FORBIDDEN_TEACHER_KEYS unchanged). The `AssetJob` references a teacher but may not embed lesson content.

@@ -29,7 +29,7 @@ Working tree managed via git; commit as you go.
 - **Live PWA: `07-app/`** — installable on iOS Safari + Android Chrome. Runs the proven engines
   via Web Audio + mic + Web Speech. Engine layer stays SDK-agnostic for a later native rewrite.
   Detail in `07-app/HANDOFF-07app.md`.
-- **Spec + 16 amendments** (`02-spec/`, AMENDMENT-01..16), appendix chain ending at **AMENDMENT-16**
+- **Spec + 15 amendments** (`02-spec/`, AMENDMENT-01..15), appendix chain ending at **AMENDMENT-15**
   (curriculum re-sequence + ordering gate; AMENDMENT-11 = world-locked teacher + longitudinal student
   memory + teacher–student duet, the product thesis, with redlines).
 - **20 authored lessons** in `05-content/guitar-lesson-*.json` (authoring source) → shipped as
@@ -50,7 +50,7 @@ Working tree managed via git; commit as you go.
 05-content/guitar-lesson-*.json        <- AUTHORING SOURCE (20 teaching lessons) + VOICE-GUIDE.md
    │  (manually promoted)              <- edit here, then sync to 07-app/content/lessons/
    ▼
-07-app/content/lessons/               <- SHIPPING COPY (25 lessons) — what the PWA loads
+07-app/content/lessons/               <- SHIPPING COPY (23 lessons) — what the PWA loads
    │
 05-content/scripts/generate-practice-lessons.mjs  <- reads 05-content, WRITES:
    ▼
@@ -71,7 +71,7 @@ Practice drills are GENERATED (never hand-edited) — rerun the generator after 
 5. **Teacher art** — generator locked to FLUX.1[schnell] (Apache-2.0) + Qwen-Image; license-gated in
    `07-app/core/asset-job.js`. Freelance-vs-AI-stills = art-direction call, not generator choice.
 6. **No YouTube channel name/handle yet.**
-7. **GATE STATE (per VERIFIED STATE table above, re-run 2026-08-16):** `fidelity.mjs` **48/0 ✅ GREEN** (chat.reply drill-serving branch restored to match proven engine) and `app-smoke.mjs` **20/0 ✅ GREEN** (stale "23 lessons" constant corrected to 25, post-AMENDMENT-15). Both resolved — no open reconciliation.
+7. **⚠️ GATE FLAGS (weekly OS-hygiene re-run 2026-08-15):** `fidelity.mjs` 47/1 — `chat.reply` port (`07-app/core/chatEngine.js`) diverges from its reference (`06-prototypes/step6/chat/chatEngine.js`, UNCOMMITTED/WIP in the tree). `app-smoke.mjs` 19/1 — test asserts 23 lessons, app ships 25 (post-AMENDMENT-15). Neither silently patched; both need owner reconciliation.
 8. **SOP assumption drift:** this weekly SOP assumed "AMENDMENT-11 / 23-lesson set" — repo is actually at **AMENDMENT-15 / 25-lesson set**. Docs re-synced to real HEAD (c4bfa8b).
 
 ## CONVENTIONS (unchanged, enforced)
