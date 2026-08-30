@@ -6,6 +6,7 @@
     "style_anchor": "consistent-world-art-v1",
     "video_asset": "res://assets/lessons/L01-open-c.mp4",
     "voice_asset": "res://assets/lessons/L01-open-c.ogg",
+    "_todo_blocked": "TODO(BLOCKED): res://assets/lessons/L01-open-c.mp4 not generated yet - assets/lessons/ is empty (do not fabricate the file)",
     "fingering": [
       { "string": 5, "fret": 3, "finger": 3 },
       { "string": 4, "fret": 2, "finger": 2 },

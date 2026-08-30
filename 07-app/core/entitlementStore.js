@@ -1,6 +1,15 @@
-// entitlementStore.js — F12 Money. PORTED 1:1 from 06-prototypes/step7/entitlementStore.js.
+// entitlementStore.js — F12 Money (STUB ONLY). PORTED 1:1 from 06-prototypes/step7/entitlementStore.js.
 // Single source of free/premium policy. Hard Ban 5: ZERO network calls (RevenueCat is external).
 // STRICT free tier (owner decision 2026-08-08): tuner + metronome + Lesson 1 ONLY.
+//
+// *****************************************************************************
+//  STUB ONLY — NO REAL PAYMENTS WIRED.
+//  isEntitled()/setEntitled() here are a LOCAL, dependency-free entitlement
+//  STATE STORE for offline testing. Real RevenueCat / PocketBase purchase
+//  verification is NOT connected (and must never make a network call per
+//  Hard Ban 5). Wire real purchases only behind a server-verified entitlement
+//  check before any paid launch.
+// *****************************************************************************
 
 export const FREE_LESSONS = ['L01'];
 
@@ -21,6 +30,39 @@ export const FEATURE_TIER = {
 };
 
 export function tierFor(feature) { return FEATURE_TIER[feature]; }
+
+// --- local entitlement override (STUB, for tests) -----------------------------
+// A single boolean override that forces isEntitled() to a fixed value. This is
+// the local-storage-backed flip used by tests; it is NOT a payment. When unset
+// (null) the normal free/premium policy applies. Uses globalThis.localStorage
+// if present, otherwise an in-memory fallback (node tests).
+const OVERRIDE_KEY = 'entitlementStore.override';
+const _mem = new Map();
+
+function _ls() {
+  try {
+    return (typeof globalThis !== 'undefined' && globalThis.localStorage) ? globalThis.localStorage : null;
+  } catch {
+    return null;
+  }
+}
+function _getOverride() {
+  const ls = _ls();
+  const raw = ls ? ls.getItem(OVERRIDE_KEY) : _mem.get(OVERRIDE_KEY);
+  if (raw === null || raw === undefined) return null;
+  if (raw === 'true') return true;
+  if (raw === 'false') return false;
+  return null;
+}
+function _setOverride(v) {
+  const ls = _ls();
+  if (v === null) {
+    if (ls) ls.removeItem(OVERRIDE_KEY); else _mem.delete(OVERRIDE_KEY);
+    return;
+  }
+  const raw = v ? 'true' : 'false';
+  if (ls) ls.setItem(OVERRIDE_KEY, raw); else _mem.set(OVERRIDE_KEY, raw);
+}
 
 export class EntitlementStore {
   constructor(initial) {
@@ -68,6 +110,21 @@ export class EntitlementStore {
     const out = [];
     for (const f of Object.keys(FEATURE_TIER)) if (this.canAccessFeature(f, now)) out.push(f);
     return out;
+  }
+  // --- STUB entitlement flip (local-storage-backed, for tests) ----------------
+  // Force the entitlement answer for ALL features. Pass true/false to override,
+  // or null/undefined to clear and fall back to normal free/premium policy.
+  // This is a test hook only — NOT a real purchase.
+  setEntitled(value) { _setOverride(value == null ? null : !!value); }
+  // Clear any forced override (return to normal policy).
+  clearEntitlementOverride() { _setOverride(null); }
+  // isEntitled(featureId): boolean — the canonical entitlement gate.
+  // Returns the forced override if set, otherwise the normal free/premium policy.
+  isEntitled(featureId) {
+    const o = _getOverride();
+    if (o === true) return true;
+    if (o === false) return false;
+    return this.canAccessFeature(featureId);
   }
   toJSON() {
     return { platform: this.platform, subscriptionActive: this.subscriptionActive, trialActive: this.trialActive, trialExpiry: this.trialExpiry, sandbox: this.sandbox };

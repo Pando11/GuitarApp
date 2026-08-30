@@ -1,5 +1,13 @@
 // teacher.js — F3 TEACHER ENGINE. PORTED 1:1 from 06-prototypes/step3/engine/teacher.js.
 // HARD INVARIANT: a teacher is COSMETIC ONLY. applyTeacher never mutates the manifest.
+//
+// WAVE 2 BRIDGE: applyTeacher now ALSO derives Sage's forward-coaching line from
+// real PracticeStore numbers via sageCoach (Rule-5-safe: cites ONLY stored numbers,
+// no invented praise/opinion). This is additive — it reads the store and attaches a
+// `coachingLine` field to the view + each scene's speech; it still never mutates the
+// manifest. The cosmetics (persona lines, skin, voice) are untouched.
+
+import { sageCoach } from './sageCoach.js';
 
 function isObj(v) { return v !== null && typeof v === 'object' && !Array.isArray(v); }
 function cloneVerbatim(v) {
@@ -58,16 +66,24 @@ export function loadTeacher(parsedOrRaw) {
   return deepFreeze(raw);
 }
 
-export function applyTeacher(manifest, teacher) {
+export function applyTeacher(manifest, teacher, store = null) {
   if (!isObj(manifest) || !Array.isArray(manifest.scenes)) throw new Error('applyTeacher: manifest invalid');
   const tv = validateTeacher(teacher);
   if (!tv.valid) throw new Error('TEACHER SCHEMA INVALID: ' + tv.errors.join('; '));
+  // WAVE 2 BRIDGE: derive Sage's forward-coaching line from real stored numbers.
+  // sageCoach is Rule-5-safe (cites ONLY stored numbers, no invented opinion). A
+  // bad/missing store must never break lesson rendering, so it is guarded.
+  let coachingLine = null;
+  if (store) {
+    try { coachingLine = sageCoach(store); } catch (e) { coachingLine = null; }
+  }
   const view = {
     lessonId: manifest.lessonId, title: manifest.title,
     estimatedMinutes: manifest.estimatedMinutes, totalDurationMs: manifest.totalDurationMs,
     teacherId: teacher.id, teacherCodename: teacher.codename, teacherName: teacher.name,
     teacherTagline: teacher.tagline, teacherTeachingStyle: teacher.teaching_style,
     voice: cloneVerbatim(teacher.voice), persona: cloneVerbatim(teacher.persona), skin: cloneVerbatim(teacher.skin),
+    coachingLine,
     scenes: []
   };
   for (let i = 0; i < manifest.scenes.length; i++) {
@@ -77,7 +93,9 @@ export function applyTeacher(manifest, teacher) {
     const line = teacher.persona_lines[s.kind];
     if (typeof line !== 'string') throw new Error('TEACHER MISSING PERSONA LINE for scene kind "' + s.kind + '"');
     out.teacherId = teacher.id;
-    out.speech = { style: teacher.voice.style, voice_id: teacher.voice.voice_id, persona_line: line, says: s.caption };
+    // Existing TTS path still speaks persona_line + caption; coachingLine rides
+    // along on the same speech object so the live TTS path can speak it too.
+    out.speech = { style: teacher.voice.style, voice_id: teacher.voice.voice_id, persona_line: line, says: s.caption, coachingLine };
     view.scenes.push(out);
   }
   return view;

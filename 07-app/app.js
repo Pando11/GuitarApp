@@ -114,6 +114,92 @@
     console.log(`[app] chat: ${message}`);
   }
 
+  // ── PWA shell hardening (A2.1) ────────────────────────────────────────────
+  //
+  // The shell is the app: there is no separate index.html to register the SW or
+  // link the manifest, so app.js owns both. Everything here is file://-tolerant
+  // and ?dogfood=1-tolerant: a failure (e.g. SW unsupported on file://) MUST
+  // never hard-block the lesson. dogfood is a URL param only (works on file://
+  // and localhost) — there is no server-only guard that could break boot.
+
+  function linkManifest() {
+    try {
+      if (typeof document === "undefined") return;
+      if (document.querySelector('link[rel="manifest"]')) return;
+      const link = document.createElement("link");
+      link.rel = "manifest";
+      link.href = "./manifest.webmanifest";
+      (document.head || document.documentElement).appendChild(link);
+    } catch (e) {
+      console.warn("[app] manifest link skipped (non-fatal):", e && e.message);
+    }
+  }
+
+  function registerServiceWorker() {
+    try {
+      if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return;
+      // Service workers require a secure context (https or localhost). On file://
+      // registration throws — that's expected, not an error. The app still runs.
+      if (typeof location !== "undefined" && location.protocol === "file:") {
+        console.warn("[app] service worker skipped on file:// (unsupported); app still works");
+        return;
+      }
+      navigator.serviceWorker
+        .register("./service-worker.js")
+        .catch((err) =>
+          console.warn("[app] service worker registration failed (non-fatal):", err && err.message)
+        );
+    } catch (e) {
+      console.warn("[app] service worker registration skipped (non-fatal):", e && e.message);
+    }
+  }
+
+  // BI-8: mount the always-visible "Got it" / "Not yet" buttons on a lesson view.
+  // Delegates to core/backupButtons.js (loaded as a non-module <script> before or
+  // after this file). Never throws if backupButtons is absent or root is missing.
+  function mountBackupButtons(rootEl, opts) {
+    try {
+      const bb = global.GuitarApp && global.GuitarApp.BackupButtons;
+      if (bb && typeof bb.mountBackupButtons === "function") {
+        return bb.mountBackupButtons(rootEl, opts);
+      }
+      console.warn("[app] backupButtons not loaded — self-report UI skipped (non-fatal)");
+    } catch (e) {
+      console.warn("[app] backupButtons mount skipped (non-fatal):", e && e.message);
+    }
+    return function noopCleanup() {};
+  }
+
+  function boot() {
+    linkManifest();
+    registerServiceWorker();
+    // Mount the BI-8 self-report UI onto a lesson view if one is present. The
+    // student is never hard-blocked by a missing mic: even with no root element
+    // this is a safe no-op.
+    try {
+      if (typeof document !== "undefined") {
+        const root =
+          document.getElementById("lesson-view") ||
+          document.querySelector("[data-lesson-view]");
+        if (root) {
+          mountBackupButtons(root, {
+            onReport: function (report) {
+              const cls = (function () {
+                const bb = global.GuitarApp && global.GuitarApp.BackupButtons;
+                return bb && typeof bb.classifyReport === "function"
+                  ? bb.classifyReport(report)
+                  : { source: "student-said", value: report };
+              })();
+              console.log("[app] BI-8 student self-report:", cls);
+            },
+          });
+        }
+      }
+    } catch (e) {
+      console.warn("[app] boot backup-buttons step skipped (non-fatal):", e && e.message);
+    }
+  }
+
   // ── Expose ────────────────────────────────────────────────────────────────
 
   global.GuitarApp = global.GuitarApp || {};
@@ -125,5 +211,18 @@
     loadPractice,
     verifyChord,
     renderChat,
+    linkManifest,
+    registerServiceWorker,
+    mountBackupButtons,
+    boot,
   });
+
+  // ── Boot (runs only in a real browser; no-op under node) ───────────────────
+  if (typeof document !== "undefined") {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", boot);
+    } else {
+      boot();
+    }
+  }
 })(typeof window !== "undefined" ? window : this);
