@@ -20,7 +20,7 @@ Everything below is verified as of 2026-08-29.
   - `flux-schnell/` (FLUX.1[schnell], Apache-2.0)
   - `Wan2.2-I2V-A14B/` (Wan2.2-I2V, Apache-2.0)
 - API host = `api.runpod.io` (NOT api.runpod.dev — 404s). Key in `Desktop/GuitarApp/.env` WORKS.
-- License gate `07-app/core/asset-job.js` already approves FLUX.1[schnell] + Wan2.2 + Chatterbox (MIT).
+- Image+video license gate `07-app/core/asset-job.js` already approves FLUX.1[schnell] (Apache-2.0) + Wan2.2-I2V (Apache-2.0). Chatterbox (voice, MIT) is the approved shipping voice per AGENTS.md hard rule 9 — it is NOT in asset-job.js (that file gates image/video only); do not expect to find it there.
 
 ## The missing piece (why not "ready" yet)
 There is NO generation pipeline script in the repo. To create the world you must BUILD it:

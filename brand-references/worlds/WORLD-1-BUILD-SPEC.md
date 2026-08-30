@@ -15,8 +15,10 @@ Build it per the steps below, then run it on the running pod.
   locked instances, voice line, animation beats.
 - Model/license decisions: `02-spec/MODEL-PIPELINE-DECISIONS.md`
 - Wan2.2 research: `02-spec/RESEARCH-wan2.2-i2v.md`
-- License gate (already enforced): `07-app/core/asset-job.js` — validates model choices
-  (FLUX.1[schnell] Apache-2.0 + Wan2.2-I2V Apache-2.0 + Chatterbox MIT are the APPROVED set).
+- License gate (already enforced): `07-app/core/asset-job.js` — validates IMAGE + VIDEO model
+  choices (FLUX.1[schnell] Apache-2.0 + Wan2.2-I2V Apache-2.0 are the approved set). Chatterbox
+  (voice, MIT) is the approved shipping voice per AGENTS.md hard rule 9 — it is NOT in asset-job.js
+  (that file gates image/video only); do not expect to find it there.
 - RunPod access (how to reach the pod): `brand-references/worlds/RUNPOD-ACCESS.md`
 
 ## Where the models live on the pod (verified 2026-08-29)
