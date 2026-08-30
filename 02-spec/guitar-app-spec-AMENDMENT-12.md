@@ -46,15 +46,15 @@ Corollary decisions, recorded so they are not relitigated:
 - `shapes.json` — shared open-chord shape library (11 shapes), every one verified by
   the canonical arithmetic checker. Reuses the exact shapes already shipping in the
   25-lesson curriculum; no second source of truth for fingerings.
-- `progressions.json` — 10 song progressions drawn from the top of the verified
+- `progressions.json` — 11 song progressions drawn from the top of the verified
   `popular_songs` demand list, ordered by difficulty (1→3).
 
-The 10: Zombie, Californication, Sweet Home Alabama, Highway to Hell, Johnny B. Goode,
+The 11: Zombie, Californication, Sweet Home Alabama, Highway to Hell, Johnny B. Goode,
 The House of the Rising Sun, Nothing Else Matters, Back In Black, Wish You Were Here,
-Stairway to Heaven.
+Stairway to Heaven, Amazing Grace.
 
-**One of the ten — The House of the Rising Sun — is fully public domain**, flagged
-`"public_domain": true`. On that song alone we may also teach melody, words, and a full
+**Two — The House of the Rising Sun and Amazing Grace — are fully public domain**, flagged
+`"public_domain": true`. On those songs we may also teach melody, words, and a full
 arrangement with zero restriction. It is the bridge between report #2 (demand) and
 report #3 (safe supply), and it is the template for expanding the PD catalog later.
 

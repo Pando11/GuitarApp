@@ -39,7 +39,7 @@ Single-context: `CONTEXT.md` (root glossary) + `docs/adr/`. See `docs/agents/dom
    **AMENDMENT-15 (2026-08-14) — CURRICULUM RE-SEQUENCE + ORDERING GATE.** F moved L24→L17,
    A7 L25→L19, and three absolute-beginner lessons (holding-the-pick, switching-Em-and-C,
    first-three-chord-song) pulled from after the L20 capstone to L2/L6/L9 where they belong;
-   capstone now LAST at L25. All 10 song `unlock_after_lesson` values recomputed (F→L17,
+   capstone now LAST at L25. All 11 song `unlock_after_lesson` values recomputed (F→L17,
    A7→L19). New permanent gate `node tools/verify-curriculum-order.js` (0 errors) enforces
    filename/manifest/id triple-agreement, no-forward-prereqs, pedagogical ordering invariants,
    capstone-last, and no-absolute-beginner-after-graduate; proven to bite by

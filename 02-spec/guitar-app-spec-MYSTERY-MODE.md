@@ -7,7 +7,7 @@ elsewhere; the **legal floor** (Rules 5, 9, 2) and the song-progression track
 
 ## Problem Statement
 
-The repo has the song-progression track (10 songs, AMENDMENT-12/14), the
+The repo has the song-progression track (11 songs, AMENDMENT-12/14), the
 listening engine (AMENDMENT-05), and Student Memory (ADR-0001). What it does NOT
 have is an **advanced, motivating way to use them** once a student finishes the
 core curriculum. Mystery Mode is that lane: an ear-training game that reuses all
@@ -17,7 +17,7 @@ you" payoff — without crossing any legal line.
 ## Solution
 
 An opt-in, capstone-gated **Mystery Mode** lane. The app picks from the
-10-song pool (only songs whose chords are all learned), blanks the chord names,
+11-song pool (only songs whose chords are all learned), blanks the chord names,
 and asks the student to ID the progression by ear. Reuses the listening engine,
 the song-progression data, and Student Memory.
 

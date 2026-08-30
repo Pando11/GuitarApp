@@ -155,13 +155,13 @@ means the teacher is always there in that world. Not a pop-up for performances o
 ### Song constraint at Level 3
 
 The student picks a song to perform with the band. The song's chords must ALL be taught by Lesson
-25 (they are — the 25-lesson curriculum teaches F at L17 and A7 at L19, so all 10 song-progression
+25 (they are — the 25-lesson curriculum teaches F at L17 and A7 at L19, so all 11 song-progression
 songs are within the taught set per AMENDMENT-13). The song-progression gate (`node
 tools/verify-song-progressions.js`) enforces this. House of the Rising Sun is public domain
 (unrestricted); the other 9 need the "not affiliated / not endorsed" disclaimer on the select card
 + reveal (AMENDMENT-12/14).
 
-**Open:** Does the student pick from the full 10-song catalog, or a smaller "you know these chords"
+**Open:** Does the student pick from the full 11-song catalog, or a smaller "you know these chords"
 subset curated for the performance moment? Not decided — see tickets.
 
 ### How the teacher extends the invitation (Rule 5)
@@ -304,7 +304,7 @@ scene files + character rig + FLUX stills for the owner to open in Godot.
 
 1. **Exact lesson gates for Level 1 and Level 2** — map against the 25-lesson AMENDMENT-15
    curriculum. Hermes + owner.
-2. **Level 3 song pick scope** — full 10-song catalog or curated subset?
+2. **Level 3 song pick scope** — full 11-song catalog or curated subset?
 3. **Level 3 band composition** — owner's picture (bass + drums + teacher on second guitar) is the
    starting point. Is the band pre-built per song or assembled by the app?
 4. **Animated character source** — hand-authored Godot rig vs AI-generated stills+motion (FLUX+Wan)

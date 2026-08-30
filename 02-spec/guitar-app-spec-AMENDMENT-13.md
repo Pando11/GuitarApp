@@ -41,7 +41,7 @@ and if `unlock_after_lesson` is not updated to match, the gate goes RED.
 ## 4. Curriculum reality this depends on
 
 The original 23-lesson curriculum taught A, Am, C, G, D, Dm, E, Em only — **F and A7
-were absent**. At the time of AMENDMENT-12 that meant five of the ten songs
+were absent**. At the time of AMENDMENT-12 that meant five of the eleven songs
 (Californication, Johnny B. Goode, House of the Rising Sun, Wish You Were Here,
 Stairway to Heaven) required chords the student had never been taught. Two lessons
 were added to close that gap:
@@ -50,7 +50,7 @@ were added to close that gap:
 - `guitar-lesson-25-new-chord-a7.json` — teaches **A7** (and reuses A, D, E, Em, G).
 
 The manifest now lists **25 lessons**. With F (lesson 24) and A7 (lesson 25 taught,
-all ten songs use only chords that exist in the curriculum, and the unlock rule can
+all eleven songs use only chords that exist in the curriculum, and the unlock rule can
 be satisfied honestly for every one of them. The opt-in advanced lane is therefore
 fully stocked without renaming, re-voicing, or scraping anything.
 
