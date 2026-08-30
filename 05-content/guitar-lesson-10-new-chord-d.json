@@ -139,7 +139,7 @@
     "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
   },
   "lesson": {
-    "id": "L07-new-chord-d",
+    "id": "L10-new-chord-d",
     "title": "New Chord: D + Changes",
     "level": "beginner",
     "lesson_type": "technique",
@@ -151,7 +151,7 @@
     ],
     "estimated_minutes": 14,
     "prerequisites": [
-      "Em, easy C, G (L02-L06)"
+      "Em, easy C, G (L03-L08)"
     ],
     "app_feature_mapping": {
       "free_metronome": [

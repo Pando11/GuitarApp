@@ -84,9 +84,9 @@
   },
   "exercises": [
     {
-      "id": "EX1-island",
-      "name": "Island strum",
-      "purpose": "The relaxed reggae-ish bounce.",
+      "id": "EX1-dynamics",
+      "name": "Loud and soft",
+      "purpose": "Shape volume to the phrase.",
       "params": {
         "chord_cycle": [
           "G",
@@ -94,18 +94,18 @@
           "Em",
           "C"
         ],
-        "tempo_bpm": 76,
-        "beats": 8,
-        "pattern": "D - DU - UD - U (skipped downbeats create the bounce)",
-        "cue": "leave space, let it breathe"
+        "tempo_bpm": 70,
+        "beats": 4,
+        "action": "strum harder on the chorus feel, softer on verse",
+        "cue": "use arm weight, not speed"
       },
-      "coaching": "Island strum: down, rest, down-up, up-down, up. The missing downbeats create the bounce. Relaxed, spacey — great for slower songs.",
+      "coaching": "Dynamics are just loud and soft on purpose. Push the arm weight on the strong beats, ease off on the weak ones. Music breathes.",
       "qa_status": "verified-by-theory-check-2026-08-08"
     },
     {
-      "id": "EX2-boomchick",
-      "name": "Boom-chick",
-      "purpose": "Bass note then chop.",
+      "id": "EX2-bass",
+      "name": "Alternating bass",
+      "purpose": "Thumb between the two bass strings of each chord.",
       "params": {
         "chord_cycle": [
           "G",
@@ -113,21 +113,21 @@
           "Em",
           "C"
         ],
-        "tempo_bpm": 76,
+        "tempo_bpm": 70,
         "beats": 4,
-        "pattern": "bass (lowest fretted string) on 1, light strum on 2, bass on 3, strum on 4",
-        "cue": "thumb the bass, fingers brush the chord"
+        "pattern": "thumb lowest root string, then the other bass string, repeat under the chord",
+        "cue": "root string for G/D/Em/C: low-E? G=low-E&A, D=A&low-E, Em=A&low-E, C=A&low-E"
       },
-      "coaching": "Boom-chick: thumb the bass note on the beat, light brush on the off-beat. Country and folk live here. Switch patterns between sections of a song.",
+      "coaching": "THE pattern: your thumb alternates between the two bass strings of each chord while the fingers brush. G walks low-E to A, D walks A to low-E. That moving bass is pure country-folk gold.",
       "qa_status": "verified-by-theory-check-2026-08-08"
     }
   ],
   "avatar_coaching_copy": {
-    "intro": "One pattern is fine; a small library makes you musical. Today: the island strum and boom-chick. Feel matters more than perfection.",
-    "ex1_intro": "Island strum skips some downbeats for a bouncy, relaxed feel. Space is part of the rhythm — let it breathe.",
-    "ex2_intro": "Boom-chick: thumb the bass on the beat, brush the chord off-beat. Switch patterns between verse and chorus. Pick your favourite and live in it.",
-    "results": "Two more patterns means you can match a song's mood. That is musicianship, not just mechanics.",
-    "wrap": "Patterns library started. Lesson 13 adds dynamics — loud and soft on purpose."
+    "intro": "Strumming the same volume forever is flat. Today: dynamics (loud/soft) and the alternating bass \"pattern\" — the thumb trick that makes chords walk.",
+    "ex1_intro": "Dynamics = loud and soft on purpose. Push arm weight on strong beats, ease on weak. The song starts to breathe.",
+    "ex2_intro": "THE pattern: thumb alternates the two bass strings under each chord — G walks low-E to A, D walks A to low-E. That moving bass is the sound of folk and country.",
+    "results": "A moving bass line under your chords sounds 10x more musical. You are arranging now, not just strumming.",
+    "wrap": "Dynamics + alternating bass. Lesson 14: the capo — play those same shapes in any key."
   },
   "qa_block": {
     "must_verify": [
@@ -141,23 +141,23 @@
     "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
   },
   "lesson": {
-    "id": "L12-strumming-patterns",
-    "title": "Strumming Patterns Library",
+    "id": "L21-dynamics-alternating-bass",
+    "title": "Dynamics + \"THE Pattern\" (alternating bass)",
     "level": "beginner",
     "lesson_type": "technique",
-    "one_line_promise": "Three go-to patterns, feel over precision.",
+    "one_line_promise": "Loud, soft, and a moving bass — make it musical.",
     "objectives": [
-      "Learn the island strum and boom-chick",
-      "Switch patterns per song section",
-      "Pick a favourite and own it"
+      "Play with intentional dynamics (loud/soft)",
+      "Use the alternating bass \"pattern\" (thumb)",
+      "Add a moving bass line under the L13 loop"
     ],
-    "estimated_minutes": 15,
+    "estimated_minutes": 16,
     "prerequisites": [
-      "D-DU-UDU (L11)"
+      "Boom-chick (L15)"
     ],
     "app_feature_mapping": {
       "free_metronome": [
-        "pattern-switching tempo"
+        "alternating bass tempo"
       ]
     }
   }

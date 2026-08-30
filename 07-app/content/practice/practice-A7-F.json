@@ -1,23 +1,23 @@
 {
   "lesson": {
-    "id": "P-E-Am",
-    "title": "Practice: E <-> Am — 1-minute changes",
+    "id": "P-A7-F",
+    "title": "Practice: A7 <-> F — 1-minute changes",
     "level": "beginner",
     "lesson_type": "technique",
-    "one_line_promise": "Build fluency on E <-> Am until 30+ clean changes/min.",
+    "one_line_promise": "Build fluency on A7 <-> F until 30+ clean changes/min.",
     "objectives": [
-      "Run a 1-minute E <-> Am change count",
+      "Run a 1-minute A7 <-> F change count",
       "Hit 30 clean changes/min (advance) and aim for 60 (goal)",
       "Let the app remember your weak pairs for spaced review"
     ],
     "estimated_minutes": 3,
     "practice_of": [
-      "L18-new-chord-e"
+      "L19-new-chord-a7"
     ],
     "engine": "one-minute-changes",
     "pair": [
-      "E",
-      "Am"
+      "A7",
+      "F"
     ],
     "prerequisites": [],
     "app_feature_mapping": {
@@ -27,43 +27,43 @@
     }
   },
   "chords": {
-    "Am": {
-      "qa_status": "verified-by-theory-check-2026-08-08",
-      "name": "A minor",
+    "F": {
+      "qa_status": "verified-by-theory-check-2026-08-14",
+      "name": "F major",
       "frets": [
         null,
-        0,
-        2,
+        null,
+        3,
         2,
         1,
-        0
+        1
       ],
       "fingers": [
         null,
-        0,
-        2,
+        null,
+        4,
         3,
         1,
-        0
+        1
       ]
     },
-    "E": {
-      "qa_status": "verified-by-theory-check-2026-08-08",
-      "name": "E major",
+    "A7": {
+      "qa_status": "verified-by-theory-check-2026-08-14",
+      "name": "A7",
       "frets": [
+        null,
         0,
         2,
-        2,
-        1,
         0,
+        2,
         0
       ],
       "fingers": [
+        null,
         0,
         2,
-        3,
-        1,
         0,
+        3,
         0
       ]
     }
@@ -71,25 +71,25 @@
   "exercises": [
     {
       "id": "EX2-30-60",
-      "name": "1-minute change drill — E <-> Am",
-      "purpose": "Count completed E <-> Am changes in 60s; the 30/60 engine records your rate into the fluency memory.",
+      "name": "1-minute change drill — A7 <-> F",
+      "purpose": "Count completed A7 <-> F changes in 60s; the 30/60 engine records your rate into the fluency memory.",
       "params": {
         "chord_pair": [
-          "E",
-          "Am"
+          "A7",
+          "F"
         ],
         "duration_sec": 60,
         "measure": "count completed changes",
-        "canon_key": "Am::E",
+        "canon_key": "A7::F",
         "target_per_min": 30,
         "goal_per_min": 60
       },
-      "coaching": "Metronome on. E to Am, back and forth, as many clean changes as you can in one minute. The app remembers this pair — your weakest pairs come back for spaced review automatically.",
+      "coaching": "Metronome on. A7 to F, back and forth, as many clean changes as you can in one minute. The app remembers this pair — your weakest pairs come back for spaced review automatically.",
       "qa_status": "verified-by-theory-check-2026-08-08"
     }
   ],
   "avatar_coaching_copy": {
-    "intro": "Today we drill E <-> Am. Clean, even changes — not fast messy ones.",
+    "intro": "Today we drill A7 <-> F. Clean, even changes — not fast messy ones.",
     "results": "A higher count than last time means your hands are learning. That is the only metric that matters here.",
     "wrap": "Logged to your fluency memory. If this pair is weak, it will resurface in review."
   },

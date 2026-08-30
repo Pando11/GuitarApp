@@ -84,28 +84,25 @@
   },
   "exercises": [
     {
-      "id": "EX1-dynamics",
-      "name": "Loud and soft",
-      "purpose": "Shape volume to the phrase.",
+      "id": "EX1-up",
+      "name": "The up-strum",
+      "purpose": "Light upward brush, mute on contact.",
       "params": {
         "chord_cycle": [
-          "G",
-          "D",
-          "Em",
-          "C"
+          "G"
         ],
-        "tempo_bpm": 70,
+        "tempo_bpm": 72,
         "beats": 4,
-        "action": "strum harder on the chorus feel, softer on verse",
-        "cue": "use arm weight, not speed"
+        "action": "down on beat, up on the \"and\"",
+        "cue": "up-strum touches only the thin strings"
       },
-      "coaching": "Dynamics are just loud and soft on purpose. Push the arm weight on the strong beats, ease off on the weak ones. Music breathes.",
+      "coaching": "An up-strum is a light upward brush — mostly the thin strings, slightly muted. Down on the beat, up on the \"and.\" Feels like a windshield wiper.",
       "qa_status": "verified-by-theory-check-2026-08-08"
     },
     {
-      "id": "EX2-bass",
-      "name": "Alternating bass",
-      "purpose": "Thumb between the two bass strings of each chord.",
+      "id": "EX2-pattern",
+      "name": "D-DU-UDU",
+      "purpose": "The most common beginner pattern.",
       "params": {
         "chord_cycle": [
           "G",
@@ -113,21 +110,21 @@
           "Em",
           "C"
         ],
-        "tempo_bpm": 70,
-        "beats": 4,
-        "pattern": "thumb lowest root string, then the other bass string, repeat under the chord",
-        "cue": "root string for G/D/Em/C: low-E? G=low-E&A, D=A&low-E, Em=A&low-E, C=A&low-E"
+        "tempo_bpm": 72,
+        "beats": 8,
+        "pattern": "D (1) - DU (2) - UDU (3&4) per 2-beat feel; full: D D-U U-D-U",
+        "cue": "count 1 2 3 4 with the strums"
       },
-      "coaching": "THE pattern: your thumb alternates between the two bass strings of each chord while the fingers brush. G walks low-E to A, D walks A to low-E. That moving bass is pure country-folk gold.",
+      "coaching": "The pattern: down, down-up, up-down-up. Over G-D-Em-C. Count it out loud. This is the strum 90% of campfire songs use.",
       "qa_status": "verified-by-theory-check-2026-08-08"
     }
   ],
   "avatar_coaching_copy": {
-    "intro": "Strumming the same volume forever is flat. Today: dynamics (loud/soft) and the alternating bass \"pattern\" — the thumb trick that makes chords walk.",
-    "ex1_intro": "Dynamics = loud and soft on purpose. Push arm weight on strong beats, ease on weak. The song starts to breathe.",
-    "ex2_intro": "THE pattern: thumb alternates the two bass strings under each chord — G walks low-E to A, D walks A to low-E. That moving bass is the sound of folk and country.",
-    "results": "A moving bass line under your chords sounds 10x more musical. You are arranging now, not just strumming.",
-    "wrap": "Dynamics + alternating bass. Lesson 14: the capo — play those same shapes in any key."
+    "intro": "Down-strums got you started. Up-strums make it move. Today: the D-DU-UDU pattern — the backbone of popular strumming.",
+    "ex1_intro": "Up-strum: light upward brush, mostly thin strings, slightly muted. Down on the beat, up on the \"and.\" Like a windshield wiper.",
+    "ex2_intro": "Pattern: down, down-up, up-down-up. Over the G-D-Em-C loop. Count 1-2-3-4. That groove is what makes people dance.",
+    "results": "If you can hold D-DU-UDU over the loop, your strumming sounds like songs on the radio. Big leap.",
+    "wrap": "Up-strums in. D-DU-UDU under your belt. Lesson 12 we build a small library of patterns."
   },
   "qa_block": {
     "must_verify": [
@@ -141,23 +138,23 @@
     "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
   },
   "lesson": {
-    "id": "L13-dynamics-alternating-bass",
-    "title": "Dynamics + \"THE Pattern\" (alternating bass)",
+    "id": "L14-up-strums",
+    "title": "Up-Strums + D-DU-UDU",
     "level": "beginner",
     "lesson_type": "technique",
-    "one_line_promise": "Loud, soft, and a moving bass — make it musical.",
+    "one_line_promise": "Add the up-strum — now it grooves.",
     "objectives": [
-      "Play with intentional dynamics (loud/soft)",
-      "Use the alternating bass \"pattern\" (thumb)",
-      "Add a moving bass line under the L10 loop"
+      "Strum up across the strings (light, from the elbow)",
+      "Mute slightly on the up",
+      "Play the D-DU-UDU pattern over the L13 loop"
     ],
-    "estimated_minutes": 16,
+    "estimated_minutes": 14,
     "prerequisites": [
-      "Boom-chick (L12)"
+      "G-D-Em-C loop (L13)"
     ],
     "app_feature_mapping": {
       "free_metronome": [
-        "alternating bass tempo"
+        "D-DU-UDU pattern tempo"
       ]
     }
   }

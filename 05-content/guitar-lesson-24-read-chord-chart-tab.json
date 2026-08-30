@@ -148,7 +148,7 @@
     "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
   },
   "lesson": {
-    "id": "L19-read-chord-chart-tab",
+    "id": "L24-read-chord-chart-tab",
     "title": "Read Any Chord Chart / TAB",
     "level": "intermediate-ish",
     "lesson_type": "technique",
@@ -160,7 +160,7 @@
     ],
     "estimated_minutes": 15,
     "prerequisites": [
-      "Core open chords (L02-L09)"
+      "Core open chords (L03-L12)"
     ],
     "app_feature_mapping": {
       "free_metronome": []

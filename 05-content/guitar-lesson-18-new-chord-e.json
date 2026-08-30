@@ -113,7 +113,7 @@
     "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
   },
   "lesson": {
-    "id": "L16-new-chord-e",
+    "id": "L18-new-chord-e",
     "title": "New Chord: E + cowboy set complete",
     "level": "beginner",
     "lesson_type": "technique",
@@ -125,7 +125,7 @@
     ],
     "estimated_minutes": 14,
     "prerequisites": [
-      "A, Am, Em (L02,L08,L09)"
+      "A, Am, Em (L03,L11,L12)"
     ],
     "app_feature_mapping": {
       "free_metronome": [

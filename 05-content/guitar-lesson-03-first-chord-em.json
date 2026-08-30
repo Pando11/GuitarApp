@@ -70,7 +70,7 @@
     "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
   },
   "lesson": {
-    "id": "L02-first-chord-em",
+    "id": "L03-first-chord-em",
     "title": "Your First Chord: Em + One Strum",
     "level": "absolute-beginner",
     "lesson_type": "technique",

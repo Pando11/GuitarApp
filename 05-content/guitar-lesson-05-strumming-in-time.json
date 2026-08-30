@@ -98,7 +98,7 @@
     "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
   },
   "lesson": {
-    "id": "L04-strumming-in-time",
+    "id": "L05-strumming-in-time",
     "title": "Strumming in Time",
     "level": "absolute-beginner",
     "lesson_type": "technique",
@@ -107,11 +107,11 @@
       "Strum down on every beat (D-D-D-D)",
       "Keep the wrist loose, not the whole arm",
       "Use the metronome to hold a steady pulse",
-      "Strum the L03 loop evenly"
+      "Strum the L04 loop evenly"
     ],
     "estimated_minutes": 10,
     "prerequisites": [
-      "Em + easy C loop (L03)"
+      "Em + easy C loop (L04)"
     ],
     "app_feature_mapping": {
       "free_metronome": [

@@ -120,7 +120,7 @@
     "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
   },
   "lesson": {
-    "id": "L05-chord-changes-em-easyc",
+    "id": "L07-chord-changes-em-easyc",
     "title": "Chord Changes: Em ↔ easy C (anchor fingers)",
     "level": "beginner",
     "lesson_type": "technique",
@@ -132,7 +132,7 @@
     ],
     "estimated_minutes": 12,
     "prerequisites": [
-      "Em + easy C (L03)"
+      "Em + easy C (L04)"
     ],
     "app_feature_mapping": {
       "free_metronome": [

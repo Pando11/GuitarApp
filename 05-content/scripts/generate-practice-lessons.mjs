@@ -10,7 +10,7 @@
 //
 // MOAT MODEL (mirrors practice-loop.measureLessonPair): when a lesson introduces
 // a new chord X, the student must practice EVERY adjacent pair (X, prior) taught
-// so far. We build the cumulative canonical ladder from the on-disk 20-lesson
+// so far. We build the cumulative canonical ladder from the on-disk 25-lesson
 // inventory and emit ONE practice lesson per unique canonical adjacent pair,
 // plus standalone lessons for explicit chord_pair / chord_cycle drills.
 //
@@ -24,7 +24,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { canonChord } from '../../07-app/core/chord-canon.js';
-import { validateLesson } from '../../07-app/core/schema/validate.js';
+import { validateLesson } from '../../06-prototypes/step0/schema/validate.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const TEACH = path.resolve(__dirname, '..');            // 05-content
@@ -46,7 +46,7 @@ function canonKeys(lessonData) {
 // ---- 1. Cumulative canonical ladder from on-disk inventory ----
 const ladder = [];               // [{ n, lessonId, chords:[canon...] }]
 const seen = new Set();
-for (let n = 1; n <= 20; n++) {
+for (let n = 1; n <= 25; n++) {
   const L = loadTeaching(n);
   if (!L) continue;
   const cks = canonKeys(L.data);
@@ -83,7 +83,7 @@ function addExplicit(a, b, n, name) {
   if (!pairSources.has(key)) pairSources.set(key, { a: ca, b: cb, introducedAt: n, lessonId: null, cumulative: false, drillName: name });
   else pairSources.get(key).drillName = pairSources.get(key).drillName || name;
 }
-for (let n = 1; n <= 20; n++) {
+for (let n = 1; n <= 25; n++) {
   const L = loadTeaching(n);
   if (!L) continue;
   for (const ex of (L.data.exercises || [])) {
@@ -109,7 +109,7 @@ function buildPracticeLesson(pair) {
   // (the schema validator requires chord_pair refs to resolve locally).
   // Search every teaching lesson for the canonical def — never leave it blank.
   const defs = {};
-  for (let n = 1; n <= 20; n++) {
+  for (let n = 1; n <= 25; n++) {
     const L = loadTeaching(n);
     if (!L) continue;
     for (const cn of [a, b]) if (!defs[cn]) { const d = chordDef(cn, L.data); if (d) defs[cn] = d; }

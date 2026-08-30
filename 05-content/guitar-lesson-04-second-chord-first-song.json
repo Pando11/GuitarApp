@@ -104,7 +104,7 @@
     "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
   },
   "lesson": {
-    "id": "L03-second-chord-first-song",
+    "id": "L04-second-chord-first-song",
     "title": "Second Chord + YOUR FIRST SONG",
     "level": "absolute-beginner",
     "lesson_type": "technique",
@@ -117,7 +117,7 @@
     ],
     "estimated_minutes": 12,
     "prerequisites": [
-      "Em (L02)"
+      "Em (L03)"
     ],
     "app_feature_mapping": {
       "free_metronome": [

@@ -84,25 +84,22 @@
   },
   "exercises": [
     {
-      "id": "EX1-up",
-      "name": "The up-strum",
-      "purpose": "Light upward brush, mute on contact.",
+      "id": "EX1-place",
+      "name": "Place the capo",
+      "purpose": "Clamp just behind the fret, straight across.",
       "params": {
-        "chord_cycle": [
-          "G"
-        ],
-        "tempo_bpm": 72,
-        "beats": 4,
-        "action": "down on beat, up on the \"and\"",
-        "cue": "up-strum touches only the thin strings"
+        "tool": "capo",
+        "position": "2nd fret",
+        "action": "press firmly, all strings clear, no buzzing",
+        "cue": "behind the metal, not on top of it"
       },
-      "coaching": "An up-strum is a light upward brush — mostly the thin strings, slightly muted. Down on the beat, up on the \"and.\" Feels like a windshield wiper.",
+      "coaching": "A capo is a clamp that shortens the strings. Put it just behind the 2nd fret, straight across, snug but not choking. Now your open chords sound higher.",
       "qa_status": "verified-by-theory-check-2026-08-08"
     },
     {
-      "id": "EX2-pattern",
-      "name": "D-DU-UDU",
-      "purpose": "The most common beginner pattern.",
+      "id": "EX2-transpose",
+      "name": "G–D–Em–C with capo 2",
+      "purpose": "Same shapes, new key (A major).",
       "params": {
         "chord_cycle": [
           "G",
@@ -110,51 +107,53 @@
           "Em",
           "C"
         ],
-        "tempo_bpm": 72,
-        "beats": 8,
-        "pattern": "D (1) - DU (2) - UDU (3&4) per 2-beat feel; full: D D-U U-D-U",
-        "cue": "count 1 2 3 4 with the strums"
+        "capo": 2,
+        "sounds_in": "A major (A E F#m D)",
+        "tempo_bpm": 70,
+        "beats": 4,
+        "cue": "play the same shapes; the capo does the transposing"
       },
-      "coaching": "The pattern: down, down-up, up-down-up. Over G-D-Em-C. Count it out loud. This is the strum 90% of campfire songs use.",
+      "coaching": "Capo on 2, play G-D-Em-C with the SAME shapes. It now sounds in A (A-E-F#m-D). You just played a song in a new key without learning new chords. That is the capo superpower.",
       "qa_status": "verified-by-theory-check-2026-08-08"
     }
   ],
   "avatar_coaching_copy": {
-    "intro": "Down-strums got you started. Up-strums make it move. Today: the D-DU-UDU pattern — the backbone of popular strumming.",
-    "ex1_intro": "Up-strum: light upward brush, mostly thin strings, slightly muted. Down on the beat, up on the \"and.\" Like a windshield wiper.",
-    "ex2_intro": "Pattern: down, down-up, up-down-up. Over the G-D-Em-C loop. Count 1-2-3-4. That groove is what makes people dance.",
-    "results": "If you can hold D-DU-UDU over the loop, your strumming sounds like songs on the radio. Big leap.",
-    "wrap": "Up-strums in. D-DU-UDU under your belt. Lesson 12 we build a small library of patterns."
+    "intro": "Can't hit the high notes? The capo lets you play the same easy shapes in any key. One clamp, and suddenly every song fits your voice.",
+    "ex1_intro": "Capo just behind the 2nd fret, straight and snug. It shortens the strings so your open chords sound higher. No new fingerings.",
+    "ex2_intro": "Capo on 2, play G-D-Em-C like always. It sounds in A now. Same shapes, new key — you can match any singer. That is the whole point.",
+    "results": "A capo means you never have to learn a song in an uncomfortable key. The shapes you already know travel anywhere.",
+    "wrap": "Capo basics done. Lesson 15 we build raw change speed — the skill that makes everything feel easy."
   },
   "qa_block": {
     "must_verify": [
       "Automated: every chord fingering verified deterministically by 06-prototypes/step0/schema/chord-theory-check.js (verifyChord) — 0 errors AND 0 warnings required before ship (Hard Ban 7 satisfied by arithmetic, per owner directive 2026-08-08: physical fingering correctness needs no contract guitarist).",
       "Automated: lesson JSON passes schema/validate.js (validateLesson) — all required keys present, frets/fingers length 6, qa_status whitelisted.",
       "Author pass: teaching copy is plain-English, beginner-appropriate, no AI-isms; pacing realistic.",
-      "Licensing: exercises only, zero copyrighted song material (spec §3/R6)."
+      "Licensing: exercises only, zero copyrighted song material (spec §3/R6).",
+      "Capo is a transposition tool; the SHAPES taught (G-D-Em-C) are unchanged, so no new chord fingerings are introduced. This lesson introduces no new fret data."
     ],
     "flagged_by": "founder (non-player) — cannot self-verify",
     "verifier_role": "arithmetic (chord-theory-check.js) + author review",
     "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
   },
   "lesson": {
-    "id": "L11-up-strums",
-    "title": "Up-Strums + D-DU-UDU",
+    "id": "L22-capo-basics",
+    "title": "Capo Basics (play in any key)",
     "level": "beginner",
     "lesson_type": "technique",
-    "one_line_promise": "Add the up-strum — now it grooves.",
+    "one_line_promise": "One clamp, sing any song in your range.",
     "objectives": [
-      "Strum up across the strings (light, from the elbow)",
-      "Mute slightly on the up",
-      "Play the D-DU-UDU pattern over the L10 loop"
+      "Place a capo correctly (just behind a fret)",
+      "Understand why it raises the key",
+      "Play a transposed G–D–Em–C song with capo on 2 (sounds in A)"
     ],
     "estimated_minutes": 14,
     "prerequisites": [
-      "G-D-Em-C loop (L10)"
+      "G-D-Em-C loop (L13)"
     ],
     "app_feature_mapping": {
       "free_metronome": [
-        "D-DU-UDU pattern tempo"
+        "transposed loop tempo"
       ]
     }
   }

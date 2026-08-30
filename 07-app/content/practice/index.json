@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-12T21:43:04.596Z",
+  "generated": "2026-08-30T22:03:05.980Z",
   "pairs": [
     {
       "key": "C::Em",
@@ -7,7 +7,7 @@
       "b": "Em",
       "file": "practice-C-Em.json",
       "cumulative": true,
-      "introducedAt": 3,
+      "introducedAt": 4,
       "drillName": "Your first song — Em to easy C"
     },
     {
@@ -16,7 +16,7 @@
       "b": "Em",
       "file": "practice-G-Em.json",
       "cumulative": true,
-      "introducedAt": 6,
+      "introducedAt": 8,
       "drillName": "Em to G pivot"
     },
     {
@@ -25,8 +25,8 @@
       "b": "C",
       "file": "practice-G-C.json",
       "cumulative": true,
-      "introducedAt": 6,
-      "drillName": "Four-change rotation"
+      "introducedAt": 8,
+      "drillName": "The four-bar loop"
     },
     {
       "key": "D::Em",
@@ -34,7 +34,7 @@
       "b": "Em",
       "file": "practice-D-Em.json",
       "cumulative": true,
-      "introducedAt": 7,
+      "introducedAt": 10,
       "drillName": "Four-change rotation"
     },
     {
@@ -43,7 +43,7 @@
       "b": "C",
       "file": "practice-D-C.json",
       "cumulative": true,
-      "introducedAt": 7,
+      "introducedAt": 10,
       "drillName": "Rotation with A"
     },
     {
@@ -52,7 +52,7 @@
       "b": "G",
       "file": "practice-D-G.json",
       "cumulative": true,
-      "introducedAt": 7,
+      "introducedAt": 10,
       "drillName": "Four-change rotation"
     },
     {
@@ -61,7 +61,7 @@
       "b": "Em",
       "file": "practice-A-Em.json",
       "cumulative": true,
-      "introducedAt": 8,
+      "introducedAt": 11,
       "drillName": "Rotation with A"
     },
     {
@@ -70,7 +70,7 @@
       "b": "C",
       "file": "practice-A-C.json",
       "cumulative": true,
-      "introducedAt": 8,
+      "introducedAt": 11,
       "drillName": null
     },
     {
@@ -79,7 +79,7 @@
       "b": "G",
       "file": "practice-A-G.json",
       "cumulative": true,
-      "introducedAt": 8,
+      "introducedAt": 11,
       "drillName": "Rotation with A"
     },
     {
@@ -88,7 +88,7 @@
       "b": "D",
       "file": "practice-A-D.json",
       "cumulative": true,
-      "introducedAt": 8,
+      "introducedAt": 11,
       "drillName": "Rotation with A"
     },
     {
@@ -97,7 +97,7 @@
       "b": "Em",
       "file": "practice-Am-Em.json",
       "cumulative": true,
-      "introducedAt": 9,
+      "introducedAt": 12,
       "drillName": "All six change pairs"
     },
     {
@@ -106,7 +106,7 @@
       "b": "C",
       "file": "practice-Am-C.json",
       "cumulative": true,
-      "introducedAt": 9,
+      "introducedAt": 12,
       "drillName": "All six change pairs"
     },
     {
@@ -115,7 +115,7 @@
       "b": "G",
       "file": "practice-Am-G.json",
       "cumulative": true,
-      "introducedAt": 9,
+      "introducedAt": 12,
       "drillName": "All six change pairs"
     },
     {
@@ -124,7 +124,7 @@
       "b": "D",
       "file": "practice-Am-D.json",
       "cumulative": true,
-      "introducedAt": 9,
+      "introducedAt": 12,
       "drillName": "All six change pairs"
     },
     {
@@ -133,8 +133,62 @@
       "b": "A",
       "file": "practice-Am-A.json",
       "cumulative": true,
-      "introducedAt": 9,
+      "introducedAt": 12,
       "drillName": null
+    },
+    {
+      "key": "Em::F",
+      "a": "F",
+      "b": "Em",
+      "file": "practice-F-Em.json",
+      "cumulative": true,
+      "introducedAt": 17,
+      "drillName": null
+    },
+    {
+      "key": "C::F",
+      "a": "F",
+      "b": "C",
+      "file": "practice-F-C.json",
+      "cumulative": true,
+      "introducedAt": 17,
+      "drillName": "C ↔ F, the change that matters"
+    },
+    {
+      "key": "F::G",
+      "a": "F",
+      "b": "G",
+      "file": "practice-F-G.json",
+      "cumulative": true,
+      "introducedAt": 17,
+      "drillName": null
+    },
+    {
+      "key": "D::F",
+      "a": "F",
+      "b": "D",
+      "file": "practice-F-D.json",
+      "cumulative": true,
+      "introducedAt": 17,
+      "drillName": null
+    },
+    {
+      "key": "A::F",
+      "a": "F",
+      "b": "A",
+      "file": "practice-F-A.json",
+      "cumulative": true,
+      "introducedAt": 17,
+      "drillName": null
+    },
+    {
+      "key": "Am::F",
+      "a": "F",
+      "b": "Am",
+      "file": "practice-F-Am.json",
+      "cumulative": true,
+      "introducedAt": 17,
+      "drillName": "Am – F – C – G"
     },
     {
       "key": "E::Em",
@@ -142,7 +196,7 @@
       "b": "Em",
       "file": "practice-E-Em.json",
       "cumulative": true,
-      "introducedAt": 16,
+      "introducedAt": 18,
       "drillName": null
     },
     {
@@ -151,7 +205,7 @@
       "b": "C",
       "file": "practice-E-C.json",
       "cumulative": true,
-      "introducedAt": 16,
+      "introducedAt": 18,
       "drillName": null
     },
     {
@@ -160,7 +214,7 @@
       "b": "G",
       "file": "practice-E-G.json",
       "cumulative": true,
-      "introducedAt": 16,
+      "introducedAt": 18,
       "drillName": null
     },
     {
@@ -169,7 +223,7 @@
       "b": "D",
       "file": "practice-E-D.json",
       "cumulative": true,
-      "introducedAt": 16,
+      "introducedAt": 18,
       "drillName": null
     },
     {
@@ -178,7 +232,7 @@
       "b": "A",
       "file": "practice-E-A.json",
       "cumulative": true,
-      "introducedAt": 16,
+      "introducedAt": 18,
       "drillName": "E↔A, A↔Em"
     },
     {
@@ -187,7 +241,88 @@
       "b": "Am",
       "file": "practice-E-Am.json",
       "cumulative": true,
-      "introducedAt": 16,
+      "introducedAt": 18,
+      "drillName": null
+    },
+    {
+      "key": "E::F",
+      "a": "E",
+      "b": "F",
+      "file": "practice-E-F.json",
+      "cumulative": true,
+      "introducedAt": 18,
+      "drillName": null
+    },
+    {
+      "key": "A7::Em",
+      "a": "A7",
+      "b": "Em",
+      "file": "practice-A7-Em.json",
+      "cumulative": true,
+      "introducedAt": 19,
+      "drillName": "Em ↔ A7 (the aching one)"
+    },
+    {
+      "key": "A7::C",
+      "a": "A7",
+      "b": "C",
+      "file": "practice-A7-C.json",
+      "cumulative": true,
+      "introducedAt": 19,
+      "drillName": null
+    },
+    {
+      "key": "A7::G",
+      "a": "A7",
+      "b": "G",
+      "file": "practice-A7-G.json",
+      "cumulative": true,
+      "introducedAt": 19,
+      "drillName": null
+    },
+    {
+      "key": "A7::D",
+      "a": "A7",
+      "b": "D",
+      "file": "practice-A7-D.json",
+      "cumulative": true,
+      "introducedAt": 19,
+      "drillName": "Hear what a 7th does"
+    },
+    {
+      "key": "A::A7",
+      "a": "A7",
+      "b": "A",
+      "file": "practice-A7-A.json",
+      "cumulative": true,
+      "introducedAt": 19,
+      "drillName": null
+    },
+    {
+      "key": "A7::Am",
+      "a": "A7",
+      "b": "Am",
+      "file": "practice-A7-Am.json",
+      "cumulative": true,
+      "introducedAt": 19,
+      "drillName": null
+    },
+    {
+      "key": "A7::F",
+      "a": "A7",
+      "b": "F",
+      "file": "practice-A7-F.json",
+      "cumulative": true,
+      "introducedAt": 19,
+      "drillName": null
+    },
+    {
+      "key": "A7::E",
+      "a": "A7",
+      "b": "E",
+      "file": "practice-A7-E.json",
+      "cumulative": true,
+      "introducedAt": 19,
       "drillName": null
     },
     {
@@ -196,7 +331,7 @@
       "b": "Em",
       "file": "practice-Dm-Em.json",
       "cumulative": true,
-      "introducedAt": 17,
+      "introducedAt": 20,
       "drillName": null
     },
     {
@@ -205,7 +340,7 @@
       "b": "C",
       "file": "practice-Dm-C.json",
       "cumulative": true,
-      "introducedAt": 17,
+      "introducedAt": 20,
       "drillName": "Minor progressions"
     },
     {
@@ -214,7 +349,7 @@
       "b": "G",
       "file": "practice-Dm-G.json",
       "cumulative": true,
-      "introducedAt": 17,
+      "introducedAt": 20,
       "drillName": null
     },
     {
@@ -223,7 +358,7 @@
       "b": "D",
       "file": "practice-Dm-D.json",
       "cumulative": true,
-      "introducedAt": 17,
+      "introducedAt": 20,
       "drillName": null
     },
     {
@@ -232,7 +367,7 @@
       "b": "A",
       "file": "practice-Dm-A.json",
       "cumulative": true,
-      "introducedAt": 17,
+      "introducedAt": 20,
       "drillName": null
     },
     {
@@ -241,8 +376,17 @@
       "b": "Am",
       "file": "practice-Dm-Am.json",
       "cumulative": true,
-      "introducedAt": 17,
+      "introducedAt": 20,
       "drillName": "Minor progressions"
+    },
+    {
+      "key": "Dm::F",
+      "a": "Dm",
+      "b": "F",
+      "file": "practice-Dm-F.json",
+      "cumulative": true,
+      "introducedAt": 20,
+      "drillName": null
     },
     {
       "key": "Dm::E",
@@ -250,7 +394,16 @@
       "b": "E",
       "file": "practice-Dm-E.json",
       "cumulative": true,
-      "introducedAt": 17,
+      "introducedAt": 20,
+      "drillName": null
+    },
+    {
+      "key": "A7::Dm",
+      "a": "Dm",
+      "b": "A7",
+      "file": "practice-Dm-A7.json",
+      "cumulative": true,
+      "introducedAt": 20,
       "drillName": null
     }
   ]

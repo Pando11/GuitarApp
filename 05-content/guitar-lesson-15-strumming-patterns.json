@@ -84,9 +84,9 @@
   },
   "exercises": [
     {
-      "id": "EX1-progression",
-      "name": "The G–D–Em–C loop",
-      "purpose": "Chain the four chords in order.",
+      "id": "EX1-island",
+      "name": "Island strum",
+      "purpose": "The relaxed reggae-ish bounce.",
       "params": {
         "chord_cycle": [
           "G",
@@ -94,38 +94,40 @@
           "Em",
           "C"
         ],
-        "tempo_bpm": 70,
-        "beats": 4,
-        "cue": "one chord per 4 beats, loop seamlessly"
+        "tempo_bpm": 76,
+        "beats": 8,
+        "pattern": "D - DU - UD - U (skipped downbeats create the bounce)",
+        "cue": "leave space, let it breathe"
       },
-      "coaching": "Here it is: G, D, Em, C. One chord per four beats, then back to G. This exact loop is behind hundreds of famous songs. You are playing pop music.",
+      "coaching": "Island strum: down, rest, down-up, up-down, up. The missing downbeats create the bounce. Relaxed, spacey — great for slower songs.",
       "qa_status": "verified-by-theory-check-2026-08-08"
     },
     {
-      "id": "EX2-smooth",
-      "name": "Smooth the transitions",
-      "purpose": "Focus on the two hardest changes (Em→C, C→G).",
+      "id": "EX2-boomchick",
+      "name": "Boom-chick",
+      "purpose": "Bass note then chop.",
       "params": {
         "chord_cycle": [
-          "Em",
-          "C",
           "G",
-          "D"
+          "D",
+          "Em",
+          "C"
         ],
-        "tempo_bpm": 70,
+        "tempo_bpm": 76,
         "beats": 4,
-        "focus": "land cleanly on the downbeat"
+        "pattern": "bass (lowest fretted string) on 1, light strum on 2, bass on 3, strum on 4",
+        "cue": "thumb the bass, fingers brush the chord"
       },
-      "coaching": "The trickiest moves are Em to C and C to G. Slow the metronome if you must, but land each chord ON the beat. Smooth beats fast.",
+      "coaching": "Boom-chick: thumb the bass note on the beat, light brush on the off-beat. Country and folk live here. Switch patterns between sections of a song.",
       "qa_status": "verified-by-theory-check-2026-08-08"
     }
   ],
   "avatar_coaching_copy": {
-    "intro": "Milestone lesson. G, D, Em, C — loop them and you are playing the progression behind hundreds of hit songs. This is the moment it clicks.",
-    "ex1_intro": "G, D, Em, C. One chord per four beats, loop back to G. Do not rush the changes — land them. This is real music, right here.",
-    "ex2_intro": "Hardest changes: Em to C, C to G. Slow the click if you need to. The goal is landing each chord on the beat, every time.",
-    "results": "If you can loop G-D-Em-C without stopping, you have played a \"real song.\" That is the milestone. Be proud.",
-    "wrap": "G-D-Em-C. Hundreds of songs, one loop, you playing it. Lesson 11 we add up-strums and it really starts to groove."
+    "intro": "One pattern is fine; a small library makes you musical. Today: the island strum and boom-chick. Feel matters more than perfection.",
+    "ex1_intro": "Island strum skips some downbeats for a bouncy, relaxed feel. Space is part of the rhythm — let it breathe.",
+    "ex2_intro": "Boom-chick: thumb the bass on the beat, brush the chord off-beat. Switch patterns between verse and chorus. Pick your favourite and live in it.",
+    "results": "Two more patterns means you can match a song's mood. That is musicianship, not just mechanics.",
+    "wrap": "Patterns library started. Lesson 13 adds dynamics — loud and soft on purpose."
   },
   "qa_block": {
     "must_verify": [
@@ -139,23 +141,23 @@
     "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
   },
   "lesson": {
-    "id": "L10-four-chord-songs",
-    "title": "Four-Chord Songs (MILESTONE)",
+    "id": "L15-strumming-patterns",
+    "title": "Strumming Patterns Library",
     "level": "beginner",
     "lesson_type": "technique",
-    "one_line_promise": "G–D–Em–C. Hundreds of songs. You.",
+    "one_line_promise": "Three go-to patterns, feel over precision.",
     "objectives": [
-      "Play the I–V–vi–IV loop (G–D–Em–C)",
-      "Hold even tempo across all four",
-      "Feel the milestone: a \"real song\""
+      "Learn the island strum and boom-chick",
+      "Switch patterns per song section",
+      "Pick a favourite and own it"
     ],
     "estimated_minutes": 15,
     "prerequisites": [
-      "Em, C, G, D (L02-L07)"
+      "D-DU-UDU (L14)"
     ],
     "app_feature_mapping": {
       "free_metronome": [
-        "hold the 4-chord loop tempo"
+        "pattern-switching tempo"
       ]
     }
   }

@@ -12,7 +12,7 @@
     ],
     "estimated_minutes": 3,
     "practice_of": [
-      "L06-new-chord-g"
+      "L08-new-chord-g"
     ],
     "engine": "one-minute-changes",
     "pair": [
@@ -72,7 +72,7 @@
   "exercises": [
     {
       "id": "EX1-named",
-      "name": "Four-change rotation — G <-> C",
+      "name": "The four-bar loop — G <-> C",
       "purpose": "Drill G <-> C as taught in the lesson.",
       "params": {
         "chord_pair": [

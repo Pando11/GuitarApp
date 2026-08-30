@@ -198,7 +198,7 @@
     "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
   },
   "lesson": {
-    "id": "L15-faster-chord-changes",
+    "id": "L16-faster-chord-changes",
     "title": "Faster Chord Changes (SPEED BUILDER)",
     "level": "beginner",
     "lesson_type": "technique",

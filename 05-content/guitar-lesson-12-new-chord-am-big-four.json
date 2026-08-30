@@ -1,6 +1,26 @@
 {
   "chords": {
     "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted.",
+    "Em": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "E minor",
+      "frets": [
+        0,
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "fingers": [
+        0,
+        2,
+        3,
+        0,
+        0,
+        0
+      ]
+    },
     "C": {
       "qa_status": "verified-by-theory-check-2026-08-08",
       "name": "C major (standard)",
@@ -41,6 +61,26 @@
         3
       ]
     },
+    "D": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "D major",
+      "frets": [
+        null,
+        null,
+        0,
+        2,
+        3,
+        2
+      ],
+      "fingers": [
+        null,
+        null,
+        0,
+        1,
+        3,
+        2
+      ]
+    },
     "Am": {
       "qa_status": "verified-by-theory-check-2026-08-08",
       "name": "A minor",
@@ -60,67 +100,58 @@
         1,
         0
       ]
-    },
-    "Dm": {
-      "qa_status": "verified-by-theory-check-2026-08-08",
-      "name": "D minor",
-      "frets": [
-        null,
-        null,
-        0,
-        2,
-        3,
-        1
-      ],
-      "fingers": [
-        null,
-        null,
-        0,
-        2,
-        3,
-        1
-      ]
     }
   },
   "exercises": [
     {
-      "id": "EX1-Dm",
-      "name": "Make Dm",
-      "purpose": "Land the D-minor shape.",
+      "id": "EX1-Am",
+      "name": "Make Am",
+      "purpose": "Land the A-minor shape.",
       "params": {
-        "chord": "Dm",
-        "fingers": "index(1) on G? correct: index(1) on high-e 1st, middle(2) on B 3rd, ring(3) on G 2nd",
-        "open_strings": "D and A ring open; low E muted"
+        "chord": "Am",
+        "fingers": "index(1) B 1st, middle(2) D 2nd, ring(3) G 2nd",
+        "open_strings": "A and high-e ring open; low E muted"
       },
-      "coaching": "Dm: index on the high e first fret, middle on the B third, ring on the G second. Low E quiet. The saddest, most useful minor in pop.",
+      "coaching": "Am is one finger lower than A: index on the B string first fret, middle on the D second, ring on the G second. Low E quiet. Same hand position, sadder sound.",
       "qa_status": "verified-by-theory-check-2026-08-08"
     },
     {
-      "id": "EX2-minorprog",
-      "name": "Minor progressions",
-      "purpose": "Two classic minor loops.",
+      "id": "EX2-sixpairs",
+      "name": "All six change pairs",
+      "purpose": "Drill every pair among the five chords.",
       "params": {
         "chord_cycle": [
+          "Em",
+          "C",
+          "Em",
+          "G",
           "C",
           "G",
+          "D",
+          "Em",
           "Am",
-          "Dm"
+          "Em",
+          "Am",
+          "C",
+          "Am",
+          "G",
+          "Am",
+          "D"
         ],
-        "tempo_bpm": 68,
+        "tempo_bpm": 66,
         "beats": 4,
-        "note": "for Am-F-C-G, put capo 0 and substitute F with capo? NO — teach Am-F-C-G using capo on appropriate fret; here we use C-G-Am-Dm (all open) and mention F via capo",
-        "cue": "one chord per 4 beats"
+        "cue": "one chord per 4 beats, all pairs covered"
       },
-      "coaching": "Loop C-G-Am-Dm — all open chords, pure minor emotion. For the famous Am-F-C-G, you would use a capo (Lesson 14) since F is a barre chord we have not covered; today we stay on open shapes.",
+      "coaching": "Run the six pairs: Em-C, Em-G, C-G, D-Em, Am-Em, Am-C, Am-G, Am-D. One chord per four beats. This is the full change vocabulary of beginner repertoire.",
       "qa_status": "verified-by-theory-check-2026-08-08"
     }
   ],
   "avatar_coaching_copy": {
-    "intro": "Major chords are happy; minor chords are the feeling. Dm is the most-used minor in pop. Add it and songs get emotional.",
-    "ex1_intro": "Dm: index on high e first fret, middle on B third, ring on G second. Low E quiet. That small shape carries a lot of feeling.",
-    "ex2_intro": "Loop C-G-Am-Dm — all open, all minor-ish emotion. The famous Am-F-C-G uses F, which needs a barre; for now we capo (Lesson 14) or stay on open shapes. The feeling is the lesson.",
-    "results": "Minor progressions give you the bittersweet songs. Dm is a small shape with a big emotional job.",
-    "wrap": "Dm in. Minor color unlocked. Lesson 18 we add fingerpicking — a whole new texture."
+    "intro": "Am is the sad cousin of A — one finger lower, completely different feeling. With it, Em-C-G-D-Am is the set behind thousands of songs.",
+    "ex1_intro": "Am: index on B first fret, middle on D second, ring on G second. Low E quiet. Same little triangle as A, just dropped down a fret. Listen — it is wistful.",
+    "ex2_intro": "Now all six pairs, one chord per four beats. Em-C, Em-G, C-G, D-Em, and the Am pairs. This is your complete beginner change toolkit.",
+    "results": "Five chords, all pairwise changes fluid. You can now follow an enormous number of songs.",
+    "wrap": "The big set is complete: Em, C, G, D, Am. Lesson 10 we chain four of them into your first real progression."
   },
   "qa_block": {
     "must_verify": [
@@ -128,31 +159,30 @@
       "Automated: lesson JSON passes schema/validate.js (validateLesson) — all required keys present, frets/fingers length 6, qa_status whitelisted.",
       "Author pass: teaching copy is plain-English, beginner-appropriate, no AI-isms; pacing realistic.",
       "Licensing: exercises only, zero copyrighted song material (spec §3/R6).",
-      "Dm uses open voicing (index high-e1, middle B3, ring G2). F (barre) is explicitly deferred to a later stage and reached via capo, per sequencing; no barre fingering is introduced or claimed here."
+      "Am uses the warning-free voicing (index B1, middle D2, ring G2) verified against the existing project L02.json A-minor."
     ],
     "flagged_by": "founder (non-player) — cannot self-verify",
     "verifier_role": "arithmetic (chord-theory-check.js) + author review",
     "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
   },
   "lesson": {
-    "id": "L17-minor-progressions-dm",
-    "title": "Minor Progressions + Dm",
+    "id": "L12-new-chord-am-big-four",
+    "title": "New Chord: Am + the Big Four",
     "level": "beginner",
     "lesson_type": "technique",
-    "one_line_promise": "Dm adds the emotional minor color.",
+    "one_line_promise": "Am completes the \"thousands of songs\" set.",
     "objectives": [
-      "Form D minor",
-      "Play C–G–Am–Dm and Am–F–C–G (capo for F)",
-      "Hear the sad-minor emotional shift"
+      "Form A minor (warning-free voicing)",
+      "Run all six 1-minute change pairs among {Em, C, G, D, Am}",
+      "Hear how Am changes the emotional color"
     ],
     "estimated_minutes": 16,
     "prerequisites": [
-      "C, G, Am, Dm available shapes (Am L09; Dm new)",
-      "capo (L14) for F"
+      "Em, C, G, D, A (L03-L11)"
     ],
     "app_feature_mapping": {
       "free_metronome": [
-        "minor progression tempo"
+        "all six change-pair drills"
       ]
     }
   }
