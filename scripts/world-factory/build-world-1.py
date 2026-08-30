@@ -52,14 +52,27 @@ PALETTE = {
 }
 PALETTE_LINE = ", ".join(f"{v} ({k})" for k, v in PALETTE.items())
 
+# Strict palette-enforcement clause appended to EVERY FLUX prompt in stage1.
+# The dry-run proved FLUX will otherwise emit bright-pink flowers, a saturated-orange
+# guitar, and bright-orange lanterns (none in the 7-hex palette). Naming the exact
+# in-palette hues for those elements is what actually enforces the lock.
+PALETTE_ENFORCE = (
+    "STRICT PALETTE LOCK: every pixel uses ONLY these 7 hex colors — "
+    f"{PALETTE_LINE}. "
+    "The lantern glow is stone-chimney-warm (#8B7355), never bright orange. "
+    "The acoustic guitar body is weathered-wood-brown (#4B3621). "
+    "Flower baskets show only muted mossy-lime (#C5E1A5) and weathered-wood-brown blooms, "
+    "never bright pink or red. No neon, no saturated or vibrant hues, no color outside the 7 hexes."
+)
+
 # ---------------------------------------------------------------------------
 # MANDATORY negative prompt (brief L4) — applied to EVERY FLUX/Wan call
 # ---------------------------------------------------------------------------
 NEGATIVE = (
-    "neon, vibrant saturated color, harsh sunlight, hard shadow, modern clothing, "
-    "electric guitar, UI/HUD overlay, marketplace, text, logo, photo-real human, "
-    "uncanny skin, extra fingers, deformed hands, cartoon-bubble, fast whip-cut, "
-    "lens flare, reflection of a real user face, visible phone, VR goggles"
+    "neon, vibrant saturated color, bright pink flowers, magenta, bright red, saturated "
+    "orange, bright yellow, electric guitar, UI/HUD overlay, marketplace, text, logo, "
+    "photo-real human, uncanny skin, extra fingers, deformed hands, cartoon-bubble, "
+    "fast whip-cut, lens flare, reflection of a real user face, visible phone, VR goggles"
 )
 
 # ---------------------------------------------------------------------------
@@ -149,12 +162,15 @@ def get_pipeline():
     pipe = FluxPipeline.from_pretrained(
         FLUX_DIR, torch_dtype=torch.bfloat16,
     )
-    # RTX PRO 4000 = 24GB; FLUX schnell in bf16 is ~23GB and peaks over the limit if
-    # everything sits on GPU at once. CPU-offload keeps only the active sub-module on
-    # GPU per step; attention + VAE slicing cut peak VRAM further so a 24GB card fits.
-    pipe.enable_model_cpu_offload()
+    # RTX PRO 4000 = 24GB. FLUX-schnell bf16 loads to ~23.4GiB if placed fully on
+    # GPU (no headroom -> OOM). We keep weights in CPU RAM and move each sub-module
+    # to GPU per step. NOTE: enable_model_cpu_offload() DEADLOCKS on torch 2.8 cu128
+    # + Blackwell (verified: pipe() hangs at 0% GPU). enable_sequential_cpu_offload()
+    # is the working path here: peaks at ~370MiB, renders 256x256 in ~92s.
+    import os
+    os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
+    pipe.enable_sequential_cpu_offload()
     pipe.enable_attention_slicing()
-    pipe.enable_vae_slicing()
     # FLUX.1[schnell] = distilled: 1-4 steps, guidance 0.0, shift False.
     return pipe
 
@@ -171,7 +187,7 @@ def stage1(shots, out_dir):
         # no CFG). We encode the mandatory negative concepts as an "avoid:" tail on the
         # positive prompt so the model steers away from them. The negative_prompt field is
         # still recorded in the manifest and MUST be passed to Wan2.2 (which supports it).
-        pos = spec["prompt"] + " AVOID: " + spec["negative"]
+        pos = spec["prompt"] + " " + PALETTE_ENFORCE + " AVOID: " + spec["negative"]
         image = pipe(
             prompt=pos,
             width=spec["width"], height=spec["height"],
@@ -179,20 +195,44 @@ def stage1(shots, out_dir):
             guidance_scale=0.0,         # schnell requires 0.0
             # shift handled by pipeline default for schnell; not set (False-equivalent)
         ).images[0]
-        png = os.path.join(out_dir, f"{name}.png")
-        image.save(png)
+        raw_png = os.path.join(out_dir, f"{name}.png")
+        image.save(raw_png)
+        # Hard palette lock: FLUX's text priors (pink flowers, orange guitar, bright
+        # lantern) defeat prompt-only enforcement, so we snap every pixel to the nearest
+        # of the 7 palette hexes. The palette-compliant still is the deliverable.
+        qpng = os.path.join(out_dir, f"{name}.palette.png")
+        quantize_to_palette(raw_png, qpng)
         meta = {
-            "shot": name, "label": spec["label"], "file": png,
-            "model": "flux.1-schnell", "steps": 4, "guidance_scale": 0.0,
-            "palette": PALETTE, "negative_prompt": spec["negative"],
+            "shot": name, "label": spec["label"], "file": qpng,
+            "raw_file": raw_png, "model": "flux.1-schnell", "steps": 4,
+            "guidance_scale": 0.0, "palette": PALETTE,
+            "negative_prompt": spec["negative"],
             "prompt": spec["prompt"], "prompt_sent_to_model": pos,
         }
         manifest.append(meta)
-        print(f"[stage1]   -> {png} ({os.path.getsize(png)} bytes)", flush=True)
+        print(f"[stage1]   -> {qpng} ({os.path.getsize(qpng)} bytes)", flush=True)
     with open(os.path.join(out_dir, "manifest.json"), "w") as f:
         json.dump(manifest, f, indent=2)
     print(f"[stage1] wrote manifest ({len(manifest)} shots) -> {out_dir}/manifest.json", flush=True)
     return manifest
+
+
+def quantize_to_palette(src_png, dst_png):
+    """Snap every pixel of src_png to the nearest of the 7 PALETTE hexes -> dst_png.
+    Guarantees the hard palette lock regardless of FLUX's text-prior color drift."""
+    from PIL import Image
+    pal = {k: tuple(int(v[i:i + 2], 16) for i in (1, 3, 5)) for k, v in PALETTE.items()}
+    im = Image.open(src_png).convert("RGB")
+    px = im.load()
+    W, H = im.size
+    for y in range(H):
+        for x in range(W):
+            r, g, b = px[x, y]
+            best = min(pal.items(),
+                       key=lambda kv: (kv[1][0] - r) ** 2 + (kv[1][1] - g) ** 2 + (kv[1][2] - b) ** 2)
+            px[x, y] = best[1]
+    im.save(dst_png)
+    print(f"[quantize] {src_png} -> {dst_png} (7-color palette)", flush=True)
 
 
 def stage2_placeholder():

@@ -27,7 +27,11 @@ Poll `GET /v2/pods/xgcitppkl4lcm9` until `"status":"RUNNING"` (takes ~30–60s).
 Stop later with `{"action":"stop"}` (models are safe on the volume).
 
 ## Open the filesystem (Jupyter)
-- Proxy URL: `https://xgcitppkl4lcm9-64412317.proxy.runpod.net`
+- Proxy URL: `https://xgcitppkl4lcm9-<LIVE_PORT>.proxy.runpod.net`
+  ⚠️ **The numeric port changes on EVERY pod restart** — do NOT trust a printed port. The
+  scripts `pod_run.py` / `pod_shell.py` now resolve it automatically via `_resolve_jupyter_port()`
+  (reads `runtime.ports` private 8888 → public from `GET /v2/pods/<id>`). Example only: was
+  `64412317`, then `60234` on 2026-08-30.
 - Auth: append `?token=<JUPYTER_PASSWORD>` (the `JUPYTER_PASSWORD` value is in the pod's
   env — fetch it from `GET /v2/pods/xgcitppkl4lcm9`, field `env.JUPYTER_PASSWORD`).
 - Browse files: `https://<proxy>/api/contents/workspace?type=directory&token=<pw>`

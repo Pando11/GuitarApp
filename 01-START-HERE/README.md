@@ -97,7 +97,9 @@ The PC-transfer "everything is placeholder" claim is **false** for the shipping 
 
 ## Operational state (the only non-decision facts worth a note)
 - **Handoffs retired (2026-08-29):** all `HANDOFF*.md` files moved to `_RETIRED/handoffs/`. Decisions live in `02-spec/` + `docs/adr/`; this README + AGENTS.md are the live pointers. Don't recreate dated handoff files.
-- **RunPod pod key EXPIRED (error 1010):** `.env RUNPOD_API_KEY` is rejected by the API. Pod `awkward_scarlet_louse` (ID `xgci…`) likely still exists but is unreachable until a fresh key is pasted into `.env`. FLUX.1[schnell] was downloaded; Wan2.2-I2V was ~12% synced — unconfirmed until key restored.
+- **RunPod pod key is VALID (verified 2026-08-30):** `GET api.runpod.io/v2/pods/<id>` returns HTTP 200 and the live pod detail. The earlier "key expired (error 1010)" note was a transient proxy blip, NOT a dead key. Two REAL blockers were found instead (see below).
+- **BLOCKER 1 — stale hard-coded proxy port:** `scripts/world-factory/pod_run.py` + `pod_shell.py` connected to `…-64412317.proxy.runpod.net`, but RunPod reassigns the Jupyter (8888) proxy port on every restart. **FIXED 2026-08-30:** both scripts now resolve the live port from the API at runtime (`_resolve_jupyter_port()`), so this can't go stale again.
+- **BLOCKER 2 — container currently DOWN:** as of 2026-08-30 the pod lifecycle shows `status: RUNNING` but `runtime.status: None` and `containerStartedAt: None`, and the Jupyter proxy returns HTTP 404 (Cloudflare edge). The container is not serving. A `STOP` → `START` cycle is required to bring Jupyter back up (models persist on volume `6nvscrbt2s`). Confirm with `runtime.status == "running"` before assuming the pod is usable.
 - **Production needs the pod:** the FLUX→Wan→Chatterbox→Godot pipeline runs ONLY on the rented GPU, not during student practice (practice is 100% on-device).
 
 ## How to use this

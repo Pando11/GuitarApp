@@ -13,7 +13,7 @@ Usage:
   python3 pod_shell.py --file run_me.sh
   python3 pod_shell.py "long command" --timeout 1800
 """
-import os, sys, time, json, uuid, urllib.request, urllib.error, http.cookiejar, websocket
+import os, sys, time, json, uuid, subprocess, urllib.request, urllib.error, http.cookiejar, websocket
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _REPO = os.path.abspath(os.path.join(_HERE, "..", ".."))
@@ -29,8 +29,29 @@ for _cand in (os.path.join(_REPO, ".env"), os.path.join(os.getcwd(), ".env")):
 
 POD_ID = os.environ["RUNPOD_POD_ID"]
 PW = os.environ["RUNPOD_JUPYTER_PASSWORD"]
-BASE = f"https://{POD_ID}-64412317.proxy.runpod.net"
-TERM_WS = f"wss://{POD_ID}-64412317.proxy.runpod.net/api/terminals/websocket/1?token={PW}"
+
+def _resolve_jupyter_port():
+    """Resolve the live Jupyter (8888) public proxy port from the RunPod API.
+    RunPod reassigns proxy ports on every pod restart, so a hard-coded port
+    goes stale and every connection silently fails. Resolve from the API instead."""
+    key = os.environ.get("RUNPOD_API_KEY", "")
+    if key and POD_ID:
+        try:
+            out = subprocess.run(
+                ["curl", "-s", "--max-time", "25", "-H", f"Authorization: Bearer {key}",
+                 f"https://api.runpod.io/v2/pods/{POD_ID}"],
+                capture_output=True, text=True, timeout=40).stdout
+            d = json.loads(out)
+            for x in (d.get("runtime", {}) or {}).get("ports", []) or []:
+                if str(x.get("private")) == "8888" and x.get("public"):
+                    return str(x["public"])
+        except Exception:
+            pass
+    return "64412317"  # legacy fallback (stale after restart)
+
+_BASE_PORT = _resolve_jupyter_port()
+BASE = f"https://{POD_ID}-{_BASE_PORT}.proxy.runpod.net"
+TERM_WS = f"wss://{POD_ID}-{_BASE_PORT}.proxy.runpod.net/api/terminals/websocket/1?token={PW}"
 
 
 def _ready() -> bool:

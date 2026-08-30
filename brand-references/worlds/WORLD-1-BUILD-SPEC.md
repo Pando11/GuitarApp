@@ -64,6 +64,23 @@ A single orchestrator that, given the brief, produces World 1 assets. Suggested 
 - Godot world is a code skeleton (World.gd/World.tscn present, no real art).
 - 0 AI cinematic assets produced to date.
 
+## Status update — 2026-08-30 session
+Stage 1 dry-run is now **PROVEN WORKING** (was blocked by two bugs, both fixed):
+- BUG FIX 1: `enable_model_cpu_offload()` DEADLOCKS on torch 2.8 cu128 + Blackwell
+  (pipe() hung at 0% GPU). Switched to `enable_sequential_cpu_offload()` — renders
+  768x448 in ~92s, peak VRAM ~370MiB. Placing FLUX fully on GPU OOMs at ~23.4GiB, so
+  offload is required, not optional.
+- BUG FIX 2: palette lock was NOT enforced by prompt alone (FLUX emitted bright-pink
+  flowers, orange guitar, bright lantern). Added `quantize_to_palette()` which snaps every
+  pixel to the nearest of the 7 brief hexes — VERIFIED 100% palette coverage, 0 outside.
+- A full Stage-1 run (`--stage 1`, all 4 shots: sage_porch / coldopen_walk / twoshot /
+  sage_charsheet) completed on the pod with JOB_DONE and wrote a 4-shot manifest + `.palette.png`
+  for each. 1 still (sage_porch, 768x448 dry-run) is pulled back locally and verified compliant;
+  the other 3 + full-res versions were stranded when the pod container went DOWN
+  (Jupyter proxy 404 / control-plane 403) and are in ephemeral /tmp — recoverable only after a
+  pod STOP->START cycle.
+- Stages 2-4 (Wan2.2 / Chatterbox / Godot) remain SCAFFOLDS — NOT built this session.
+
 ## Build order for next session
 1. Write `scripts/world-factory/build-world-1.*` (orchestrator) + per-stage modules.
 2. Start pod (see RUNPOD-ACCESS.md), confirm `/workspace` models present.

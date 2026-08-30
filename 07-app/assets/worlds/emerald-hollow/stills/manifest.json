@@ -1,0 +1,23 @@
+[
+  {
+    "shot": "sage_porch",
+    "label": "L2 / BLOCK 01 \u2014 @Sage welcomes on the porch",
+    "file": "/tmp/worlds/emerald-hollow/stills/sage_porch.palette.png",
+    "raw_file": "/tmp/worlds/emerald-hollow/stills/sage_porch.png",
+    "model": "flux.1-schnell",
+    "steps": 4,
+    "guidance_scale": 0.0,
+    "palette": {
+      "deep_forest_green": "#2E8B57",
+      "weathered_wood_brown": "#4B3621",
+      "mossy_lime": "#C5E1A5",
+      "slate_cobblestone_grey": "#708090",
+      "misty_blue_grey": "#B0C4DE",
+      "near_black_shadow": "#202020",
+      "stone_chimney_warm": "#8B7355"
+    },
+    "negative_prompt": "neon, vibrant saturated color, bright pink flowers, magenta, bright red, saturated orange, bright yellow, electric guitar, UI/HUD overlay, marketplace, text, logo, photo-real human, uncanny skin, extra fingers, deformed hands, cartoon-bubble, fast whip-cut, lens flare, reflection of a real user face, visible phone, VR goggles",
+    "prompt": "Sage, a chill mid-30s acoustic guitar instructor, layered earth-tone tunic, worn leather strap, own instrument (not a prop swap), relaxed posture, faint warm smile, moss-covered sod-roof cottage behind, seated on a wooden tavern porch holding an acoustic guitar, one ankle crossed, relaxed posture, faint smile, small welcoming wave. enchanted medieval Celtic tavern-in-the-woods: half-timbered cottage, moss-covered sod roof, hanging flower baskets, wooden barrels, cobblestone street, misty evergreen hills behind, warm lantern glow porch, barrels and flower baskets to one side, cobblestone street, misty hills behind. Early-morning overcast soft diffuse light, no harsh shadow, a warm lantern glow begins at the porch rail. Medium shot, eye-level, 35mm wide, calm breath, a friend who is glad you showed up. Palette strictly: #2E8B57 (deep_forest_green), #4B3621 (weathered_wood_brown), #C5E1A5 (mossy_lime), #708090 (slate_cobblestone_grey), #B0C4DE (misty_blue_grey), #202020 (near_black_shadow), #8B7355 (stone_chimney_warm). Muted-to-moderate saturation, dark-to-moody, never bright.",
+    "prompt_sent_to_model": "Sage, a chill mid-30s acoustic guitar instructor, layered earth-tone tunic, worn leather strap, own instrument (not a prop swap), relaxed posture, faint warm smile, moss-covered sod-roof cottage behind, seated on a wooden tavern porch holding an acoustic guitar, one ankle crossed, relaxed posture, faint smile, small welcoming wave. enchanted medieval Celtic tavern-in-the-woods: half-timbered cottage, moss-covered sod roof, hanging flower baskets, wooden barrels, cobblestone street, misty evergreen hills behind, warm lantern glow porch, barrels and flower baskets to one side, cobblestone street, misty hills behind. Early-morning overcast soft diffuse light, no harsh shadow, a warm lantern glow begins at the porch rail. Medium shot, eye-level, 35mm wide, calm breath, a friend who is glad you showed up. Palette strictly: #2E8B57 (deep_forest_green), #4B3621 (weathered_wood_brown), #C5E1A5 (mossy_lime), #708090 (slate_cobblestone_grey), #B0C4DE (misty_blue_grey), #202020 (near_black_shadow), #8B7355 (stone_chimney_warm). Muted-to-moderate saturation, dark-to-moody, never bright. STRICT PALETTE LOCK: every pixel uses ONLY these 7 hex colors \u2014 #2E8B57 (deep_forest_green), #4B3621 (weathered_wood_brown), #C5E1A5 (mossy_lime), #708090 (slate_cobblestone_grey), #B0C4DE (misty_blue_grey), #202020 (near_black_shadow), #8B7355 (stone_chimney_warm). The lantern glow is stone-chimney-warm (#8B7355), never bright orange. The acoustic guitar body is weathered-wood-brown (#4B3621). Flower baskets show only muted mossy-lime (#C5E1A5) and weathered-wood-brown blooms, never bright pink or red. No neon, no saturated or vibrant hues, no color outside the 7 hexes. AVOID: neon, vibrant saturated color, bright pink flowers, magenta, bright red, saturated orange, bright yellow, electric guitar, UI/HUD overlay, marketplace, text, logo, photo-real human, uncanny skin, extra fingers, deformed hands, cartoon-bubble, fast whip-cut, lens flare, reflection of a real user face, visible phone, VR goggles"
+  }
+]

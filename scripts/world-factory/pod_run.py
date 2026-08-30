@@ -18,7 +18,7 @@ Modes:
 
 Env (from Desktop/GuitarApp/.env): RUNPOD_API_KEY, RUNPOD_POD_ID, RUNPOD_JUPYTER_PASSWORD
 """
-import os, sys, json, time, base64, urllib.request, urllib.error, http.cookiejar, websocket
+import os, sys, json, time, base64, subprocess, urllib.request, urllib.error, http.cookiejar, websocket
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _REPO = os.path.abspath(os.path.join(_HERE, "..", ".."))
@@ -34,7 +34,29 @@ for _cand in (os.path.join(_REPO, ".env"), os.path.join(os.getcwd(), ".env")):
 
 POD_ID = os.environ["RUNPOD_POD_ID"]
 PW = os.environ["RUNPOD_JUPYTER_PASSWORD"]
-BASE = f"https://{POD_ID}-64412317.proxy.runpod.net"
+
+def _resolve_jupyter_port():
+    """Resolve the live Jupyter (8888) public proxy port from the RunPod API.
+    RunPod reassigns proxy ports on every pod restart, so a hard-coded port
+    goes stale and every connection silently fails. Resolve from the API instead."""
+    key = os.environ.get("RUNPOD_API_KEY", "")
+    if key and POD_ID:
+        try:
+            out = subprocess.run(
+                ["curl", "-s", "--max-time", "25", "-H", f"Authorization: Bearer {key}",
+                 f"https://api.runpod.io/v2/pods/{POD_ID}"],
+                capture_output=True, text=True, timeout=40).stdout
+            d = json.loads(out)
+            for x in (d.get("runtime", {}) or {}).get("ports", []) or []:
+                if str(x.get("private")) == "8888" and x.get("public"):
+                    return str(x["public"])
+        except Exception:
+            pass
+    return "64412317"  # legacy fallback (stale after restart)
+
+_BASE_PORT = _resolve_jupyter_port()
+BASE = f"https://{POD_ID}-{_BASE_PORT}.proxy.runpod.net"
+WS_BASE = f"wss://{POD_ID}-{_BASE_PORT}.proxy.runpod.net"
 
 _COOKIE_JAR = http.cookiejar.CookieJar()
 _OPENER = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(_COOKIE_JAR))
@@ -91,7 +113,7 @@ def read_pod_file(remote_path: str) -> str:
 
 
 def _open_kernel_ws(kid):
-    ws_url = f"wss://{POD_ID}-64412317.proxy.runpod.net/api/kernels/{kid}/channels?token={PW}"
+    ws_url = f"{WS_BASE}/api/kernels/{kid}/channels?token={PW}"
     for attempt in range(8):
         try:
             return websocket.create_connection(ws_url, timeout=30, skip_utf8_validation=True)
