@@ -11,7 +11,7 @@
 
 ## CORRECTED GROUND TRUTH (verified on disk 2026-08-29)
 
-**Lessons: DATA authored, ZERO produced.** 25 lesson JSONs exist with chords/exercises/coaching copy/Q&A (the *script*). But NOTHING is produced as the animated + voiced + in-world experience a student sees: `assets/` (FLUX/Wan output) is empty, only 8 proof-of-concept voice wavs from one old lesson exist, the Godot world is a code skeleton with no real art. So "no lessons are built yet" is TRUE in the way that matters — the data is a script; nothing's been filmed. First-launch scope = "how many lessons do we PRODUCE," starting from zero.
+**Lessons: DATA authored, ZERO lessons produced.** 25 lesson JSONs exist with chords/exercises/coaching copy/Q&A (the *script*). No LESSON is produced as the animated + voiced + in-world experience a student sees. BUT World-1 *world art* is now produced: `07-app/assets/worlds/emerald-hollow/` holds 4 palette-locked FLUX stills + 3 Wan2.2-I2V clips (generated 2026-08-30 via fal.ai; RunPod abandoned). Only 8 proof-of-concept voice wavs from one old lesson exist, and the Godot world is a code skeleton. So "no lessons are built yet" remains TRUE in the way that matters — the script exists, the world art now exists, but no full produced lesson (art + voice + Godot scene wired together) ships yet. First-launch scope = "how many lessons do we PRODUCE," starting from zero.
 
 ---
 

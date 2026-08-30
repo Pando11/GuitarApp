@@ -21,7 +21,7 @@ godot/
 ## Pipeline wired (per AMENDMENT-09)
 ```
 Flux-schnell (Apache-2.0, cloud)  -> painted scene still
-Wan2.1-I2V (Apache-2.0, cloud)    -> cinematic motion  -> video_asset (.mp4)
+Wan2.2-I2V (Apache-2.0, cloud)    -> cinematic motion  -> video_asset (.mp4)
 Chatterbox (MIT)                  -> voice_asset (.ogg)  (synced to clip)
 Godot (MIT)                       -> wraps it into the walkable world; lessons = scenes
 chord-theory-check.js             -> fingering[] (overlay only renders verified data)
@@ -39,5 +39,5 @@ chord-theory-check.js             -> fingering[] (overlay only renders verified 
 
 ## Next steps (not yet built)
 - Wire `World.enter_lesson` to actual UI buttons / Supabase curriculum.
-- Replace placeholder art with Flux stills + Wan2.1 motion from the cloud-gpu-worker.
+- Replace placeholder art with Flux stills + Wan2.2 motion from the cloud worker.
 - Sync Chatterbox voice to the clip timeline.

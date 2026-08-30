@@ -1,45 +1,101 @@
 extends Node2D
 # LessonScene.gd — a lesson as a scene inside the world (AMENDMENT-09, updated by AMENDMENT-10).
-# Plays the Wan2.1-generated cinematic clip, drives Chatterbox voice, and overlays
-# demonstrated fingering. SOURCE = verified data OR AI-drawn art — AMENDMENT-10 lifted the old
-# "never AI-drawn" ban; chord-theory-check.js still runs as a verification pass (quality gate).
-# The clip + voice + fingering all come from the AssetJob / lesson JSON, not from the
-# engine guessing. Teacher = one character in the scene.
+# Plays the World-1 cold-open clip sequence (B00->B01->B02) and the matching @Sage voice
+# over B01/B02. SOURCE = the asset manifest, NOT the engine guessing. Teacher = one character.
+#
+# The lesson dict (from lesson_manifest.json) supports:
+#   clips:        [ "res://.../B00_walkin.mp4", ... ]   (sequenced, played in order)
+#   voice_assets: { "B01_meetsage": "res://.../B01_welcome_adult.wav", ... }
+#                 keyed by the STEM of the clip filename, so each clip can have its own line.
+#   fingering:    [ ... ]  (verified chord-theory data; optional)
 
 const VIDEO_NODE = "VideoStreamPlayer"
+const AUDIO_NODE = "AudioStreamPlayer"
 const FINGER_OVERLAY = "FingeringOverlay"
 
 var _lesson: Dictionary = {}
+var _clips: Array = []
+var _voice_map: Dictionary = {}
+var _clip_index: int = 0
+
+
+func _ready() -> void:
+	# Connect the clip-finished signal so the cold open advances B00 -> B01 -> B02.
+	var vp := get_node_or_null(VIDEO_NODE)
+	if vp != null:
+		if not vp.finished.is_connected(_on_VideoStreamPlayer_finished):
+			vp.finished.connect(_on_VideoStreamPlayer_finished)
+
 
 func setup(lesson: Dictionary) -> void:
 	_lesson = lesson
-	# 1) Cinematic motion clip (Wan2.1-I2V, Apache-2.0, server-generated, local file)
-	var clip := _lesson.get("video_asset", "")
-	if clip != "" and FileAccess.file_exists(clip):
-		var vp := get_node_or_null(VIDEO_NODE)
-		if vp != null:
-			vp.stream = load(clip)
-			vp.play()
-	# 2) Voice track (Chatterbox, MIT) — synced separately in production
-	var voice := _lesson.get("voice_asset", "")
-	if voice != "":
-		print("Voice track: %s (Chatterbox MIT)" % voice)
-	# 3) Demonstrated fingering from VERIFIED data (chord-theory-check.js output)
-	_apply_fingering(_lesson.get("fingering", []))
+	_clips = lesson.get("clips", [])
+	_voice_map = lesson.get("voice_assets", {})
+	if _clips.is_empty():
+		# Fallback: older single-clip shape.
+		var single = lesson.get("video_asset", "")
+		if single != "":
+			_clips = [single]
+	_apply_fingering(lesson.get("fingering", []))
+	if _clips.is_empty():
+		push_warning("Lesson '%s' has no clips to play." % lesson.get("id", "?"))
+		return
+	_play_current()
+
+
+func _play_current() -> void:
+	if _clip_index >= _clips.size():
+		print("Lesson '%s' finished." % _lesson.get("id", "?"))
+		return
+	var clip_path: String = _clips[_clip_index]
+	var vp := get_node_or_null(VIDEO_NODE)
+	if vp == null:
+		push_error("Missing %s node" % VIDEO_NODE)
+		return
+	var stream: VideoStream = load(clip_path)
+	if stream == null:
+		push_error("Could not load clip: %s" % clip_path)
+		return
+	vp.stream = stream
+	vp.play()
+
+	# Sync the matching voice line (keyed by clip filename stem).
+	var stem: String = clip_path.get_file().get_basename()
+	if _voice_map.has(stem):
+		_play_voice(_voice_map[stem])
+
+
+func _play_voice(wav_path: String) -> void:
+	var ap := get_node_or_null(AUDIO_NODE)
+	if ap == null:
+		push_warning("Missing %s node" % AUDIO_NODE)
+		return
+	var audio: AudioStream = load(wav_path)
+	if audio == null:
+		push_warning("Could not load voice: %s" % wav_path)
+		return
+	ap.stream = audio
+	ap.play()
+	print("Voice: %s (Chatterbox MIT)" % wav_path)
+
+
+func _on_VideoStreamPlayer_finished() -> void:
+	# Advance to the next clip in the sequence.
+	_clip_index += 1
+	_play_current()
+
 
 # Fingering overlay may be driven from arithmetic-verified data OR AI-drawn art.
-# AMENDMENT-10 lifted the old "never AI-drawn" ban. (The original citation here —
-# "AMENDMENT-05 §8 + Rule 7" — was WRONG: Rule 7 was the *recording* ban (deleted 2026-08-16 by owner), unrelated to fingering. AMENDMENT-10 governs AI-drawn fingering.)
-# chord-theory-check.js still runs as a verification pass, not a hard ban.
+# AMENDMENT-10 lifted the old "never AI-drawn" ban. chord-theory-check.js still runs as a
+# verification pass, not a hard ban. The engine never invents shapes — it renders data.
 func _apply_fingering(fingering: Array) -> void:
 	var overlay := get_node_or_null(FINGER_OVERLAY)
 	if overlay == null:
 		return
 	if fingering.is_empty():
-		push_warning("Lesson has no verified fingering data — do NOT draw fingers")
 		return
-	overlay.render(fingering)  # overlay draws from data; engine does not invent shapes
+	overlay.render(fingering)
+
 
 func _exit_tree() -> void:
-	# Return control to the world on lesson end.
 	pass

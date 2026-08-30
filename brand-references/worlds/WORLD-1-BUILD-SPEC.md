@@ -64,22 +64,36 @@ A single orchestrator that, given the brief, produces World 1 assets. Suggested 
 - Godot world is a code skeleton (World.gd/World.tscn present, no real art).
 - 0 AI cinematic assets produced to date.
 
-## Status update — 2026-08-30 session
-Stage 1 dry-run is now **PROVEN WORKING** (was blocked by two bugs, both fixed):
-- BUG FIX 1: `enable_model_cpu_offload()` DEADLOCKS on torch 2.8 cu128 + Blackwell
-  (pipe() hung at 0% GPU). Switched to `enable_sequential_cpu_offload()` — renders
-  768x448 in ~92s, peak VRAM ~370MiB. Placing FLUX fully on GPU OOMs at ~23.4GiB, so
-  offload is required, not optional.
-- BUG FIX 2: palette lock was NOT enforced by prompt alone (FLUX emitted bright-pink
-  flowers, orange guitar, bright lantern). Added `quantize_to_palette()` which snaps every
-  pixel to the nearest of the 7 brief hexes — VERIFIED 100% palette coverage, 0 outside.
-- A full Stage-1 run (`--stage 1`, all 4 shots: sage_porch / coldopen_walk / twoshot /
-  sage_charsheet) completed on the pod with JOB_DONE and wrote a 4-shot manifest + `.palette.png`
-  for each. 1 still (sage_porch, 768x448 dry-run) is pulled back locally and verified compliant;
-  the other 3 + full-res versions were stranded when the pod container went DOWN
-  (Jupyter proxy 404 / control-plane 403) and are in ephemeral /tmp — recoverable only after a
-  pod STOP->START cycle.
-- Stages 2-4 (Wan2.2 / Chatterbox / Godot) remain SCAFFOLDS — NOT built this session.
+## Status update — 2026-08-30 session (fal.ai build, DONE)
+RunPod was abandoned (EU-RO-1 GPU supply constraint). World 1 assets were generated
+via **fal.ai managed API** instead (key in `.env` as FAL_KEY). The old on-pod torch
+scripts (build-world-1.py, stage2_wan.py) are SUPERSEDED by:
+  - `scripts/world-factory/fal_common.py`  (auth, FLUX + Wan I2V calls, 7-hex palette lock)
+  - `scripts/world-factory/fal_stage1.py`  (4 stills)
+  - `scripts/world-factory/fal_stage2.py`  (3 Wan2.2-I2V clips)
+Verified live: fal-ai/flux/schnell (HTTP 200), fal-ai/wan/v2.2-a14b/image-to-video
+(async queue -> mp4). Wan REQUIRES 16:9 (rejects 4:3) — stills generated at landscape_16_9.
+
+PRODUCED (real, on disk, under 07-app/assets/worlds/emerald-hollow/):
+  stills/  sage_porch.palette.png, coldopen_walk.palette.png, twoshot.palette.png,
+           sage_charsheet.palette.png  (+ raw .png) — all 100% palette-locked (off_palette=0)
+  clips/   B00_walkin.mp4 (4.0MB), B01_meetsage.mp4 (2.9MB), B02_twoshot.mp4 (3.8MB)
+           — 1280x720, 81 frames, 16fps, ~5.0s each; motion verified (frame diff > 0)
+  manifest.json in each dir records model + palette coverage + license tags.
+License gate (07-app/core/asset-job.js): flux.1-schnell + wan2.2-i2v -> BOTH PASS.
+Cost: ~4 stills + 3 short clips ≈ well under $1 (fal per-megapixel + per-second).
+
+KNOWN TRADE-OFFS (honest, not blockers):
+  - Palette-lock snaps every pixel to 7 flat hexes -> smooth FLUX gradients become
+    posterized/blocky (by design, per brief mandate). Skin reads "painted".
+  - FLUX schnell @ 4 steps -> hands slightly clumpy (inherent); acceptable for stylized world.
+  - sage_charsheet came out mostly misty-blue-grey (the "plain grey bg" got absorbed into
+    the palette). A cleaner char sheet needs a dedicated neutral-hex pass — deferred.
+  - Wan upsized 16:9 input to 1280x720 automatically.
+
+REMAINING (not yet built this session): Stage 3 Chatterbox voice, Stage 4 Godot wiring.
+The dry-run-only Stage-1 outputs stranded on the pod (2026-08-29) are obsolete; replaced
+by these fal.ai assets.
 
 ## Build order for next session
 1. Write `scripts/world-factory/build-world-1.*` (orchestrator) + per-stage modules.

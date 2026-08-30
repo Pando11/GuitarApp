@@ -12,3 +12,6 @@ node_modules/
 # python
 __pycache__/
 *.pyc
+
+# Godot import cache (regenerated on import)
+.godot/

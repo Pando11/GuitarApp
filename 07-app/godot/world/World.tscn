@@ -5,4 +5,4 @@
 [node name="World" type="Node2D"]
 script = ExtResource("1_world")
 
-[node name="Camera2D" type="Camera2D"]
+[node name="Camera2D" type="Camera2D" parent="."]

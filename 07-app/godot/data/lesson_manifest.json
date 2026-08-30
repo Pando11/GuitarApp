@@ -11,5 +11,21 @@
       { "string": 4, "fret": 2, "finger": 2 },
       { "string": 2, "fret": 1, "finger": 1 }
     ]
+  },
+  {
+    "id": "W1-coldopen",
+    "title": "Emerald Hollow — Arrive",
+    "world": "emerald-hollow",
+    "style_anchor": "emerald-hollow-v1",
+    "clips": [
+      "res://assets/worlds/emerald-hollow/clips/B00_walkin.ogv",
+      "res://assets/worlds/emerald-hollow/clips/B01_meetsage.ogv",
+      "res://assets/worlds/emerald-hollow/clips/B02_twoshot.ogv"
+    ],
+    "voice_assets": {
+      "B01_meetsage": "res://assets/worlds/emerald-hollow/voice/B01_welcome_adult.wav",
+      "B02_twoshot": "res://assets/worlds/emerald-hollow/voice/B02_youvegotthis.wav"
+    },
+    "fingering": []
   }
 ]
