@@ -1,0 +1,146 @@
+{
+  "lesson": {
+    "id": "L30-new-chord-g-g-review-retrieval",
+    "title": "New Chord: G — G review & retrieval",
+    "level": "beginner",
+    "lesson_type": "technique",
+    "one_line_promise": "G review & retrieval.",
+    "objectives": [
+      "G review & retrieval using G",
+      "Keep changes clean before adding speed"
+    ],
+    "estimated_minutes": 9,
+    "prerequisites": [
+      "Lesson L29"
+    ],
+    "app_feature_mapping": {
+      "free_metronome": [
+        "drill tempo"
+      ]
+    }
+  },
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted.",
+    "Em": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "E minor",
+      "frets": [
+        0,
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "fingers": [
+        0,
+        2,
+        3,
+        0,
+        0,
+        0
+      ],
+      "note": "Verified deterministically by chord-theory-check.js (2026-08-08) as E B G."
+    },
+    "easyC": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "C major (Lauren's 'easy C' — 2-finger reduction)",
+      "frets": [
+        null,
+        3,
+        2,
+        0,
+        null,
+        0
+      ],
+      "fingers": [
+        null,
+        3,
+        2,
+        0,
+        null,
+        0
+      ],
+      "note": "Verified deterministically by chord-theory-check.js (2026-08-08) as C E G."
+    },
+    "G": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "G major",
+      "frets": [
+        3,
+        2,
+        0,
+        0,
+        0,
+        3
+      ],
+      "fingers": [
+        2,
+        1,
+        0,
+        0,
+        0,
+        3
+      ],
+      "note": "Verified deterministically by chord-theory-check.js (2026-08-08) as G B D."
+    }
+  },
+  "exercises": [
+    {
+      "id": "EX1-drill",
+      "name": "Drill: G review & retrieval",
+      "purpose": "G review & retrieval using G / Em.",
+      "params": {
+        "chord_pair": [
+          "G",
+          "Em"
+        ],
+        "duration_sec": 60,
+        "measure": "count completed changes",
+        "canon_key": "Em::G",
+        "target_per_min": 30,
+        "goal_per_min": 60
+      },
+      "coaching": "Metronome on. G review & retrieval — keep the changes clean and even, not fast and messy. The app remembers this pair for spaced review.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-refine",
+      "name": "Refine: G",
+      "purpose": "Lock the G voicing with Chord-Perfect.",
+      "params": {
+        "chord": "G",
+        "action": "place slowly, pick string-by-string"
+      },
+      "coaching": "Slow down. Place G string by string, fix any buzz or mute. Accuracy before speed — always.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "Group 6: New Chord: G. G review & retrieval. No new chord today — we go deeper on what you already have.",
+    "ex1_intro": "Metronome on. G review & retrieval — keep the changes clean and even, not fast and messy. The app remembers this pair for spaced review.",
+    "results": "A cleaner rep than last time means your hands are learning. That is the only metric that matters here.",
+    "wrap": "Logged. Next lesson builds on this."
+  },
+  "qa_block": {
+    "must_verify": [
+      "Automated: every chord fingering verified deterministically by 06-prototypes/step0/schema/chord-theory-check.js (verifyChord) — 0 errors AND 0 warnings required before ship (AGENTS Rule 8).",
+      "Automated: lesson JSON passes schema/validateLesson — all required keys present, frets/fingers length 6, qa_status whitelisted.",
+      "Author pass: teaching copy is plain-English, beginner-appropriate, no AI-isms; pacing realistic.",
+      "Licensing: exercises only, zero copyrighted song material.",
+      "Spoken copy expands chord names to words (no bare symbols) so TTS reads them correctly."
+    ],
+    "flagged_by": "founder (non-player) — cannot self-verify",
+    "verifier_role": "arithmetic (chord-theory-check.js) + author review + schema validate",
+    "guitarist_signoff": "NOT REQUIRED — chord fingerings verified deterministically by chord-theory-check.js on 2026-08-08."
+  },
+  "_meta": {
+    "n": 30,
+    "group": 6,
+    "newChord": null,
+    "focus": [
+      "G",
+      "Em"
+    ]
+  }
+}

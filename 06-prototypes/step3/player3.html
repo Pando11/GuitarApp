@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>GuitarApp — Lesson Player + Teacher Roster (Step 3)</title>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#161b22; --line:#252c37; --text:#e6edf3; --dim:#8b98a8;
+    --t-primary:#4ea1ff; --t-secondary:#123049; --t-accent:#ffd166;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  header{padding:14px 20px;border-bottom:1px solid var(--line);display:flex;
+         align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  h1{font-size:16px;margin:0;font-weight:600;letter-spacing:.2px}
+  .sub{font-size:12px;color:var(--dim)}
+  .wrap{display:grid;grid-template-columns:300px 1fr;gap:0;min-height:calc(100vh - 58px)}
+  .side{border-right:1px solid var(--line);padding:18px;background:var(--panel)}
+  .main{padding:22px 26px}
+  .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.9px;color:var(--dim);margin:0 0 8px}
+  select,button{font:inherit;color:var(--text);background:#1d242e;border:1px solid var(--line);
+                border-radius:8px;padding:8px 12px;cursor:pointer}
+  select{width:100%}
+  button:hover{border-color:var(--t-primary)}
+  button:disabled{opacity:.45;cursor:default}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .card{border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--panel);margin-bottom:16px}
+  .teacher-card{border-left:4px solid var(--t-primary)}
+  .teacher-name{font-size:17px;font-weight:600;margin:0 0 2px}
+  .teacher-meta{font-size:12px;color:var(--dim);margin:0 0 8px}
+  .tagline{font-size:12.5px;color:var(--text);opacity:.85;margin:0 0 8px}
+  .style-blurb{font-size:12.5px;line-height:1.6;color:var(--dim);margin:0 0 10px}
+  .quote{font-style:italic;color:var(--t-accent);font-size:13px}
+  .caption{font-size:19px;line-height:1.5;margin:0 0 10px}
+  .persona-line{font-size:14px;color:var(--t-accent);margin:0 0 4px}
+  .kind{display:inline-block;font-size:10px;letter-spacing:1px;text-transform:uppercase;
+        background:var(--t-secondary);color:var(--t-primary);border-radius:20px;padding:3px 10px;margin-bottom:10px}
+  .bar{height:6px;background:#1d242e;border-radius:99px;overflow:hidden;margin:14px 0 6px}
+  .bar > i{display:block;height:100%;background:var(--t-primary);width:0%;transition:width .18s linear}
+  .pos{font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums}
+  .handoff{border:1px dashed var(--t-accent);border-radius:10px;padding:10px 14px;
+           color:var(--t-accent);font-size:14px;margin-bottom:14px;display:none}
+  .avatar{display:flex;align-items:center;gap:14px;margin-bottom:8px}
+  .fret-wrap{display:flex;gap:26px;align-items:flex-start;flex-wrap:wrap}
+  .chordname{font-size:14px;font-weight:600;margin:0 0 6px}
+  .log{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;color:var(--dim);
+       max-height:190px;overflow:auto;white-space:pre-wrap;line-height:1.6}
+  .ok{color:#6ee7a8}
+  table{border-collapse:collapse;width:100%;font-size:12px}
+  td,th{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left}
+  th{color:var(--dim);font-weight:500}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Lesson Player + Teacher Roster</h1>
+    <div class="sub">Step 3 (F3) · 3 skins over ONE lesson JSON · fire/hire mid-lesson · offline file://</div>
+  </div>
+  <div class="sub" id="lessonTag"></div>
+</header>
+
+<div class="wrap">
+  <div class="side">
+    <p class="lbl">Lesson</p>
+    <select id="lessonSel"></select>
+
+    <p class="lbl" style="margin-top:20px">Your teacher</p>
+    <select id="teacherSel"></select>
+    <div class="row" style="margin-top:10px">
+      <button id="hireBtn">Fire &amp; hire this teacher</button>
+    </div>
+
+    <div class="card teacher-card" style="margin-top:18px" id="teacherCard"></div>
+
+    <p class="lbl">Playback</p>
+    <div class="row">
+      <button id="playBtn">▶ Play</button>
+      <button id="prevBtn">⟨ Prev</button>
+      <button id="nextBtn">Next ⟩</button>
+      <button id="resetBtn">⟲ Reset</button>
+    </div>
+
+    <p class="lbl" style="margin-top:20px">Proof log</p>
+    <div class="log" id="log"></div>
+  </div>
+
+  <div class="main">
+    <div class="handoff" id="handoff"></div>
+
+    <div class="card">
+      <div class="avatar">
+        <svg id="avatarSvg" width="86" height="86" viewBox="0 0 100 100" aria-label="teacher avatar"></svg>
+        <div>
+          <div class="kind" id="sceneKind">intro</div>
+          <div class="persona-line" id="personaLine"></div>
+        </div>
+      </div>
+      <p class="caption" id="caption"></p>
+      <div class="bar"><i id="barFill"></i></div>
+      <div class="pos" id="posText"></div>
+    </div>
+
+    <div class="card">
+      <p class="lbl">Fretboard — drawn from lesson JSON only (identical under every teacher)</p>
+      <div class="fret-wrap" id="fretWrap"></div>
+    </div>
+
+    <div class="card">
+      <p class="lbl">Teacher swap audit — position &amp; fretboard must not move</p>
+      <table id="auditTbl">
+        <thead><tr><th>#</th><th>Fired</th><th>Hired</th><th>Scene</th><th>Elapsed</th><th>Content hash</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+ * STEP 3 PLAYER — self-contained, file://, zero deps, no network.
+ * Lesson content and teacher skins are strictly separated:
+ *   LESSONS  = content (identical for every teacher)
+ *   TEACHERS = art + persona + voice only
+ * The renderer/session/lipsync logic mirrors engine/*.js; the Node
+ * harness verify-step3.js is the authority on correctness.
+ * ============================================================ */
+'use strict';
+
+/* ---------- TEACHERS (mirror of teachers/T*.json — art + persona ONLY) ---------- */
+/* @@TEACHERS-BEGIN@@ */
+/* ---------- TEACHERS — GENERATED from teachers/T*.json by gen-teachers.js.
+ * ART + PERSONA ONLY. DO NOT HAND-EDIT. */
+var TEACHERS = {
+  "T1": {
+    "id": "T1",
+    "name": "Maggie Cole",
+    "codename": "The Best Friend",
+    "tagline": "Learned at 34, teaches like she remembers being bad at it.",
+    "teaching_style": "Maggie picked up a guitar for the first time at thirty-four, and she has never forgotten how stupid her own hands felt that first month. So she teaches from the inside of the struggle instead of the far side of it. She'll tell you exactly which part is supposed to feel awful right now, and that's usually the thing that makes people stop apologizing and keep going. She celebrates loudly and specifically — not 'good job,' but 'that switch was half a second faster than the one before it.' If you put the guitar down for three weeks she genuinely does not care, she's just glad you came back.",
+    "persona": {
+      "summary": "Encouraging best-friend energy. Celebrates small wins, never scolds.",
+      "tone": "warm, upbeat, casual",
+      "catchphrase": "You've got this."
+    },
+    "voice": {
+      "provider": "openai-tts",
+      "voice_id": "alloy",
+      "style": "bright, medium pace",
+      "rate": 1,
+      "pitch": 0
+    },
+    "skin": {
+      "body_type": "rig-A",
+      "palette": {
+        "primary": "#4ea1ff",
+        "secondary": "#123049",
+        "accent": "#ffd166"
+      },
+      "shape": "round-friendly-creature"
+    },
+    "handoff_line": "So you're my new student! Nothing's lost — we pick up right where you left off.",
+    "persona_lines": {
+      "intro": "Alright, let's have some fun with this one.",
+      "chord": "Take your time getting those fingers set.",
+      "exercise": "Here we go — slow and steady beats fast and sloppy.",
+      "wrap": "Look at that. Real progress today."
+    }
+  },
+  "T2": {
+    "id": "T2",
+    "name": "Ellis Nakamura",
+    "codename": "The Zen Coach",
+    "tagline": "Thirty years of playing, and he still practices slower than you'd expect.",
+    "teaching_style": "Ellis talks less than the other two, and he leaves gaps on purpose. He believes most beginners fail because they rush past the exact moment they were about to learn something, so he'll ask you to play one chord and then just sit with it. When something goes wrong he treats it as information rather than a verdict — a buzzing string tells you where your hand actually is, not whether you're musical. He's the one who will tell you to stop practicing for the night, and mean it. People who've quit other apps out of frustration tend to stay with Ellis.",
+    "persona": {
+      "summary": "Calm, unhurried. Frames every mistake as information, not failure.",
+      "tone": "quiet, measured, patient",
+      "catchphrase": "Breathe. Then play."
+    },
+    "voice": {
+      "provider": "openai-tts",
+      "voice_id": "shimmer",
+      "style": "soft, slow pace",
+      "rate": 0.9,
+      "pitch": -1
+    },
+    "skin": {
+      "body_type": "rig-A",
+      "palette": {
+        "primary": "#7ed6a5",
+        "secondary": "#13342a",
+        "accent": "#e9f5c9"
+      },
+      "shape": "tall-calm-creature"
+    },
+    "handoff_line": "So you're my new student. Same road, steadier pace. We continue exactly where you are.",
+    "persona_lines": {
+      "intro": "Settle in. There is no rush here.",
+      "chord": "Place each finger deliberately. Notice how it feels.",
+      "exercise": "Let the tempo carry you. Accuracy first, speed follows.",
+      "wrap": "That was good work. Let it sink in."
+    }
+  },
+  "T3": {
+    "id": "T3",
+    "name": "Ray Boudreaux",
+    "codename": "The Drill Sergeant (but kind)",
+    "tagline": "Played six nights a week for twenty years. Believes in reps, not talent.",
+    "teaching_style": "Ray came up playing bar gigs where nobody cared how you felt about the song, so he's blunt about what's working and what isn't. He'll tell you a chord sounded muddy instead of pretending it didn't, and students consistently say that's the reason they trust him when he says something was good. He's a counter — he wants a number on the drill, written down, so next week you can beat it. There's no cruelty in it and he never makes it about whether you're talented; as far as Ray's concerned talent is just somebody who did the reps before you got there. Best fit if vague encouragement makes you suspicious.",
+    "persona": {
+      "summary": "Direct, high standards, zero cruelty. Demands reps, then praises them.",
+      "tone": "clipped, punchy, motivating",
+      "catchphrase": "Again. Cleaner this time."
+    },
+    "voice": {
+      "provider": "openai-tts",
+      "voice_id": "onyx",
+      "style": "firm, brisk pace",
+      "rate": 1.1,
+      "pitch": -2
+    },
+    "skin": {
+      "body_type": "rig-A",
+      "palette": {
+        "primary": "#ff7a59",
+        "secondary": "#3a1a12",
+        "accent": "#ffe0d1"
+      },
+      "shape": "square-jaw-creature"
+    },
+    "handoff_line": "So you're my new student. Good. No restarts — you keep your place and we get to work.",
+    "persona_lines": {
+      "intro": "Guitar up. We start now.",
+      "chord": "Fingers on. Check every string rings.",
+      "exercise": "Reps win. Hold the tempo, no drifting.",
+      "wrap": "Solid session. Same time tomorrow."
+    }
+  }
+};
+/* @@TEACHERS-END@@ */
+
+/* @@LESSONS-BEGIN@@ */
+/* ---------- LESSON CONTENT ----------
+ * GENERATED from ../step0/lessons/*.json by gen-lessons.js via the Step 0
+ * renderer (buildManifest). DO NOT HAND-EDIT — a hand copy silently diverged
+ * once and invented wrong chords. parity-check.js proves this block is
+ * byte-identical to the engine manifest. */
+var LESSONS = {
+  "L01": {
+    "lessonId": "L01-faster-chord-changes",
+    "title": "The Real Secret to Faster Chord Changes",
+    "estimatedMinutes": 12,
+    "totalDurationMs": 68000,
+    "scenes": [
+      {
+        "id": "intro",
+        "kind": "intro",
+        "caption": "Slow chord changes aren't a talent problem — they're a muscle-memory problem. Today we warm up your hands and turn your metronome into a scorecard. Grab your guitar.",
+        "chord": null,
+        "tempoBpm": null,
+        "beats": null,
+        "durationMs": 5000
+      },
+      {
+        "id": "chord-Em",
+        "kind": "chord",
+        "caption": "Chord: E minor",
+        "chord": {
+          "name": "E minor",
+          "frets": [
+            0,
+            2,
+            2,
+            0,
+            0,
+            0
+          ],
+          "fingers": [
+            0,
+            2,
+            3,
+            0,
+            0,
+            0
+          ],
+          "qa_status": "verified-by-theory-check-2026-08-07"
+        },
+        "tempoBpm": null,
+        "beats": null,
+        "durationMs": 8000
+      },
+      {
+        "id": "chord-C",
+        "kind": "chord",
+        "caption": "Chord: C major (standard)",
+        "chord": {
+          "name": "C major (standard)",
+          "frets": [
+            null,
+            3,
+            2,
+            0,
+            1,
+            0
+          ],
+          "fingers": [
+            null,
+            3,
+            2,
+            0,
+            1,
+            0
+          ],
+          "qa_status": "verified-by-theory-check-2026-08-07"
+        },
+        "tempoBpm": null,
+        "beats": null,
+        "durationMs": 8000
+      },
+      {
+        "id": "chord-easyC",
+        "kind": "chord",
+        "caption": "Chord: C major (Lauren's 'easy C' — 2-finger reduction)",
+        "chord": {
+          "name": "C major (Lauren's 'easy C' — 2-finger reduction)",
+          "frets": [
+            null,
+            3,
+            2,
+            0,
+            null,
+            0
+          ],
+          "fingers": [
+            null,
+            3,
+            2,
+            0,
+            null,
+            0
+          ],
+          "note": "Reduced 2-finger C voicing for confidence-building. Spelling verified deterministically by chord-theory check 2026-08-08 (C E G). 'Lauren's easy C' is a teaching label from the source video; arithmetic cannot prove it matches what she demonstrated — it proves the fingering spells C major and is playable.",
+          "qa_status": "verified-by-theory-check-2026-08-07"
+        },
+        "tempoBpm": null,
+        "beats": null,
+        "durationMs": 8000
+      },
+      {
+        "id": "chord-G",
+        "kind": "chord",
+        "caption": "Chord: G major (3-finger / 'easy G')",
+        "chord": {
+          "name": "G major (3-finger / 'easy G')",
+          "frets": [
+            3,
+            2,
+            0,
+            0,
+            0,
+            3
+          ],
+          "fingers": [
+            2,
+            1,
+            0,
+            0,
+            0,
+            3
+          ],
+          "qa_status": "verified-by-theory-check-2026-08-07"
+        },
+        "tempoBpm": null,
+        "beats": null,
+        "durationMs": 8000
+      },
+      {
+        "id": "chord-D",
+        "kind": "chord",
+        "caption": "Chord: D major",
+        "chord": {
+          "name": "D major",
+          "frets": [
+            null,
+            null,
+            0,
+            2,
+            3,
+            2
+          ],
+          "fingers": [
+            null,
+            null,
+            0,
+            1,
+            3,
+            2
+          ],
+          "qa_status": "verified-by-theory-check-2026-08-07"
+        },
+        "tempoBpm": null,
+        "beats": null,
+        "durationMs": 8000
+      },
+      {
+        "id": "exercise-EX1-spider",
+        "kind": "exercise",
+        "caption": "Keep fingers relaxed and close to the fretboard. They'll feel floppy at first — that floppy feeling IS the control you're building.",
+        "chord": null,
+        "tempoBpm": null,
+        "beats": null,
+        "durationMs": 6000
+      },
+      {
+        "id": "exercise-EX2-liftoff",
+        "kind": "exercise",
+        "caption": "If your hand flattens when you let go, that's normal — muscle memory hasn't formed yet. Reps fix it.",
+        "chord": null,
+        "tempoBpm": null,
+        "beats": null,
+        "durationMs": 6000
+      },
+      {
+        "id": "exercise-EX3-metronome-drill",
+        "kind": "exercise",
+        "caption": "Write the number down. That's your scorecard — next week, beat it. Speed first, clean second.",
+        "chord": null,
+        "tempoBpm": null,
+        "beats": null,
+        "durationMs": 6000
+      },
+      {
+        "id": "wrap",
+        "kind": "wrap",
+        "caption": "You're never too old for this. Consistency beats talent. Three drills, five minutes, most days — that's the whole secret.",
+        "chord": null,
+        "tempoBpm": null,
+        "beats": null,
+        "durationMs": 5000
+      }
+    ]
+  },
+  "L02": {
+    "lessonId": "L02-open-chord-strum-timing",
+    "title": "Strumming in Time: Em, Am and D",
+    "estimatedMinutes": 10,
+    "totalDurationMs": 50615,
+    "scenes": [
+      {
+        "id": "intro",
+        "kind": "intro",
+        "caption": "Timing beats tidiness. Today the metronome is in charge and your strumming arm keeps swinging no matter what your fingers do.",
+        "chord": null,
+        "tempoBpm": null,
+        "beats": null,
+        "durationMs": 5000
+      },
+      {
+        "id": "chord-Em",
+        "kind": "chord",
+        "caption": "Chord: E minor",
+        "chord": {
+          "name": "E minor",
+          "frets": [
+            0,
+            2,
+            2,
+            0,
+            0,
+            0
+          ],
+          "fingers": [
+            0,
+            2,
+            3,
+            0,
+            0,
+            0
+          ],
+          "qa_status": "verified-by-theory-check-2026-08-07"
+        },
+        "tempoBpm": null,
+        "beats": null,
+        "durationMs": 8000
+      },
+      {
+        "id": "chord-Am",
+        "kind": "chord",
+        "caption": "Chord: A minor",
+        "chord": {
+          "name": "A minor",
+          "frets": [
+            null,
+            0,
+            2,
+            2,
+            1,
+            0
+          ],
+          "fingers": [
+            null,
+            0,
+            2,
+            3,
+            1,
+            0
+          ],
+          "qa_status": "verified-by-theory-check-2026-08-07"
+        },
+        "tempoBpm": null,
+        "beats": null,
+        "durationMs": 8000
+      },
+      {
+        "id": "chord-D",
+        "kind": "chord",
+        "caption": "Chord: D major",
+        "chord": {
+          "name": "D major",
+          "frets": [
+            null,
+            null,
+            0,
+            2,
+            3,
+            2
+          ],
+          "fingers": [
+            null,
+            null,
+            0,
+            1,
+            3,
+            2
+          ],
+          "qa_status": "verified-by-theory-check-2026-08-07"
+        },
+        "tempoBpm": null,
+        "beats": null,
+        "durationMs": 8000
+      },
+      {
+        "id": "exercise-EX1-pulse-downstrums",
+        "kind": "exercise",
+        "caption": "Your strumming arm never stops. If the chord is not ready, strum the muted strings and catch up on the next bar.",
+        "chord": null,
+        "tempoBpm": 60,
+        "beats": 4,
+        "durationMs": 4000
+      },
+      {
+        "id": "exercise-EX2-down-up-eighths",
+        "kind": "exercise",
+        "caption": "Count 1 and 2 and 3 and 4 and out loud. Down on the number, up on the and.",
+        "chord": {
+          "name": "E minor",
+          "frets": [
+            0,
+            2,
+            2,
+            0,
+            0,
+            0
+          ],
+          "fingers": [
+            0,
+            2,
+            3,
+            0,
+            0,
+            0
+          ],
+          "qa_status": "verified-by-theory-check-2026-08-07"
+        },
+        "tempoBpm": 60,
+        "beats": 8,
+        "durationMs": 8000
+      },
+      {
+        "id": "exercise-EX3-change-on-beat-one",
+        "kind": "exercise",
+        "caption": "Lift a hair early on beat four. An early lift is a clean landing; a late lift is a stumble.",
+        "chord": null,
+        "tempoBpm": 52,
+        "beats": 4,
+        "durationMs": 4615
+      },
+      {
+        "id": "wrap",
+        "kind": "wrap",
+        "caption": "Constant motion, count out loud, change on one. That is the whole lesson.",
+        "chord": null,
+        "tempoBpm": null,
+        "beats": null,
+        "durationMs": 5000
+      }
+    ]
+  },
+  "L03": {
+    "lessonId": "L03-finger-independence-one-minute-changes",
+    "title": "Finger Independence and One-Minute Changes",
+    "estimatedMinutes": 11,
+    "totalDurationMs": 52000,
+    "scenes": [
+      {
+        "id": "intro",
+        "kind": "intro",
+        "caption": "Your fingers move as a team because they have never been asked not to. Today we ask.",
+        "chord": null,
+        "tempoBpm": null,
+        "beats": null,
+        "durationMs": 5000
+      },
+      {
+        "id": "chord-G",
+        "kind": "chord",
+        "caption": "Chord: G major (3-finger)",
+        "chord": {
+          "name": "G major (3-finger)",
+          "frets": [
+            3,
+            2,
+            0,
+            0,
+            0,
+            3
+          ],
+          "fingers": [
+            2,
+            1,
+            0,
+            0,
+            0,
+            3
+          ],
+          "qa_status": "verified-by-theory-check-2026-08-07"
+        },
+        "tempoBpm": null,
+        "beats": null,
+        "durationMs": 8000
+      },
+      {
+        "id": "chord-C",
+        "kind": "chord",
+        "caption": "Chord: C major",
+        "chord": {
+          "name": "C major",
+          "frets": [
+            null,
+            3,
+            2,
+            0,
+            1,
+            0
+          ],
+          "fingers": [
+            null,
+            3,
+            2,
+            0,
+            1,
+            0
+          ],
+          "qa_status": "verified-by-theory-check-2026-08-07"
+        },
+        "tempoBpm": null,
+        "beats": null,
+        "durationMs": 8000
+      },
+      {
+        "id": "chord-D",
+        "kind": "chord",
+        "caption": "Chord: D major",
+        "chord": {
+          "name": "D major",
+          "frets": [
+            null,
+            null,
+            0,
+            2,
+            3,
+            2
+          ],
+          "fingers": [
+            null,
+            null,
+            0,
+            1,
+            3,
+            2
+          ],
+          "qa_status": "verified-by-theory-check-2026-08-07"
+        },
+        "tempoBpm": null,
+        "beats": null,
+        "durationMs": 8000
+      },
+      {
+        "id": "exercise-EX1-single-finger-lifts",
+        "kind": "exercise",
+        "caption": "Only the named finger moves. If a neighbour lifts too, slow down until it stays put.",
+        "chord": null,
+        "tempoBpm": null,
+        "beats": null,
+        "durationMs": 6000
+      },
+      {
+        "id": "exercise-EX2-air-shapes",
+        "kind": "exercise",
+        "caption": "Make the shape in the air, then land all fingers together. Landing together is the skill.",
+        "chord": null,
+        "tempoBpm": null,
+        "beats": null,
+        "durationMs": 6000
+      },
+      {
+        "id": "exercise-EX3-one-minute-changes",
+        "kind": "exercise",
+        "caption": "Speed first, clean second. Write the number down — next session, beat it by one.",
+        "chord": null,
+        "tempoBpm": null,
+        "beats": null,
+        "durationMs": 6000
+      },
+      {
+        "id": "wrap",
+        "kind": "wrap",
+        "caption": "One finger at a time, shapes in the air, one minute on the clock. Most days beats every day.",
+        "chord": null,
+        "tempoBpm": null,
+        "beats": null,
+        "durationMs": 5000
+      }
+    ]
+  }
+};
+/* @@LESSONS-END@@ */
+
+/* ---------- teacher engine (cosmetic-only view model) ---------- */
+var LESSON_CONTENT_KEYS = ["id","kind","caption","chord","tempoBpm","beats","durationMs"];
+
+function cloneVerbatim(v){
+  if(Array.isArray(v)){return v.map(cloneVerbatim);}
+  if(v!==null&&typeof v==="object"){var o={};Object.keys(v).forEach(function(k){o[k]=cloneVerbatim(v[k]);});return o;}
+  return v;
+}
+function applyTeacher(manifest,teacher){
+  var view={lessonId:manifest.lessonId,title:manifest.title,
+            estimatedMinutes:manifest.estimatedMinutes,totalDurationMs:manifest.totalDurationMs,
+            teacherId:teacher.id,teacherCodename:teacher.codename,
+            voice:cloneVerbatim(teacher.voice),persona:cloneVerbatim(teacher.persona),
+            skin:cloneVerbatim(teacher.skin),scenes:[]};
+  manifest.scenes.forEach(function(s){
+    var out={};
+    LESSON_CONTENT_KEYS.forEach(function(k){out[k]=cloneVerbatim(s[k]);});
+    var line=teacher.persona_lines[s.kind];
+    if(typeof line!=="string"){throw new Error("TEACHER MISSING PERSONA LINE for kind "+s.kind);}
+    out.teacherId=teacher.id;
+    out.speech={style:teacher.voice.style,voice_id:teacher.voice.voice_id,
+                persona_line:line,says:s.caption};
+    view.scenes.push(out);
+  });
+  return view;
+}
+function lessonContentProjection(v){
+  return JSON.stringify({lessonId:v.lessonId,totalDurationMs:v.totalDurationMs,
+    scenes:v.scenes.map(function(s){var o={};LESSON_CONTENT_KEYS.forEach(function(k){o[k]=s[k];});return o;})});
+}
+function hash(str){var h=5381;for(var i=0;i<str.length;i++){h=((h<<5)+h+str.charCodeAt(i))>>>0;}
+  return h.toString(16).padStart(8,"0");}
+
+/* ---------- session state ---------- */
+var S={lessonKey:"L01",teacherId:"T1",sceneIndex:0,elapsedInSceneMs:0,
+       view:null,history:[],timer:null,playing:false};
+
+function manifest(){return LESSONS[S.lessonKey];}
+function rebuildView(){S.view=applyTeacher(manifest(),TEACHERS[S.teacherId]);}
+function scene(){return S.view.scenes[S.sceneIndex];}
+function totalElapsed(){var t=0;for(var i=0;i<S.sceneIndex;i++){t+=S.view.scenes[i].durationMs;}
+  return t+S.elapsedInSceneMs;}
+
+function hire(newId){
+  var beforeIdx=S.sceneIndex, beforeMs=S.elapsedInSceneMs;
+  var beforeContent=lessonContentProjection(S.view);
+  var candidate=applyTeacher(manifest(),TEACHERS[newId]);
+  if(lessonContentProjection(candidate)!==beforeContent){
+    log("FIRE/HIRE ABORTED — "+newId+" would change lesson content.");
+    return;
+  }
+  var fired=S.teacherId;
+  S.teacherId=newId; S.view=candidate;      /* position deliberately untouched */
+  S.history.push({fired:fired,hired:newId,sceneId:scene().id,
+                  sceneIndex:beforeIdx,elapsedMs:beforeMs,hash:hash(beforeContent)});
+  if(S.sceneIndex!==beforeIdx||S.elapsedInSceneMs!==beforeMs){
+    log("BUG: position moved during swap"); return;
+  }
+  showHandoff(TEACHERS[newId].handoff_line,TEACHERS[newId].name);
+  log("hired "+newId+" at scene "+beforeIdx+" ("+scene().id+") +"+beforeMs+"ms — position held, content hash "+hash(beforeContent));
+  render();
+}
+
+/* ---------- lip-sync (audio-envelope driven; synthesised envelope stands in
+   for the TTS waveform in this offline shell) ---------- */
+var FLOOR_DB=-50, CEIL_DB=-8;
+function lipsyncFrames(samples,sampleRate,fps){
+  var win=Math.max(1,Math.round(sampleRate/fps)), out=[], prev=0;
+  for(var st=0;st<samples.length;st+=win){
+    var en=Math.min(st+win,samples.length),sum=0,n=0;
+    for(var i=st;i<en;i++){sum+=samples[i]*samples[i];n++;}
+    var rms=n?Math.sqrt(sum/n):0;
+    var db=rms>0?20*Math.log10(rms):-Infinity;
+    var raw=(!isFinite(db)||db<=FLOOR_DB)?0:(db>=CEIL_DB?1:(db-FLOOR_DB)/(CEIL_DB-FLOOR_DB));
+    var sm=(raw===0&&prev===0)?0:(prev+(raw-prev)*0.45);
+    if(sm<1e-6){sm=0;}
+    prev=sm;
+    out.push({tMs:Math.round(st/sampleRate*1000),openness:Math.round(sm*1000)/1000});
+  }
+  return out;
+}
+/* deterministic pseudo-waveform for a scene's voice line (stands in for the
+   rendered TTS audio; the mouth reads the ENVELOPE, never the text) */
+function sceneAudio(sceneId,rate){
+  var sr=8000,secs=2.2,n=Math.round(sr*secs),a=new Array(n),seed=hash(sceneId);
+  var s=parseInt(seed,16)>>>0;
+  function rnd(){s=(s*1664525+1013904223)>>>0;return s/4294967296;}
+  var syl=Math.max(0.09,0.16/(rate||1));
+  for(var i=0;i<n;i++){
+    var t=i/sr, ph=(t%syl)/syl;
+    var gate=(Math.floor(t/syl)%5===4)?0:1;           /* pauses between word groups */
+    var env=gate*Math.sin(Math.PI*ph)*(0.55+0.35*rnd());
+    a[i]=env*Math.sin(2*Math.PI*(150+60*Math.sin(t*3))*t);
+  }
+  return {samples:a,sampleRate:sr};
+}
+
+/* ---------- fretboard SVG — from frets/fingers arrays ONLY ---------- */
+function chordSVG(chord){
+  var W=118,H=150,PAD_L=18,PAD_T=34,COL=16,ROW=22,FRETS=4;
+  var p=[];
+  p.push('<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'">');
+  p.push('<rect x="0" y="0" width="'+W+'" height="'+H+'" fill="none"/>');
+  /* nut */
+  p.push('<rect x="'+PAD_L+'" y="'+(PAD_T-4)+'" width="'+(COL*5)+'" height="4" fill="#e6edf3"/>');
+  for(var f=0;f<=FRETS;f++){
+    p.push('<line x1="'+PAD_L+'" y1="'+(PAD_T+f*ROW)+'" x2="'+(PAD_L+COL*5)+'" y2="'+(PAD_T+f*ROW)+'" stroke="#3a434f" stroke-width="1.5"/>');
+  }
+  for(var s=0;s<6;s++){
+    var x=PAD_L+s*COL;
+    p.push('<line x1="'+x+'" y1="'+PAD_T+'" x2="'+x+'" y2="'+(PAD_T+FRETS*ROW)+'" stroke="#5a6675" stroke-width="1.5"/>');
+  }
+  for(var i=0;i<6;i++){
+    var cx=PAD_L+i*COL, fr=chord.frets[i], fg=chord.fingers[i];
+    if(fr===null||fr===undefined){
+      p.push('<text x="'+cx+'" y="'+(PAD_T-10)+'" fill="#8b98a8" font-size="11" text-anchor="middle">×</text>');
+    }else if(fr===0){
+      p.push('<circle cx="'+cx+'" cy="'+(PAD_T-13)+'" r="4.2" fill="none" stroke="#e6edf3" stroke-width="1.6"/>');
+    }else{
+      var cy=PAD_T+(fr-0.5)*ROW;
+      p.push('<circle cx="'+cx+'" cy="'+cy+'" r="7.2" fill="var(--t-primary)"/>');
+      if(fg){p.push('<text x="'+cx+'" y="'+(cy+3.6)+'" fill="#0e1116" font-size="9.5" font-weight="700" text-anchor="middle">'+fg+'</text>');}
+    }
+  }
+  p.push('</svg>');
+  return p.join('');
+}
+
+/* ---------- avatar (skin colours + lip-synced mouth) ---------- */
+function drawAvatar(openness){
+  var pal=TEACHERS[S.teacherId].skin.palette;
+  var shape=TEACHERS[S.teacherId].skin.shape;
+  var mouthH=Math.max(2,openness*17);
+  var headW=shape.indexOf("tall")===0?52:(shape.indexOf("square")===0?62:58);
+  var rx=shape.indexOf("square")===0?10:26;
+  var svg=[
+    '<rect x="'+(50-headW/2)+'" y="18" width="'+headW+'" height="62" rx="'+rx+'" fill="'+pal.primary+'"/>',
+    '<circle cx="'+(50-12)+'" cy="44" r="5" fill="'+pal.secondary+'"/>',
+    '<circle cx="'+(50+12)+'" cy="44" r="5" fill="'+pal.secondary+'"/>',
+    '<rect x="'+(50-11)+'" y="'+(62-mouthH/2)+'" width="22" height="'+mouthH+'" rx="'+Math.min(6,mouthH/2)+'" fill="'+pal.secondary+'"/>',
+    '<rect x="'+(50-headW/2-6)+'" y="12" width="'+(headW+12)+'" height="8" rx="4" fill="'+pal.accent+'"/>'
+  ].join('');
+  document.getElementById("avatarSvg").innerHTML=svg;
+}
+
+/* ---------- render ---------- */
+function render(){
+  var t=TEACHERS[S.teacherId], sc=scene(), pal=t.skin.palette;
+  document.documentElement.style.setProperty("--t-primary",pal.primary);
+  document.documentElement.style.setProperty("--t-secondary",pal.secondary);
+  document.documentElement.style.setProperty("--t-accent",pal.accent);
+
+  document.getElementById("lessonTag").textContent=S.view.title+" · "+S.view.lessonId;
+  document.getElementById("teacherCard").innerHTML=
+    '<p class="teacher-name">'+t.name+'</p>'+
+    '<p class="teacher-meta">'+t.codename+' · voice: '+t.voice.voice_id+'</p>'+
+    '<p class="tagline">'+t.tagline+'</p>'+
+    '<p class="style-blurb">'+t.teaching_style+'</p>'+
+    '<p class="quote">“'+t.persona.catchphrase+'”</p>';
+
+  document.getElementById("sceneKind").textContent=sc.kind;
+  document.getElementById("personaLine").textContent=sc.speech.persona_line;
+  document.getElementById("caption").textContent=sc.caption;
+
+  var pct=(totalElapsed()/S.view.totalDurationMs)*100;
+  document.getElementById("barFill").style.width=pct.toFixed(1)+"%";
+  document.getElementById("posText").textContent=
+    "scene "+(S.sceneIndex+1)+"/"+S.view.scenes.length+" ("+sc.id+")  ·  "+
+    (S.elapsedInSceneMs/1000).toFixed(1)+"s / "+(sc.durationMs/1000).toFixed(1)+"s  ·  total "+
+    (totalElapsed()/1000).toFixed(1)+"s / "+(S.view.totalDurationMs/1000).toFixed(1)+"s"+
+    (sc.tempoBpm?("  ·  "+sc.tempoBpm+" BPM × "+sc.beats+" beats"):"");
+
+  /* fretboards — identical under every teacher */
+  var fw=document.getElementById("fretWrap"), html="";
+  S.view.scenes.filter(function(x){return x.chord;}).forEach(function(x){
+    var live=x.id===sc.id;
+    html+='<div style="opacity:'+(live?1:0.42)+'"><p class="chordname">'+x.chord.name+
+          (live?' <span class="ok">◀ now</span>':'')+'</p>'+chordSVG(x.chord)+'</div>';
+  });
+  fw.innerHTML=html;
+
+  /* lip-sync frame for the current playhead, from the voice audio envelope */
+  var au=sceneAudio(sc.id,t.voice.rate);
+  var frames=lipsyncFrames(au.samples,au.sampleRate,30);
+  var fi=Math.min(frames.length-1,Math.floor((S.elapsedInSceneMs/1000)*30)%frames.length);
+  drawAvatar(frames[fi]?frames[fi].openness:0);
+
+  var tb=document.querySelector("#auditTbl tbody");
+  tb.innerHTML=S.history.map(function(h,i){
+    return "<tr><td>"+(i+1)+"</td><td>"+h.fired+"</td><td>"+h.hired+"</td><td>"+h.sceneId+
+           "</td><td>"+h.elapsedMs+"ms</td><td>"+h.hash+"</td></tr>";
+  }).join("");
+
+  document.getElementById("teacherSel").value=S.teacherId;
+  document.getElementById("playBtn").textContent=S.playing?"⏸ Pause":"▶ Play";
+}
+
+function showHandoff(line,who){
+  var el=document.getElementById("handoff");
+  el.textContent=(who?who+": ":"")+"“"+line+"”";
+  el.style.display="block";
+}
+function log(msg){
+  var el=document.getElementById("log");
+  el.textContent=msg+"\n"+el.textContent;
+}
+
+/* ---------- controls ---------- */
+var TICK=100;
+function tick(){
+  S.elapsedInSceneMs+=TICK;
+  if(S.elapsedInSceneMs>=scene().durationMs){
+    if(S.sceneIndex<S.view.scenes.length-1){S.sceneIndex++;S.elapsedInSceneMs=0;}
+    else{S.elapsedInSceneMs=scene().durationMs;togglePlay(false);}
+  }
+  render();
+}
+function togglePlay(force){
+  S.playing=(force===undefined)?!S.playing:force;
+  if(S.timer){clearInterval(S.timer);S.timer=null;}
+  if(S.playing){S.timer=setInterval(tick,TICK);}
+  render();
+}
+
+document.getElementById("playBtn").onclick=function(){togglePlay();};
+document.getElementById("nextBtn").onclick=function(){
+  if(S.sceneIndex<S.view.scenes.length-1){S.sceneIndex++;S.elapsedInSceneMs=0;render();}};
+document.getElementById("prevBtn").onclick=function(){
+  if(S.sceneIndex>0){S.sceneIndex--;S.elapsedInSceneMs=0;render();}};
+document.getElementById("resetBtn").onclick=function(){
+  S.sceneIndex=0;S.elapsedInSceneMs=0;togglePlay(false);};
+document.getElementById("hireBtn").onclick=function(){
+  hire(document.getElementById("teacherSel").value);};
+document.getElementById("teacherSel").onchange=function(){
+  hire(this.value);};
+document.getElementById("lessonSel").onchange=function(){
+  S.lessonKey=this.value;S.sceneIndex=0;S.elapsedInSceneMs=0;S.history=[];
+  rebuildView();togglePlay(false);};
+
+/* ---------- boot ---------- */
+(function boot(){
+  var ls=document.getElementById("lessonSel");
+  Object.keys(LESSONS).forEach(function(k){
+    var o=document.createElement("option");o.value=k;o.textContent=LESSONS[k].title;ls.appendChild(o);});
+  var ts=document.getElementById("teacherSel");
+  Object.keys(TEACHERS).forEach(function(k){
+    var o=document.createElement("option");o.value=k;
+    o.textContent=TEACHERS[k].name+" — "+TEACHERS[k].codename;ts.appendChild(o);});
+  rebuildView();
+
+  /* self-proof on load: all 3 teachers produce identical lesson content */
+  var prints=Object.keys(TEACHERS).map(function(k){
+    return lessonContentProjection(applyTeacher(manifest(),TEACHERS[k]));});
+  var same=prints.every(function(p){return p===prints[0];});
+  log((same?"CONTENT-IDENTICAL-OK":"CONTENT MISMATCH")+" — 3 teachers, hash "+hash(prints[0]));
+  var silent=lipsyncFrames(new Array(4000).fill(0),8000,30);
+  var peak=silent.reduce(function(m,f){return Math.max(m,f.openness);},0);
+  log((peak===0?"LIPSYNC-SILENCE-OK":"LIPSYNC BUG")+" — silence keeps the mouth shut");
+  render();
+})();
+</script>
+</body>
+</html>

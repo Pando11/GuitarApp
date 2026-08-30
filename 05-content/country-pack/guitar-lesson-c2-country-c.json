@@ -1,0 +1,100 @@
+{
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted.",
+    "G": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "G",
+      "frets": [3, 2, 0, 0, 0, 3],
+      "fingers": [2, 1, 0, 0, 0, 3]
+    },
+    "C": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "C",
+      "frets": [null, 3, 2, 0, 1, 0],
+      "fingers": [null, 3, 2, 0, 1, 0]
+    }
+  },
+  "exercises": [
+    {
+      "id": "EX1-shape",
+      "name": "Make the C shape",
+      "purpose": "Land the C chord that walks up from G.",
+      "params": {
+        "chord": "C",
+        "fingers": "ring(3) on A 3rd fret, middle(2) on D 2nd fret, index(1) on B 1st fret, low E muted",
+        "thumb": "rests behind neck",
+        "strings_played": "A, D, G, B, high e (low E stays quiet)"
+      },
+      "coaching": "C steps up from G. Ring finger on the A string, third fret; middle on the D, second fret; index on the B, first fret; keep the low E quiet. That little triangle is the C chord — warm and open.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-strum",
+      "name": "One clean down-strum",
+      "purpose": "Strum the five ringing strings without catching the muted low E.",
+      "params": {
+        "chord": "C",
+        "action": "single downward strum, relaxed wrist, skip the low E",
+        "reps": 5,
+        "cue": "listen for the open G string (the fifth) ringing"
+      },
+      "coaching": "Hold C and strum down — but let the pick fall just past the low E so it stays silent. Loose wrist. Listen for the open G string; that's the fifth, the colour of the C chord. Buzz on the B or D? Press a touch closer to the fret. That clean C is the second colour of the country.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX3-change",
+      "name": "G to C walk",
+      "purpose": "Practice the most common country change, slowly, in time.",
+      "params": {
+        "chord_cycle": ["G", "C"],
+        "tempo_bpm": 92,
+        "beats": 4,
+        "feel": "boom-chick",
+        "cue": "one chord per 4 beats, change on the downbeat"
+      },
+      "coaching": "Now walk: G for four beats, C for four. One chord per four beats, change right on the click. The metronome is bright so you can land clean. This G-to-C move is in thousands of country tunes — you just met it.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "Second colour of country: C. Small shape, but it walks you right out of G and into a real progression.",
+    "ex1_intro": "C is a triangle: ring on A third fret, middle on D second, index on B first, low E quiet. The open G is your fifth — that lift is the sound.",
+    "ex2_intro": "Strum down but let the pick fall past the low E so it stays silent. Loose wrist. Listen for the open G string. Buzz? Closer to the fret. That clean C is the second country colour.",
+    "ex3_intro": "Walk it: G four beats, C four beats, on the click. Bright metronome. That G-to-C move is in countless country songs — you just met it.",
+    "results": "If you can change G to C on the beat, you have the backbone of the style. Two colours down, one to go.",
+    "wrap": "G and C in your hands, walking in time. Lesson 3 of the pack adds D and you play a full I-IV-V change. For real."
+  },
+  "qa_block": {
+    "must_verify": [
+      "Automated: every chord fingering verified deterministically by 06-prototypes/step0/schema/chord-theory-check.js (verifyChord) — 0 errors AND 0 warnings required before ship (Hard Ban 7 satisfied by arithmetic, per owner directive 2026-08-08).",
+      "Automated: lesson JSON passes schema/validate.js (validateLesson) — all required keys present, frets/fingers length 6, qa_status whitelisted.",
+      "Author pass: teaching copy is plain-English, beginner-appropriate, no AI-isms; pacing realistic.",
+      "Licensing: exercises only, zero copyrighted song material (spec §3/R6). The I-IV-V change is a public-domain structure, not a specific song.",
+      "Cross-pack reference: EX3 chord_cycle uses G and C both defined in THIS lesson's chords block, so it needs no external dependency."
+    ],
+    "flagged_by": "founder (non-player) — cannot self-verify",
+    "verifier_role": "arithmetic (chord-theory-check.js) + author review",
+    "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
+  },
+  "lesson": {
+    "id": "C2-country-c",
+    "title": "Country Pack 2 — The C Chord (walking up from G)",
+    "level": "beginner",
+    "lesson_type": "technique",
+    "one_line_promise": "C + the G walk gives you the backbone of country.",
+    "objectives": [
+      "Form C (ring A 3, middle D 2, index B 1, low E muted)",
+      "Strum it clean, skipping the muted low E",
+      "Walk G to C on the beat at a bright tempo"
+    ],
+    "estimated_minutes": 11,
+    "prerequisites": [
+      "Country Pack 1 — G (C1)"
+    ],
+    "app_feature_mapping": {
+      "free_metronome": [
+        "hold the G-C walk tempo (boom-chick feel)"
+      ]
+    }
+  }
+}

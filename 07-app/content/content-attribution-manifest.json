@@ -1,0 +1,60 @@
+{
+  "_comment": "Content-attribution map (BUILDER change). Maps world_id -> campaign + the lessons available within that world shell, so a world VIEW can later be attributed to an install/subscription. Pure data; ignored by every existing gate (curriculum-order, song-progression, chord-check, asset-job). Worlds are ambiance shells, not 1:1 lesson locks. Add 'world_id' to a lesson JSON only when the pipeline actually renders that lesson inside a built world.",
+  "schema_version": 1,
+  "backend": "pocketbase",
+  "backend_license": "MIT",
+  "backend_recurring_cost": "$0 (self-hosted)",
+  "collection": "content_events",
+  "worlds": [
+    {
+      "world_id": "elderwick-market",
+      "title": "Elderwick Market",
+      "campaign": "world_elderwick",
+      "source_url": "https://youtu.be/FYmRkScwJ8M",
+      "status": "scaffold_authored",
+      "pipeline_stage": "youtube_capture(DONE) -> flux_still(PENDING) -> wan_motion(PENDING) -> chatterbox_voice(PENDING) -> godot_world_scaffold(DONE) -> godot_build(PENDING_engine)",
+      "lessons_available": 25,
+      "scaffold_path": "07-app/godot/worlds/elderwick-market/"
+    },
+    {
+      "world_id": "celtic-ambience-village",
+      "title": "Celtic Ambience Village",
+      "campaign": "world_celtic",
+      "source_url": "https://youtu.be/idGNrUzRues",
+      "status": "reference_only",
+      "pipeline_stage": "youtube_capture -> pending_flux_wan_chatterbox_godot",
+      "lessons_available": 25
+    },
+    {
+      "world_id": "emerald-hollow",
+      "title": "Emerald Hollow",
+      "campaign": "world_emerald_hollow",
+      "source_url": "https://youtu.be/X3Q9-xj_XwM",
+      "status": "reference_captured",
+      "pipeline_stage": "youtube_capture(DONE) -> flux_still(PENDING) -> wan_motion(PENDING) -> chatterbox_voice(PENDING) -> godot_world_scaffold(PENDING) -> godot_build(PENDING_engine)",
+      "lessons_available": 25,
+      "scaffold_path": null,
+      "_note": "World 1 per AMENDMENT-17 (proposed). Reference + palette lock on disk at brand-references/emerald-hollow/. Godot scaffold NOT yet authored on this machine — differs from elderwick-market scaffold (a separate captured reference). T1.assetjob.json already carries world_id=emerald-hollow + content_id=T1-old-village."
+    },
+    {
+      "world_id": "avalon-hidden-lake",
+      "title": "Avalon's Hidden Lake",
+      "campaign": "world_avalon",
+      "source_url": "https://youtu.be/aqgwKX_02aY",
+      "status": "reference_only",
+      "pipeline_stage": "youtube_capture -> pending_flux_wan_chatterbox_godot",
+      "lessons_available": 25
+    },
+    {
+      "world_id": "emerald-vale",
+      "title": "Emerald Vale / Enchanted Forest Trail",
+      "campaign": "world_emerald_vale",
+      "source_url": "https://youtu.be/PBrscpvKuQg",
+      "status": "reference_only",
+      "pipeline_stage": "youtube_capture -> pending_flux_wan_chatterbox_godot",
+      "lessons_available": 25
+    }
+  ],
+  "attribution_event_types": ["world_view", "lesson_view", "install", "subscription"],
+  "privacy": "anonymous only; no PII; no learning-progress data (stays on-device per AMENDMENT-11 Red Line 1)"
+}

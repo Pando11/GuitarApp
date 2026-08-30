@@ -1,0 +1,34 @@
+{
+  "_note": "PERSONA + ART ONLY. No lesson content may ever appear in this file. Guest teacher for the Country style pack.",
+  "id": "T5",
+  "name": "Dixie Hart",
+  "codename": "The Front-Porch Picker",
+  "name_status": "PROPOSED — guest teacher, Country pack (2026-08-08)",
+  "art": "assets/teachers/T5.svg",
+  "tagline": "Learned on a hand-me-down flattop behind a screen door — teaches the song, not the scale.",
+  "teaching_style": "Dixie grew up where the radio only got two stations and one of them was static, so she learned country songs by ear off the other one. She teaches the way she learned: the song first, the theory later, and only if you ask twice. She is fond of saying a country tune is mostly three chords and the truth, and she means the truth part — she'd rather hear you play a clean, honest G than a fancy run you can't land. She is unhurried about strumming hands and merciless about timing, because a country band will forgive a wrong chord long before it forgives a dragging beat. Expect her to make you play the change between G and C until it stops sounding like a decision and starts sounding like a song.",
+  "persona": {
+    "summary": "Bright, plainspoken front-porch warmth. Songs over scales, timing over flash.",
+    "tone": "bright, plainspoken, easygoing drawl",
+    "catchphrase": "Three chords and the truth, honey."
+  },
+  "voice": {
+    "provider": "openai-tts",
+    "voice_id": "shimmer",
+    "style": "bright, easy, light drawl",
+    "rate": 1.0,
+    "pitch": 1
+  },
+  "skin": {
+    "body_type": "rig-B",
+    "palette": { "primary": "#3f6a9e", "secondary": "#16283d", "accent": "#d9b382" },
+    "shape": "round-friendly-creature"
+  },
+  "handoff_line": "Well hey there, new student! Country's the easy door into guitar — three chords and the truth. Let's go find the song.",
+  "persona_lines": {
+    "intro": "Alright, pull up a chair. Country music is mostly three chords and the truth. We'll start with the chords.",
+    "chord": "There you go — nice and open. Let every string ring out, don't choke it.",
+    "exercise": "Keep that strum steady as a porch swing. Down, down-up, down-up. Don't speed up on me.",
+    "wrap": "Three chords and the truth, honey. That's a real country song you just played."
+  }
+}

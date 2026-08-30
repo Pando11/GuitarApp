@@ -1,0 +1,163 @@
+{
+  "lesson": {
+    "id": "L31-new-chord-d-make-the-d-shape",
+    "title": "New Chord: D major (+ Make the D shape)",
+    "level": "beginner",
+    "lesson_type": "technique",
+    "one_line_promise": "Make the D shape.",
+    "objectives": [
+      "Form D major (D A F#)",
+      "Make the D shape using D",
+      "Keep changes clean before adding speed"
+    ],
+    "estimated_minutes": 8,
+    "prerequisites": [
+      "Lesson L30"
+    ],
+    "app_feature_mapping": {
+      "free_metronome": [
+        "drill tempo"
+      ]
+    }
+  },
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted.",
+    "Em": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "E minor",
+      "frets": [
+        0,
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "fingers": [
+        0,
+        2,
+        3,
+        0,
+        0,
+        0
+      ],
+      "note": "Verified deterministically by chord-theory-check.js (2026-08-08) as E B G."
+    },
+    "easyC": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "C major (Lauren's 'easy C' — 2-finger reduction)",
+      "frets": [
+        null,
+        3,
+        2,
+        0,
+        null,
+        0
+      ],
+      "fingers": [
+        null,
+        3,
+        2,
+        0,
+        null,
+        0
+      ],
+      "note": "Verified deterministically by chord-theory-check.js (2026-08-08) as C E G."
+    },
+    "G": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "G major",
+      "frets": [
+        3,
+        2,
+        0,
+        0,
+        0,
+        3
+      ],
+      "fingers": [
+        2,
+        1,
+        0,
+        0,
+        0,
+        3
+      ],
+      "note": "Verified deterministically by chord-theory-check.js (2026-08-08) as G B D."
+    },
+    "D": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "D major",
+      "frets": [
+        null,
+        null,
+        0,
+        2,
+        3,
+        2
+      ],
+      "fingers": [
+        null,
+        null,
+        0,
+        1,
+        3,
+        2
+      ],
+      "note": "Verified deterministically by chord-theory-check.js (2026-08-08) as D A F#."
+    }
+  },
+  "exercises": [
+    {
+      "id": "EX1-shape",
+      "name": "Make the D major shape",
+      "purpose": "Land the fingers for D.",
+      "params": {
+        "chord": "D",
+        "fingers": "string 4: fret 0 finger 0; string 3: fret 2 finger 1; string 2: fret 3 finger 3; string 1: fret 2 finger 2",
+        "strings_played": "all six"
+      },
+      "coaching": "Bring your hand up to the neck. D major is just a shape — land the fingers, let the others ring open. That right there is a real chord.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-strum",
+      "name": "One clean down-strum",
+      "purpose": "Strum through the sounding strings without catching.",
+      "params": {
+        "chord": "D",
+        "action": "single downward strum, relaxed wrist",
+        "reps": 5,
+        "cue": "listen for clean ring"
+      },
+      "coaching": "Keep that shape and strum straight down. Wrist loose. If a string buzzes, press a touch closer to the fret. When it rings clean, that is your first real win.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "Group 7: New Chord: D. Make the D shape. Today the new shape is D major — it spells D A F#.",
+    "ex1_intro": "Bring your hand up to the neck. D major is just a shape — land the fingers, let the others ring open. That right there is a real chord.",
+    "results": "A cleaner rep than last time means your hands are learning. That is the only metric that matters here.",
+    "wrap": "Logged. Next lesson builds on this."
+  },
+  "qa_block": {
+    "must_verify": [
+      "Automated: every chord fingering verified deterministically by 06-prototypes/step0/schema/chord-theory-check.js (verifyChord) — 0 errors AND 0 warnings required before ship (AGENTS Rule 8).",
+      "Automated: lesson JSON passes schema/validateLesson — all required keys present, frets/fingers length 6, qa_status whitelisted.",
+      "Author pass: teaching copy is plain-English, beginner-appropriate, no AI-isms; pacing realistic.",
+      "Licensing: exercises only, zero copyrighted song material.",
+      "Spoken copy expands chord names to words (no bare symbols) so TTS reads them correctly."
+    ],
+    "flagged_by": "founder (non-player) — cannot self-verify",
+    "verifier_role": "arithmetic (chord-theory-check.js) + author review + schema validate",
+    "guitarist_signoff": "NOT REQUIRED — chord fingerings verified deterministically by chord-theory-check.js on 2026-08-08."
+  },
+  "_meta": {
+    "n": 31,
+    "group": 7,
+    "newChord": "D",
+    "focus": [
+      "D"
+    ]
+  }
+}

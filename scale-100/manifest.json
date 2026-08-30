@@ -1,0 +1,1213 @@
+{
+  "generated": "2026-08-13T15:22:23.224Z",
+  "groups": 20,
+  "teaching_lessons": 100,
+  "practice_lessons": 100,
+  "chord_intro_order": [
+    "Em",
+    "easyC",
+    "G",
+    "D",
+    "A",
+    "Am",
+    "E",
+    "Dm"
+  ],
+  "practice_pairs": [
+    {
+      "file": "guitar-practice-01-welcome-setup-meet-the-guitar-parts.json",
+      "practice_of": "L01-welcome-setup-meet-the-guitar-parts",
+      "scope": [],
+      "group": 1
+    },
+    {
+      "file": "guitar-practice-02-welcome-setup-how-to-hold-sit.json",
+      "practice_of": "L02-welcome-setup-how-to-hold-sit",
+      "scope": [],
+      "group": 1
+    },
+    {
+      "file": "guitar-practice-03-welcome-setup-read-a-chord-box.json",
+      "practice_of": "L03-welcome-setup-read-a-chord-box",
+      "scope": [],
+      "group": 1
+    },
+    {
+      "file": "guitar-practice-04-welcome-setup-relax-avoid-tension.json",
+      "practice_of": "L04-welcome-setup-relax-avoid-tension",
+      "scope": [],
+      "group": 1
+    },
+    {
+      "file": "guitar-practice-05-welcome-setup-tuner-metronome-basics.json",
+      "practice_of": "L05-welcome-setup-tuner-metronome-basics",
+      "scope": [],
+      "group": 1
+    },
+    {
+      "file": "guitar-practice-06-new-chord-e-minor-make-the-em-shape-one-strum.json",
+      "practice_of": "L06-first-chord-em-make-the-em-shape-one-strum",
+      "scope": [
+        "Em"
+      ],
+      "group": 2
+    },
+    {
+      "file": "guitar-practice-07-first-chord-em-em-in-steady-time.json",
+      "practice_of": "L07-first-chord-em-em-in-steady-time",
+      "scope": [
+        "Em"
+      ],
+      "group": 2
+    },
+    {
+      "file": "guitar-practice-08-first-chord-em-chord-perfect-em.json",
+      "practice_of": "L08-first-chord-em-chord-perfect-em",
+      "scope": [
+        "Em"
+      ],
+      "group": 2
+    },
+    {
+      "file": "guitar-practice-09-first-chord-em-em-hold-relax.json",
+      "practice_of": "L09-first-chord-em-em-hold-relax",
+      "scope": [
+        "Em"
+      ],
+      "group": 2
+    },
+    {
+      "file": "guitar-practice-10-first-chord-em-em-review-retrieval.json",
+      "practice_of": "L10-first-chord-em-em-review-retrieval",
+      "scope": [
+        "Em"
+      ],
+      "group": 2
+    },
+    {
+      "file": "guitar-practice-11-new-chord-c-major-make-easy-c.json",
+      "practice_of": "L11-second-chord-easy-c-make-easy-c",
+      "scope": [
+        "Em",
+        "easyC"
+      ],
+      "group": 3
+    },
+    {
+      "file": "guitar-practice-12-second-chord-easy-c-em-to-easyc-your-first-song.json",
+      "practice_of": "L12-second-chord-easy-c-em-to-easyc-your-first-song",
+      "scope": [
+        "Em",
+        "easyC"
+      ],
+      "group": 3
+    },
+    {
+      "file": "guitar-practice-13-second-chord-easy-c-anchor-fingers-em-easyc.json",
+      "practice_of": "L13-second-chord-easy-c-anchor-fingers-em-easyc",
+      "scope": [
+        "Em",
+        "easyC"
+      ],
+      "group": 3
+    },
+    {
+      "file": "guitar-practice-14-second-chord-easy-c-air-changes-em-easyc.json",
+      "practice_of": "L14-second-chord-easy-c-air-changes-em-easyc",
+      "scope": [
+        "Em",
+        "easyC"
+      ],
+      "group": 3
+    },
+    {
+      "file": "guitar-practice-15-second-chord-easy-c-first-song-polish.json",
+      "practice_of": "L15-second-chord-easy-c-first-song-polish",
+      "scope": [
+        "Em",
+        "easyC"
+      ],
+      "group": 3
+    },
+    {
+      "file": "guitar-practice-16-strumming-in-time-down-strums-on-the-beat.json",
+      "practice_of": "L16-strumming-in-time-down-strums-on-the-beat",
+      "scope": [
+        "Em",
+        "easyC"
+      ],
+      "group": 4
+    },
+    {
+      "file": "guitar-practice-17-strumming-in-time-loop-one-bar-with-rhythm.json",
+      "practice_of": "L17-strumming-in-time-loop-one-bar-with-rhythm",
+      "scope": [
+        "Em",
+        "easyC"
+      ],
+      "group": 4
+    },
+    {
+      "file": "guitar-practice-18-strumming-in-time-count-out-loud-1-2.json",
+      "practice_of": "L18-strumming-in-time-count-out-loud-1-2",
+      "scope": [
+        "Em",
+        "easyC"
+      ],
+      "group": 4
+    },
+    {
+      "file": "guitar-practice-19-strumming-in-time-feel-the-pulse-not-the-rush.json",
+      "practice_of": "L19-strumming-in-time-feel-the-pulse-not-the-rush",
+      "scope": [
+        "Em",
+        "easyC"
+      ],
+      "group": 4
+    },
+    {
+      "file": "guitar-practice-20-strumming-in-time-posture-strum-hand-recall.json",
+      "practice_of": "L20-strumming-in-time-posture-strum-hand-recall",
+      "scope": [
+        "Em",
+        "easyC"
+      ],
+      "group": 4
+    },
+    {
+      "file": "guitar-practice-21-chord-changes-em-to-easyc-1-minute-changes-em-easyc.json",
+      "practice_of": "L21-chord-changes-em-to-easyc-1-minute-changes-em-easyc",
+      "scope": [
+        "Em",
+        "easyC"
+      ],
+      "group": 5
+    },
+    {
+      "file": "guitar-practice-22-chord-changes-em-to-easyc-weak-pair-review-setup.json",
+      "practice_of": "L22-chord-changes-em-to-easyc-weak-pair-review-setup",
+      "scope": [
+        "Em",
+        "easyC"
+      ],
+      "group": 5
+    },
+    {
+      "file": "guitar-practice-23-chord-changes-em-to-easyc-tempo-ladder-em-easyc.json",
+      "practice_of": "L23-chord-changes-em-to-easyc-tempo-ladder-em-easyc",
+      "scope": [
+        "Em",
+        "easyC"
+      ],
+      "group": 5
+    },
+    {
+      "file": "guitar-practice-24-chord-changes-em-to-easyc-retrieve-the-change-from-memory.json",
+      "practice_of": "L24-chord-changes-em-to-easyc-retrieve-the-change-from-memory",
+      "scope": [
+        "Em",
+        "easyC"
+      ],
+      "group": 5
+    },
+    {
+      "file": "guitar-practice-25-chord-changes-em-to-easyc-mock-change-check.json",
+      "practice_of": "L25-chord-changes-em-to-easyc-mock-change-check",
+      "scope": [
+        "Em",
+        "easyC"
+      ],
+      "group": 5
+    },
+    {
+      "file": "guitar-practice-26-new-chord-g-major-make-the-g-shape.json",
+      "practice_of": "L26-new-chord-g-make-the-g-shape",
+      "scope": [
+        "Em",
+        "easyC",
+        "G"
+      ],
+      "group": 6
+    },
+    {
+      "file": "guitar-practice-27-new-chord-g-em-to-g-pivot.json",
+      "practice_of": "L27-new-chord-g-em-to-g-pivot",
+      "scope": [
+        "Em",
+        "easyC",
+        "G"
+      ],
+      "group": 6
+    },
+    {
+      "file": "guitar-practice-28-new-chord-g-chord-perfect-g.json",
+      "practice_of": "L28-new-chord-g-chord-perfect-g",
+      "scope": [
+        "Em",
+        "easyC",
+        "G"
+      ],
+      "group": 6
+    },
+    {
+      "file": "guitar-practice-29-new-chord-g-g-inside-a-simple-phrase.json",
+      "practice_of": "L29-new-chord-g-g-inside-a-simple-phrase",
+      "scope": [
+        "Em",
+        "easyC",
+        "G"
+      ],
+      "group": 6
+    },
+    {
+      "file": "guitar-practice-30-new-chord-g-g-review-retrieval.json",
+      "practice_of": "L30-new-chord-g-g-review-retrieval",
+      "scope": [
+        "Em",
+        "easyC",
+        "G"
+      ],
+      "group": 6
+    },
+    {
+      "file": "guitar-practice-31-new-chord-d-major-make-the-d-shape.json",
+      "practice_of": "L31-new-chord-d-make-the-d-shape",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D"
+      ],
+      "group": 7
+    },
+    {
+      "file": "guitar-practice-32-new-chord-d-four-change-rotation.json",
+      "practice_of": "L32-new-chord-d-four-change-rotation",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D"
+      ],
+      "group": 7
+    },
+    {
+      "file": "guitar-practice-33-new-chord-d-chord-perfect-d.json",
+      "practice_of": "L33-new-chord-d-chord-perfect-d",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D"
+      ],
+      "group": 7
+    },
+    {
+      "file": "guitar-practice-34-new-chord-d-d-transitions-in-a-line.json",
+      "practice_of": "L34-new-chord-d-d-transitions-in-a-line",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D"
+      ],
+      "group": 7
+    },
+    {
+      "file": "guitar-practice-35-new-chord-d-d-review-retrieval.json",
+      "practice_of": "L35-new-chord-d-d-review-retrieval",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D"
+      ],
+      "group": 7
+    },
+    {
+      "file": "guitar-practice-36-new-chord-a-major-make-the-a-shape.json",
+      "practice_of": "L36-new-chord-a-make-the-a-shape",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A"
+      ],
+      "group": 8
+    },
+    {
+      "file": "guitar-practice-37-new-chord-a-rotation-with-a.json",
+      "practice_of": "L37-new-chord-a-rotation-with-a",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A"
+      ],
+      "group": 8
+    },
+    {
+      "file": "guitar-practice-38-new-chord-a-chord-perfect-a.json",
+      "practice_of": "L38-new-chord-a-chord-perfect-a",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A"
+      ],
+      "group": 8
+    },
+    {
+      "file": "guitar-practice-39-new-chord-a-a-inside-a-simple-phrase.json",
+      "practice_of": "L39-new-chord-a-a-inside-a-simple-phrase",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A"
+      ],
+      "group": 8
+    },
+    {
+      "file": "guitar-practice-40-new-chord-a-a-review-retrieval.json",
+      "practice_of": "L40-new-chord-a-a-review-retrieval",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A"
+      ],
+      "group": 8
+    },
+    {
+      "file": "guitar-practice-41-new-chord-a-minor-make-the-am-shape.json",
+      "practice_of": "L41-new-chord-am-make-the-am-shape",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am"
+      ],
+      "group": 9
+    },
+    {
+      "file": "guitar-practice-42-new-chord-am-all-six-change-pairs.json",
+      "practice_of": "L42-new-chord-am-all-six-change-pairs",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am"
+      ],
+      "group": 9
+    },
+    {
+      "file": "guitar-practice-43-new-chord-am-chord-perfect-am.json",
+      "practice_of": "L43-new-chord-am-chord-perfect-am",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am"
+      ],
+      "group": 9
+    },
+    {
+      "file": "guitar-practice-44-new-chord-am-am-inside-a-simple-phrase.json",
+      "practice_of": "L44-new-chord-am-am-inside-a-simple-phrase",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am"
+      ],
+      "group": 9
+    },
+    {
+      "file": "guitar-practice-45-new-chord-am-am-review-retrieval.json",
+      "practice_of": "L45-new-chord-am-am-review-retrieval",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am"
+      ],
+      "group": 9
+    },
+    {
+      "file": "guitar-practice-46-four-chord-songs-milestone-g-d-em-c-loop.json",
+      "practice_of": "L46-four-chord-songs-milestone-g-d-em-c-loop",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am"
+      ],
+      "group": 10
+    },
+    {
+      "file": "guitar-practice-47-four-chord-songs-milestone-smooth-the-transitions.json",
+      "practice_of": "L47-four-chord-songs-milestone-smooth-the-transitions",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am"
+      ],
+      "group": 10
+    },
+    {
+      "file": "guitar-practice-48-four-chord-songs-milestone-song-1-play-the-loop.json",
+      "practice_of": "L48-four-chord-songs-milestone-song-1-play-the-loop",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am"
+      ],
+      "group": 10
+    },
+    {
+      "file": "guitar-practice-49-four-chord-songs-milestone-song-2-add-a-light-strum.json",
+      "practice_of": "L49-four-chord-songs-milestone-song-2-add-a-light-strum",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am"
+      ],
+      "group": 10
+    },
+    {
+      "file": "guitar-practice-50-four-chord-songs-milestone-milestone-capstone.json",
+      "practice_of": "L50-four-chord-songs-milestone-milestone-capstone",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am"
+      ],
+      "group": 10
+    },
+    {
+      "file": "guitar-practice-51-up-strums-the-up-strum.json",
+      "practice_of": "L51-up-strums-the-up-strum",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am"
+      ],
+      "group": 11
+    },
+    {
+      "file": "guitar-practice-52-up-strums-d-du-udu-pattern.json",
+      "practice_of": "L52-up-strums-d-du-udu-pattern",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am"
+      ],
+      "group": 11
+    },
+    {
+      "file": "guitar-practice-53-up-strums-muted-percussive-up-strum.json",
+      "practice_of": "L53-up-strums-muted-percussive-up-strum",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am"
+      ],
+      "group": 11
+    },
+    {
+      "file": "guitar-practice-54-up-strums-two-bar-loop-with-up-strums.json",
+      "practice_of": "L54-up-strums-two-bar-loop-with-up-strums",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am"
+      ],
+      "group": 11
+    },
+    {
+      "file": "guitar-practice-55-up-strums-up-strum-combo.json",
+      "practice_of": "L55-up-strums-up-strum-combo",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am"
+      ],
+      "group": 11
+    },
+    {
+      "file": "guitar-practice-56-strumming-patterns-library-island-strum.json",
+      "practice_of": "L56-strumming-patterns-library-island-strum",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am"
+      ],
+      "group": 12
+    },
+    {
+      "file": "guitar-practice-57-strumming-patterns-library-boom-chick.json",
+      "practice_of": "L57-strumming-patterns-library-boom-chick",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am"
+      ],
+      "group": 12
+    },
+    {
+      "file": "guitar-practice-58-strumming-patterns-library-pattern-switcher.json",
+      "practice_of": "L58-strumming-patterns-library-pattern-switcher",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am"
+      ],
+      "group": 12
+    },
+    {
+      "file": "guitar-practice-59-strumming-patterns-library-count-out-loud-across-patterns.json",
+      "practice_of": "L59-strumming-patterns-library-count-out-loud-across-patterns",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am"
+      ],
+      "group": 12
+    },
+    {
+      "file": "guitar-practice-60-strumming-patterns-library-pattern-combo.json",
+      "practice_of": "L60-strumming-patterns-library-pattern-combo",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am"
+      ],
+      "group": 12
+    },
+    {
+      "file": "guitar-practice-61-dynamics-the-pattern-loud-soft.json",
+      "practice_of": "L61-dynamics-the-pattern-loud-soft",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am"
+      ],
+      "group": 13
+    },
+    {
+      "file": "guitar-practice-62-dynamics-the-pattern-alternating-bass.json",
+      "practice_of": "L62-dynamics-the-pattern-alternating-bass",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am"
+      ],
+      "group": 13
+    },
+    {
+      "file": "guitar-practice-63-dynamics-the-pattern-dynamics-ladder.json",
+      "practice_of": "L63-dynamics-the-pattern-dynamics-ladder",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am"
+      ],
+      "group": 13
+    },
+    {
+      "file": "guitar-practice-64-dynamics-the-pattern-the-pattern-andy-guitar.json",
+      "practice_of": "L64-dynamics-the-pattern-the-pattern-andy-guitar",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am"
+      ],
+      "group": 13
+    },
+    {
+      "file": "guitar-practice-65-dynamics-the-pattern-dynamics-combo.json",
+      "practice_of": "L65-dynamics-the-pattern-dynamics-combo",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am"
+      ],
+      "group": 13
+    },
+    {
+      "file": "guitar-practice-66-capo-basics-place-the-capo.json",
+      "practice_of": "L66-capo-basics-place-the-capo",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am"
+      ],
+      "group": 14
+    },
+    {
+      "file": "guitar-practice-67-capo-basics-transpose-a-song-with-capo.json",
+      "practice_of": "L67-capo-basics-transpose-a-song-with-capo",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am"
+      ],
+      "group": 14
+    },
+    {
+      "file": "guitar-practice-68-capo-basics-capo-2-loop-g-d-em-c.json",
+      "practice_of": "L68-capo-basics-capo-2-loop-g-d-em-c",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am"
+      ],
+      "group": 14
+    },
+    {
+      "file": "guitar-practice-69-capo-basics-capo-song-application.json",
+      "practice_of": "L69-capo-basics-capo-song-application",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am"
+      ],
+      "group": 14
+    },
+    {
+      "file": "guitar-practice-70-capo-basics-capo-review.json",
+      "practice_of": "L70-capo-basics-capo-review",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am"
+      ],
+      "group": 14
+    },
+    {
+      "file": "guitar-practice-71-faster-chord-changes-spider-warm-up.json",
+      "practice_of": "L71-faster-chord-changes-spider-warm-up",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am"
+      ],
+      "group": 15
+    },
+    {
+      "file": "guitar-practice-72-faster-chord-changes-finger-lift-off.json",
+      "practice_of": "L72-faster-chord-changes-finger-lift-off",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am"
+      ],
+      "group": 15
+    },
+    {
+      "file": "guitar-practice-73-faster-chord-changes-1-minute-changes-all-pairs.json",
+      "practice_of": "L73-faster-chord-changes-1-minute-changes-all-pairs",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am"
+      ],
+      "group": 15
+    },
+    {
+      "file": "guitar-practice-74-faster-chord-changes-tempo-ladder-to-speed.json",
+      "practice_of": "L74-faster-chord-changes-tempo-ladder-to-speed",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am"
+      ],
+      "group": 15
+    },
+    {
+      "file": "guitar-practice-75-faster-chord-changes-speed-mock-check.json",
+      "practice_of": "L75-faster-chord-changes-speed-mock-check",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am"
+      ],
+      "group": 15
+    },
+    {
+      "file": "guitar-practice-76-new-chord-e-major-make-the-e-shape.json",
+      "practice_of": "L76-new-chord-e-make-the-e-shape",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am",
+        "E"
+      ],
+      "group": 16
+    },
+    {
+      "file": "guitar-practice-77-new-chord-e-e-to-a-changes.json",
+      "practice_of": "L77-new-chord-e-e-to-a-changes",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am",
+        "E"
+      ],
+      "group": 16
+    },
+    {
+      "file": "guitar-practice-78-new-chord-e-a-to-em-changes.json",
+      "practice_of": "L78-new-chord-e-a-to-em-changes",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am",
+        "E"
+      ],
+      "group": 16
+    },
+    {
+      "file": "guitar-practice-79-new-chord-e-chord-perfect-e.json",
+      "practice_of": "L79-new-chord-e-chord-perfect-e",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am",
+        "E"
+      ],
+      "group": 16
+    },
+    {
+      "file": "guitar-practice-80-new-chord-e-e-review-retrieval.json",
+      "practice_of": "L80-new-chord-e-e-review-retrieval",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am",
+        "E"
+      ],
+      "group": 16
+    },
+    {
+      "file": "guitar-practice-81-new-chord-d-minor-make-the-dm-shape.json",
+      "practice_of": "L81-minor-progressions-dm-make-the-dm-shape",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am",
+        "E",
+        "Dm"
+      ],
+      "group": 17
+    },
+    {
+      "file": "guitar-practice-82-minor-progressions-dm-minor-progressions.json",
+      "practice_of": "L82-minor-progressions-dm-minor-progressions",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am",
+        "E",
+        "Dm"
+      ],
+      "group": 17
+    },
+    {
+      "file": "guitar-practice-83-minor-progressions-dm-chord-perfect-dm.json",
+      "practice_of": "L83-minor-progressions-dm-chord-perfect-dm",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am",
+        "E",
+        "Dm"
+      ],
+      "group": 17
+    },
+    {
+      "file": "guitar-practice-84-minor-progressions-dm-dm-inside-a-phrase.json",
+      "practice_of": "L84-minor-progressions-dm-dm-inside-a-phrase",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am",
+        "E",
+        "Dm"
+      ],
+      "group": 17
+    },
+    {
+      "file": "guitar-practice-85-minor-progressions-dm-dm-review-retrieval.json",
+      "practice_of": "L85-minor-progressions-dm-dm-review-retrieval",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am",
+        "E",
+        "Dm"
+      ],
+      "group": 17
+    },
+    {
+      "file": "guitar-practice-86-fingerpicking-intro-travis-thumb-the-bass.json",
+      "practice_of": "L86-fingerpicking-intro-travis-thumb-the-bass",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am",
+        "E",
+        "Dm"
+      ],
+      "group": 18
+    },
+    {
+      "file": "guitar-practice-87-fingerpicking-intro-travis-travis-picking-pattern.json",
+      "practice_of": "L87-fingerpicking-intro-travis-travis-picking-pattern",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am",
+        "E",
+        "Dm"
+      ],
+      "group": 18
+    },
+    {
+      "file": "guitar-practice-88-fingerpicking-intro-travis-slow-down-loop.json",
+      "practice_of": "L88-fingerpicking-intro-travis-slow-down-loop",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am",
+        "E",
+        "Dm"
+      ],
+      "group": 18
+    },
+    {
+      "file": "guitar-practice-89-fingerpicking-intro-travis-pattern-combo.json",
+      "practice_of": "L89-fingerpicking-intro-travis-pattern-combo",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am",
+        "E",
+        "Dm"
+      ],
+      "group": 18
+    },
+    {
+      "file": "guitar-practice-90-fingerpicking-intro-travis-fingerpick-capstone.json",
+      "practice_of": "L90-fingerpicking-intro-travis-fingerpick-capstone",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am",
+        "E",
+        "Dm"
+      ],
+      "group": 18
+    },
+    {
+      "file": "guitar-practice-91-read-any-chord-chart-tab-recall-the-box-shapes.json",
+      "practice_of": "L91-read-any-chord-chart-tab-recall-the-box-shapes",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am",
+        "E",
+        "Dm"
+      ],
+      "group": 19
+    },
+    {
+      "file": "guitar-practice-92-read-any-chord-chart-tab-read-a-tab-line.json",
+      "practice_of": "L92-read-any-chord-chart-tab-read-a-tab-line",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am",
+        "E",
+        "Dm"
+      ],
+      "group": 19
+    },
+    {
+      "file": "guitar-practice-93-read-any-chord-chart-tab-play-one-new-chart.json",
+      "practice_of": "L93-read-any-chord-chart-tab-play-one-new-chart",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am",
+        "E",
+        "Dm"
+      ],
+      "group": 19
+    },
+    {
+      "file": "guitar-practice-94-read-any-chord-chart-tab-retrieval-drill.json",
+      "practice_of": "L94-read-any-chord-chart-tab-retrieval-drill",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am",
+        "E",
+        "Dm"
+      ],
+      "group": 19
+    },
+    {
+      "file": "guitar-practice-95-read-any-chord-chart-tab-chart-reading-combo.json",
+      "practice_of": "L95-read-any-chord-chart-tab-chart-reading-combo",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am",
+        "E",
+        "Dm"
+      ],
+      "group": 19
+    },
+    {
+      "file": "guitar-practice-96-consolidation-performance-10-minute-daily-routine.json",
+      "practice_of": "L96-consolidation-performance-10-minute-daily-routine",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am",
+        "E",
+        "Dm"
+      ],
+      "group": 20
+    },
+    {
+      "file": "guitar-practice-97-consolidation-performance-weak-pair-review-queue.json",
+      "practice_of": "L97-consolidation-performance-weak-pair-review-queue",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am",
+        "E",
+        "Dm"
+      ],
+      "group": 20
+    },
+    {
+      "file": "guitar-practice-98-consolidation-performance-mock-performance.json",
+      "practice_of": "L98-consolidation-performance-mock-performance",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am",
+        "E",
+        "Dm"
+      ],
+      "group": 20
+    },
+    {
+      "file": "guitar-practice-99-consolidation-performance-two-week-plan.json",
+      "practice_of": "L99-consolidation-performance-two-week-plan",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am",
+        "E",
+        "Dm"
+      ],
+      "group": 20
+    },
+    {
+      "file": "guitar-practice-100-consolidation-performance-graduation.json",
+      "practice_of": "L100-consolidation-performance-graduation",
+      "scope": [
+        "Em",
+        "easyC",
+        "G",
+        "D",
+        "A",
+        "Am",
+        "E",
+        "Dm"
+      ],
+      "group": 20
+    }
+  ]
+}

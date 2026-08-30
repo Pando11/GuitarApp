@@ -1,0 +1,138 @@
+{
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted.",
+    "Em": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "E minor",
+      "frets": [
+        0,
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "fingers": [
+        0,
+        2,
+        3,
+        0,
+        0,
+        0
+      ]
+    },
+    "G": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "G major (3-finger / 'easy G')",
+      "frets": [
+        3,
+        2,
+        0,
+        0,
+        0,
+        3
+      ],
+      "fingers": [
+        2,
+        1,
+        0,
+        0,
+        0,
+        3
+      ]
+    }
+  },
+  "pivot_points": [
+    {
+      "from": "Em",
+      "to": "G",
+      "static_finger": "index(1) lands on A-string 2nd fret in G (was open in Em) — the bridge finger",
+      "movement": "ring(3) Em D2->high-e 3rd; middle(2) added on low-E 3rd; index(1) joins on A 2nd.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    }
+  ],
+  "exercises": [
+    {
+      "id": "EX1-G",
+      "name": "Make G",
+      "purpose": "Land the 3-finger G shape.",
+      "params": {
+        "chord": "G",
+        "fingers": "middle(2) low-E 3rd, index(1) A 2nd, ring(3) high-e 3rd",
+        "open_strings": "D, G, B ring open"
+      },
+      "coaching": "G is three fingers: middle on the low E third fret, index on the A second fret, ring on the high e third fret. The D, G, and B strings ring open. Big, full chord.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-pivot",
+      "name": "Em to G pivot",
+      "purpose": "Use the index as your bridge finger.",
+      "params": {
+        "chord_pair": [
+          "Em",
+          "G"
+        ],
+        "anchor": "index(1) becomes the A-string 2nd-fret finger in G",
+        "action": "Em -> G keeping the motion small"
+      },
+      "coaching": "From Em, your index finger becomes the A-string second fret in G. Let that finger be the bridge — the change stays small and fast.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX3-count",
+      "name": "1-minute Em↔G drill",
+      "purpose": "Count Em↔G changes in 60 seconds.",
+      "params": {
+        "chord_pair": [
+          "Em",
+          "G"
+        ],
+        "duration_sec": 60,
+        "measure": "count completed changes"
+      },
+      "coaching": "One minute, Em to G, back and forth. Count clean changes, write it down. Same drill, new pair.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "New chord: G. Three fingers, and combined with Em, C, D it unlocks thousands of songs. Worth the effort.",
+    "ex1_intro": "G: middle on low E third fret, index on A second, ring on high e third. D, G, B ring open. Full, bright chord.",
+    "ex2_intro": "Em to G: let your index finger become the A-string second fret. That finger is your bridge — keep the motion tiny.",
+    "ex3_intro": "One minute, count your Em-G changes, write it down. New pair, same drill. Beat it next week.",
+    "results": "G opens the door to real songs. A clean Em-G change is a building block you will use forever.",
+    "wrap": "G is in. Three chords now (Em, easy C, G). Lesson 7 adds D and the changes get musical."
+  },
+  "qa_block": {
+    "must_verify": [
+      "Automated: every chord fingering verified deterministically by 06-prototypes/step0/schema/chord-theory-check.js (verifyChord) — 0 errors AND 0 warnings required before ship (Hard Ban 7 satisfied by arithmetic, per owner directive 2026-08-08: physical fingering correctness needs no contract guitarist).",
+      "Automated: lesson JSON passes schema/validate.js (validateLesson) — all required keys present, frets/fingers length 6, qa_status whitelisted.",
+      "Author pass: teaching copy is plain-English, beginner-appropriate, no AI-isms; pacing realistic.",
+      "Licensing: exercises only, zero copyrighted song material (spec §3/R6)."
+    ],
+    "flagged_by": "founder (non-player) — cannot self-verify",
+    "verifier_role": "arithmetic (chord-theory-check.js) + author review",
+    "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
+  },
+  "lesson": {
+    "id": "L06-new-chord-g",
+    "title": "New Chord: G + Em ↔ G",
+    "level": "beginner",
+    "lesson_type": "technique",
+    "one_line_promise": "Add G — three fingers, thousands of songs.",
+    "objectives": [
+      "Form G (3-finger 320003)",
+      "Use the index as the anchor between Em and G",
+      "Run a 1-minute Em↔G change drill"
+    ],
+    "estimated_minutes": 12,
+    "prerequisites": [
+      "Em (L02)"
+    ],
+    "app_feature_mapping": {
+      "free_metronome": [
+        "Em-G change drill tempo"
+      ]
+    }
+  }
+}

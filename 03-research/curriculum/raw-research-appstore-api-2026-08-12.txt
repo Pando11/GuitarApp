@@ -1,0 +1,213 @@
+================================================================================
+GUITAR LEARNING APP CURRICULA — BEGINNER SEQUENCE BREAKDOWN
+Yousician · Fender Play · Simply Guitar (by Simply / JoyTunes)
+Compiled: 2026-08-12  |  Researcher: Hermes (autonomous)
+================================================================================
+
+SCOPE / SOURCING NOTE
+---------------------
+Goal: lesson-by-lesson / level-by-level order each app teaches an ABSOLUTE
+BEGINNER. Sources used (all fetched live during this run):
+
+  PRIMARY (vendor-authored, direct):
+    - Apple App Store descriptions via iTunes Search API (app IDs verified):
+        Yousician      = 959883039 (com.yousician.yousician)
+        Fender Play    = 1226057939 (com.FenderDigital.Play)
+        Simply Guitar  = 1476695335 (com.joytunes.SimplyGuitar)
+    - Yousician's own server-rendered guide "How to play guitar: 12 steps to
+      start playing" (yousician.com/blog/how-to-play-guitar).
+    - Simply Guitar's App Store bullet list of techniques (vendor's own order).
+  SECONDARY:
+    - Wikipedia: "Yousician" and "Simply (company)" articles (background,
+      pedagogy, competition context).
+    - App Store user reviews (corroborate Simply Guitar's gated beginner flow).
+
+LIMITATION (stated honestly):
+  Vendor support/Zendesk pages, Wayback Machine, and all major search engines
+  were bot-blocked from this host (network reputation AS7018 -> 403/429).
+  Therefore the EXACT in-app lesson titles for Fender Play could not be scraped
+  directly; Fender's sequence below is reconstructed from its App Store
+  description + its long-documented public structure (genre-personalised path,
+  Beginner/Intermediate skill levels, video "skills" then "songs"). Where a
+  detail is vendor-stated vs inferred, it is flagged [VENDOR] vs [INFERRED].
+
+================================================================================
+1) YOUSICIAN  (Yousician Ltd., Helsinki — founded 2010 as Ovelin)
+================================================================================
+Model:   Freemium. 1 free lesson/day; unlimited via Premium+ subscription.
+         ~10,000+ lessons/exercises/songs; 300+ techniques tracked.
+Feedback: Microphone listens while you play; real-time accuracy + timing.
+Path:    A single "guided learning path" of MISSIONS grouped into LEVELS
+         (the app refers to "leveling up," badges, high scores). You progress
+         mission by mission; freemium gates how many you can do per day.
+
+BEGINNER ORDER (absolute beginner -> out of beginner stage):
+  Derived from Yousician's own "12 steps to start playing" guide + App Store
+  topic list. This is the pedagogical order the app embodies.
+
+  Step 1  SETUP / CHOOSE GUITAR
+          Acoustic (nylon easiest for beginners) vs electric; no cables needed.
+  Step 2  GUITAR ANATOMY
+          Learn the parts, which hand is picking/strumming vs fretting.
+  Step 3  TUNING  (standard EADGBE)
+          Built-in tuner in app. Beginners stay in standard tuning only.
+  Step 4  POSTURE & HOW TO HOLD
+          Proper holding, fretting-hand posture, avoiding finger pain (build
+          calluses; nylon strings easier).
+  Step 5  FIRST OPEN "COWBOY" CHORDS  [VENDOR: App Store lists "chords" first]
+          Major open chords: C, A, G, E, D.
+          Minor open chords introduced: A minor (Am), E minor (Em).
+          (These are the workhorse beginner chords — C-A-G-E-D + Am/Em.)
+  Step 6  STRUMMING
+          Downstrokes first, then upstrokes; basic strumming patterns.
+  Step 7  CHORD SWITCHING
+          Transition drills between the open chords; "switch as fast as you can."
+  Step 8  FIRST SONGS
+          Play along to simple, well-known songs using the chords learned
+          (app gives real-time feedback; "progress feels like playing").
+  Step 9  READING TABS / NOTATION
+          Read guitar tablature and (later) sheet music; explore the fretboard.
+  Step 10 LEAD & FINGERSTYLE TECHNIQUES (introduced as you grow)
+          Fingerpicking, then lead-guitar techniques: hammer-ons, pull-offs,
+          bends, palm muting, slides. [VENDOR: App Store: "fingerpicking, lead
+          guitar" listed after chords/strumming.]
+  Step 11 MUSIC THEORY / SCALES / ARPEGGIOS / PROGRESSIONS
+          [VENDOR: App Store: "music theory for guitar," "scales, arpeggios,
+          chord progressions."] Targeted exercises for weak spots.
+  Step 12 CONSISTENT PRACTICE & PROGRESSION
+          Streaks/badges; Yousician states beginners can "pass the beginner
+          stage in a matter of months," intermediate in 1-3 years.
+
+  Topic mastery order stated by Yousician (App Store, verbatim priority):
+    "chords, strumming patterns, fingerpicking, lead guitar, and music theory"
+    then "read guitar tabs, tablature, and sheet music, and explore the
+    full fretboard."
+
+CONFIDENCE: HIGH for topic order (vendor guide + App Store). Mission/level
+titles themselves are dynamic in-app and were not individually scraped.
+
+================================================================================
+2) FENDER PLAY  (Fender Digital, brand of Fender Musical Instruments)
+================================================================================
+Model:   14-day free trial, then paid (monthly/annual). 3000+ bite-sized VIDEO
+         lessons; 1000+ song library. Personalised path: pick instrument +
+         favorite GENRE (Rock/Pop/Country/Blues/Folk). Feedback via
+         MatchMySound listening tech (assesses playing, scores it).
+Path:    Organised as SKILL lessons + SONG lessons. Skill levels:
+         BEGINNER -> INTERMEDIATE (historically "Beginner 1/2/3" style stages).
+         You choose a genre path; songs unlock as the required chords/techniques
+         are taught.
+
+BEGINNER ORDER (absolute beginner -> leaving beginner level):
+  Reconstructed from App Store description [VENDOR] + documented public
+  structure [INFERRED]. Flagged accordingly.
+
+  Step 1  TUNING & GEAR BASICS  [VENDOR: built-in tuner, tone integration]
+          Tune up; (optional) amp preset/tone for select Fender amps.
+  Step 2  POSTURE / HOW TO HOLD & PICK  [INFERRED standard onboarding]
+  Step 3  FIRST OPEN CHORDS  [VENDOR: "master the chords"]
+          Open chords (E, A, D, G, C, plus Em, Am) — same C-A-G-E-D core set
+          as Yousician/Simply.
+  Step 4  STRUMMING PATTERNS  [VENDOR: "chords, scales, songs and riffs ...
+          breaking down each skill"]; built-in metronome + tempo control.
+  Step 5  CHORD CHANGES / CHORD CHALLENGE  [VENDOR: "Chord Challenge —
+          master chord transitions, beat your high score."]
+  Step 6  FIRST SONGS (genre path)  [VENDOR: 1000+ song library; named examples
+          "Come As You Are" (Nirvana), "when the party's over" (Billie Eilish),
+          "Red" (Taylor Swift), "Good Riddance" (Green Day), "Paint It Black"
+          (Rolling Stones), "Master of Puppets" (Metallica).]
+          Songs are taught at the difficulty of the skills just learned.
+  Step 7  FIRST RIFFS  [VENDOR: "riffs" listed; riff breakdowns in lessons]
+  Step 8  SCALES & THEORY  [VENDOR: "master ... guitar scales"; practice mode
+          with isolated/backing tracks, looping, scrolling tablature.]
+  Step 9  INTERMEDIATE TECHNIQUES (exit beginner)  [INFERRED]: barre chords,
+          bends, fingerpicking, genre-specific licks.
+
+  Vendor-stated topic priority (App Store): "chords, scales, songs and riffs"
+  and "Personalized Learning Path - Choose your instrument and your favorite
+  genre."
+
+CONFIDENCE: MEDIUM. Topic set/priority is vendor-stated; exact per-lesson
+titles and the precise Beginner-1/2/3 stage boundaries could not be scraped
+(bot-blocked), so stage numbering is the documented public structure.
+
+================================================================================
+3) SIMPLY GUITAR  (Simply / JoyTunes, Israel — makers of Simply Piano)
+================================================================================
+Model:   Free to start (basic); full course via subscription. Video lessons by
+         "world-class music teachers," with REAL-TIME audio recognition: place
+         the phone in front of you, play, and the app recognises what you play
+         and tells you when it's correct. Works with ANY guitar; pro tuner
+         included. No experience needed; all ages.
+Path:    LINEAR, chapter-style course (no gamified "missions/levels" like
+         Yousician). The app ADAPTS/gates: you cannot advance until the current
+         chord/exercise is recognised as played correctly. [Confirmed by user
+         reviews: "won't recognize D chord ... can't move onto future lessons
+         it is locked without passing."]
+
+BEGINNER ORDER — VENDOR'S OWN STATED SEQUENCE (App Store bullet list, verbatim
+priority under "Learn all the necessary techniques to play the songs you love"):
+  Step 1  GUITAR FUNDAMENTALS
+          Parts of guitar, how to hold, hand position, getting started.
+  Step 2  READ AND PLAY TABS
+          Learn to read tablature and play from it.
+  Step 3  PLAYING CHORDS
+          First chords (App review evidence: starts with easy chords, then the
+          D chord is a known gate; core set Em/C/G/D/Am as elsewhere).
+  Step 4  CHORD SWITCHING
+          Move between chords cleanly (gated — must be recognised).
+  Step 5  STRUMMING TECHNIQUES
+          Strumming patterns; up/down strokes.
+  Step 6  INVALUABLE TIPS & TRICKS FOR PLAYING CORRECTLY
+          Technique corrections / common-mistake guidance.
+  Step 7  TECHNIQUE-BOOSTING EXERCISES
+          Drills to strengthen/clean up playing.
+  Step 8  TUNE YOUR GUITAR (pro tuner included)  — also used at onboarding.
+  Step 9  SONGS  (continuous throughout)
+          "Play chords & songs straight away"; fun songs + complete lessons;
+          new songs/lessons added regularly. Progress tracked.
+
+  Corroborating review flow: "It really guides you through steps for beginners!
+  Helped me tune my guitar and play my first song." and the D-chord lock.
+
+CONFIDENCE: HIGH for the topic ORDER (it is the vendor's own App Store list,
+not inferred). The exact internal chapter names are the app's UI and were not
+scraped, but the sequence above is vendor-authored.
+
+================================================================================
+CROSS-APP COMPARISON (absolute beginner)
+================================================================================
+All three teach the SAME canonical beginner core, in the SAME rough order:
+
+  1. Setup/tune  ->  2. Hold/posture  ->  3. Open chords (C-A-G-E-D + Am/Em)
+  ->  4. Strumming  ->  5. Chord switching  ->  6. First songs
+  ->  7. (tabs) / (techniques) / (scales & theory)
+
+Where they DIFFER:
+  - STRUCTURE: Yousician = gamified missions/levels with daily free limit.
+    Fender Play = genre-personalised video "skills + songs" path, trial-gated.
+    Simply Guitar = linear adaptive video chapters, recognition-gated per step.
+  - READING MUSIC: Yousician and Simply Guitar teach TABS early (Simply lists
+    "read and play tabs" as Step 2). Fender Play teaches tabs inside songs/
+    practice mode rather than as a discrete early step.
+  - FEEDBACK ENGINE: All three use mic recognition; Yousician & Simply give
+    continuous note-level feedback; Fender uses MatchMySound for scored feedback.
+  - FREE TIER: Yousician = 1 lesson/day free (permanent freemium).
+    Simply Guitar = free to start, then subscription. Fender Play = 14-day
+    trial only (no permanent free tier).
+  - THEORY DEPTH: Yousician goes furthest into explicit music theory / scales /
+    arpeggios as a curriculum pillar. Fender bundles theory into genre songs.
+    Simply keeps theory light ("tips & tricks," boosting exercises).
+
+================================================================================
+HOW TO VERIFY / EXTEND
+================================================================================
+- Re-run with a non-flagged network to scrape live in-app lesson titles:
+    * Yousician support: support.yousician.com/hc/en-us (Cloudflare-gated here)
+    * Fender Play: fender.com/play (bot-403 here) + support.fender.com
+    * Simply Guitar: hellosimply.com/simply-guitar (JS-gated here)
+- App Store descriptions are the most reliable vendor-primary source and were
+  fully captured (see app IDs above) for re-verification.
+
+END OF BREAKDOWN
+================================================================================

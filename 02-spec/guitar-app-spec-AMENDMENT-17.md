@@ -1,6 +1,6 @@
 # 02-spec/guitar-app-spec-AMENDMENT-17.md
 
-**Status:** proposed (Grill #4, 2026-08-23 — not yet ratified)
+**Status:** RATIFIED (2026-08-29 by owner Heidi) — was proposed Grill #4 2026-08-23. Ratified with one change: World 1 creation routes through the `world-building-prompt` skill (produce the L2→L5 Emerald Hollow world brief first; the FLUX→Wan2.2→Chatterbox→Godot pipeline consumes it). Animated-character source decided inside that skill run (L5 character sheet), not pre-decided here.
 **Supersedes:** nothing (new amendment; builds on AMENDMENT-11 product thesis)
 **Latest word:** AMENDMENT-16 (PocketBase backend) remains current on backend;
 AMENDMENT-15 (curriculum re-sequence + ordering gate) remains current on curriculum;

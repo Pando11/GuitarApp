@@ -1,0 +1,63 @@
+{
+  "lesson": {
+    "id": "BROKEN-fixture",
+    "title": "Deliberately Invalid Fixture",
+    "level": "absolute-beginner",
+    "lesson_type": "song",
+    "objectives": [],
+    "estimated_minutes": 5
+  },
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted.",
+    "Em": {
+      "name": "E minor",
+      "frets": [
+        0,
+        2,
+        2,
+        0,
+        0
+      ],
+      "fingers": [
+        0,
+        2,
+        3,
+        0,
+        0,
+        0
+      ],
+      "qa_status": "QA-PENDING"
+    },
+    "Bogus": {
+      "name": "No fingers array",
+      "frets": [
+        null,
+        0,
+        2,
+        2,
+        1,
+        0
+      ],
+      "qa_status": "QA-PENDING"
+    }
+  },
+  "exercises": [
+    {
+      "id": "EX1-no-coaching",
+      "name": "Exercise missing coaching",
+      "purpose": "Prove the validator catches a missing required exercise key.",
+      "params": {
+        "tempo_bpm": 60
+      },
+      "qa_status": "QA-PENDING"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "This fixture exists only to make the validator shout.",
+    "wrap": "If this file validates, the validator is broken."
+  },
+  "qa_block": {
+    "must_verify": [],
+    "guitarist_signoff": null
+  }
+}

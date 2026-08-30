@@ -3,8 +3,10 @@
 **Feature:** Grill #4 — The Teacher (World 1: Emerald Hollow)
 **Spec:** `02-spec/guitar-app-spec-AMENDMENT-17.md`
 **ADR:** `docs/adr/0004-the-teacher-world-1-emerald-hollow.md`
+**ADR (related):** `docs/adr/0003-mystery-mode.md` (Grill #3 — ratified 2026-08-24; Sage is the teacher across lessons, performances, AND mystery mode)
+**Teacher name:** Sage (chill, warm, encouraging; one Chatterbox built-in voice — named 2026-08-24, Grill #3)
 **Grill:** #4 of rolling list (student memory #1, practice delivery #2, mystery mode #3, teacher #4)
-**Status:** in build — owner decisions resolved 2026-08-23; T-B1 (Emerald Hollow scene) starting
+**Status:** in build — owner decisions resolved 2026-08-23; Grill #3 (Mystery Mode) ratified 2026-08-24 + integrated below (T-B3 Sage lines, T-B9 mystery→duet bridge); T-B1 (Emerald Hollow scene) starting
 **Issue tracker:** local file (this file) per `AGENTS.md` issue-tracker note. No GitHub needed.
 
 ---
@@ -236,8 +238,9 @@ T-A1. Once T-A1 lands, this ticket is sized by the choice.
 (voice doesn't require the scene to be finished — the dialogue system can be built and tested
 alongside).
 
-**What:** The system that makes the teacher speak — Chatterbox (MIT) built-in voice for World 1, with
-the encouraging-copy tone rule (Grill #3) enforced.
+**What:** The system that makes **Sage** speak — Chatterbox (MIT) built-in voice for World 1, with
+the encouraging-copy tone rule (Grill #3) enforced. Sage is the teacher across regular lessons,
+performances, AND Mystery Mode (ADR-0003) — one voice, one personality, all of World 1.
 
 **Core behavior:**
 - The teacher speaks during regular lessons AND performances (world-locked = always present).
@@ -249,9 +252,11 @@ the encouraging-copy tone rule (Grill #3) enforced.
 - The teacher's voice is **one Chatterbox built-in voice** for World 1 (no cloning from a real person).
 
 **What to build:**
-- A dialogue/line system: the teacher has a set of lines for each context (regular lesson coaching,
-  pre-performance invitation, post-performance encouragement, performance-adapt messages). Lines are
-  authored as data (not hardcoded prose in code), so they can be tuned.
+- A dialogue/line system: **Sage** has a set of lines for each context — regular lesson coaching,
+  pre-performance invitation, post-performance encouragement, performance-adapt messages, AND
+  mystery-mode lines (present the mystery, react to the solve, speak the "why it works" reveal line,
+  and re-engage the student when a new mystery unlocks — see ADR-0003). Lines are authored as data
+  (not hardcoded prose in code), so they can be tuned.
 - Chatterbox voice integration: the line text is sent to Chatterbox (MIT, zero-shot + emotion) and the
   resulting audio plays. Kokoro-82M (Apache-2.0, CPU) = fallback if Chatterbox isn't available.
 - Emotion range (opt-in): Chatterbox supports emotion — warm/encouraging is the baseline; the system
@@ -391,7 +396,7 @@ out.
 2. The system checks: is the student doing well enough to invite? (Mastery/confidence on the chords in
    play — from student memory if live, else local-first fluency data. Rule 5: cite a stored number if
    referencing progress.)
-3. If yes: the teacher extends the Level 1 invitation (T-B3 voice line — warm, encouraging, cites the
+3. If yes: **Sage** extends the Level 1 invitation (T-B3 voice line — warm, encouraging, cites the
    number). "You've been practicing those chords and they're feeling more solid (your Em confidence is
    up to 72) — how about we try playing them together on the porch?"
 4. Student accepts → Level 1 performance (T-B4 Path B duet).
@@ -484,6 +489,38 @@ like; this ticket makes sure World 2+ can be added without rewriting World 1.
 
 **Out of scope:** actually building World 2 (that's a future grill). This ticket is the architecture prep
 so it's additive when it happens.
+
+---
+
+### T-B9: Mystery Mode → Sage play-together bridge
+
+**Depends on:** ADR-0003 (Mystery Mode, ratified 2026-08-24), T-B3 (Sage voice/dialogue), T-B4/T-B5
+(Path B duet system).
+
+**What:** After a student solves a Mystery Mode song (clean or helped), Sage offers to play the solved
+song together with them (ADR-0003 decision #9). This is the core practice moment — they heard it by ear,
+now they play it with Sage. Sage's lines here MUST cite stored numbers (Rule 5): e.g. "you cracked that
+one clean — let's play it together" vs "you got it with a little help — let's try it together."
+
+**Reuse, don't rebuild:** The play-together uses the **Path B smart accompaniment** (loops/waits/simplifies)
+from T-B4/T-B5 — NOT a new engine. Sage is visible + encouraging (same voice/dialogue system as regular
+lessons and performances).
+
+**Sage re-engagement (ADR-0003 decision #11):** When a new mystery unlocks, Sage references the student's
+*past* solve from Student Memory (ADR-0001, encrypted cross-device) and invites them to the next one
+("you solved your first mystery clean — want to try another with me?"). This is the "teacher remembers
+you and comes back" sell. All such lines cite stored numbers (Rule 5).
+
+**Acceptance:**
+- After a mystery solve, Sage speaks the offer to play together (voice, Chatterbox) and the Path B
+  accompaniment plays the solved song with smart loop/wait/simplify.
+- Sage's re-engagement line fires when a new mystery unlocks, citing a stored solve fact.
+- No new duet engine — reuses T-B4/T-B5 Path B system.
+- All Sage lines in this ticket pass the AMENDMENT-14 human lyric read-through AND cite stored numbers
+  (Rule 5).
+
+**Out of scope:** the Mystery Mode feature itself (that's ADR-0003 / Grill #3); this ticket is only the
+teacher-system bridge (Sage's voice + the duet reuse).
 
 ---
 

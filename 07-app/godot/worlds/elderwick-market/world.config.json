@@ -1,0 +1,50 @@
+{
+  "_comment": "First concrete Godot world instance (BOARDROOM advance 2026-08-23). Ties the generic World scene (07-app/godot/world/World.gd) to a real attribution world_id from 07-app/content/content-attribution-manifest.json. All asset slots pin ONLY commercial-clean models (flux.1-schnell / wan2.2-i2v / chatterbox) per 07-app/core/asset-job.js. No paid/blocklisted tool. status=scaffold_authored: the config + scene stub exist; actual art is PENDING generation by the cloud-gpu-worker (NOT on-device, per AGENTS.md Rule 5).",
+  "world_id": "elderwick-market",
+  "title": "Elderwick Market",
+  "source_url": "https://youtu.be/FYmRkScwJ8M",
+  "status": "scaffold_authored",
+  "engine": "godot",
+  "engine_license": "MIT",
+  "pipeline_stage": "youtube_capture(DONE) -> flux_still(PENDING) -> wan_motion(PENDING) -> chatterbox_voice(PENDING) -> godot_world_scaffold(DONE) -> godot_build(PENDING_engine)",
+  "lessons_available": 25,
+  "attribution": {
+    "campaign": "world_elderwick",
+    "world_id": "elderwick-market"
+  },
+  "asset_slots": {
+    "flux_still": {
+      "model": "flux.1-schnell",
+      "license": "Apache-2.0",
+      "status": "pending_generate",
+      "style_anchor": "https://youtu.be/FYmRkScwJ8M",
+      "output": "07-app/godot/worlds/elderwick-market/assets/background.png"
+    },
+    "wan_motion": {
+      "model": "wan2.2-i2v",
+      "license": "Apache-2.0",
+      "status": "pending_generate",
+      "fps_range": [8, 30],
+      "output": "07-app/godot/worlds/elderwick-market/assets/ambient_loop.mp4"
+    },
+    "narration_voice": {
+      "model": "chatterbox",
+      "license": "MIT",
+      "fallback_model": "kokoro-82m (Apache-2.0) -- 8 wavs already on disk in 07-app/audio/l02-voice",
+      "status": "pending_generate",
+      "output": "07-app/godot/worlds/elderwick-market/assets/narration.ogg"
+    }
+  },
+  "build_recipe": {
+    "note": "Exact clean-stack commands. Runs on cloud-gpu-worker, NOT on-device (AGENTS.md Rule 5 + asset-job.js). No paid/blocklisted tool. Godot engine (MIT) installed free by owner to preview.",
+    "steps": [
+      "1) FLUX.1[schnell] (Apache-2.0): generate background still from style_anchor -> assets/background.png",
+      "2) Wan2.2-I2V (Apache-2.0): image-to-video of background.png -> assets/ambient_loop.mp4 (fps 8-30 per asset-job.js)",
+      "3) Chatterbox (MIT) OR Kokoro-82M (Apache-2.0 fallback, already generated 8 wavs): narrate lesson intro -> assets/narration.ogg",
+      "4) Godot (MIT): open 07-app/godot, import assets; world.tscn consumes world.config.json; F5 to preview",
+      "5) Attribution: on enter_lesson, JS shell calls trackWorldView('elderwick-market') via 07-app/core/world-view-tracker.js"
+    ]
+  },
+  "verified_clean_stack": true,
+  "scaffold_path": "07-app/godot/worlds/elderwick-market/"
+}

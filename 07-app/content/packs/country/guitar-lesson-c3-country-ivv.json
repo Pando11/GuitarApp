@@ -1,0 +1,108 @@
+{
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted.",
+    "G": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "G",
+      "frets": [3, 2, 0, 0, 0, 3],
+      "fingers": [2, 1, 0, 0, 0, 3]
+    },
+    "C": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "C",
+      "frets": [null, 3, 2, 0, 1, 0],
+      "fingers": [null, 3, 2, 0, 1, 0]
+    },
+    "D": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "D",
+      "frets": [null, 0, 0, 2, 3, 2],
+      "fingers": [null, 0, 0, 2, 3, 4]
+    }
+  },
+  "exercises": [
+    {
+      "id": "EX1-d",
+      "name": "Make the D shape",
+      "purpose": "Land the bright D chord that completes the I-IV-V.",
+      "params": {
+        "chord": "D",
+        "fingers": "middle(2) on G 2nd fret, ring(3) on B 3rd fret, pinky(4) on high-e 2nd fret, low E and A muted",
+        "thumb": "rests behind neck",
+        "strings_played": "D, G, B, high e (low E and A stay quiet)"
+      },
+      "coaching": "D is the third colour. Middle on the G, second fret; ring on the B, third fret; pinky on the high e, second fret; keep the low E and A quiet. That tight little shape is the D chord — punchy and bright.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-turnaround",
+      "name": "The I-IV-V turnaround",
+      "purpose": "Practice G to C to D — the classic country progression.",
+      "params": {
+        "chord_cycle": ["G", "C", "D"],
+        "tempo_bpm": 96,
+        "beats": 4,
+        "feel": "boom-chick",
+        "cue": "one chord per 4 beats, change on the downbeat"
+      },
+      "coaching": "Walk the turnaround: G, C, D — one per four beats. Slow it right down so every change lands on the click. D is the bright tension that wants to fall back to G. That pull is the whole story of country.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX3-ivv",
+      "name": "Your first I-IV-V loop",
+      "purpose": "Play the full G-C-D-G loop top to bottom.",
+      "params": {
+        "chord_cycle": ["G", "C", "D", "G"],
+        "tempo_bpm": 96,
+        "beats": 4,
+        "feel": "boom-chick",
+        "cue": "one chord per bar, change on bar 1; loop it"
+      },
+      "coaching": "Here it is — the I-IV-V. G for four beats, C for four, D for four, back to G. One chord per bar, on the click. Slow is fine. You are playing the progression behind a century of country. Loop it. That is country.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "The payoff lesson. Three chords — G, C, D — and you can play a full I-IV-V. This is the progression behind a hundred years of country.",
+    "ex1_intro": "D is the triangle: middle on G second, ring on B third, pinky on high e second, low E and A quiet. The open D string is your root — that punch is the sound.",
+    "ex2_intro": "Walk the turnaround: G, C, D, one per four beats, slow. D is the tension that wants to fall back to G. That pull is the whole story.",
+    "ex3_intro": "The I-IV-V: G four beats, C four, D four, back to G. One chord per bar, on the click. Slow is fine. Loop it. That is country.",
+    "results": "If you can play the I-IV-V without stopping, you have the backbone of the entire style. Loop it every practice — it never gets old.",
+    "wrap": "G, C, D — a full I-IV-V in your hands. That is the Country style pack. Play it with the boom-chick, play it with feeling, and you are a country player."
+  },
+  "qa_block": {
+    "must_verify": [
+      "Automated: every chord fingering verified deterministically by 06-prototypes/step0/schema/chord-theory-check.js (verifyChord) — 0 errors AND 0 warnings required before ship (Hard Ban 7 satisfied by arithmetic, per owner directive 2026-08-08).",
+      "Automated: lesson JSON passes schema/validate.js (validateLesson) — all required keys present, frets/fingers length 6, qa_status whitelisted.",
+      "Author pass: teaching copy is plain-English, beginner-appropriate, no AI-isms; pacing realistic.",
+      "Licensing: exercises only, zero copyrighted song material (spec §3/R6). The I-IV-V progression is a public-domain structure, not a specific song.",
+      "Cross-pack reference: EX2/EX3 chord_cycles use G/C/D all defined in THIS lesson's chords block, so they need no external dependency."
+    ],
+    "flagged_by": "founder (non-player) — cannot self-verify",
+    "verifier_role": "arithmetic (chord-theory-check.js) + author review",
+    "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
+  },
+  "lesson": {
+    "id": "C3-country-ivv",
+    "title": "Country Pack 3 — The I-IV-V (G, C, D)",
+    "level": "beginner",
+    "lesson_type": "technique",
+    "one_line_promise": "Three chords, one progression, a century of country.",
+    "objectives": [
+      "Form D (middle G 2, ring B 3, pinky high e 2, low E/A muted)",
+      "Walk the G-C-D turnaround on the beat",
+      "Play a full I-IV-V loop without stopping"
+    ],
+    "estimated_minutes": 14,
+    "prerequisites": [
+      "Country Pack 1 — G (C1)",
+      "Country Pack 2 — C (C2)"
+    ],
+    "app_feature_mapping": {
+      "free_metronome": [
+        "hold the I-IV-V tempo (boom-chick feel, one chord per bar)"
+      ]
+    }
+  }
+}

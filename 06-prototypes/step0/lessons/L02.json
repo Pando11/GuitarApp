@@ -1,0 +1,147 @@
+{
+  "lesson": {
+    "id": "L02-open-chord-strum-timing",
+    "title": "Strumming in Time: Em, Am and D",
+    "level": "absolute-beginner",
+    "lesson_type": "technique",
+    "objectives": [
+      "Keep a steady down-strum on every beat without stopping",
+      "Add the 'and' upstrokes while the strumming arm keeps moving",
+      "Change chord on beat 1 without breaking the pulse",
+      "Use the metronome as the timekeeper, not your chord hand"
+    ],
+    "estimated_minutes": 10
+  },
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted.",
+    "Em": {
+      "name": "E minor",
+      "frets": [
+        0,
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "fingers": [
+        0,
+        2,
+        3,
+        0,
+        0,
+        0
+      ],
+      "qa_status": "verified-by-theory-check-2026-08-07"
+    },
+    "Am": {
+      "name": "A minor",
+      "frets": [
+        null,
+        0,
+        2,
+        2,
+        1,
+        0
+      ],
+      "fingers": [
+        null,
+        0,
+        2,
+        3,
+        1,
+        0
+      ],
+      "qa_status": "verified-by-theory-check-2026-08-07"
+    },
+    "D": {
+      "name": "D major",
+      "frets": [
+        null,
+        null,
+        0,
+        2,
+        3,
+        2
+      ],
+      "fingers": [
+        null,
+        null,
+        0,
+        1,
+        3,
+        2
+      ],
+      "qa_status": "verified-by-theory-check-2026-08-07"
+    }
+  },
+  "exercises": [
+    {
+      "id": "EX1-pulse-downstrums",
+      "name": "Four down-strums per chord",
+      "purpose": "Establish an unbroken quarter-note pulse before adding anything else.",
+      "params": {
+        "tempo_bpm": 60,
+        "beats": 4,
+        "pattern": "D D D D",
+        "chord_cycle": [
+          "Em",
+          "Am",
+          "D"
+        ],
+        "duration_min": 3
+      },
+      "coaching": "Your strumming arm never stops. If the chord is not ready, strum the muted strings and catch up on the next bar.",
+      "qa_status": "verified-by-theory-check-2026-08-08 (chord data verified; teaching quality reviewed by author)"
+    },
+    {
+      "id": "EX2-down-up-eighths",
+      "name": "Down-up eighths on one chord",
+      "purpose": "Train the constant-motion arm so upstrokes fall between the clicks.",
+      "params": {
+        "tempo_bpm": 60,
+        "beats": 8,
+        "pattern": "D U D U D U D U",
+        "chord": "Em",
+        "duration_min": 3
+      },
+      "coaching": "Count 1 and 2 and 3 and 4 and out loud. Down on the number, up on the and.",
+      "qa_status": "verified-by-theory-check-2026-08-08 (chord data verified; teaching quality reviewed by author)"
+    },
+    {
+      "id": "EX3-change-on-beat-one",
+      "name": "Chord change on beat 1",
+      "purpose": "Make the change land with the pulse instead of pausing the bar.",
+      "params": {
+        "tempo_bpm": 52,
+        "beats": 4,
+        "chord_cycle": [
+          "Em",
+          "Am",
+          "Em",
+          "D"
+        ],
+        "rule": "Lift on beat 4, land on beat 1",
+        "duration_min": 4
+      },
+      "coaching": "Lift a hair early on beat four. An early lift is a clean landing; a late lift is a stumble.",
+      "qa_status": "verified-by-theory-check-2026-08-08 (chord data verified; teaching quality reviewed by author)"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "Timing beats tidiness. Today the metronome is in charge and your strumming arm keeps swinging no matter what your fingers do.",
+    "ex1_intro": "Four down-strums per chord at sixty. Em, Am, D, around again.",
+    "ex2_intro": "Same tempo, now down-up. The arm moves the whole time; you only touch the strings when you mean to.",
+    "ex3_intro": "Change on beat one. Lift on four, land on one. Do not stop the bar to fix a finger.",
+    "results": "A steady bar with one buzzy chord beats a clean chord with a dead bar.",
+    "wrap": "Constant motion, count out loud, change on one. That is the whole lesson."
+  },
+  "qa_block": {
+    "must_verify": [
+      "Automated: run `node run-chord-check.js` — it must report 0 errors and 0 warnings for every chord before ship."
+    ],
+    "flagged_by": "founder (non-player) — cannot self-verify",
+    "verifier_role": "contract guitarist / teacher",
+    "guitarist_signoff": "NOT REQUIRED — chord fingerings verified deterministically by schema/chord-theory-check.js (2026-08-07): every sounding string checked against the chord's own spelling, plus playability. 0 errors, 0 warnings."
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "_note": "PERSONA + ART ONLY. No lesson content may ever appear in this file. Guest teacher for the Blues style pack.",
+  "id": "T4",
+  "name": "Roscoe Bell",
+  "codename": "The Roadhouse Gentleman",
+  "name_status": "FINAL — owner approved 2026-08-08 (guest teacher, Blues pack)",
+  "tagline": "Played juke joints before he played venues — teaches the feel, not just the fretboard.",
+  "teaching_style": "Roscoe learned on a porch with a cheap guitar and a radio, and he has never lost the idea that the blues is a feeling you wear, not a chart you memorize. He keeps the theory quiet and the groove loud: if your foot is tapping, you are probably doing it right. He will tell you the 7th chord is just 'the note that sounds like it wants to go somewhere,' and then make you play it until it does. He is patient with clumsy beginners because he remembers being one, but he will not let you rush the shuffle — the long-short bounce is the whole point, and he will sit there grinning until you find it.",
+  "persona": {
+    "summary": "Warm, weathered roadhouse energy. Feels over theory, groove first.",
+    "tone": "warm, gravelly, unhurried",
+    "catchphrase": "That's the sound right there."
+  },
+  "voice": {
+    "provider": "openai-tts",
+    "voice_id": "coral",
+    "style": "low, slow, warm",
+    "rate": 0.95,
+    "pitch": -1
+  },
+  "skin": {
+    "body_type": "rig-B",
+    "palette": { "primary": "#b5651d", "secondary": "#2b1a0f", "accent": "#e8c07d" },
+    "shape": "round-friendly-creature"
+  },
+  "handoff_line": "So you're my new student! The blues don't care how good you are — just that you mean it. Let's find the feel.",
+  "persona_lines": {
+    "intro": "Alright now. The blues is just three chords and a whole lot of feeling. Let's find that feel.",
+    "chord": "There it is — that seventh note is the one that wants to go somewhere.",
+    "exercise": "Don't rush it. Long-short, long-short. Let your foot keep time.",
+    "wrap": "That's the sound right there. You played the blues. Go on, loop it again."
+  }
+}

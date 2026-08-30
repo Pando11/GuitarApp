@@ -2,15 +2,13 @@
 
 Auto-loaded project context. Also read `01-START-HERE/README.md` before acting.
 
-<!-- BEGIN mattpocock/skills — added 2026-08-21 (MIT, see skills/LICENSE). Revert: delete this block through EOF. -->
+<!-- BEGIN mattpocock/skills — added 2026-08-24 (MIT, see skills/LICENSE). Revert: delete this block through EOF. -->
 ## Agent skills
 
 ### Issue tracker
-GitHub Issues (owner: Pando11). See `docs/agents/issue-tracker.md`.
-### Triage labels
-Five canonical roles (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+Local markdown under `.scratch/`. Wayfinder maps live at `.scratch/<effort>/map.md`; tickets at `.scratch/<effort>/issues/NN-<slug>.md`. See `docs/agents/issue-tracker.md`.
 ### Domain docs
-Single-context: `CONTEXT.md` (root) + `docs/adr/`. See `docs/agents/domain.md`.
+Single-context: `CONTEXT.md` (root glossary) + `docs/adr/`. See `docs/agents/domain.md`.
 <!-- END mattpocock/skills -->
 
 ## Hard rules
@@ -26,7 +24,7 @@ Single-context: `CONTEXT.md` (root) + `docs/adr/`. See `docs/agents/domain.md`.
    AMENDMENT-09 (Wan2.1-I2V motion + Godot story-world), AMENDMENT-10 (AI-drawn fingers/fretboards
    PERMITTED), and **AMENDMENT-11 (2026-08-11 — the product thesis: world-locked teacher +
    longitudinal student memory + teacher–student duet, with redlines)** are current truth.
-   **AMENDMENT-16 (2026-08-16 — PocketBase replaces Supabase as the backend; MIT, self-hosted, no recurring fee) is the latest word.**
+   **AMENDMENT-18 (2026-08-29 — RATIFIED — Fun-Delivers-Learning: goal = "I learned to play and it was fun"; six build items BI-1..BI-6; de-risk vertical slice tested on real beginners first) is the latest word.** AMENDMENT-17 (2026-08-29 — RATIFIED — World 1 = Emerald Hollow + teacher Sage + performance ladder + Path B duet v1; World creation routes through the world-building-prompt skill) remains current on World 1. AMENDMENT-16 (2026-08-16 — PocketBase replaces Supabase as the backend; MIT, self-hosted, no recurring fee) remains current on backend.
    **AMENDMENT-15 (2026-08-14) — CURRICULUM RE-SEQUENCE + ORDERING GATE.** F moved L24→L17,
    A7 L25→L19, and three absolute-beginner lessons (holding-the-pick, switching-Em-and-C,
    first-three-chord-song) pulled from after the L20 capstone to L2/L6/L9 where they belong;
@@ -51,7 +49,7 @@ Single-context: `CONTEXT.md` (root) + `docs/adr/`. See `docs/agents/domain.md`.
    **AMENDMENT-13 (2026-08-14) — MYSTERY-MODE READINESS GATE.** Mystery Mode is an opt-in
    ADVANCED lane for students already in the program; a song may only be offered once every
    chord it uses has been taught. The curriculum now has 25 lessons (17 teaches F, 19 teaches
-   A7 — per the AMENDMENT-15 re-sequence), so all ten progressions are fully within the taught set.
+   A7 — per the AMENDMENT-15 re-sequence), so all 11 progressions are fully within the taught set.
    equal the last-taught chord's lesson; `tools/verify-song-progressions.js` enforces this and
    re-derives the prereq map from the lesson manifest, so it cannot drift.
    **AMENDMENT-14 (2026-08-14) — HOSTILE-REVIEW CORRECTIONS. Read this before touching the

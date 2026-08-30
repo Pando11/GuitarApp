@@ -1,6 +1,6 @@
 # docs/adr/0004-the-teacher-world-1-emerald-hollow.md
 
-**Status:** proposed (Grill #4, 2026-08-23 — not yet ratified by owner)
+**Status:** RATIFIED (2026-08-29 by owner Heidi) — was proposed Grill #4 2026-08-23. Ratified with the world-building-prompt routing change (see AMENDMENT-17). World 1 = Emerald Hollow (animated, palette locked), teacher = Sage, performance ladder (L1 porch ~5-6 / L2 village ~10-12 / L3 capstone L25 full band), Path B duet v1 / Path A roadmap — all locked as written.
 **Supersedes:** nothing (new ADR)
 **Related:** ADR-0001 (always-on encrypted sync), ADR-0002 (practice delivery),
 ADR-0003 (mystery mode), AMENDMENT-06 (avatar/voice unlock),
@@ -49,6 +49,8 @@ light, early-morning damp atmosphere. Branded internally as **Emerald Hollow**.
 
 ### First teacher = one chill instructor
 
+- **Name: Sage.** The chill, warm, encouraging instructor of Emerald Hollow (World 1). Named 2026-08-24
+  (Grill #3, Mystery Mode grill — Sage is the teacher across lessons, performances, AND mystery mode).
 - **Personality:** Chill, warm, encouraging — inherits the Grill #3 teacher-voice rule
   ("warm and encouraging, never clinical"). Praise the past win, soften the turn, invite the
   next step.
@@ -122,8 +124,10 @@ light, early-morning damp atmosphere. Branded internally as **Emerald Hollow**.
   to World 2+. We need to make sure the architecture supports adding worlds/teachers without
   rewriting World 1.
 - **Animated production is a build.** High-quality animated character + animated world in Godot
-  is real work. The asset pipeline (FLUX→Wan→Chatterbox→Godot) is spec'd but NOT RUN as of
-  2026-08-23 — no AI cinematic assets exist in-repo. The first proof will need either manual
+  is real work. The asset pipeline (FLUX→Wan→Chatterbox→Godot) is spec'd but NOT YET RUN —
+  no AI cinematic assets exist in-repo as of 2026-08-29 (the World 1 brief at
+  `brand-references/worlds/world-brief-emerald-hollow-L1.md` is the input, ready to feed the
+  pipeline once the RunPod pod key is restored). The first proof will need either manual
   animation assets or the pipeline executed (cloud GPU for FLUX/Wan).
 - **Chatterbox built-in voice only for World 1.** If the owner later wants a specific cloned
   voice, that's a new decision + the voice license blocklist still applies (no ElevenLabs for
@@ -134,10 +138,12 @@ light, early-morning damp atmosphere. Branded internally as **Emerald Hollow**.
 - **ADR-0001 (encrypted sync)** is a dependency — performance progress saves to student memory
   (encrypted cross-device). Until ADR-0001 is built, performances can still work locally but
   the "memory follows you across devices" piece is absent.
-- **AMENDMENT-09 (Godot story-world)** is the production vehicle. The Godot scaffold
-  (`project.godot` + World/LessonScene/FingeringOverlay scenes, per AMENDMENT-09) is NOT
-  present on this machine as of 2026-08-23 — the full `07-app/godot/` tree did not survive
-  the PC transfer. Owner opens in Godot 4.7.x when the scaffold is available.
+- **AMENDMENT-09 (Godot story-world)** is the production vehicle. The Godot scaffold IS
+  present and wired on this machine (verified 2026-08-29): `07-app/godot/project.godot` points
+  at `World.tscn`; real scripts+scenes live under `lesson/` (FingeringOverlay, LessonScene) and
+  `world/` (World) — the top-level `FingeringOverlay/`/`LessonScene/` folders are empty decoys.
+  The earlier "did not survive the PC transfer" note (2026-08-23) was wrong. Owner opens in
+  Godot 4.7.x.
 
 ---
 
@@ -147,7 +153,7 @@ light, early-morning damp atmosphere. Branded internally as **Emerald Hollow**.
    Hermes + owner. Not decided here.
 2. **Who is in the Level 3 band, exactly?** Bass + drums + teacher on second guitar is the
    owner's picture. Confirm: is the band pre-built per song, or assembled by the app?
-3. **Student picks the song at Level 3** — from the song-progression catalog (10 songs, 11
+3. **Student picks the song at Level 3** — from the song-progression catalog (11 songs, 11
    shapes)? Or from a smaller "you know these chords" subset? Constraint: the song's chords
    must all be taught by that point (AMENDMENT-13 prereq gate).
 4. **Animated character source:** Hand-authored Godot character rig? AI-generated stills

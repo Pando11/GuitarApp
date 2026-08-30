@@ -6,13 +6,15 @@ Start here. Read this before touching anything.
 
 ## Current truth
 
-- **Latest amendment:** `02-spec/guitar-app-spec-AMENDMENT-17.md` (World 1 teacher + first performance ladder)
+- **Latest amendment:** `02-spec/guitar-app-spec-AMENDMENT-18.md` (Fun-Delivers-Learning: six build items + de-risk slice) — **RATIFIED 2026-08-29**.
 - **Previous amendments** (described in AGENTS.md §Hard rules, §Amendment chain; their individual files did not survive the PC transfer):
   - AMENDMENT-01 through AMENDMENT-16 are referenced in `AGENTS.md` as current truth.
+  - AMENDMENT-18 (Fun-Delivers-Learning, 2026-08-29) is the latest word and is RATIFIED.
+  - AMENDMENT-17 (World 1 teacher + performance ladder, 2026-08-29) is RATIFIED and current on World 1.
   - AMENDMENT-16 (PocketBase backend, 2026-08-16) is the latest backend word.
   - AMENDMENT-15 (curriculum re-sequence + ordering gate, 2026-08-14) is the latest curriculum word.
   - AMENDMENT-11 (product thesis: world-locked teacher + longitudinal student memory + teacher–student duet, 2026-08-11) is the product thesis.
-- **What's built (per HANDOFF.md, 2026-08-16 — re-verified GREEN):**
+- **What's built (re-verified on disk 2026-08-29):**
   - PWA engine fidelity: 48/0 ✅
   - App smoke: 20/0 ✅
   - SW cache: 4/0 ✅
@@ -27,7 +29,7 @@ Start here. Read this before touching anything.
 
 1. `AGENTS.md` — hard rules + amendment chain (ALWAYS live; overrides everything below)
 2. `02-spec/guitar-app-spec-AMENDMENT-17.md` — latest amendment (World 1 + performance ladder)
-3. `docs/adr/` — decision records (0001 = sync, 0002 = practice delivery, 0003 = mystery mode, 0004 = the teacher)
+3. `docs/adr/` — decision records (0001 = sync, 0002 = practice delivery, 0003 = mystery mode, 0004 = the teacher, 0005 = teacher's memory three-layer)
 4. `CONTEXT.md` — glossary
 5. `PROPOSED-FEATURES.md` — master feature registry
 6. `HANDOFF.md` — current state snapshot + gate results
@@ -39,41 +41,40 @@ Start here. Read this before touching anything.
 Desktop/GuitarApp/
 ├── 01-START-HERE/          ← this file
 ├── 02-spec/                ← AMENDMENT-17.md (latest; earlier amendment files did not survive transfer)
-├── 05-content/             ← AUTHORING SOURCE (20 teaching lessons) — PLACEHOLDERS, real files lost in transfer
-│   ├── scripts/            ← generate-practice-lessons.mjs — PLACEHOLDER
-│   └── VOICE-GUIDE.md      ← PLACEHOLDER
-├── 06-prototypes/          ← working code — PLACEHOLDERS, real files lost in transfer
+├── 05-content/             ← AUTHORING SOURCE (20 teaching lessons) — content JSONs present
+│   ├── scripts/            ← generate-practice-lessons.mjs
+│   └── VOICE-GUIDE.md
+├── 06-prototypes/          ← working code — REAL on disk
 │   ├── step0/schema/       ← chord-theory-check.js (CJS ship-gate copy)
 │   ├── practice-engine/    ← 30/60 sensor + weak-pair review + listener-real + storage-adapter
 │   └── step7-extra/        ← verify-band.js + verify-voice.js
-├── 07-app/                 ← SHIPPING PWA — PLACEHOLDERS, real files lost in transfer
+├── 07-app/                 ← SHIPPING PWA — REAL (18 core modules, 25 lessons, 29 drills, 5 teachers)
 │   ├── core/               ← app.js, chatEngine.js, chord-theory-check.js (ESM), asset-job.js,
-│   │                       entitlementStore.js, drillSelector.js, listener-twin.js
+│   │                       entitlementStore.js, drillSelector.js, listener-twin.js, listening-engine.js, …
 │   ├── content/
 │   │   ├── lessons/        ← 25 lesson JSONs (shipping copy, re-sequenced by AMENDMENT-15)
 │   │   ├── practice/       ← 29 generated pair drills (DO NOT hand-edit; regenerate)
 │   │   ├── packs/          ← blues/ (T4), country/ (T5)
-│   │   ├── song-progressions/  ← 10 songs + 11 shapes (music accuracy verified 2026-08-14)
+│   │   ├── song-progressions/  ← 11 songs (SP01–SP11) + shapes (music accuracy verified 2026-08-14)
 │   │   └── teachers/       ← T1..T5.json
 │   ├── audio/l02-voice/    ← Lesson 2 spoken coach wavs (~16MB)
-│   ├── godot/              ← Godot 4.x story-world scaffold (AMENDMENT-09)
+│   ├── godot/              ← Godot 4.x story-world scaffold (AMENDMENT-09) — REAL on disk (project.godot + lesson/ + world/)
 │   │   ├── project.godot
 │   │   ├── World/
 │   │   ├── LessonScene/
 │   │   └── FingeringOverlay/
 │   ├── test/               ← fidelity.mjs (48/0), app-smoke.mjs (20/0), verify-sw-cache.mjs (4/0), asset-job.test.mjs
-│   ├── assets/lessons/     ← Wan motion output (FLUX→Wan→Godot pipeline)
+│   ├── assets/lessons/     ← Wan motion output (FLUX→Wan→Godot pipeline) — EMPTY (nothing generated yet)
 │   ├── manifest.webmanifest
 │   ├── service-worker.js   ← CACHE version constant — bump on every content change
 │   └── app.js              ← PWA entry point
 ├── brand-references/
-│   └── emerald-hollow/     ← World 1 reference kit (SURVIVED transfer)
+│   ├── emerald-hollow/     ← World 1 reference kit
+│   └── worlds/             ← Elderwick example + world-brief-emerald-hollow-L1.md (World 1 brief, 2026-08-29)
 ├── tools/                  ← verify-curriculum-order.js, verify-song-progressions.js, resequence-curriculum.js
 ├── docs/
-│   ├── adr/                ← 0001..0004 (decision records)
+│   ├── adr/                ← 0001..0005 (decision records)
 │   └── agents/             ← issue-tracker.md, triage-labels.md, domain.md
-├── HANDOFF.md              ← current state snapshot
-├── HANDOFF-ARCHIVE/        ← dated session handoffs (history, not current state)
 ├── .scratch/               ← local tickets + work-in-progress
 │   ├── practice-delivery/
 │   └── teacher/
@@ -82,20 +83,26 @@ Desktop/GuitarApp/
 └── AGENTS.md               ← hard rules + amendment chain (ALWAYS live)
 ```
 
-## What's REAL vs PLACEHOLDER
+## What's REAL (verified on disk 2026-08-29, re-run gates GREEN)
+The PC-transfer "everything is placeholder" claim is **false** — the code and content are on disk and the gates pass. What survived and is real:
+- `07-app/` — 18 real core modules (~1,900 lines), 25 lesson JSONs, 29 practice drills, 5 teacher JSONs, Godot scaffold (`project.godot` + `lesson/` + `world/`).
+- `02-spec/` — AMENDMENT-01..18 (AMENDMENT-17 World 1 teacher + AMENDMENT-18 Fun-Delivers-Learning both RATIFIED).
+- `docs/adr/` — 0001..0005. `brand-references/` — emerald-hollow + worlds.
+- Gates GREEN: chord-check 25/81/0/0, curriculum-order 0 errors, song-progressions 0 errors/0 warnings, listening-engine loads.
 
-After the PC transfer (2026-08-23), only the 7 root-level files + `brand-references/emerald-hollow/` + `docs/adr/` survived. Everything under `05-content/`, `06-prototypes/`, `07-app/`, `tools/`, `01-START-HERE/`, `HANDOFF-ARCHIVE/`, `docs/agents/` is a **scaffold placeholder** — the directory exists, a stub file marks what was there, but the actual code/content did not survive.
+**What is genuinely NOT built yet (the real gaps, not transfer loss):**
+- `07-app/assets/` — EMPTY. Zero AI cinematic assets produced (FLUX/Wan/voice still need the RunPod pod).
+- Longitudinal encrypted cross-device sync (ADR-0001 Layer 3) — local only so far.
+- The "coaches forward" bridge (G1 / BI-7) — `teacher.js` still emits canned lines, not wired to `practiceStore.js` numbers.
 
-**Real (survived):** `02-spec/guitar-app-spec-AMENDMENT-17.md`, `AGENTS.md`, `CONTEXT.md`, `docs/adr/0001/0002/0004`, `HANDOFF.md`, `PROPOSED-FEATURES.md`, `brand-references/emerald-hollow/*`, `.scratch/teacher/*`.
-
-**Placeholder (re-scaffolded from spec descriptions):** everything else. The scaffold marks filenames + purpose so we know what to re-author or restore. See `HANDOFF.md` §VERIFIED STATE for what the real files proved (gate results) — that truth is intact even though the files are gone.
+## Operational state (the only non-decision facts worth a note)
+- **Handoffs retired (2026-08-29):** all `HANDOFF*.md` files moved to `_RETIRED/handoffs/`. Decisions live in `02-spec/` + `docs/adr/`; this README + AGENTS.md are the live pointers. Don't recreate dated handoff files.
+- **RunPod pod key EXPIRED (error 1010):** `.env RUNPOD_API_KEY` is rejected by the API. Pod `awkward_scarlet_louse` (ID `xgci…`) likely still exists but is unreachable until a fresh key is pasted into `.env`. FLUX.1[schnell] was downloaded; Wan2.2-I2V was ~12% synced — unconfirmed until key restored.
+- **Production needs the pod:** the FLUX→Wan→Chatterbox→Godot pipeline runs ONLY on the rented GPU, not during student practice (practice is 100% on-device).
 
 ## How to use this
-
-- Treat every file under `05-content/`, `06-prototypes/`, `07-app/`, `tools/` as **PLACEHOLDER** until re-authored or restored from backup.
-- The spec (`02-spec/`) + skill (`software-development/guitarapp`) describe what each file does — use those to re-author.
-- Before asserting any directory or file "exists" and has content, verify on disk: `ls`, `cat`, `test -s`.
-- The install-state gotcha applies: prose (HANDOFF.md, AGENTS.md) may claim a full tree that isn't on disk. Verify before trusting.
+- Treat `02-spec/` + `docs/adr/` as the decision record. Treat `07-app/` code as real and current.
+- Before asserting any file "exists," verify on disk: `ls`, `cat`, `test -s`. Prose can drift — the disk is truth.
 
 ## Re-sync note
 

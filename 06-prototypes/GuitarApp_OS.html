@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guitar App OS — knowledge hub</title>
+<style>
+  :root{
+    --bg:#0e0f13; --panel:#16181f; --panel2:#1d2029; --line:#2a2e3a;
+    --txt:#e7e9ee; --mut:#8b91a1; --acc:#f5a623; --acc2:#ff7a45;
+    --grn:#3ecf8e; --red:#ff5d5d; --blu:#5aa9ff; --vio:#b78bff;
+    --chip:#262a36;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);
+    font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px}
+  #app{display:grid;grid-template-columns:248px 1fr;height:100vh;overflow:hidden}
+  /* sidebar */
+  #side{background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden}
+  .brand{padding:16px 16px 10px;border-bottom:1px solid var(--line)}
+  .brand h1{font-size:16px;margin:0;letter-spacing:.5px}
+  .brand .sub{color:var(--mut);font-size:11px;margin-top:3px}
+  .search{padding:10px 12px;border-bottom:1px solid var(--line)}
+  .search input{width:100%;background:var(--panel2);border:1px solid var(--line);
+    color:var(--txt);border-radius:8px;padding:8px 10px;font-size:13px;outline:none}
+  .search input:focus{border-color:var(--acc)}
+  .zones{flex:1;overflow:auto;padding:6px}
+  .zone{padding:9px 12px;border-radius:8px;cursor:pointer;display:flex;justify-content:space-between;
+    align-items:center;color:var(--mut);margin-bottom:2px;user-select:none}
+  .zone:hover{background:var(--panel2);color:var(--txt)}
+  .zone.active{background:var(--chip);color:var(--txt);font-weight:600}
+  .zone .cnt{font-size:11px;background:var(--panel2);border-radius:10px;padding:1px 8px;color:var(--mut)}
+  .zone.active .cnt{background:var(--acc);color:#000}
+  .foot{padding:10px 12px;border-top:1px solid var(--line);font-size:11px;color:var(--mut)}
+  /* main */
+  #main{display:flex;flex-direction:column;overflow:hidden}
+  #topbar{padding:14px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  #topbar h2{margin:0;font-size:18px;display:flex;align-items:center;gap:10px}
+  #topbar .meta{color:var(--mut);font-size:12px}
+  .tools{display:flex;gap:8px;flex-wrap:wrap}
+  button.tb{background:var(--panel2);border:1px solid var(--line);color:var(--txt);
+    padding:7px 12px;border-radius:8px;cursor:pointer;font-size:12px}
+  button.tb:hover{border-color:var(--acc)}
+  button.acc{background:var(--acc);color:#000;border-color:var(--acc);font-weight:600}
+  #tags{display:flex;gap:6px;flex-wrap:wrap;padding:8px 20px;border-bottom:1px solid var(--line)}
+  .tag{background:var(--chip);border:1px solid var(--line);color:var(--mut);border-radius:14px;
+    padding:3px 10px;font-size:11px;cursor:pointer}
+  .tag.on{background:var(--acc);color:#000;border-color:var(--acc)}
+  #list{flex:1;overflow:auto;padding:16px 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;align-content:start}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px;position:relative}
+  .card .ctitle{font-weight:650;font-size:14px;line-height:1.3}
+  .card .cbody{font-size:12.5px;color:#cdd1db;line-height:1.5;white-space:pre-wrap}
+  .card .cmeta{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;padding-top:6px}
+  .chip{background:var(--chip);border-radius:10px;padding:2px 8px;font-size:10.5px;color:var(--mut)}
+  .chip.src{color:var(--blu)}
+  .card .ztag{position:absolute;top:12px;right:12px;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--mut)}
+  .card.cap{border-color:var(--acc)}
+  .card.cap .ztag{color:var(--acc)}
+  .empty{color:var(--mut);padding:40px;text-align:center;grid-column:1/-1}
+  /* capture modal */
+  .ov{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:50}
+  .ov.on{display:flex}
+  .modal{background:var(--panel);border:1px solid var(--line);border-radius:14px;width:min(560px,92vw);padding:18px}
+  .modal h3{margin:0 0 12px}
+  .modal label{display:block;font-size:11px;color:var(--mut);margin:10px 0 4px}
+  .modal input,.modal textarea{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:9px;font-size:13px;outline:none;font-family:inherit}
+  .modal textarea{resize:vertical;min-height:80px}
+  .modal input:focus,.modal textarea:focus{border-color:var(--acc)}
+  .modal .row{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+  .hint{font-size:11px;color:var(--mut);margin-top:6px}
+  a{color:var(--blu)}
+</style>
+</head>
+<body>
+<div id="app">
+  <aside id="side">
+    <div class="brand">
+      <h1>🎸 Guitar App OS</h1>
+      <div class="sub">single-place knowledge hub · spec v1.0 era</div>
+    </div>
+    <div class="search"><input id="q" placeholder="search everything…"></div>
+    <div class="zones" id="zones"></div>
+    <div class="foot">Capture ideas live → they save to this browser + export JSON.<br>Seed data loaded from your real Desktop files.</div>
+  </aside>
+
+  <section id="main">
+    <div id="topbar">
+      <div>
+        <h2 id="zt">All</h2>
+        <div class="meta" id="zm"></div>
+      </div>
+      <div class="tools">
+        <button class="tb" id="btnExp">Export JSON</button>
+        <button class="tb" id="btnImp">Import JSON</button>
+        <button class="tb acc" id="btnCap">+ Capture thought</button>
+        <input type="file" id="fileIn" accept="application/json" style="display:none">
+      </div>
+    </div>
+    <div id="tags"></div>
+    <div id="list"></div>
+  </section>
+</div>
+
+<div class="ov" id="ov">
+  <div class="modal">
+    <h3>Capture a thought</h3>
+    <label>Title</label>
+    <input id="cTitle" placeholder="e.g. idea: weekly challenge leaderboard">
+    <label>Body / detail</label>
+    <textarea id="cBody" placeholder="Write it out — links, numbers, whatever. Land this in the Inbox."></textarea>
+    <label>Tags (comma separated)</label>
+    <input id="cTags" placeholder="idea, retention">
+    <div class="hint">Saves to <b>Inbox</b> zone. Persists in this browser; use Export to back up.</div>
+    <div class="row">
+      <button class="tb" id="cCancel">Cancel</button>
+      <button class="tb acc" id="cSave">Save to Inbox</button>
+    </div>
+  </div>
+</div>
+
+<!-- SEED DATA: faithful extraction from Desktop/guitar-app-spec.md, guitar app.txt, guitar-research/*, build plan, etc. -->
+<script id="seed" type="application/json">
+[
+ {"zone":"Vision","title":"One-line product promise","body":"\"The only app that can SEE why your chord sounds wrong.\" — the camera chord-shape check is the entire wedge. NOT a jam platform, NOT a song-on-demand service, NOT a fine-grained technique lab (those are v3/conditional).","tags":["promise","moat"],"source":"spec §1"},
+ {"zone":"Vision","title":"Business bar","body":"Target: 1,000 ENGAGED monthly users within 18 months. 'Engaged' = 4+ practice sessions/week. At $12/mo ≈ $144K/yr, >90% gross margin. Bootstrapped, no outside funding. Infra ~$25-75/mo + LLM ~$0.50-1.50/user/mo.","tags":["target","business"],"source":"spec §2"},
+ {"zone":"Vision","title":"Fully AI, no human teachers — except QA","body":"Product is 100% AI-delivered. The ONE human in the loop is a contracted guitarist who QA's all AI-generated content (fingering correctness, pedagogy order). Founder is the flow test (non-player); guitarist is the correctness test.","tags":["model","qa"],"source":"spec §0/§6"},
+ {"zone":"Locked Decisions","title":"iOS-only in v1","body":"Android deferred to v2. Acoustic guitar only in v1 (simplifies pitch detection; no amp/cable noise).","tags":["platform","v1"],"source":"spec §0"},
+ {"zone":"Locked Decisions","title":"Fully synthetic lessons, ZERO filmed human footage","body":"LLM-generated curriculum + 2D fretboard/chord demonstrations. GATED on validation gate passing. Animated avatar never demonstrates playing with hands (rigged cartoon can't model the messy errors the camera exists to catch).","tags":["content","avatar","v1"],"source":"spec §0/§4"},
+ {"zone":"Locked Decisions","title":"On-device pitch/timing + on-device camera chord check","body":"Pitch/onset: basic-pitch compiled to CoreML, on-device. Hand tracking: MediaPipe Tasks (Hands), 21 landmarks, on-device, zero marginal cost. Chord classifier: small on-device model over landmarks. Pressure/wrist-angle coaching = parallel data-collection spike, NOT shipped in v1.","tags":["tech","v1","camera"],"source":"spec §0/§5"},
+ {"zone":"Locked Decisions","title":"No live jam sessions until v3","body":"Conditional on v2 retention data showing a community cliff. At 1,000 users: ~30ms latency = same-city only, 4-8 player stage unfillable per time zone, JackTrip ≈ $135/mo per frequent group.","tags":["jam","v3","risk"],"source":"spec §3/§9"},
+ {"zone":"Locked Decisions","title":"Free tuner + free metronome as the funnel front door","body":"No free tier beyond the tools. $12/mo subscription. This is the GuitarTuna-model acquisition play — the only replicable no-partnership funnel at small scale.","tags":["funnel","pricing"],"source":"spec §0/§2"},
+ {"zone":"Locked Decisions","title":"Backend stack (boring-cheapest, NOT the product)","body":"Supabase (Postgres+auth+storage+RLS) → RevenueCat (subs, StoreKit edge cases) → Cloudflare Workers (stateless LLM coaching endpoint) → PostHog (funnels/retention) → Sentry (crash). Rejected: custom VPS, Firebase, self-hosted media, server-side audio.","tags":["tech","backend"],"source":"spec §5"},
+ {"zone":"Locked Decisions","title":"Contract guitarist QA is NON-NEGOTIABLE","body":"$40-60/hr, ~4 hrs/batch, ≈$200-500/mo during production. Insurance against the one company-killing failure: a viral 'this app taught me wrong' screenshot. Also supplies validation interview subjects.","tags":["qa","budget"],"source":"spec §6"},
+
+ {"zone":"Ideas","title":"Camera hand/finger position tracking (THE differentiator)","body":"On-device pose detection watches the fretting hand and says 'your ring finger isn't on the fret.' This is the one thing no incumbent does — the literal moat. v0 = binary 'shape X yes/no' + ONE hint.","tags":["camera","moat","v1"],"source":"guitar app.txt brainstorm"},
+ {"zone":"Ideas","title":"Adaptive curriculum (branch on detected weak spots)","body":"Instead of fixed lesson order, the next lesson is chosen from what the AI detects (weak strumming, buzzing chords, timing drift) — not a static playlist.","tags":["adaptive","learning"],"source":"guitar app.txt"},
+ {"zone":"Ideas","title":"Micro-practice loops","body":"Isolate just the 2 bars the student keeps messing up and loop it, rather than replaying the whole song.","tags":["practice","v1"],"source":"guitar app.txt"},
+ {"zone":"Ideas","title":"Technique-health tracking","body":"Long-term camera tracking of wrist angle, hand tension, posture — flagging injury-risk patterns over weeks (like a fitness app for repetitive strain). Trust signal for parents/adult learners. → v2 (longitudinal from v1 landmark data).","tags":["camera","health","v2"],"source":"guitar app.txt"},
+ {"zone":"Ideas","title":"Song-based learning path","body":"Let students pick a real song early; reverse-engineer lessons from it instead of generic exercises. (Licensed catalog only — v2; on-demand any-song arrangement is licensing suicide in v1.)","tags":["learning","song","v2"],"source":"guitar app.txt"},
+ {"zone":"Ideas","title":"On-demand AI arrangement of any named song","body":"AI transcribes/simplifies any song the student names into a fingering-appropriate arrangement. Solves the 'limited catalog' complaint — but licensing makes it v2+ only, never v1.","tags":["song","licensing","v2"],"source":"guitar app.txt"},
+ {"zone":"Ideas","title":"Coach with memory + voice-memo check-ins","body":"Short voice check-ins referencing actual history ('last week the F chord buzz was constant — let's recheck'). Emotional continuity gamification badges don't deliver.","tags":["coach","retention"],"source":"guitar app.txt"},
+ {"zone":"Ideas","title":"Living AI backing band","body":"Virtual bassist/drummer that reacts live — drops out for solos, follows tempo changes, holds a vamp. Answers the 'AI can't replicate playing with a band' gap. (v3 candidate.)","tags":["ai","fun","v3"],"source":"guitar app.txt"},
+ {"zone":"Ideas","title":"Scheduled live jam sessions (founder's emotional core)","body":"Recurring open jams (founder loves Friday jams at her lessons). Realistic as 3x/week capped 8-12 active players + breakout rooms + AI host. COST: ~$135/mo via JackTrip at 3x/week. DEFERRED to v3 pending retention data — at 1,000 users an empty stage is a churn event.","tags":["jam","community","v3","risk"],"source":"guitar app.txt / spec §9"},
+ {"zone":"Ideas","title":"Async duets","body":"Two people record separate parts (rhythm + lead) at different times; app blends into one shared recording. Real music-making, not leaderboard bragging. → v2.","tags":["social","v2"],"source":"guitar app.txt"},
+ {"zone":"Ideas","title":"Recital feature (share a practice clip)","body":"Students share a clip of their playing. Light social proof / accountability.","tags":["social"],"source":"guitar app.txt"},
+ {"zone":"Ideas","title":"Story-driven practice campaigns","body":"Frame progress as a narrative — each song/technique mastered unlocks the next 'chapter,' final song as a 'boss battle.' Turns checklist into progression.","tags":["fun","engagement"],"source":"guitar app.txt"},
+ {"zone":"Ideas","title":"AI-composed personal song","body":"AI composes an original short song using the student's name/interests at their exact skill level. 'This is MY song' motivation.","tags":["fun"],"source":"guitar app.txt"},
+ {"zone":"Ideas","title":"Genre remix","body":"Hear whatever song they're learning reimagined in a style they pick (folk→metal, lo-fi). Fun exploration, no pressure to play it that way.","tags":["fun"],"source":"guitar app.txt"},
+ {"zone":"Ideas","title":"Auto 'then vs now' reels","body":"App quietly saves early recordings, periodically stitches a highlight comparing first attempts to current playing. Shareable, zero editing effort. Cheap, high retention → v2.","tags":["fun","retention","v2"],"source":"guitar app.txt"},
+ {"zone":"Ideas","title":"Mood-based practice suggestions","body":"A 'how are you feeling' check-in (stressed/hyped/tired) shapes what's suggested — calm fingerpicking on a rough day.","tags":["fun","personalization"],"source":"guitar app.txt"},
+ {"zone":"Ideas","title":"Selectable animated teacher avatars","body":"Different cartoon coaches to choose from. → v2 (same rig, reskins only). One avatar in v1.","tags":["avatar","v2"],"source":"guitar app.txt"},
+
+ {"zone":"Research","title":"Yousician — audio leader","body":"20M combined MAU with GuitarTuna (180M tuner downloads = the funnel). Real-time audio recognition + chat-based AI coach 'June.' $19.99/mo, constant 50%-off promos. EARS-ONLY — never sees your hands.","tags":["competitor","audio"],"source":"spec §11 / teardown"},
+ {"zone":"Research","title":"Gibson App — most feature-complete, smallest dist","body":"~1M learners. Listens via mic, generates performance reports after 5 lessons/day. $129.99/yr, 7-day trial. Rated most feature-complete but youngest/smallest distribution. EARS-ONLY.","tags":["competitor","audio"],"source":"teardown"},
+ {"zone":"Research","title":"Simply Guitar (JoyTunes) — closest audio competitor","body":"10M+ downloads, family-friendly (up to 5 profiles). Listen-and-recognize engine, suggests arpeggiating to diagnose a buzzing chord. EARS-ONLY — diagnose is audio, not visual.","tags":["competitor","audio"],"source":"teardown"},
+ {"zone":"Research","title":"Fender Play — structured video","body":"2.5M downloads, $149.99/yr or $19.99/mo. Forced onboarding quiz → Path → Level → Course → Activity. Long-form filmed video (opposite of our zero-filmed-footage decision). EARS-ONLY, light/no recognition.","tags":["competitor","video"],"source":"teardown"},
+ {"zone":"Research","title":"JustinGuitar — free, teacher-led, no recognition","body":"4.5M+ app students + millions via free site/YouTube. Grade-based curriculum, WordPress+YT+companion app. NO interactive recognition at all — proof a solo teacher + free content scales to millions, but no feedback engine.","tags":["competitor","free"],"source":"teardown"},
+ {"zone":"Research","title":"MOAT CONFIRMED: no incumbent uses the front camera","body":"All four (Yousician, Gibson, Simply, Fender) + JustinGuitar give EARS-ONLY feedback + filmed-video or tab content. NONE verify chord shape via hand geometry. The 'SEE why it sounds wrong' promise is differentiated and UN-CONTESTED. This is why validation Q4/Q5 is make-or-break.","tags":["moat","gap","validation"],"source":"COMPETITOR_TEARDOWN.md / spec §11"},
+ {"zone":"Research","title":"Pricing band","body":"Market converged hard at $10-20/mo or ~$90-150/yr. Yousician runs constant 50%-off promos → real achieved price lower. NOBODY charges a premium tier for technique/posture correction — that gap is exploitable if we build the camera differentiator.","tags":["pricing"],"source":"guitar app.txt / teardown"},
+ {"zone":"Research","title":"Cost model","body":"Audio-only + on-device pitch: ~$0.50-1.50/user/mo (LLM coaching + CDN) — healthy margin. Camera technique: cheap ONLY if on-device (MediaPipe). Server-side video frames: $3-10+/user/mo — would eat the sub price. Real cost risk = video/image processing, not LLM text.","tags":["cost","margin"],"source":"guitar app.txt / spec §2"},
+ {"zone":"Research","title":"Camera feasibility: MediaPipe Hands","body":"Real-time 21 3D landmarks/hand on ordinary CPU, handles self-occlusion (fingers curling over each other — critical for guitar). Academic precedent: CNN classifier over 63-dim landmark vector for 7 chords; 3D fingering-quality scoring. Chord-SHAPE recognition = buildable now on-device. Fine pressure/wrist coaching = open research needing custom labeled data.","tags":["camera","feasibility","research"],"source":"guitar app.txt / spec §5"},
+ {"zone":"Research","title":"Live jam tech: JackTrip vs Jamulus","body":"JackTrip Virtual Studio API: per-musician-minute $0.29-0.67/musician-hr (~$11.20/session @20 ppl, ~$135/mo @3x/wk). Latency ~30ms = same-city reliable, cross-country loose-only. GPL core → use hosted API, don't embed source. Jamulus = free but you own ops. Recommendation: don't build low-latency transport in-house.","tags":["jam","tech","cost"],"source":"guitar app.txt"},
+ {"zone":"Research","title":"Market sizing reality check","body":"Category has tens of millions of touchpoints across 3-4 major players — crowded, not blue ocean. Founder's 1,000-user target is the HEALTHY bar (real sustainable business, know your users). Don't anchor to '20M MAU.'","tags":["market","target"],"source":"guitar app.txt"},
+ {"zone":"Research","title":"Marketing (no-partnership channels)","body":"GuitarTuna free-utility funnel is the replicable playbook (free tuner/metronome → cross-sell paid). Plus content/SEO, ASO, community-led growth, and treating RETENTION itself as marketing. No third-party partnerships required. At 1,000 users, direct teacher/studio word-of-mouth beats paid.","tags":["marketing","funnel"],"source":"guitar app.txt / spec §2"},
+ {"zone":"Research","title":"OSS build references cloned (on disk)","body":"book-of-frets-x (schema-driven song/chord JSON → generated pages — the content-model pattern). learnhouse (full LMS: Next16+React19+FastAPI+SQLModel+Postgres+Redis+Stripe+Sentry — study discipline, DON'T copy stack). react-guitar (fretboard component). alphaTab (tablature render).","tags":["oss","architecture"],"source":"guitar-research/REVERSE_ENGINEERING_PLAYBOOK.md"},
+
+ {"zone":"Marketing","title":"Marketing playbook — Liquid Death media system (MATG Ep 441)","body":"Source: Marketing Against the Grain (HubSpot) Ep 441 'Liquid Death's Viral Ads Masterclass' w/ Benoit Vatere (Liquid Death CMO). Framework: (1) audit every $ by funnel stage; (2) incrementality > ROAS — track NEW-to-brand %, run geo/audience holdout tests, don't trust platform-attributed ROAS; (3) swing for home runs (20%+ lifts, kill inconclusive tests in ~4 days, ignore 5% tweaks); (4) channel↔stage match — social is NOT awareness (no frequency control), use CTV/radio/podcasts/YouTube for awareness, Meta for consideration/retargeting, app stores for conversion; (5) DIFFERENT creative per stage (awareness=name+category only; consideration=why-better; conversion=price+trial); (6) pick ONE creative lane; (7) never let the algo pick your creative; (8) give up control on distribution, keep control on media buy. Full mapping in guitar-app-marketing-playbook.md.","tags":["marketing","playbook","funnel","podcast"],"source":"guitar-research/guitar-app-marketing-playbook.md / MATG Ep 441"},
+ {"zone":"Marketing","title":"Awareness creative = the camera verdict (owns the lane)","body":"Recommended creative lane: 'The app that finally SEES your hands.' Awareness asset = the red-dot→green camera verdict demo (name + category only). Consideration = '3 mistakes only vision catches' (directly attacks Yousician's audio-only weakness). Conversion = ~$12-15/mo or ~$99-130/yr + 7-14d trial + 30-60d refund. Awareness channels = YouTube Shorts/long-form + podcast sponsorships (guitar learners already live on YT per teardown); Meta only for retargeting.","tags":["marketing","creative","awareness","differentiator"],"source":"guitar-app-marketing-playbook.md"},
+ {"zone":"Marketing","title":"10-channel YouTube guitar-lesson teardown (agent research)","body":"4 parallel agents researched 10 free YouTube channels (JustinGuitar, Andy Guitar, Marty Music, GuitarLessons365, Groovy Guitar Dude, TrueFire, Your Guitar Academy, Paul Davids, Music Is Win, Signals). Findings: free YT = 100% top-of-funnel; paid unlocks structure/tabs/interactive players/community. Pricing converged at $19.99-29.99/mo or ~$96-200/yr (annual = $8-17/mo), or $45-270 lifetime. Justin's fragmented à-la-carte vs Andy's one clean $13.95/mo sub is the pricing UX gap to exploit. Full report: guitar-lesson-channels-competitive-teardown.md.","tags":["marketing","competitor","youtube","pricing"],"source":"guitar-research/guitar-lesson-channels-competitive-teardown.md"},
+ {"zone":"Marketing","title":"VERIFICATION GAP = the wedge (confirmed across 10 channels)","body":"No free OR paid creator verifies the student's hands. Justin's paid app 'does not listen' and Chord Perfect 'is just a timer'; Yousician's #1 complaint = 'it doesn't tell you anything about hand placement.' Only VISION explains WHY a chord is wrong and works PRE-STRUM. Mistake taxonomy already exists (flat fingers, thumb high, wrist not dropped) — reuse as error classes. Barre chords (F/Bm) = highest-value CV target. No commercial camera-based chord-check product exists. Full analysis: guitar-chord-teaching-teardown.md.","tags":["moat","gap","camera","validation","marketing"],"source":"guitar-research/guitar-chord-teaching-teardown.md"},
+
+ {"zone":"Validation","title":"Validation gate — 10 interviews / 30 days","body":"BLOCKS all feedback-engine code (Steps 3-6). Recruitment: Reddit r/guitarlessons/r/learnguitar (free 'practice diagnosis' offer), Discord servers, 2-3 local shops, QA guitarist's students, ~$100 gift cards. STATUS: NOT STARTED.","tags":["validation","gate"],"source":"spec §7"},
+ {"zone":"Validation","title":"Kill criteria (decide BEFORE building)","body":"a) <10 interviews in 30 days → stop. b) <3 of 10 would pay $12/mo for camera chord-correction → stop/rethink. c) <6 of 10 accept avatar-led (no human) lessons → revisit synthetic decision. d) Post-launch <5% free→paid conversion after 6mo → pivot/stop.","tags":["validation","kill"],"source":"spec §2"},
+ {"zone":"Validation","title":"The 10 questions + live demo test","body":"Q1 quit moment · Q2 last practice session · Q3 paid/canceled · Q4 would you TRUST a camera that says your shape is wrong? · Q5 LIVE TEST: prop phone, camera sees hand 10min (setup friction) · Q6 remote jam appeal · Q7 song that got you started · Q8 annual spend · Q9 practice consistency · Q10 free tuner → trust paid? · Q11 DEMO: avatar vs human clip side-by-side (<6/10 avatar → revisit).","tags":["validation","questions"],"source":"guitar-interview-script.md / spec §7"},
+ {"zone":"Validation","title":"Reddit recruitment post (drafted, ready)","body":"Title: 'Free practice diagnosis for beginner guitarists.' Offer: send 1-3min clip, get written #1 blocker + fix; in exchange 20min call on apps quit/practice. Target r/learnguitar first. Check sub rules / mod-approve before posting.","tags":["validation","recruitment"],"source":"guitar-reddit-recruitment.md"},
+
+ {"zone":"Build & Roadmap","title":"v1 — ship to hit 1,000-user bar","body":"Free tuner+metronome · structured beginner acoustic curriculum (LLM-gen, guitarist-QA'd) · on-device pitch/timing per exercise · camera chord-shape v0 (binary + 1 hint) · one 2D avatar · micro-loops · adaptive difficulty · streaks · practice logging · server-side LLM session summary.","tags":["v1","scope"],"source":"spec §3"},
+ {"zone":"Build & Roadmap","title":"v1 deliberately EXCLUDES","body":"Live jams, recital sharing, duets, avatar picker, story campaigns, genre remix, AI-composed songs, on-demand song arrangement (licensing), animated playing hands, Android, electric, bass.","tags":["v1","cut"],"source":"spec §3"},
+ {"zone":"Build & Roadmap","title":"v2 — after v1 retention data","body":"Android port · technique-health tracking (longitudinal from v1 landmark data) · licensed/licensable song-based learning · async duets · then-vs-now reels · avatar picker (reskins).","tags":["v2"],"source":"spec §3"},
+ {"zone":"Build & Roadmap","title":"v3 — conditional","body":"Live jams ONLY IF v2 shows a retention cliff community would fix. Fine pressure/wrist coaching ONLY IF v1/v2 landmark data labeled + spike shows trainable signal.","tags":["v3","conditional"],"source":"spec §3"},
+ {"zone":"Build & Roadmap","title":"Tech architecture (iOS)","body":"Swift + SwiftUI · AVAudioEngine (capture) · basic-pitch→CoreML (pitch, NO custom DSP) · MediaPipe Tasks Hands (on-device) · small chord classifier over 21 landmarks · Rive/Lottie avatar state machine.","tags":["tech","ios"],"source":"spec §5"},
+ {"zone":"Build & Roadmap","title":"Build order (schema FIRST)","body":"Step0: content JSON Schema + renderer (lesson player just renders data — schema-first de-risks everything). Step1: tuner/metronome. Step2: lesson player + avatar shell. Step3: on-device pitch. Step4: camera chord-check v0. Step5: adaptive loop + streaks. Step6: subscriptions (RevenueCat).","tags":["build","order"],"source":"guitar-build-plan.md"},
+ {"zone":"Build & Roadmap","title":"Content pipeline","body":"LLM generates curriculum/scripts/exercises/diagrams/coaching → contract guitarist QA (every fingering, diagram, sequence). LLM CANNOT be trusted on chord voicings, fingering physical possibility, pedagogy order. Store generated coaching per lesson+session for QA review (learnhouse AIGeneration pattern).","tags":["content","qa","pipeline"],"source":"spec §6 / PLATFORM_BUILD_ANALYSIS.md"},
+
+ {"zone":"Risks","title":"R1 — Differentiation collapse (HIGHEST)","body":"Camera moat is 80% cut in v1 for risk reasons → v1 risks being 'Yousician but smaller + chord hints.' If Q4/Q5 show users won't trust or won't set up the camera, there is NO moat. Mitigation: the validation gate exists to detect exactly this.","tags":["risk","moat","camera"],"source":"spec §8"},
+ {"zone":"Risks","title":"R2 — Unverifiable AI content","body":"Founder can't play guitar, so can't catch wrong fingering/pedagogy. Mitigation: contract guitarist QA — non-negotiable budget line.","tags":["risk","qa"],"source":"spec §8"},
+ {"zone":"Risks","title":"R3 — Camera setup friction","body":"Phone placement, lighting, angle friction is the camera feature's silent killer. Mitigation: Q5 live test; position chord-check as a viral free tool to learn cheap.","tags":["risk","camera"],"source":"spec §8"},
+ {"zone":"Risks","title":"R4 — Chord classifier accuracy","body":"Real beginners' messy hands vs trained classifier. Mitigation: v0 scopes to binary shape check on a LIMITED chord set; silent data-collection spike inside v1 gathers training data.","tags":["risk","camera","ml"],"source":"spec §8"},
+ {"zone":"Risks","title":"R5 — Solo-build scope creep","body":"Mitigation: v1 cut list is a contract; fun extras live in v2/v3 or die.","tags":["risk","scope"],"source":"spec §8"},
+ {"zone":"Risks","title":"R6 — Music licensing","body":"If song-based learning sneaks into v1 it's existential. Mitigation: exercises + original compositions ONLY in v1. No exceptions.","tags":["risk","licensing"],"source":"spec §8"},
+
+ {"zone":"Assets","title":"guitar-app-spec.md","body":"Product spec v1.0 (262 lines). Decisions locked, phased roadmap, avatar constraints, architecture, content pipeline, validation gate, risk register, competitive RE. STATUS: SPEC, not validated — no code before gate passes.","tags":["doc","spec"],"source":"Desktop/guitar-app-spec.md"},
+ {"zone":"Assets","title":"guitar-build-plan.md","body":"Execution plan (52 lines) companion to spec + RE. Build order Steps 0-6, platform/services, content pipeline, validation gate, risks, next actions.","tags":["doc","plan"],"source":"Desktop/guitar-build-plan.md"},
+ {"zone":"Assets","title":"Lesson content model (JSON)","body":"guitar-lesson-01-faster-chord-changes.json — schema-driven lesson (lesson→chords→pivot_points→exercises→coaching→qa_block) following the book-of-frets-x pattern. First fixture for the Step0 renderer.","tags":["content","json","schema"],"source":"Desktop/guitar-lesson-01-*.json"},
+ {"zone":"Assets","title":"Prototypes (HTML, double-clickable)","body":"guitar-lesson-prototype.html · guitar-lesson-01.html · guitar-lesson-01-demo.html — interactive lesson demos. Open via file:// (no server).","tags":["prototype","html"],"source":"Desktop/*.html"},
+ {"zone":"Assets","title":"Research folder","body":"guitar-research/: COMPETITOR_TEARDOWN.md · PLATFORM_BUILD_ANALYSIS.md · REVERSE_ENGINEERING_PLAYBOOK.md · RESEARCH_DATA_CONSOLIDATED.md · guitar-lesson-channels-competitive-teardown.md (10-channel agent teardown: Justin/Andy/Marty/GL365/Groovy/TrueFire/YGA/Paul Davids/Music Is Win/Signals — teaching style, curriculum, top videos, ads, retention, paid pricing) · guitar-chord-teaching-teardown.md (chord-shape pedagogy + verification gap) · guitar-channel-teardown.md (Marty/GL365/Groovy) · guitar-channels-business-model-report.md (TrueFire/YGA/Paul Davids/Music Is Win/Signals pricing) · guitar-channel-teardown-justin-andy.md (Justin/Andy deep dive) · guitar-app-marketing-playbook.md (Liquid Death MATG Ep 441 → app marketing plan) · repos/ (book-of-frets-x, learnhouse, react-guitar, alphaTab, reverse-engineering — all cloned).","tags":["research","repo"],"source":"Desktop/guitar-research/"},
+ {"zone":"Assets","title":"Raw thought dump","body":"guitar app.txt — 635-line original brainstorm (problem framing, competitor research, pricing, cost model, camera feasibility, jam tech, 5+5 fun ideas, market sizing, marketing). Source of most 'Ideas' + 'Research' entries above.","tags":["doc","raw"],"source":"Desktop/guitar app.txt"},
+ {"zone":"Assets","title":"Interview + recruitment docs","body":"guitar-interview-script.md (20-25min instrument, 10 Q + live demo test, ground rules) · guitar-reddit-recruitment.md (ready-to-post).","tags":["validation","doc"],"source":"Desktop/*.md"}
+]
+</script>
+
+<script>
+const ZONE_ORDER = ["Vision","Locked Decisions","Ideas","Research","Marketing","Validation","Build & Roadmap","Risks","Assets","Inbox"];
+const ZCOLOR = {Vision:"--acc", "Locked Decisions":"--grn", Ideas:"--vio", Research:"--blu", Marketing:"--acc2", Validation:"--acc2", "Build & Roadmap":"--grn", Risks:"--red", Assets:"--mut", Inbox:"--acc"};
+const seed = JSON.parse(document.getElementById('seed').textContent);
+seed.forEach((x,i)=>{x.id='s'+i; x.cap=false; if(!x.date)x.date='2026-08-04';});
+let captures = loadCaptures();
+let curZone = 'All';
+let curTag = null;
+let curQ = '';
+
+function loadCaptures(){
+  try{ return JSON.parse(localStorage.getItem('guitar-os-captures')||'[]'); }catch(e){ return []; }
+}
+function saveCaptures(){ localStorage.setItem('guitar-os-captures', JSON.stringify(captures)); }
+
+function allItems(){ return seed.concat(captures.map(c=>({...c, id:'c'+c.id, cap:true}))); }
+
+function zoneCount(z){
+  const all = allItems();
+  return z==='All' ? all.length : all.filter(x=>x.zone===z).length;
+}
+
+function renderZones(){
+  const wrap = document.getElementById('zones');
+  wrap.innerHTML='';
+  const mk=(z)=>{
+    const d=document.createElement('div');
+    d.className='zone'+(curZone===z?' active':'');
+    d.innerHTML='<span>'+z+'</span><span class="cnt">'+zoneCount(z)+'</span>';
+    d.onclick=()=>{curZone=z;curTag=null;renderAll();};
+    wrap.appendChild(d);
+  };
+  mk('All');
+  ZONE_ORDER.forEach(mk);
+}
+
+function allTags(){
+  const s=new Set();
+  allItems().forEach(x=>(x.tags||[]).forEach(t=>s.add(t)));
+  return [...s].sort();
+}
+function renderTags(){
+  const wrap=document.getElementById('tags'); wrap.innerHTML='';
+  if(curQ||curZone!=='All'){
+    wrap.innerHTML='<span class="hint" style="color:var(--mut)">filtering by '+(curQ?'"'+curQ+'" ':'')+(curZone!=='All'?curZone:'')+' — clear search/zone to browse tags</span>';
+    return;
+  }
+  allTags().forEach(t=>{
+    const c=document.createElement('span');
+    c.className='tag'+(curTag===t?' on':'');
+    c.textContent=t;
+    c.onclick=()=>{curTag=curTag===t?null:t;renderList();};
+    wrap.appendChild(c);
+  });
+}
+
+function renderList(){
+  const list=document.getElementById('list'); list.innerHTML='';
+  let items=allItems();
+  if(curZone!=='All') items=items.filter(x=>x.zone===curZone);
+  if(curTag) items=items.filter(x=>(x.tags||[]).includes(curTag));
+  if(curQ){
+    const q=curQ.toLowerCase();
+    items=items.filter(x=>(x.title+x.body+(x.tags||[]).join(' ')+(x.source||'')).toLowerCase().includes(q));
+  }
+  items.sort((a,b)=> (b.date||'').localeCompare(a.date||''));
+  if(!items.length){ list.innerHTML='<div class="empty">No items match. Capture a thought or clear filters.</div>'; return; }
+  items.forEach(x=>{
+    const col = ZCOLOR[x.zone]||'--mut';
+    const card=document.createElement('div');
+    card.className='card'+(x.cap?' cap':'');
+    let chips=(x.tags||[]).map(t=>'<span class="chip">'+t+'</span>').join('');
+    if(x.source) chips+='<span class="chip src">'+x.source+'</span>';
+    card.innerHTML='<span class="ztag" style="color:var(--'+(col.replace('--',')))+'">'+x.zone+'</span>'+
+      '<div class="ctitle">'+esc(x.title)+'</div>'+
+      '<div class="cbody">'+esc(x.body)+'</div>'+
+      '<div class="cmeta">'+chips+'</div>';
+    list.appendChild(card);
+  });
+}
+function esc(s){return (s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+
+function renderAll(){
+  document.getElementById('zt').textContent = curZone==='All' ? 'All zones' : curZone;
+  const n = (curZone!=='All'?zoneCount(curZone):allItems().length);
+  document.getElementById('zm').textContent = n+' item'+(n===1?'':'s')+(curTag?' · tag: '+curTag:'');
+  renderZones(); renderTags(); renderList();
+}
+
+// search
+document.getElementById('q').addEventListener('input',e=>{curQ=e.target.value.trim();renderTags();renderList();
+  document.getElementById('zm').textContent=(curZone!=='All'?zoneCount(curZone):allItems().length)+' items'+(curQ?' · "'+curQ+'"':'');});
+
+// capture modal
+const ov=document.getElementById('ov');
+document.getElementById('btnCap').onclick=()=>{ov.classList.add('on');document.getElementById('cTitle').focus();};
+document.getElementById('cCancel').onclick=()=>{ov.classList.remove('on');};
+document.getElementById('cSave').onclick=()=>{
+  const t=document.getElementById('cTitle').value.trim();
+  const b=document.getElementById('cBody').value.trim();
+  const tg=document.getElementById('cTags').value.split(',').map(s=>s.trim()).filter(Boolean);
+  if(!t&&!b)return;
+  captures.push({id:Date.now(),zone:'Inbox',title:t||'(untitled)',body:b,tags:tg,source:'captured',date:new Date().toISOString().slice(0,10)});
+  saveCaptures(); ov.classList.remove('on');
+  document.getElementById('cTitle').value='';document.getElementById('cBody').value='';document.getElementById('cTags').value='';
+  if(curZone!=='All'&&curZone!=='Inbox')curZone='All'; renderAll();
+};
+
+// export
+document.getElementById('btnExp').onclick=()=>{
+  const blob=new Blob([JSON.stringify(captures,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='guitar-os-captures-'+new Date().toISOString().slice(0,10)+'.json';a.click();
+};
+// import
+document.getElementById('btnImp').onclick=()=>document.getElementById('fileIn').click();
+document.getElementById('fileIn').onchange=e=>{
+  const f=e.target.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{const arr=JSON.parse(r.result);if(Array.isArray(arr)){captures=arr;saveCaptures();renderAll();alert('Imported '+arr.length+' captured items.');}}catch(err){alert('Invalid JSON file.');}};
+  r.readAsText(f); e.target.value='';
+};
+
+renderAll();
+</script>
+</body>
+</html>

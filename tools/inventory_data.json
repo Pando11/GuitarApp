@@ -1,0 +1,641 @@
+{
+  "generated": "2026-08-13T15:25:16.777552Z",
+  "lesson_dir": "C:\\Users\\The Yoda Trader\\Desktop\\GuitarApp\\07-app\\content\\lessons",
+  "lessons": [
+    {
+      "file": "guitar-lesson-01-welcome-anatomy-tuning.json",
+      "title": "Welcome, Anatomy & Tuning",
+      "num": 1,
+      "exercises": 3,
+      "new_chords": [],
+      "qa": [
+        "verified-by-theory-check-2026-08-08"
+      ]
+    },
+    {
+      "file": "guitar-lesson-02-first-chord-em.json",
+      "title": "Your First Chord: Em + One Strum",
+      "num": 2,
+      "exercises": 2,
+      "new_chords": [],
+      "qa": [
+        "verified-by-theory-check-2026-08-08"
+      ]
+    },
+    {
+      "file": "guitar-lesson-03-second-chord-first-song.json",
+      "title": "Second Chord + YOUR FIRST SONG",
+      "num": 3,
+      "exercises": 2,
+      "new_chords": [],
+      "qa": [
+        "verified-by-theory-check-2026-08-08"
+      ]
+    },
+    {
+      "file": "guitar-lesson-04-strumming-in-time.json",
+      "title": "Strumming in Time",
+      "num": 4,
+      "exercises": 2,
+      "new_chords": [],
+      "qa": [
+        "verified-by-theory-check-2026-08-08"
+      ]
+    },
+    {
+      "file": "guitar-lesson-05-chord-changes-em-easyc.json",
+      "title": "Chord Changes: Em \u2194 easy C (anchor fingers)",
+      "num": 5,
+      "exercises": 3,
+      "new_chords": [],
+      "qa": [
+        "verified-by-theory-check-2026-08-08"
+      ]
+    },
+    {
+      "file": "guitar-lesson-06-new-chord-g.json",
+      "title": "New Chord: G + Em \u2194 G",
+      "num": 6,
+      "exercises": 3,
+      "new_chords": [],
+      "qa": [
+        "verified-by-theory-check-2026-08-08"
+      ]
+    },
+    {
+      "file": "guitar-lesson-07-new-chord-d.json",
+      "title": "New Chord: D + Changes",
+      "num": 7,
+      "exercises": 2,
+      "new_chords": [],
+      "qa": [
+        "verified-by-theory-check-2026-08-08"
+      ]
+    },
+    {
+      "file": "guitar-lesson-08-new-chord-a.json",
+      "title": "New Chord: A + Changes",
+      "num": 8,
+      "exercises": 2,
+      "new_chords": [],
+      "qa": [
+        "verified-by-theory-check-2026-08-08"
+      ]
+    },
+    {
+      "file": "guitar-lesson-09-new-chord-am-big-four.json",
+      "title": "New Chord: Am + the Big Four",
+      "num": 9,
+      "exercises": 2,
+      "new_chords": [],
+      "qa": [
+        "verified-by-theory-check-2026-08-08"
+      ]
+    },
+    {
+      "file": "guitar-lesson-10-four-chord-songs.json",
+      "title": "Four-Chord Songs (MILESTONE)",
+      "num": 10,
+      "exercises": 2,
+      "new_chords": [],
+      "qa": [
+        "verified-by-theory-check-2026-08-08"
+      ]
+    },
+    {
+      "file": "guitar-lesson-11-up-strums.json",
+      "title": "Up-Strums + D-DU-UDU",
+      "num": 11,
+      "exercises": 2,
+      "new_chords": [],
+      "qa": [
+        "verified-by-theory-check-2026-08-08"
+      ]
+    },
+    {
+      "file": "guitar-lesson-12-strumming-patterns.json",
+      "title": "Strumming Patterns Library",
+      "num": 12,
+      "exercises": 2,
+      "new_chords": [],
+      "qa": [
+        "verified-by-theory-check-2026-08-08"
+      ]
+    },
+    {
+      "file": "guitar-lesson-13-dynamics-alternating-bass.json",
+      "title": "Dynamics + \"THE Pattern\" (alternating bass)",
+      "num": 13,
+      "exercises": 2,
+      "new_chords": [],
+      "qa": [
+        "verified-by-theory-check-2026-08-08"
+      ]
+    },
+    {
+      "file": "guitar-lesson-14-capo-basics.json",
+      "title": "Capo Basics (play in any key)",
+      "num": 14,
+      "exercises": 2,
+      "new_chords": [],
+      "qa": [
+        "verified-by-theory-check-2026-08-08"
+      ]
+    },
+    {
+      "file": "guitar-lesson-15-faster-chord-changes.json",
+      "title": "Faster Chord Changes (SPEED BUILDER)",
+      "num": 15,
+      "exercises": 3,
+      "new_chords": [],
+      "qa": [
+        "verified-by-theory-check-2026-08-08"
+      ]
+    },
+    {
+      "file": "guitar-lesson-16-new-chord-e.json",
+      "title": "New Chord: E + cowboy set complete",
+      "num": 16,
+      "exercises": 2,
+      "new_chords": [],
+      "qa": [
+        "verified-by-theory-check-2026-08-08"
+      ]
+    },
+    {
+      "file": "guitar-lesson-17-minor-progressions-dm.json",
+      "title": "Minor Progressions + Dm",
+      "num": 17,
+      "exercises": 2,
+      "new_chords": [],
+      "qa": [
+        "verified-by-theory-check-2026-08-08"
+      ]
+    },
+    {
+      "file": "guitar-lesson-18-fingerpicking-travis.json",
+      "title": "Fingerpicking Intro (Travis pattern)",
+      "num": 18,
+      "exercises": 2,
+      "new_chords": [],
+      "qa": [
+        "verified-by-theory-check-2026-08-08"
+      ]
+    },
+    {
+      "file": "guitar-lesson-19-read-chord-chart-tab.json",
+      "title": "Read Any Chord Chart / TAB",
+      "num": 19,
+      "exercises": 3,
+      "new_chords": [],
+      "qa": [
+        "verified-by-theory-check-2026-08-08"
+      ]
+    },
+    {
+      "file": "guitar-lesson-20-consolidation-performance.json",
+      "title": "Consolidation + Your First \"Performance\" + What's Next",
+      "num": 20,
+      "exercises": 3,
+      "new_chords": [],
+      "qa": [
+        "verified-by-theory-check-2026-08-08"
+      ]
+    },
+    {
+      "file": "guitar-lesson-21-holding-the-pick.json",
+      "title": "Holding the Pick",
+      "num": 21,
+      "exercises": 3,
+      "new_chords": [],
+      "qa": [
+        "verified-by-theory-check-2026-08-08"
+      ]
+    },
+    {
+      "file": "guitar-lesson-22-switching-em-and-c.json",
+      "title": "Switching Between Em and C",
+      "num": 22,
+      "exercises": 4,
+      "new_chords": [],
+      "qa": [
+        "verified-by-theory-check-2026-08-08"
+      ]
+    },
+    {
+      "file": "guitar-lesson-23-first-three-chord-song.json",
+      "title": "Your First 3-Chord Song",
+      "num": 23,
+      "exercises": 4,
+      "new_chords": [],
+      "qa": [
+        "verified-by-theory-check-2026-08-08"
+      ]
+    }
+  ],
+  "practice_dir": "C:\\Users\\The Yoda Trader\\Desktop\\GuitarApp\\07-app\\content\\practice",
+  "pairs": [
+    {
+      "key": "C::Em",
+      "a": "C",
+      "b": "Em",
+      "file": "practice-C-Em.json",
+      "cumulative": true,
+      "introducedAt": 3,
+      "drillName": "Your first song \u2014 Em to easy C",
+      "_engine": "one-minute-changes",
+      "_minutes": 3,
+      "_practice_of": [
+        "L03-second-chord-first-song"
+      ]
+    },
+    {
+      "key": "Em::G",
+      "a": "G",
+      "b": "Em",
+      "file": "practice-G-Em.json",
+      "cumulative": true,
+      "introducedAt": 6,
+      "drillName": "Em to G pivot",
+      "_engine": "one-minute-changes",
+      "_minutes": 3,
+      "_practice_of": [
+        "L06-new-chord-g"
+      ]
+    },
+    {
+      "key": "C::G",
+      "a": "G",
+      "b": "C",
+      "file": "practice-G-C.json",
+      "cumulative": true,
+      "introducedAt": 6,
+      "drillName": "Four-change rotation",
+      "_engine": "one-minute-changes",
+      "_minutes": 3,
+      "_practice_of": [
+        "L06-new-chord-g"
+      ]
+    },
+    {
+      "key": "D::Em",
+      "a": "D",
+      "b": "Em",
+      "file": "practice-D-Em.json",
+      "cumulative": true,
+      "introducedAt": 7,
+      "drillName": "Four-change rotation",
+      "_engine": "one-minute-changes",
+      "_minutes": 3,
+      "_practice_of": [
+        "L07-new-chord-d"
+      ]
+    },
+    {
+      "key": "C::D",
+      "a": "D",
+      "b": "C",
+      "file": "practice-D-C.json",
+      "cumulative": true,
+      "introducedAt": 7,
+      "drillName": "Rotation with A",
+      "_engine": "one-minute-changes",
+      "_minutes": 3,
+      "_practice_of": [
+        "L07-new-chord-d"
+      ]
+    },
+    {
+      "key": "D::G",
+      "a": "D",
+      "b": "G",
+      "file": "practice-D-G.json",
+      "cumulative": true,
+      "introducedAt": 7,
+      "drillName": "Four-change rotation",
+      "_engine": "one-minute-changes",
+      "_minutes": 3,
+      "_practice_of": [
+        "L07-new-chord-d"
+      ]
+    },
+    {
+      "key": "A::Em",
+      "a": "A",
+      "b": "Em",
+      "file": "practice-A-Em.json",
+      "cumulative": true,
+      "introducedAt": 8,
+      "drillName": "Rotation with A",
+      "_engine": "one-minute-changes",
+      "_minutes": 3,
+      "_practice_of": [
+        "L08-new-chord-a"
+      ]
+    },
+    {
+      "key": "A::C",
+      "a": "A",
+      "b": "C",
+      "file": "practice-A-C.json",
+      "cumulative": true,
+      "introducedAt": 8,
+      "drillName": null,
+      "_engine": "one-minute-changes",
+      "_minutes": 3,
+      "_practice_of": [
+        "L08-new-chord-a"
+      ]
+    },
+    {
+      "key": "A::G",
+      "a": "A",
+      "b": "G",
+      "file": "practice-A-G.json",
+      "cumulative": true,
+      "introducedAt": 8,
+      "drillName": "Rotation with A",
+      "_engine": "one-minute-changes",
+      "_minutes": 3,
+      "_practice_of": [
+        "L08-new-chord-a"
+      ]
+    },
+    {
+      "key": "A::D",
+      "a": "A",
+      "b": "D",
+      "file": "practice-A-D.json",
+      "cumulative": true,
+      "introducedAt": 8,
+      "drillName": "Rotation with A",
+      "_engine": "one-minute-changes",
+      "_minutes": 3,
+      "_practice_of": [
+        "L08-new-chord-a"
+      ]
+    },
+    {
+      "key": "Am::Em",
+      "a": "Am",
+      "b": "Em",
+      "file": "practice-Am-Em.json",
+      "cumulative": true,
+      "introducedAt": 9,
+      "drillName": "All six change pairs",
+      "_engine": "one-minute-changes",
+      "_minutes": 3,
+      "_practice_of": [
+        "L09-new-chord-am-big-four"
+      ]
+    },
+    {
+      "key": "Am::C",
+      "a": "Am",
+      "b": "C",
+      "file": "practice-Am-C.json",
+      "cumulative": true,
+      "introducedAt": 9,
+      "drillName": "All six change pairs",
+      "_engine": "one-minute-changes",
+      "_minutes": 3,
+      "_practice_of": [
+        "L09-new-chord-am-big-four"
+      ]
+    },
+    {
+      "key": "Am::G",
+      "a": "Am",
+      "b": "G",
+      "file": "practice-Am-G.json",
+      "cumulative": true,
+      "introducedAt": 9,
+      "drillName": "All six change pairs",
+      "_engine": "one-minute-changes",
+      "_minutes": 3,
+      "_practice_of": [
+        "L09-new-chord-am-big-four"
+      ]
+    },
+    {
+      "key": "Am::D",
+      "a": "Am",
+      "b": "D",
+      "file": "practice-Am-D.json",
+      "cumulative": true,
+      "introducedAt": 9,
+      "drillName": "All six change pairs",
+      "_engine": "one-minute-changes",
+      "_minutes": 3,
+      "_practice_of": [
+        "L09-new-chord-am-big-four"
+      ]
+    },
+    {
+      "key": "A::Am",
+      "a": "Am",
+      "b": "A",
+      "file": "practice-Am-A.json",
+      "cumulative": true,
+      "introducedAt": 9,
+      "drillName": null,
+      "_engine": "one-minute-changes",
+      "_minutes": 3,
+      "_practice_of": [
+        "L09-new-chord-am-big-four"
+      ]
+    },
+    {
+      "key": "E::Em",
+      "a": "E",
+      "b": "Em",
+      "file": "practice-E-Em.json",
+      "cumulative": true,
+      "introducedAt": 16,
+      "drillName": null,
+      "_engine": "one-minute-changes",
+      "_minutes": 3,
+      "_practice_of": [
+        "L16-new-chord-e"
+      ]
+    },
+    {
+      "key": "C::E",
+      "a": "E",
+      "b": "C",
+      "file": "practice-E-C.json",
+      "cumulative": true,
+      "introducedAt": 16,
+      "drillName": null,
+      "_engine": "one-minute-changes",
+      "_minutes": 3,
+      "_practice_of": [
+        "L16-new-chord-e"
+      ]
+    },
+    {
+      "key": "E::G",
+      "a": "E",
+      "b": "G",
+      "file": "practice-E-G.json",
+      "cumulative": true,
+      "introducedAt": 16,
+      "drillName": null,
+      "_engine": "one-minute-changes",
+      "_minutes": 3,
+      "_practice_of": [
+        "L16-new-chord-e"
+      ]
+    },
+    {
+      "key": "D::E",
+      "a": "E",
+      "b": "D",
+      "file": "practice-E-D.json",
+      "cumulative": true,
+      "introducedAt": 16,
+      "drillName": null,
+      "_engine": "one-minute-changes",
+      "_minutes": 3,
+      "_practice_of": [
+        "L16-new-chord-e"
+      ]
+    },
+    {
+      "key": "A::E",
+      "a": "E",
+      "b": "A",
+      "file": "practice-E-A.json",
+      "cumulative": true,
+      "introducedAt": 16,
+      "drillName": "E\u2194A, A\u2194Em",
+      "_engine": "one-minute-changes",
+      "_minutes": 3,
+      "_practice_of": [
+        "L16-new-chord-e"
+      ]
+    },
+    {
+      "key": "Am::E",
+      "a": "E",
+      "b": "Am",
+      "file": "practice-E-Am.json",
+      "cumulative": true,
+      "introducedAt": 16,
+      "drillName": null,
+      "_engine": "one-minute-changes",
+      "_minutes": 3,
+      "_practice_of": [
+        "L16-new-chord-e"
+      ]
+    },
+    {
+      "key": "Dm::Em",
+      "a": "Dm",
+      "b": "Em",
+      "file": "practice-Dm-Em.json",
+      "cumulative": true,
+      "introducedAt": 17,
+      "drillName": null,
+      "_engine": "one-minute-changes",
+      "_minutes": 3,
+      "_practice_of": [
+        "L17-minor-progressions-dm"
+      ]
+    },
+    {
+      "key": "C::Dm",
+      "a": "Dm",
+      "b": "C",
+      "file": "practice-Dm-C.json",
+      "cumulative": true,
+      "introducedAt": 17,
+      "drillName": "Minor progressions",
+      "_engine": "one-minute-changes",
+      "_minutes": 3,
+      "_practice_of": [
+        "L17-minor-progressions-dm"
+      ]
+    },
+    {
+      "key": "Dm::G",
+      "a": "Dm",
+      "b": "G",
+      "file": "practice-Dm-G.json",
+      "cumulative": true,
+      "introducedAt": 17,
+      "drillName": null,
+      "_engine": "one-minute-changes",
+      "_minutes": 3,
+      "_practice_of": [
+        "L17-minor-progressions-dm"
+      ]
+    },
+    {
+      "key": "D::Dm",
+      "a": "Dm",
+      "b": "D",
+      "file": "practice-Dm-D.json",
+      "cumulative": true,
+      "introducedAt": 17,
+      "drillName": null,
+      "_engine": "one-minute-changes",
+      "_minutes": 3,
+      "_practice_of": [
+        "L17-minor-progressions-dm"
+      ]
+    },
+    {
+      "key": "A::Dm",
+      "a": "Dm",
+      "b": "A",
+      "file": "practice-Dm-A.json",
+      "cumulative": true,
+      "introducedAt": 17,
+      "drillName": null,
+      "_engine": "one-minute-changes",
+      "_minutes": 3,
+      "_practice_of": [
+        "L17-minor-progressions-dm"
+      ]
+    },
+    {
+      "key": "Am::Dm",
+      "a": "Dm",
+      "b": "Am",
+      "file": "practice-Dm-Am.json",
+      "cumulative": true,
+      "introducedAt": 17,
+      "drillName": "Minor progressions",
+      "_engine": "one-minute-changes",
+      "_minutes": 3,
+      "_practice_of": [
+        "L17-minor-progressions-dm"
+      ]
+    },
+    {
+      "key": "Dm::E",
+      "a": "Dm",
+      "b": "E",
+      "file": "practice-Dm-E.json",
+      "cumulative": true,
+      "introducedAt": 17,
+      "drillName": null,
+      "_engine": "one-minute-changes",
+      "_minutes": 3,
+      "_practice_of": [
+        "L17-minor-progressions-dm"
+      ]
+    }
+  ],
+  "engines": [
+    "one-minute-changes"
+  ],
+  "songs_dir_exists": false,
+  "l23_title": "Your First 3-Chord Song",
+  "l23_chords": [
+    "G",
+    "Em",
+    "easyC"
+  ]
+}

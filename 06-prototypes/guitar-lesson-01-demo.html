@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Lesson Demo — Faster Chord Changes (synthetic app preview)</title>
+<style>
+  :root{ --bg:#0c0e13; --card:#171a21; --ink:#eef2f7; --mut:#9aa3b2; --acc:#ffb454; --ok:#5fd08a; --warn:#ff7a7a; }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body{ margin:0; background:var(--bg); color:var(--ink); font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
+  .phone{ max-width:390px; margin:0 auto; min-height:100vh; background:var(--bg); display:flex; flex-direction:column; }
+  .topbar{ display:flex; align-items:center; gap:10px; padding:12px 14px; border-bottom:1px solid #20242e; }
+  .topbar .t{ font-size:13px; color:var(--mut); }
+  .stage{ flex:1; padding:16px; display:flex; flex-direction:column; justify-content:center; gap:14px; }
+  .scene{ display:block; animation:fade .4s ease; }
+  @keyframes fade{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;} }
+  h1{ font-size:21px; margin:0 0 6px; }
+  h2{ font-size:17px; margin:0 0 8px; color:var(--acc); }
+  p{ margin:6px 0; color:var(--ink); }
+  .mut{ color:var(--mut); }
+  .coach{ display:flex; gap:10px; align-items:flex-start; background:var(--card); border:1px solid #262b35; border-radius:14px; padding:12px; }
+  .face{ flex:0 0 auto; width:42px; height:42px; border-radius:50%; background:radial-gradient(circle at 35% 30%, #ffd290, #ff9d3d); position:relative; }
+  .face:before,.face:after{ content:""; position:absolute; top:16px; width:5px; height:5px; border-radius:50%; background:#3a2a12; }
+  .face:before{ left:12px; } .face:after{ right:12px; }
+  .face .m{ position:absolute; left:13px; right:13px; top:26px; height:3px; border-radius:3px; background:#3a2a12; }
+  .coach .txt{ font-size:15px; }
+  .coach .who{ font-size:11px; color:var(--acc); margin-bottom:3px; }
+  .chords{ display:flex; gap:12px; flex-wrap:wrap; }
+  .chord{ text-align:center; }
+  .chord .nm{ font-size:12px; margin-top:4px; }
+  .chord .qa{ font-size:9px; }
+  .qa-pending{ color:var(--warn); } .qa-ok{ color:var(--ok); }
+  .pillrow{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .pill{ background:#222732; color:var(--acc); font-size:11px; padding:3px 9px; border-radius:99px; }
+  .board{ background:var(--card); border-radius:14px; padding:14px; text-align:center; }
+  .metro{ font-size:48px; font-weight:800; letter-spacing:2px; }
+  .count{ font-size:64px; font-weight:800; color:var(--ok); }
+  .sub2{ font-size:13px; color:var(--mut); }
+  .flag{ background:#2a1f1f; border:1px solid #5a2c2c; border-radius:14px; padding:14px; }
+  .flag h2{ color:var(--warn); font-size:15px; }
+  .flag li{ font-size:13px; margin:5px 0; }
+  .controls{ display:flex; gap:10px; padding:14px; border-top:1px solid #20242e; }
+  button{ flex:1; background:var(--acc); color:#1a1206; border:0; border-radius:10px; padding:13px; font-size:15px; font-weight:700; }
+  button.ghost{ background:#222732; color:var(--ink); }
+  .progress{ height:4px; background:#222732; }
+  .bar{ height:100%; width:0; background:var(--acc); transition:width .3s; }
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="topbar"><div class="t">ProAcoustic · Lesson 01</div></div>
+  <div class="progress"><div class="bar" id="bar"></div></div>
+  <div class="stage" id="stage"></div>
+  <div class="controls">
+    <button id="play">▶ Play</button>
+    <button id="restart" class="ghost">⟲ Restart</button>
+  </div>
+</div>
+
+<script>
+/* ---------- chord diagram (reused from lesson JSON) ---------- */
+function chordSVG(frets, fingers, w=104, h=132){
+  const pad=12, nStr=6, nFret=4, sx=(w-pad*2)/(nStr-1), sy=(h-pad*2)/nFret;
+  let s=`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">`;
+  for(let f=0;f<=nFret;f++){ const y=pad+f*sy; s+=`<line x1="${pad}" y1="${y}" x2="${w-pad}" y2="${y}" stroke="#5b6472" stroke-width="${f===0?4:1.4}"/>`; }
+  for(let st=0;st<nStr;st++){ const x=pad+st*sx; s+=`<line x1="${x}" y1="${pad}" x2="${x}" y2="${h-pad}" stroke="#7a8597" stroke-width="1.4"/>`; }
+  for(let st=0;st<nStr;st++){
+    const fr=frets[st], fg=fingers[st], x=pad+st*sx;
+    if(fr===null){ s+=`<text x="${x}" y="${pad-2}" fill="#ff7a7a" font-size="13" text-anchor="middle">×</text>`; }
+    else if(fr===0){ s+=`<circle cx="${x}" cy="${pad-6}" r="4" fill="none" stroke="#5fd08a" stroke-width="2"/>`; }
+    else { const y=pad+(fr-0.5)*sy, fnum=fg===0?"":String(fg); s+=`<circle cx="${x}" cy="${y}" r="8" fill="#ffb454"/><text x="${x}" y="${y+3.5}" fill="#0c0e13" font-size="10" font-weight="700" text-anchor="middle">${fnum}</text>`; }
+  }
+  return s+`</svg>`;
+}
+const CH={
+  Em:{name:"E minor", frets:[0,2,2,0,0,0], fingers:[0,2,3,0,0,0], qa:"ok"},
+  C:{name:"C", frets:[null,3,2,0,1,0], fingers:[null,3,2,0,1,0], qa:"ok"},
+  easyC:{name:"Easy C", frets:[null,3,2,0,null,0], fingers:[null,3,2,0,null,0], qa:"pending"},
+  G:{name:"G (3-fin)", frets:[3,2,0,0,0,3], fingers:[2,1,0,0,0,3], qa:"ok"},
+  D:{name:"D", frets:[null,null,0,2,3,2], fingers:[null,null,0,1,3,2], qa:"ok"}
+};
+function chordHTML(k){ const c=CH[k]; const q=c.qa==="ok"?'<span class="qa qa-ok">✓</span>':'<span class="qa qa-pending">⚠</span>'; return `<div class="chord">${chordSVG(c.frets,c.fingers)}<div class="nm">${c.name}</div>${q}</div>`; }
+
+/* ---------- metronome (Web Audio, no files) ---------- */
+let actx=null;
+function click(){
+  try{ actx=actx||new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return; }
+  const o=actx.createOscillator(), g=actx.createGain();
+  o.frequency.value=1000; o.type="square"; g.gain.setValueAtTime(0.18,actx.currentTime); g.gain.exponentialRampToValueAtTime(0.001,actx.currentTime+0.05);
+  o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime+0.05);
+}
+
+/* ---------- scenes ---------- */
+const S=[
+  { dur:5, html:`<div class="scene"><h1>The Real Secret to Faster Chord Changes</h1><p class="mut">Absolute-beginner technique · ~12 min · synthetic app preview</p><div class="coach"><div class="face"><div class="m"></div></div><div><div class="who">🤖 Coach</div><div class="txt">Slow chord changes aren't a talent problem — they're a muscle-memory problem. Today we warm up your hands and turn your metronome into a scorecard. Grab your guitar.</div></div></div></div>` },
+  { dur:6, html:`<div class="scene"><h2>Why changes feel hard</h2><p>Chord changes are a brand-new hand movement. When something's new, you get tense — and <b>tension slows your hands.</b></p><p>Speed comes from repetition that builds muscle memory, which is what finally lets you relax. You can't rush the relaxation.</p><div class="coach"><div class="face"><div class="m"></div></div><div><div class="who">🤖 Coach</div><div class="txt">"I'm not scared of the person who knows 10,000 kicks — I'm scared of the person who knows one kick and practiced it 10,000 times." Same idea here.</div></div></div></div>` },
+  { dur:6, html:`<div class="scene"><h2>The chords we'll use</h2><div class="chords">${chordHTML('Em')}${chordHTML('C')}${chordHTML('easyC')}${chordHTML('G')}${chordHTML('D')}</div><p class="mut" style="font-size:12px">⚠ = fingering not yet verified by a guitarist (placeholder)</p></div>` },
+  { dur:8, html:`<div class="scene"><h2>Exercise 1 · Spider warm-up</h2><div class="board">${chordSVG([7,8,9,7,8,9],[1,2,3,1,2,3])}<div class="sub2">fingers 1-2-3, one fret each · start 7th (least stretch)</div></div><div class="pillrow"><span class="pill">top→bottom→back</span><span class="pill">3 slow picks each</span><span class="pill">~5 min</span><span class="pill">breathe!</span></div><div class="coach"><div class="face"><div class="m"></div></div><div><div class="who">🤖 Coach</div><div class="txt">Keep fingers relaxed and close to the fretboard. Floppy fingers are normal — that floppy feeling IS the control you're building.</div></div></div></div>` },
+  { dur:7, html:`<div class="scene"><h2>Exercise 2 · Finger lift-off</h2><p>Make a C shape, lift fingers one at a time (3rd, then 2nd, then 1st), rebuild. Progress to peeling all off and landing together.</p><div class="pillrow"><span class="pill">builds independence</span><span class="pill">air variant: off-guitar</span><span class="pill">few min only</span></div><div class="coach"><div class="face"><div class="m"></div></div><div><div class="who">🤖 Coach</div><div class="txt">If your hand flattens when you let go, that's normal — muscle memory hasn't formed yet. Reps fix it.</div></div></div></div>` },
+  { dur:14, html:`<div class="scene"><h2>Exercise 3 · 60-sec scorecard</h2><div class="board"><div class="metro" id="metro">🎵</div><div class="count" id="cnt">0</div><div class="sub2">Em ↔ Easy C changes this minute</div></div><div class="coach"><div class="face"><div class="m"></div></div><div><div class="who">🤖 Coach</div><div class="txt">Write the number down — that's your scorecard. Buzz is OK during the speed push; we clean up later.</div></div></div></div>`,
+    onEnter(){ this._n=0; this._iv=setInterval(()=>{ click(); this._n++; const c=document.getElementById('cnt'); if(c) c.textContent=this._n; }, 2200); },
+    onExit(){ clearInterval(this._iv); } },
+  { dur:6, html:`<div class="scene"><h2>Pivot points (the shortcut)</h2><p><b>Em → C:</b> middle finger stays put. Only ring + index move.</p><p><b>Em → G:</b> index finger stays put. Only ring + middle move.</p><p class="mut">One finger anchored = the change feels half as hard.</p></div>` },
+  { dur:6, html:`<div class="scene"><h2>Your result</h2><div class="board"><div class="count" id="finalcnt">22</div><div class="sub2">changes this session = your baseline</div></div><p>Next session, beat it by one. That's how 16 becomes 30.</p><div class="coach"><div class="face"><div class="m"></div></div><div><div class="who">🤖 Coach</div><div class="txt">Consistency beats talent. Three drills, five minutes, most days — that's the whole secret. You're never too old for this.</div></div></div></div>` },
+  { dur:9, html:`<div class="scene"><div class="flag"><h2>⚠ Not verified by a guitarist yet</h2><p class="mut" style="font-size:12px">Founder can't play — these must be checked before ship:</p><ul><li>Easy C exact fingering (placeholder now)</li><li>Easy G = 3-finger 320003 (assumed)</li><li>Spider start fret 7 = least stretch</li><li>"16-30/min" baseline is anecdotal</li><li>Pivot claims hold for shipped voicings</li><li>No song material used (licensing safe)</li></ul></div></div>` }
+];
+
+/* ---------- player engine ---------- */
+const stage=document.getElementById('stage'), bar=document.getElementById('bar');
+let idx=0, timer=null, sceneStart=0, raf=null;
+function show(i){
+  stage.innerHTML=S[i].html; bar.style.width=((i)/(S.length-1)*100)+'%';
+  if(S[i].onEnter) S[i].onEnter.call(S[i]);
+  sceneStart=performance.now();
+}
+function play(){
+  document.getElementById('play').textContent='⏸ Pause';
+  const step=()=>{
+    const el=S[idx];
+    const t=performance.now()-sceneStart;
+    bar.style.width=((idx + Math.min(t/(el.dur*1000),1))/(S.length-1)*100)+'%';
+    if(t>=el.dur*1000){ if(S[idx].onExit) S[idx].onExit.call(S[idx]); idx++; if(idx>=S.length){ finish(); return; } show(idx); }
+    raf=requestAnimationFrame(step);
+  };
+  raf=requestAnimationFrame(step);
+}
+function pause(){ cancelAnimationFrame(raf); document.getElementById('play').textContent='▶ Play'; }
+function finish(){ pause(); document.getElementById('play').textContent='▶ Replay'; bar.style.width='100%'; }
+function restart(){ if(S[idx]&&S[idx].onExit) S[idx].onExit.call(S[idx]); idx=0; show(0); document.getElementById('play').textContent='⏸ Pause'; sceneStart=performance.now(); play(); }
+document.getElementById('play').onclick=()=>{ if(raf&&document.getElementById('play').textContent==='⏸ Pause'){ pause(); } else { if(document.getElementById('play').textContent==='▶ Replay'){ idx=0; show(0);} play(); } };
+document.getElementById('restart').onclick=restart;
+show(0);
+</script>
+</body>
+</html>

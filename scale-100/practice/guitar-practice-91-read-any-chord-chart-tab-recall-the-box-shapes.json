@@ -1,0 +1,281 @@
+{
+  "lesson": {
+    "id": "P91-read-any-chord-chart-tab-recall-the-box-shapes",
+    "title": "Practice: Read Any Chord Chart / TAB — Recall the box shapes",
+    "level": "beginner",
+    "lesson_type": "technique",
+    "one_line_promise": "Rehearse Em, easyC, G, D, A, Am, E, Dm until it is automatic.",
+    "objectives": [
+      "Run a 1-minute change count on the pairs in scope",
+      "Hit 30 clean changes/min (advance) and aim for 60 (goal)",
+      "Let the app remember your weak pairs for spaced review"
+    ],
+    "estimated_minutes": 6,
+    "practice_of": [
+      "L91-read-any-chord-chart-tab-recall-the-box-shapes"
+    ],
+    "engine": "one-minute-changes",
+    "chords_in_scope": [
+      "Em",
+      "easyC",
+      "G",
+      "D",
+      "A",
+      "Am",
+      "E",
+      "Dm"
+    ],
+    "pair": [
+      [
+        "Dm",
+        "E"
+      ]
+    ],
+    "prerequisites": [],
+    "app_feature_mapping": {
+      "free_metronome": [
+        "drill tempo"
+      ]
+    }
+  },
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted.",
+    "Em": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "E minor",
+      "frets": [
+        0,
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "fingers": [
+        0,
+        2,
+        3,
+        0,
+        0,
+        0
+      ],
+      "note": "Verified deterministically by chord-theory-check.js (2026-08-08) as E B G."
+    },
+    "easyC": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "C major (Lauren's 'easy C' — 2-finger reduction)",
+      "frets": [
+        null,
+        3,
+        2,
+        0,
+        null,
+        0
+      ],
+      "fingers": [
+        null,
+        3,
+        2,
+        0,
+        null,
+        0
+      ],
+      "note": "Verified deterministically by chord-theory-check.js (2026-08-08) as C E G."
+    },
+    "G": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "G major",
+      "frets": [
+        3,
+        2,
+        0,
+        0,
+        0,
+        3
+      ],
+      "fingers": [
+        2,
+        1,
+        0,
+        0,
+        0,
+        3
+      ],
+      "note": "Verified deterministically by chord-theory-check.js (2026-08-08) as G B D."
+    },
+    "D": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "D major",
+      "frets": [
+        null,
+        null,
+        0,
+        2,
+        3,
+        2
+      ],
+      "fingers": [
+        null,
+        null,
+        0,
+        1,
+        3,
+        2
+      ],
+      "note": "Verified deterministically by chord-theory-check.js (2026-08-08) as D A F#."
+    },
+    "A": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "A major",
+      "frets": [
+        null,
+        0,
+        2,
+        2,
+        2,
+        0
+      ],
+      "fingers": [
+        null,
+        0,
+        1,
+        2,
+        3,
+        0
+      ],
+      "note": "Verified deterministically by chord-theory-check.js (2026-08-08) as A E C#."
+    },
+    "Am": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "A minor",
+      "frets": [
+        null,
+        0,
+        2,
+        2,
+        1,
+        0
+      ],
+      "fingers": [
+        null,
+        0,
+        2,
+        3,
+        1,
+        0
+      ],
+      "note": "Verified deterministically by chord-theory-check.js (2026-08-08) as A E C."
+    },
+    "E": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "E major",
+      "frets": [
+        0,
+        2,
+        2,
+        1,
+        0,
+        0
+      ],
+      "fingers": [
+        0,
+        2,
+        3,
+        1,
+        0,
+        0
+      ],
+      "note": "Verified deterministically by chord-theory-check.js (2026-08-08) as E B G#."
+    },
+    "Dm": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "D minor",
+      "frets": [
+        null,
+        null,
+        0,
+        2,
+        3,
+        1
+      ],
+      "fingers": [
+        null,
+        null,
+        0,
+        2,
+        3,
+        1
+      ],
+      "note": "Verified deterministically by chord-theory-check.js (2026-08-08) as D A F."
+    }
+  },
+  "exercises": [
+    {
+      "id": "EX1-menu",
+      "name": "Warm-up: spider + Chord-Perfect",
+      "purpose": "Warm the hand, then lock the target voicings accuracy-first.",
+      "params": {
+        "drill": "spider-then-chord-perfect",
+        "chords": [
+          "Em",
+          "easyC",
+          "G",
+          "D",
+          "A",
+          "Am",
+          "E",
+          "Dm"
+        ]
+      },
+      "coaching": "Spider up and down the neck to warm up. Then Chord-Perfect each chord in scope — string by string, no buzz.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-1min-Dm-E",
+      "name": "1-minute changes — Dm <-> E",
+      "practice_type": "one-minute-changes",
+      "purpose": "Count completed Dm <-> E changes in 60s; the 30/60 engine records your rate into fluency memory.",
+      "params": {
+        "chord_pair": [
+          "Dm",
+          "E"
+        ],
+        "duration_sec": 60,
+        "measure": "count completed changes",
+        "canon_key": "Dm::E",
+        "target_per_min": 30,
+        "goal_per_min": 60
+      },
+      "coaching": "Metronome on. Dm to E, back and forth, as many clean changes as you can in one minute. The app remembers this pair — your weakest pairs come back for spaced review.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX3-weakpair",
+      "name": "Weak-Pair Review",
+      "practice_type": "weak-pair-review",
+      "purpose": "Adaptively drill the K weakest pairs from on-device memory (Amendment-11 moat).",
+      "params": {
+        "source": "fluency-memory",
+        "select": "K=3 weakest"
+      },
+      "coaching": "The app pulls your three weakest pairs and drills them now. This is the part no competitor does.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "Today we drill what Group 19 taught — clean, even reps, not fast messy ones.",
+    "results": "A higher count than last time means your hands are learning. That is the only metric that matters here.",
+    "wrap": "Logged to your fluency memory. If a pair is weak, it will resurface in review."
+  },
+  "qa_block": {
+    "must_verify": [
+      "Automated: practice lesson passes schema/validateLesson.",
+      "Curriculum §5.1: chords_in_scope == cumulative chord set through Group 19 (teaching chord set + everything before).",
+      "Pairing: practice_of == teaching lesson L91 (1:1).",
+      "Engine: one-minute-changes 30/60 counter wired; weak-pair fluency recorded."
+    ],
+    "flagged_by": "founder (non-player) — cannot self-verify",
+    "verifier_role": "arithmetic (chord-theory-check.js) + schema validate + §5.1 correspondence",
+    "guitarist_signoff": "NOT REQUIRED — chord fingerings verified deterministically by chord-theory-check.js."
+  }
+}

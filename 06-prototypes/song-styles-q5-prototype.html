@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PROTOTYPE — Stylistic explorer: G–D–Em–C shown three ways (Q5 rough take)</title>
+<style>
+  /* PROTOTYPE — throwaway rough take for Q5 (05-stylistic-explorer). Do not ship. */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Georgia, 'Times New Roman', serif;
+    background: #f4efe6;
+    color: #3a322a;
+    padding: 24px 20px 60px;
+    line-height: 1.55;
+  }
+  .prototype-banner {
+    background: #c9452b;
+    color: #fff;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    letter-spacing: 0.5px;
+    margin-bottom: 18px;
+  }
+  h1 {
+    font-size: 26px;
+    margin-bottom: 4px;
+    color: #2c241b;
+  }
+  .sub {
+    font-size: 15px;
+    color: #6b5d4d;
+    margin-bottom: 22px;
+    font-style: italic;
+  }
+  .loop-box {
+    background: #fffdf8;
+    border: 1px solid #d8c9b0;
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 22px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .loop-label {
+    font-size: 13px;
+    font-weight: bold;
+    color: #8a7a64;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .loop-chords {
+    font-size: 28px;
+    color: #2c241b;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+  }
+  .loop-detail {
+    font-size: 14px;
+    color: #6b5d4d;
+    font-style: italic;
+  }
+  .sage-box {
+    background: #fffdf8;
+    border: 1px solid #d8c9b0;
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 22px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .sage-box p { margin-bottom: 8px; }
+  .sage-box p:last-child { margin-bottom: 0; }
+  .sage-name {
+    font-weight: bold;
+    color: #5a4a34;
+    font-size: 16px;
+  }
+  .shapes-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .shape-tag {
+    font-size: 13px;
+    background: #f0e8d8;
+    border: 1px solid #d8c9b0;
+    border-radius: 6px;
+    padding: 6px 10px;
+    color: #5a4a34;
+  }
+  .shape-tag strong { color: #2c241b; }
+  .approaches {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  @media (min-width: 700px) {
+    .approaches { grid-template-columns: 1fr 1fr 1fr; }
+  }
+  .approach {
+    background: #fffdf8;
+    border: 1px solid #d8c9b0;
+    border-radius: 10px;
+    padding: 16px 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .approach-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #2c241b;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #ece2d2;
+  }
+  .approach-folk  { color: #5a7a4a; }
+  .approach-blues { color: #4a4a7a; }
+  .approach-punk  { color: #a8402a; }
+  .pattern-label {
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #8a7a64;
+    margin-bottom: 4px;
+  }
+  .pattern-counts {
+    font-size: 13px;
+    color: #5a4a34;
+    font-family: 'Courier New', monospace;
+    background: #f0e8d8;
+    border-radius: 6px;
+    padding: 6px 8px;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+  .pattern-arrows {
+    font-size: 20px;
+    color: #3a322a;
+    letter-spacing: 4px;
+    line-height: 1.3;
+    margin-bottom: 10px;
+  }
+  .why-box {
+    font-size: 13px;
+    color: #5a4a34;
+    background: #f0e8d8;
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-bottom: 12px;
+    border-left: 3px solid #c9702b;
+  }
+  .why-label {
+    font-weight: bold;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #8a6a4a;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .sage-line {
+    font-size: 14px;
+    color: #3a322a;
+    font-style: italic;
+    border-top: 1px solid #ece2d2;
+    padding-top: 10px;
+  }
+  .sage-line::before {
+    content: "Sage: ";
+    font-weight: bold;
+    font-style: normal;
+    color: #5a4a34;
+  }
+  .disclaimer {
+    font-size: 12px;
+    color: #8a7a64;
+    margin-top: 22px;
+    padding-top: 12px;
+    border-top: 1px solid #ece2d2;
+    font-style: italic;
+  }
+  .reset-link {
+    display: inline-block;
+    margin-top: 14px;
+    font-size: 14px;
+    color: #8a6a4a;
+    cursor: pointer;
+    text-decoration: underline;
+    background: none;
+    border: none;
+    font-family: Georgia, serif;
+    padding: 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="prototype-banner">PROTOTYPE — throwaway rough take for Q5 (stylistic explorer). Do not ship. One progression, three approaches — react to whether it feels like teaching or a gimmick.</div>
+
+<h1>Show the same loop three ways</h1>
+<p class="sub">A rough take of the stylistic explorer — react to whether showing the same progression three ways feels like teaching or like a gimmick.</p>
+
+<div class="loop-box">
+  <div class="loop-label">The progression</div>
+  <div class="loop-chords">G — D — Em — C</div>
+  <div class="loop-detail">same four chords, one bar each · one chord per beat for clarity · shapes are the verified open-chord shapes from shapes.json on disk</div>
+  <div class="shapes-row">
+    <div class="shape-tag"><strong>G</strong> — index on 2nd fret low E, ring on 3rd fret high E</div>
+    <div class="shape-tag"><strong>D</strong> — index on 2nd fret G, ring on 3rd fret B, middle on 2nd fret high e</div>
+    <div class="shape-tag"><strong>Em</strong> — middle on 2nd fret A, ring on 2nd fret D</div>
+    <div class="shape-tag"><strong>C</strong> — ring on 3rd fret A, middle on 2nd fret D, index on 1st fret B</div>
+  </div>
+</div>
+
+<div class="sage-box">
+  <p><span class="sage-name">Sage:</span> "Same four chords — but three different ways to feel them. Pick a feel and I'll show you the strum pattern and what it's like. None of these are copying any musician — they're just three ways the same chords can sound."</p>
+</div>
+
+<div class="approaches">
+
+  <div class="approach">
+    <div class="approach-title approach-folk">Folk approach</div>
+    <div class="pattern-label">Strum pattern with counts</div>
+    <div class="pattern-counts">1 &amp; 2 &amp; 3 &amp; 4 &amp;</div>
+    <div class="pattern-arrows">↓ &nbsp; ↓ ↑ ↑ ↓ ↑</div>
+    <div class="why-box">
+      <span class="why-label">Why this feels like folk</span>
+      A steady strum with held beats — some notes ring longer, the rhythm breathes. Same four chords, but it lands like something you'd sit around a fire with, not rush through.
+    </div>
+    <div class="sage-line">"Try this one slow — let the G ring a little after you strum it, then move to D on the beat. You're not playing more notes, just holding a few of them."</div>
+  </div>
+
+  <div class="approach">
+    <div class="approach-title approach-blues">Blues approach</div>
+    <div class="pattern-label">Strum pattern with counts</div>
+    <div class="pattern-counts">1 &amp; 2 &amp; 3 &amp; 4 &amp;</div>
+    <div class="pattern-arrows">↓ &nbsp; ↓ ↑ &nbsp; ↓ &nbsp; ↓ ↑</div>
+    <div class="why-box">
+      <span class="why-label">Why this feels like blues</span>
+      A swing feel on the strums — the beats lean, not straight. Less notes than the folk one, but the ones that hit carry more weight. The rhythm has a push-pull to it.
+    </div>
+    <div class="sage-line">"Blues doesn't mean more chords — it means the time feels different. Hit the downbeat harder, let the upstroke be lighter, and don't rush. The same G–D–Em–C can sound completely different just by how the beats land."</div>
+  </div>
+
+  <div class="approach">
+    <div class="approach-title approach-punk">Punk approach</div>
+    <div class="pattern-label">Strum pattern with counts</div>
+    <div class="pattern-counts">1 &amp; 2 &amp; 3 &amp; 4 &amp;</div>
+    <div class="pattern-arrows">↓ &nbsp; ↓ &nbsp; ↓ &nbsp; ↓</div>
+    <div class="why-box">
+      <span class="why-label">Why this feels like punk</span>
+      Short, hard downstrokes on each beat — nothing fancy, nothing held. The silence between the strums is part of it. Driving, not busy.
+    </div>
+    <div class="sage-line">"Punk is the simplest one to play and the hardest to get right — because there's nowhere to hide. One hard downstroke per beat, let it ring for a split second, then stop. If you rush, it falls apart. If you don't, it's a rock rhythm."</div>
+  </div>
+
+</div>
+
+<p class="disclaimer">PROTOTYPE — throwaway rough take for Q5 (stylistic explorer). Not production. Teaching content only: strumming patterns + rhythm feel as categories (folk / blues / punk), not artist clones (AMENDMENT-14). Chord shapes are the verified open-chord shapes from shapes.json on disk — no riffs, melodies, lyrics, or tabs.</p>
+
+</body>
+</html>

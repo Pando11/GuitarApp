@@ -1,0 +1,96 @@
+{
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted."
+  },
+  "exercises": [
+    {
+      "id": "EX1-anatomy",
+      "name": "Meet the guitar",
+      "purpose": "Learn the names of the parts so instructions make sense.",
+      "params": {
+        "parts": [
+          "headstock",
+          "tuning pegs",
+          "nut",
+          "frets",
+          "neck",
+          "body",
+          "soundhole",
+          "bridge",
+          "strings (low E to high e)"
+        ],
+        "hold": "Rest the body on your right thigh; neck points slightly up and left."
+      },
+      "coaching": "This right here is the headstock — the knobs up top are what change the pitch. These are the frets, the spaces on the neck. Low E is the fat string, high e is the thin one. That's all the vocabulary you need today. The rest you'll learn by feel, not by memorizing names.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-tune",
+      "name": "Tune up with the free tuner",
+      "purpose": "Train your ear and your hands to a tuned instrument.",
+      "params": {
+        "tool": "free tuner",
+        "target": "E A D G B E (low to high)",
+        "action": "Pluck each open string; match the tuner dot; tighten/loosen the matching peg."
+      },
+      "coaching": "Open the free tuner. Pluck the low E string — the fat one. Watch the dot land on E. Do the same for A, D, G, B, and the thin high e. Here's the thing: an in-tune guitar is the difference between 'I'm bad at this' and 'that sounds right.' Get it in tune and everything after gets a whole lot easier.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX3-strum",
+      "name": "First open-string strum",
+      "purpose": "Make a clean, relaxed sound across all six strings.",
+      "params": {
+        "action": "Strum downward across all six strings with a relaxed wrist",
+        "duration_sec": 120,
+        "cue": "just explore the sound"
+      },
+      "coaching": "Now strum down across all six strings. Loose wrist, like you're brushing crumbs off a table. That sound — that is a guitar. You are officially playing. Don't overthink it. Slow is fine. Poke around and enjoy it.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "You pull up a chair and I'm already there, guitar in my hands, playing a few notes so you can hear what 'in tune' sounds like. I set it down and nod at the one in your lap. 'First things first — we get you in tune. And I'll be straight with you why: if your guitar's not in tune, it doesn't matter where you put your fingers later, it's not going to sound right, and you'll think you're the problem when you're not. So today? We're not learning chords. We're just making a sound. And that part — that's the fun part.'",
+    "ex1_intro": "Quick tour, then we forget the names — promise. This is the headstock, those are the tuning pegs, these spaces are the frets, this long part's the neck, that's the body, and these six strings run from the fat low E down to the thin high e. Ten seconds, you'll learn the rest by feel. Don't memorize — just meet them.",
+    "ex2_intro": "Open the free tuner. Pluck that fat low E string — just one — and watch the dot find E. If it's flat or sharp, turn the matching peg a little and listen. Work your way up: A, D, G, B, and the thin high e. When every string lands on its dot, something clicks — suddenly it sounds like a guitar. That's you. That's the tuning.",
+    "ex3_intro": "Alright, no fingers down, just strings. Strum straight down across all six with a loose wrist — like you're brushing crumbs off a table. That sound? That's a guitar. You're playing. Go slow, poke around, enjoy it. Most people quit before they ever make this first sound. You just didn't.",
+    "results": "If it makes a sound and it's in tune, today's a win. No chord, no trick, just you and a guitar that agrees with itself. Tomorrow we put a finger down — and I promise it's just as easy.",
+    "wrap": "Look at you. You met the guitar, tuned it, strummed it. That's the whole scary part, done. Most folks talk themselves out of even picking it up. You didn't. I'll see you in lesson two."
+  },
+  "qa_block": {
+    "must_verify": [
+      "Automated: every chord fingering verified deterministically by 06-prototypes/step0/schema/chord-theory-check.js (verifyChord) — 0 errors AND 0 warnings required before ship (Hard Ban 7 satisfied by arithmetic, per owner directive 2026-08-08: physical fingering correctness needs no contract guitarist).",
+      "Automated: lesson JSON passes schema/validate.js (validateLesson) — all required keys present, frets/fingers length 6, qa_status whitelisted.",
+      "Author pass: teaching copy is plain-English, beginner-appropriate, no AI-isms; pacing realistic; written in the app's human instructor voice per VOICE-GUIDE.md (in-the-room second person, names the beginner feeling then releases it, explains the why before the how, normalizes struggle, concrete physical imagery, earned encouragement). NOTE: warmth of tone also needs an emotional TTS (Chatterbox); that is a separate, GPU-blocked lever, not part of this copy task.",
+      "Licensing: exercises only, zero copyrighted song material (spec §3/R6).",
+      "L01 has no fretted chords; exercise copy reviewed for absolute-beginner clarity.",
+      "Spoken copy uses NO bare chord symbols ('Em' etc.) — TTS reads them as letters ('m'). All chord names written out as words so normalizeForTTS() + the voice produce correct speech. On-screen captions may still show symbols; only SPOKEN text is expanded."
+    ],
+    "flagged_by": "founder (non-player) — cannot self-verify",
+    "verifier_role": "arithmetic (chord-theory-check.js) + author review",
+    "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
+  },
+  "lesson": {
+    "id": "L01-welcome-anatomy-tuning",
+    "title": "Welcome, Anatomy & Tuning",
+    "level": "absolute-beginner",
+    "lesson_type": "technique",
+    "one_line_promise": "Make your guitar sound like a guitar — and meet the parts you'll live with.",
+    "objectives": [
+      "Name the main parts of the guitar",
+      "Hold the guitar comfortably (no death-grip)",
+      "Get in tune using the free tuner",
+      "Play your first open-string strum with no fear"
+    ],
+    "estimated_minutes": 10,
+    "prerequisites": [
+      "A guitar and the app installed"
+    ],
+    "app_feature_mapping": {
+      "free_tuner": [
+        "tune every string before playing"
+      ],
+      "free_metronome": []
+    }
+  }
+}

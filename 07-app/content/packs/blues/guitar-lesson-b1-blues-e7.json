@@ -1,0 +1,94 @@
+{
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted.",
+    "E7": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "E7",
+      "frets": [0, 2, 0, 1, 0, 0],
+      "fingers": [0, 2, 0, 1, 0, 0]
+    }
+  },
+  "exercises": [
+    {
+      "id": "EX1-shape",
+      "name": "Make the E7 shape",
+      "purpose": "Land the 7th-chord shape that opens the 12-bar blues.",
+      "params": {
+        "chord": "E7",
+        "fingers": "middle(2) on A-string 2nd fret, index(1) on G-string 1st fret, rest open",
+        "thumb": "rests behind neck",
+        "strings_played": "all six ring (low E, A, D, G, B, high e)"
+      },
+      "coaching": "E7 is your open E shape, but the G-string finger is lifted so it rings open (don't fret it). Keep your middle finger on the A string, second fret, and add your index finger on the G string, first fret. That open G note is the difference: it leaves the D string open, and that open D is the '7' — the note that makes this sound like the blues instead of plain old E.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-strum",
+      "name": "One clean down-strum",
+      "purpose": "Strum through all six strings without catching.",
+      "params": {
+        "chord": "E7",
+        "action": "single downward strum, relaxed wrist",
+        "reps": 5,
+        "cue": "listen for all six strings ringing, especially the open D string (the b7)"
+      },
+      "coaching": "Hold E7 and strum down across all six strings. Loose wrist. The 7th note wants to get buried, so listen for the open D string — that D is the '7', the bluesy colour. If a string buzzes, press a touch closer to the fret. That ringing E7 is the whole mood.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX3-shuffle",
+      "name": "Your first shuffle feel",
+      "purpose": "Feel the lopsided swing that separates blues from a straight strum.",
+      "params": {
+        "chord_cycle": ["E7"],
+        "tempo_bpm": 68,
+        "beats": 4,
+        "feel": "swing — long-short, long-short, not even eighths",
+        "cue": "count '1 - la, 2 - la' with the long beat first"
+      },
+      "coaching": "Same E7, now with a shuffle. Think long-short, long-short: 'one - and, two - and' but the first half is heavier. Set the metronome to 68 and land on the beat, then let the off-beat lean. That lopsided bounce IS the blues groove. Just sit in it.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "Today you learn the sound that started a hundred years of music. One chord — E7 — and you are already playing the blues.",
+    "ex1_intro": "E7 is open E, but lift the G-string finger so it rings open, and add your index on the G string first fret while your middle stays on the A string second fret. The open D string — left ringing — is the 7, the blues note.",
+    "ex2_intro": "Hold it, strum all six strings down. Loose wrist. Listen for the open D string — that is the 7, the colour. Buzz? Press closer to the metal. That ringing E7 is the whole mood.",
+    "ex3_intro": "Now the shuffle: long-short, long-short. Metronome at 68, land on the beat, let the off-beat lean. That lopsided bounce is the groove. Sit in it.",
+    "results": "If you can hold E7 and strum it clean with a shuffle feel, you are playing the blues. That is the door to the whole style.",
+    "wrap": "E7 in your hands, shuffle in your wrist. Most people think blues is hard — it starts with one chord. Lesson 2 of the pack adds A7 and you get your first real change."
+  },
+  "qa_block": {
+    "must_verify": [
+      "Automated: every chord fingering verified deterministically by 06-prototypes/step0/schema/chord-theory-check.js (verifyChord) — 0 errors AND 0 warnings required before ship (Hard Ban 7 satisfied by arithmetic, per owner directive 2026-08-08).",
+      "Automated: lesson JSON passes schema/validate.js (validateLesson) — all required keys present, frets/fingers length 6, qa_status whitelisted.",
+      "Author pass: teaching copy is plain-English, beginner-appropriate, no AI-isms; pacing realistic.",
+      "Licensing: exercises only, zero copyrighted song material (spec §3/R6). The 12-bar form is a public-domain structure, not a specific song.",
+      "Blues note: the bent 'blue note' (G# in E) is taught qualitatively in coaching copy as phrasing/feel, NOT added as a chord in the JSON — chord data stays arithmetic-clean."
+    ],
+    "flagged_by": "founder (non-player) — cannot self-verify",
+    "verifier_role": "arithmetic (chord-theory-check.js) + author review",
+    "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
+  },
+  "lesson": {
+    "id": "B1-blues-e7",
+    "title": "Blues Pack 1 — The E7 Chord (the sound of the blues)",
+    "level": "beginner",
+    "lesson_type": "technique",
+    "one_line_promise": "One chord, and you're already playing the blues.",
+    "objectives": [
+      "Form E7 (middle on A 2nd fret, index on G 1st fret, G-string finger lifted so it rings open)",
+      "Strum it clean across all six strings",
+      "Feel the shuffle (long-short) bounce over a slow metronome"
+    ],
+    "estimated_minutes": 10,
+    "prerequisites": [
+      "Em, easy C, G, D, Am (core open-chord set)"
+    ],
+    "app_feature_mapping": {
+      "free_metronome": [
+        "hold the shuffle tempo (long-short eighth feel)"
+      ]
+    }
+  }
+}

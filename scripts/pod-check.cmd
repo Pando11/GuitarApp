@@ -1,0 +1,2 @@
+@echo off
+"C:\Program Files\Git\usr\bin\ssh.exe" -o StrictHostKeyChecking=no -i "C:\Users\Hendrickson\.ssh\id_ed25519" xgcitppkl4lcm9-64412317@ssh.runpod.io "echo POD_ALIVE && nvidia-smi --query-gpu=name,memory.total --format=csv,noheader 2>&1 && echo DISK: && df -h / | tail -1 && echo PY: && (python3 --version 2>/dev/null || python --version 2>/dev/null) && echo MODELS_DIR && ls -la /models 2>/dev/null && echo SCRIPTS && ls -la /tmp/*.sh 2>/dev/null && echo DONE"

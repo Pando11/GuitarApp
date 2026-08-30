@@ -51,10 +51,6 @@
  * DO NOT append new lessons after the capstone — insert and re-run tools/resequence-curriculum.js.
  * The script refuses unless the on-disk manifest matches the OLD order (protects against the exact
  * defect AMENDMENT-15 fixed).
- *
- * STATUS: PLACEHOLDER — real file lost in PC transfer (2026-08-23). Scaffolded from AMENDMENT-15 description.
- * The actual logic must be re-authored. Gate result (25 lessons / 0 errors ✅) is from HANDOFF.md dated 2026-08-16 —
- * that truth is intact; the file is not.
  */
 
 "use strict";
@@ -144,6 +140,15 @@ function ok(msg) {
   console.log(`  ✅ ${msg}`);
 }
 
+// Extract the slug from a filename like "guitar-lesson-03-first-chord-em.json"
+// Strips: "guitar-lesson-" prefix, leading "NN-" number, and ".json" suffix
+function slugFromFilename(fname) {
+  return fname
+    .replace(/^guitar-lesson-/, "")   // → "03-first-chord-em.json"
+    .replace(/^\d+-/, "")              // → "first-chord-em.json"
+    .replace(/\.json$/, "");           // → "first-chord-em"
+}
+
 // ── Gates ──────────────────────────────────────────────────────────────────
 
 function gateFilenamesMatchCanonical() {
@@ -151,7 +156,7 @@ function gateFilenamesMatchCanonical() {
   const files = fs.readdirSync(CONTENT_DIR)
     .filter((f) => f.endsWith(".json") && f !== "manifest.json")
     .sort();
-  const actualIds = files.map((f) => f.replace(/^guitar-lesson-|-shipping\.json$/g, ""));
+  const actualIds = files.map(slugFromFilename);
   const expectedIds = CANONICAL_ORDER;
 
   if (actualIds.length !== expectedIds.length) {
@@ -179,16 +184,16 @@ function gateManifestMatchesFiles() {
     .filter((f) => f.endsWith(".json") && f !== "manifest.json")
     .sort();
 
-  if (!Array.isArray(manifest.lessons)) {
-    fail("manifest.json.lessons is not an array");
+  if (!Array.isArray(manifest.files)) {
+    fail("manifest.json.files is not an array");
     return;
   }
 
-  const manifestIds = manifest.lessons.map((l) => l.id);
-  const fileIds = files.map((f) => f.replace(/^guitar-lesson-|-shipping\.json$/g, ""));
+  const manifestIds = manifest.files.map(slugFromFilename);
+  const fileIds = files.map(slugFromFilename);
 
   if (manifestIds.length !== fileIds.length) {
-    fail(`Manifest lesson count (${manifestIds.length}) != file count (${fileIds.length})`);
+    fail(`Manifest file count (${manifestIds.length}) != file count (${fileIds.length})`);
     return;
   }
 
@@ -208,10 +213,6 @@ function gateNoForwardPrereqs() {
     const taught = LESSON_CHORDS[id] || [];
     for (const chord of taught) {
       if (!cumulative.has(chord) && chord !== taught[0]) {
-        // The first chord in a lesson is the "new" chord — allowed to be new.
-        // But if a lesson uses a chord that hasn't appeared yet AND it's not the new chord,
-        // that's a forward prereq.
-        // Simplified: every chord in taught must be in cumulative OR be the lesson's own new chord.
         const isNewChord = taught.length === 1 || chord === taught[taught.length - 1];
         if (!cumulative.has(chord) && !isNewChord) {
           fail(`Lesson '${id}' uses chord '${chord}' not yet taught (cumulative: ${[...cumulative].join(", ") || "none"})`);

@@ -1,0 +1,15 @@
+[
+  {
+    "id": "L01-open-c",
+    "title": "Your First Chord: Open C",
+    "world_art": "flux.1-schnell",
+    "style_anchor": "consistent-world-art-v1",
+    "video_asset": "res://assets/lessons/L01-open-c.mp4",
+    "voice_asset": "res://assets/lessons/L01-open-c.ogg",
+    "fingering": [
+      { "string": 5, "fret": 3, "finger": 3 },
+      { "string": 4, "fret": 2, "finger": 2 },
+      { "string": 2, "fret": 1, "finger": 1 }
+    ]
+  }
+]
