@@ -2,6 +2,17 @@
 
 Auto-loaded project context. Also read `01-START-HERE/README.md` before acting.
 
+<!-- BEGIN world-1-pointers (added 2026-08-29) -->
+## World 1 (Emerald Hollow) — where to find everything
+Before building/creating World 1 assets, read these three files (all committed):
+- **World brief (owner's directions):** `brand-references/worlds/world-brief-emerald-hollow-L1.md`
+- **RunPod access (start pod, Jupyter proxy, model paths):** `brand-references/worlds/RUNPOD-ACCESS.md`
+- **Asset-pipeline BUILD SPEC (what to build, verified gaps):** `brand-references/worlds/WORLD-1-BUILD-SPEC.md`
+- **Next-conversation handoff (build order + first action):** `NEXT-CONVERSATION-WORLD1.md`
+Models (FLUX.1[schnell] + Wan2.2-I2V-A14B) are downloaded on pod `xgcitppkl4lcm9`, volume `6nvscrbt2s` @ `/workspace`. Pod was STOPPED 2026-08-29 — restart via RUNPOD-ACCESS.md before building. 0 world assets produced yet; the generation pipeline script does not exist yet (see BUILD SPEC).
+<!-- END world-1-pointers -->
+
+
 <!-- BEGIN mattpocock/skills — added 2026-08-24 (MIT, see skills/LICENSE). Revert: delete this block through EOF. -->
 ## Agent skills
 
