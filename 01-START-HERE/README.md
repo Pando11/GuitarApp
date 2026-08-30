@@ -15,11 +15,11 @@ Start here. Read this before touching anything.
   - AMENDMENT-15 (curriculum re-sequence + ordering gate, 2026-08-14) is the latest curriculum word.
   - AMENDMENT-11 (product thesis: world-locked teacher + longitudinal student memory + teacher–student duet, 2026-08-11) is the product thesis.
 - **What's built (re-verified on disk 2026-08-29):**
-  - PWA engine fidelity: 48/0 ✅
-  - App smoke: 20/0 ✅
-  - SW cache: 4/0 ✅
-  - Chord arithmetic (25 lessons / 81 chords): 0 err / 0 warn ✅
-  - Practice engine: 17/0 ✅
+  - PWA engine fidelity: **PLACEHOLDER** — `07-app/test/fidelity.mjs` is a PC-transfer scaffold; exits 0 but does no real CJS↔ESM comparison. Cannot re-prove 48/0 on this machine. (48/0 was the verified truth on the build machine 2026-08-16.)
+  - App smoke: **RED** — `app-smoke.mjs` reads `manifest.lessons` but `manifest.json` uses `files` (25 entries). Schema mismatch → `expected 25, got 0`. The 25 lessons ARE present and correct; the test expectation is stale. Owner decision required (rename key or fix test).
+  - SW cache: **GREEN** (0 errors; 2 checks — CACHE constant + version — vs the historical 4/0).
+  - Chord arithmetic (25 lessons / 81 chords): **GREEN** 0 err / 0 warn ✅
+  - Practice engine: **GREEN** 17/0 ✅
   - Curriculum ordering gate: 25 lessons / 0 errors ✅
   - F7 band: 31/0 ✅
   - F10 voice: present, green ✅
@@ -83,12 +83,12 @@ Desktop/GuitarApp/
 └── AGENTS.md               ← hard rules + amendment chain (ALWAYS live)
 ```
 
-## What's REAL (verified on disk 2026-08-29, re-run gates GREEN)
-The PC-transfer "everything is placeholder" claim is **false** — the code and content are on disk and the gates pass. What survived and is real:
+## What's REAL (verified on disk; 5-gate re-prove 2026-08-29: chord-check + practice-engine + sw-cache GREEN; fidelity + app-smoke are PC-transfer scaffolds, app-smoke RED)
+The PC-transfer "everything is placeholder" claim is **false** for the shipping code and content — they are on disk. BUT two of the five test files (`fidelity.mjs`, `app-smoke.mjs`) are PC-transfer scaffolds: `fidelity.mjs` cannot re-prove 48/0 here, and `app-smoke.mjs` is currently RED (reads `manifest.lessons`; `manifest.json` uses `files`). The real gates that run live (chord-check, practice-engine, sw-cache) PASS. What survived and is real:
 - `07-app/` — 18 real core modules (~1,900 lines), 25 lesson JSONs, 29 practice drills, 5 teacher JSONs, Godot scaffold (`project.godot` + `lesson/` + `world/`).
 - `02-spec/` — AMENDMENT-01..18 (AMENDMENT-17 World 1 teacher + AMENDMENT-18 Fun-Delivers-Learning both RATIFIED).
 - `docs/adr/` — 0001..0005. `brand-references/` — emerald-hollow + worlds.
-- Gates GREEN: chord-check 25/81/0/0, curriculum-order 0 errors, song-progressions 0 errors/0 warnings, listening-engine loads.
+- Gates that pass live: chord-check 25/81/0/0, practice-engine 17/0, sw-cache 0 errors. ⚠️ `fidelity.mjs` + `app-smoke.mjs` are PC-transfer scaffolds: fidelity cannot re-prove 48/0 on this machine; app-smoke is RED (manifest schema `files` vs test's `lessons`). curriculum-order / song-progressions results carried from BOARD_OPS_TRIAGE 2026-08-29 (PASS there).
 
 **What is genuinely NOT built yet (the real gaps, not transfer loss):**
 - `07-app/assets/` — EMPTY. Zero AI cinematic assets produced (FLUX/Wan/voice still need the RunPod pod).
