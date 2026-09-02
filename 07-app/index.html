@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#17231b">
+  <meta name="description" content="Learn acoustic guitar in Emerald Hollow.">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+  <title>GuitarApp - Emerald Hollow</title>
+  <style>
+    :root{color-scheme:dark;--ink:#f2efe3;--muted:#b8c1b5;--forest:#17231b;--panel:#223027;--moss:#9fb56c;--warm:#d69b5b;--line:#3b4b40}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 80% 0,#344233 0,transparent 38%),linear-gradient(#17231b,#101713);color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}button{font:inherit}.shell{width:min(100%,1080px);margin:auto;padding:clamp(18px,4vw,44px)}header{display:flex;align-items:center;justify-content:space-between;gap:16px}.brand{display:flex;gap:12px;align-items:center}.brand img{width:44px;height:44px}.brand strong{display:block;font-family:Georgia,serif;font-size:1.1rem}.brand span,.eyebrow,.meta{color:var(--muted);font-size:.82rem}.hero{padding:clamp(44px,9vw,92px) 0 36px;max-width:750px}.eyebrow{text-transform:uppercase;letter-spacing:.14em;color:var(--moss)}h1,h2,h3{font-family:Georgia,serif;line-height:1.08;margin:.35em 0}h1{font-size:clamp(2.5rem,8vw,5.5rem)}h2{font-size:clamp(1.8rem,5vw,3rem)}p{max-width:65ch}.primary,.secondary{border:0;border-radius:999px;padding:13px 20px;font-weight:750;cursor:pointer}.primary{background:var(--moss);color:#111a13}.secondary{background:transparent;color:var(--ink);border:1px solid var(--line)}.primary:focus-visible,.secondary:focus-visible,.lesson-card:focus-visible{outline:3px solid var(--warm);outline-offset:3px}.catalog-head{display:flex;align-items:end;justify-content:space-between;gap:14px;margin:28px 0 14px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(225px,1fr));gap:12px}.lesson-card{text-align:left;color:inherit;background:rgba(34,48,39,.8);border:1px solid var(--line);border-radius:16px;padding:18px;min-height:155px}.lesson-card:not([disabled]){cursor:pointer}.lesson-card:not([disabled]):hover{border-color:var(--moss);transform:translateY(-2px)}.lesson-card[disabled]{opacity:.62}.lesson-card h3{font-size:1.15rem}.lesson-number{color:var(--warm);font-size:.78rem;font-weight:800}.statu... [truncated]
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section id="home-view">
+      <header><div class="brand"><img src="./icons/icon.svg" alt=""><div><strong>GuitarApp</strong><span>Emerald Hollow</span></div></div><span class="meta">World 1</span></header>
+      <div class="hero"><div class="eyebrow">Your first evening at the tavern</div><h1>Pull up a chair.</h1><p>Sage is waiting on the porch. Start with ten calm minutes: meet your guitar, tune it, and make your first sound.</p><button class="primary" id="start-l01" type="button">Begin Lesson 1</button></div>
+      <section class="step" id="performance-rail" aria-live="polite">Loading your performance ladder...</section>
+      <div class="catalog-head"><div><div class="eyebrow">The path ahead</div><h2>25 lessons, one song at a time</h2></div><div class="status" id="catalog-status" role="status">Loading your lessons...</div></div>
+      <div class="grid" id="lesson-grid" aria-live="polite"></div>
+    </section>
+    <section id="lesson-view" class="lesson-view" data-lesson-view hidden aria-labelledby="lesson-title">
+      <div class="lesson-top"><button class="secondary" id="back-home" type="button">Back to the path</button><span class="meta" id="lesson-time"></span></div>
+      <article id="lesson-content"></article>
+    </section>
+  </main>
+  <div class="report-note" id="report-note" role="status" hidden></div>
+  <script src="./core/backupButtons.js"></script>
+  <script src="./core/lesson-runner.js"></script>
+  <script src="./core/wave1-flow.js"></script>
+  <script src="./app.js"></script>
+  <script>
+    (function(){
+      "use strict";
+      var lessons=[];
+      var lessonRunner=null;
+      var grid=document.getElementById("lesson-grid");
+      var status=document.getElementById("catalog-status");
+      var performanceRail=document.getElementById("performance-rail");
+      var LESSON_UNLOCK_COUNT=5; // Wave 1 first slice
+
+      function esc(value){var node=document.createElement("span");node.textContent=String(value==null?"":value);return node.innerHTML;}
+      function lessonNumber(index){return "Lesson "+String(index+1).padStart(2,"0");}
+      function performanceState(config){var raw=localStorage.getItem(config.storageKey);var parsed=raw?JSON.parse(raw):null;var loops=parsed&&Number.isFinite(parsed.loopsCompleted)?parsed.loopsCompleted:0;var label=loops>=config.targetLoops?"Completed":(loops>0?"In progress":"Not started");return {loops:loops,label:label};}
+      function renderPerformanceRail(){if(!performanceRail)return;var flow=window.GuitarApp&&window.GuitarApp.Wave1Flow;if(!flow||!flow.performanceConfigs){performanceRail.textContent="Performance ladder loading...";return;}var l1=flow.performanceConfigs[1];var l2=flow.performanceConfigs[2];var s1=performanceState(l1);var s2=performanceState(l2);performanceRail.innerHTML='<span class="lesson-number">Performance ladder</span><h3>Same song, bigger moments</h3><p class="meta">Path B ships now. Path A stays visible on the roadmap.</p><ul class="objectives"><li><strong>Level 1 - Lesson 05:</strong> '+esc(s1.label)+' ('+s1.loops+'/'+l1.targetLoops+' loops) - '+esc(l1.heading)+'</li><li><strong>Level 2 - Lesson 12:</strong> '+esc(s2.label)+' ('+s2.loops+'/'+l2.targetLoops+' loops) - '+esc(l2.heading)+'</li><li><strong>Level 3 - Lesson 25:</strong> Coming later - full band capstone in Emerald Hollow.</li></ul><p class="meta">Roadmap: Path A live adaptive duet stays visible and does not ship in this slice.</p>'; }
+
+      function openLesson(index){
+        if(!lessonRunner){status.textContent="Lessons are still loading.";return;}
+        var model=lessonRunner.openLesson(index);
+        document.getElementById("lesson-time").textContent=(model.estimatedMinutes||10)+" minutes";
+        document.getElementById("home-view").hidden=true;
+        document.getElementById("lesson-view").hidden=false;
+        window.scrollTo(0,0);
+      }
+
+      function renderCatalog(){
+        grid.innerHTML="";
+        lessons.forEach(function(raw,index){
+          var info=raw.lesson||{};
+          var unlocked=index<LESSON_UNLOCK_COUNT;
+          var button=document.createElement("button");
+          button.type="button";
+          button.className="lesson-card";
+          button.disabled=!unlocked;
+          button.innerHTML='<span class="lesson-number">'+lessonNumber(index)+'</span><h3>'+esc(info.title)+'</h3><span class="meta">'+esc(info.estimated_minutes||"")+" min"+(unlocked?" - Ready":" - On your path")+'</span>';
+          if(unlocked)button.addEventListener("click",function(){openLesson(index);});
+          grid.appendChild(button);
+        });
+        status.textContent=lessons.length+" lessons in Emerald Hollow";
+        renderPerformanceRail();
+      }
+
+      function home(){document.getElementById("lesson-view").hidden=true;document.getElementById("home-view").hidden=false;renderPerformanceRail();window.scrollTo(0,0);}
+
+      document.getElementById("start-l01").addEventListener("click",function(){openLesson(0);});
+      document.getElementById("back-home").addEventListener("click",home);
+
+      window.addEventListener("guitarapp:self-report",function(event){var note=document.getElementById("report-note");note.textContent=event.detail&&event.detail.value==="got"?"Nice. Keep that relaxed feeling.":"No rush. Try the step once more.";note.hidden=false;clearTimeout(note._timer);note._timer=setTimeout(function(){note.hidden=true;},2600);});
+
+      window.GuitarApp.loadLessons().then(function(result){
+        lessons=result.lessons;
+        lessonRunner=window.GuitarApp.LessonRunner.createLessonRunner({
+          lessons: lessons,
+          render: function(payload){
+            var root=document.getElementById("lesson-content");
+            root.innerHTML=payload.html;
+            if(window.GuitarApp && window.GuitarApp.Wave1Flow){
+              window.GuitarApp.Wave1Flow.mountEnhancements(payload.model, root);
+            }
+          }
+        });
+        renderCatalog();
+      }).catch(function(error){status.textContent="Lessons could not load. Check your connection and retry.";console.warn(error);});
+    })();
+  </script>
+</body>
+</html>

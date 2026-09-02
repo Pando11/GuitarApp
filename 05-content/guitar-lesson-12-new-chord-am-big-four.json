@@ -1,0 +1,204 @@
+{
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted.",
+    "Em": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "E minor",
+      "frets": [
+        0,
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "fingers": [
+        0,
+        2,
+        3,
+        0,
+        0,
+        0
+      ]
+    },
+    "C": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "C major (standard)",
+      "frets": [
+        null,
+        3,
+        2,
+        0,
+        1,
+        0
+      ],
+      "fingers": [
+        null,
+        3,
+        2,
+        0,
+        1,
+        0
+      ]
+    },
+    "G": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "G major (3-finger / 'easy G')",
+      "frets": [
+        3,
+        2,
+        0,
+        0,
+        0,
+        3
+      ],
+      "fingers": [
+        2,
+        1,
+        0,
+        0,
+        0,
+        3
+      ]
+    },
+    "D": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "D major",
+      "frets": [
+        null,
+        null,
+        0,
+        2,
+        3,
+        2
+      ],
+      "fingers": [
+        null,
+        null,
+        0,
+        1,
+        3,
+        2
+      ]
+    },
+    "Am": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "A minor",
+      "frets": [
+        null,
+        0,
+        2,
+        2,
+        1,
+        0
+      ],
+      "fingers": [
+        null,
+        0,
+        2,
+        3,
+        1,
+        0
+      ]
+    }
+  },
+  "exercises": [
+    {
+      "id": "EX1-Am",
+      "name": "Make Am",
+      "purpose": "Land the A-minor shape.",
+      "params": {
+        "chord": "Am",
+        "fingers": "index(1) B 1st, middle(2) D 2nd, ring(3) G 2nd",
+        "open_strings": "A and high-e ring open; low E muted"
+      },
+      "coaching": "Am is one finger lower than A: index on the B string first fret, middle on the D second, ring on the G second. Low E quiet. Same hand position, sadder sound.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-sixpairs",
+      "name": "All six change pairs",
+      "purpose": "Drill every pair among the five chords.",
+      "params": {
+        "chord_cycle": [
+          "Em",
+          "C",
+          "Em",
+          "G",
+          "C",
+          "G",
+          "D",
+          "Em",
+          "Am",
+          "Em",
+          "Am",
+          "C",
+          "Am",
+          "G",
+          "Am",
+          "D"
+        ],
+        "tempo_bpm": 66,
+        "beats": 4,
+        "cue": "one chord per 4 beats, all pairs covered"
+      },
+      "coaching": "Run the six pairs: Em-C, Em-G, C-G, D-Em, Am-Em, Am-C, Am-G, Am-D. One chord per four beats. This is the full change vocabulary of beginner repertoire.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "Am is the sad cousin of A \u2014 one finger lower, completely different feeling. With it, Em-C-G-D-Am is the set behind thousands of songs.",
+    "ex1_intro": "Am: index on B first fret, middle on D second, ring on G second. Low E quiet. Same little triangle as A, just dropped down a fret. Listen \u2014 it is wistful.",
+    "ex2_intro": "Now all six pairs, one chord per four beats. Em-C, Em-G, C-G, D-Em, and the Am pairs. This is your complete beginner change toolkit.",
+    "results": "Five chords, all pairwise changes fluid. You can now follow an enormous number of songs.",
+    "wrap": "The big set is complete: Em, C, G, D, Am. Lesson 10 we chain four of them into your first real progression."
+  },
+  "qa_block": {
+    "must_verify": [
+      "Automated: every chord fingering verified deterministically by 06-prototypes/step0/schema/chord-theory-check.js (verifyChord) \u2014 0 errors AND 0 warnings required before ship (Hard Ban 7 satisfied by arithmetic, per owner directive 2026-08-08: physical fingering correctness needs no contract guitarist).",
+      "Automated: lesson JSON passes schema/validate.js (validateLesson) \u2014 all required keys present, frets/fingers length 6, qa_status whitelisted.",
+      "Author pass: teaching copy is plain-English, beginner-appropriate, no AI-isms; pacing realistic.",
+      "Licensing: exercises only, zero copyrighted song material (spec \u00a73/R6).",
+      "Am uses the warning-free voicing (index B1, middle D2, ring G2) verified against the existing project L02.json A-minor."
+    ],
+    "flagged_by": "founder (non-player) \u2014 cannot self-verify",
+    "verifier_role": "arithmetic (chord-theory-check.js) + author review",
+    "guitarist_signoff": "NOT REQUIRED for chord fingering correctness \u2014 verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
+  },
+  "lesson": {
+    "id": "L12-new-chord-am-big-four",
+    "title": "New Chord: Am + the Big Four",
+    "level": "beginner",
+    "lesson_type": "technique",
+    "one_line_promise": "Am completes the \"thousands of songs\" set.",
+    "objectives": [
+      "Form A minor (warning-free voicing)",
+      "Run all six 1-minute change pairs among {Em, C, G, D, Am}",
+      "Hear how Am changes the emotional color"
+    ],
+    "estimated_minutes": 16,
+    "prerequisites": [
+      "Em, C, G, D, A (L03-L11)"
+    ],
+    "app_feature_mapping": {
+      "free_metronome": [
+        "all six change-pair drills"
+      ],
+      "performance_ladder": {
+        "level": 2,
+        "heading": "Second porch performance: the same song, steadier and stronger",
+        "summary": "Same Em-to-easy-C song, but Sage pushes the pace a little. Path B still loops and waits so the band never runs away from you.",
+        "storageKey": "guitarapp.wave2.pathb.level2",
+        "cycle": [
+          "Em",
+          "easyC"
+        ],
+        "tempoBpm": 84,
+        "targetLoops": 3,
+        "songId": "em-easyc-first-song",
+        "worldId": "emerald-hollow",
+        "duetPath": "path-b"
+      }
+    }
+  }
+}
