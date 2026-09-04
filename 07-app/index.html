@@ -97,21 +97,73 @@
       window.addEventListener("guitarapp:self-report",function(event){var note=document.getElementById("report-note");note.textContent=event.detail&&event.detail.value==="got"?"Nice. Keep that relaxed feeling.":"No rush. Try the step once more.";note.hidden=false;clearTimeout(note._timer);note._timer=setTimeout(function(){note.hidden=true;},2600);});
 
       function validateHTML(html){if(typeof html!=='string')return false;var dangerous=[/<script[\s\S]*?<\/script>/gi,/on\w+\s*=/gi,/<iframe/gi,/<object/gi,/<embed/gi];for(var i=0;i<dangerous.length;i++){if(dangerous[i].test(html))return false;}return true;}
-      window.GuitarApp.loadLessons().then(function(result){
-        lessons=result.lessons;
-        lessonRunner=window.GuitarApp.LessonRunner.createLessonRunner({
-          lessons: lessons,
-          render: function(payload){
-            var root=document.getElementById("lesson-content");
-            if(!validateHTML(payload.html))throw new Error('Invalid HTML');
-            root.innerHTML=payload.html;
-            if(window.GuitarApp && window.GuitarApp.Wave1Flow){
-              window.GuitarApp.Wave1Flow.mountEnhancements(payload.model, root);
-            }
+
+      function loadLessonWithRetry(maxRetries, retryDelays){
+        maxRetries=maxRetries||3;
+        retryDelays=retryDelays||[2000,5000,10000];
+        var attempt=0;
+        var retryButton=null;
+
+        function showRetryUI(error, canRetry){
+          var statusContent=document.createElement("div");
+          var msg=document.createElement("span");
+          msg.style.color="var(--warm)";
+          msg.textContent="⚠ Lessons could not load.";
+          statusContent.appendChild(msg);
+          statusContent.appendChild(document.createTextNode(" Check your connection."));
+          if(canRetry){
+            statusContent.appendChild(document.createElement("br"));
+            retryButton=document.createElement("button");
+            retryButton.className="secondary";
+            retryButton.textContent="Try Again";
+            retryButton.style.marginTop="12px";
+            retryButton.addEventListener("click",function(){
+              if(retryButton.parentNode){
+                retryButton.parentNode.removeChild(retryButton);
+              }
+              attemptLoad();
+            });
+            statusContent.appendChild(retryButton);
           }
-        });
-        renderCatalog();
-      }).catch(function(error){status.textContent="Lessons could not load. Check your connection and retry.";console.warn(error);});
+          status.innerHTML="";
+          status.appendChild(statusContent);
+          console.warn("Lesson load error (attempt "+attempt+"/"+maxRetries+"):",error);
+        }
+
+        function attemptLoad(){
+          attempt++;
+          window.GuitarApp.loadLessons().then(function(result){
+            lessons=result.lessons;
+            lessonRunner=window.GuitarApp.LessonRunner.createLessonRunner({
+              lessons: lessons,
+              render: function(payload){
+                var root=document.getElementById("lesson-content");
+                if(!validateHTML(payload.html))throw new Error('Invalid HTML');
+                root.innerHTML=payload.html;
+                if(window.GuitarApp && window.GuitarApp.Wave1Flow){
+                  window.GuitarApp.Wave1Flow.mountEnhancements(payload.model, root);
+                }
+              }
+            });
+            renderCatalog();
+            if(attempt>1){
+              status.textContent=lessons.length+" lessons loaded (retry succeeded)";
+            }
+          }).catch(function(error){
+            if(attempt<maxRetries){
+              var delayMs=retryDelays[attempt-1]||retryDelays[retryDelays.length-1];
+              status.textContent="Retrying in "+Math.round(delayMs/1000)+" seconds... (attempt "+attempt+" of "+maxRetries+")";
+              setTimeout(attemptLoad,delayMs);
+            }else{
+              showRetryUI(error,true);
+            }
+          });
+        }
+
+        attemptLoad();
+      }
+
+      loadLessonWithRetry();
     })();
   </script>
 </body>
