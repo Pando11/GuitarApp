@@ -37,7 +37,7 @@ export const PERSONA = {
 };
 
 export const PRACTICE_TERM = /guitar|chord|strum|string|fret|practice|lesson|finger|tune|tuning|metronome|teacher|pick|buzz|tone|tempo|barre|drill|scale|fretboard|chord chart|play|playing/i;
-export const CHORD_NAME = /\b([C-G])(#|b)?(maj|min|m|dim|aug|sus|add|7|9|11|13)?\b|\b(A|B)(#|b)?(maj|min|m|dim|aug|sus|add|7|9|11|13)\b/i;
+export const CHORD_NAME = /\b([A-G])(#|b)?(maj|min|m|dim|aug|sus|add|7|9|11|13)?\b/i;
 export const OFFTOPIC_SUBJECT = /stock|invest|investing|price|market|football|soccer|sport|sports|rent|landlord|weather|climate|politics|election|news|recipe|movie|film|tv|show|game|video game|friend|friends|work|job|boss|doctor|health|crypto|bitcoin|money|bank|loan|tax|stock price/i;
 export const PROGRESS_Q = /how (am|are|is) (i|we|my|things)|my progress|am i improving|how('?s| is) it going/i;
 export const COMMAND_VERB = /\b(write|code|script|program|build|create|compose|translate|summarize|calculate|compose|draw|generate|design a|make me a)\b/i;
