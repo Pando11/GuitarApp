@@ -39,10 +39,10 @@
     },
     canAccessFeature: function (feature) {
       if (feature === "tuner") return true;
-      return app.dogfood || this.isPremium();
+      return appState.getDogfood() || this.isPremium();
     },
     canAccessLesson: function (lessonId) {
-      if (app.dogfood || this.isPremium()) return true;
+      if (appState.getDogfood() || this.isPremium()) return true;
       return /^L0?1\b/.test(String(lessonId || ""));
     },
     startFreeTrial: function () {
@@ -55,19 +55,130 @@
     }
   };
 
-  const app = {
-    dogfood: typeof location !== "undefined" && location.search.includes("dogfood=1"),
-    entitlement: entitlement,
-    currentTeacherId: "T1",
-    currentTeacher: null,
+  // ============================================================================
+  // EVENT EMITTER — Vanilla JS implementation for state change notifications
+  // ============================================================================
+  function createEventEmitter() {
+    const listeners = {};
+
+    return {
+      on: function (eventName, callback) {
+        if (!listeners[eventName]) listeners[eventName] = [];
+        listeners[eventName].push(callback);
+
+        // Return unsubscribe function
+        return function unsubscribe() {
+          if (!listeners[eventName]) return;
+          const idx = listeners[eventName].indexOf(callback);
+          if (idx > -1) listeners[eventName].splice(idx, 1);
+        };
+      },
+
+      once: function (eventName, callback) {
+        const unsubscribe = this.on(eventName, function wrapper(data) {
+          callback(data);
+          unsubscribe();
+        });
+        return unsubscribe;
+      },
+
+      emit: function (eventName, data) {
+        if (!listeners[eventName]) return;
+        listeners[eventName].forEach(function (callback) {
+          try {
+            callback(data);
+          } catch (e) {
+            console.error("[AppStateEmitter] Listener error for " + eventName + ":", e);
+          }
+        });
+      },
+
+      off: function (eventName, callback) {
+        if (!listeners[eventName]) return;
+        const idx = listeners[eventName].indexOf(callback);
+        if (idx > -1) listeners[eventName].splice(idx, 1);
+      },
+
+      listenerCount: function (eventName) {
+        return listeners[eventName] ? listeners[eventName].length : 0;
+      }
+    };
+  }
+
+  // ============================================================================
+  // APP STATE — Encapsulated, observable state management
+  // ============================================================================
+  const stateEmitter = createEventEmitter();
+
+  const appState = {
+    // Private state
+    _state: {
+      dogfood: typeof location !== "undefined" && location.search.includes("dogfood=1"),
+      currentTeacherId: "T1",
+      currentTeacher: null,
+    },
+
+    // Getters (read-only access to state)
+    getDogfood: function () {
+      return this._state.dogfood;
+    },
+
+    getCurrentTeacherId: function () {
+      return this._state.currentTeacherId;
+    },
+
+    getCurrentTeacher: function () {
+      return this._state.currentTeacher;
+    },
+
+    // Setters with event emission
+    setTeacher: function (teacher) {
+      const normalized = normalizeTeacherProfile(teacher);
+      const oldTeacherId = this._state.currentTeacherId;
+
+      this._state.currentTeacher = normalized;
+      this._state.currentTeacherId = normalized.id || "T1";
+
+      // Sync with legacy global.__APP__ for backwards compatibility
+      if (global.__APP__ && global.__APP__.app) {
+        global.__APP__.app.currentTeacher = normalized;
+        global.__APP__.app.currentTeacherId = this._state.currentTeacherId;
+      }
+
+      // Emit state change event with full context
+      stateEmitter.emit("teacher:changed", {
+        teacher: normalized,
+        teacherId: this._state.currentTeacherId,
+        previousTeacherId: oldTeacherId,
+        timestamp: Date.now()
+      });
+
+      return normalized;
+    },
+
+    // Backwards compatibility: expose app object (mutable for legacy code)
+    toAppObject: function () {
+      return {
+        dogfood: this._state.dogfood,
+        entitlement: entitlement,
+        currentTeacherId: this._state.currentTeacherId,
+        currentTeacher: this._state.currentTeacher,
+      };
+    }
   };
+
+  // Expose the event emitter for subscriptions
+  const appEvents = stateEmitter;
+
+  // Create read-only app object for backwards compatibility
+  const app = appState.toAppObject();
 
   function clone(value) {
     return JSON.parse(JSON.stringify(value));
   }
 
   function isPremium() {
-    return app.dogfood || app.entitlement.isPremium();
+    return appState.getDogfood() || entitlement.isPremium();
   }
 
   function guardPremium(feature, fallback) {
@@ -89,23 +200,17 @@
   }
 
   function setCurrentTeacher(teacher) {
-    const normalized = normalizeTeacherProfile(teacher);
-    app.currentTeacher = normalized;
-    app.currentTeacherId = normalized.id || "T1";
-    if (global.__APP__ && global.__APP__.app) {
-      global.__APP__.app.currentTeacher = normalized;
-      global.__APP__.app.currentTeacherId = app.currentTeacherId;
-    }
-    return normalized;
+    return appState.setTeacher(teacher);
   }
 
   function currentVoiceProfile() {
-    if (app.currentTeacher && app.currentTeacher.voice) {
+    const teacher = appState.getCurrentTeacher();
+    if (teacher && teacher.voice) {
       return {
-        teacher_id: app.currentTeacher.id || app.currentTeacherId || "T1",
-        provider: app.currentTeacher.voice.provider || DEFAULT_VOICE.provider,
-        voice_id: app.currentTeacher.voice.voice_id || DEFAULT_VOICE.voice_id,
-        style: app.currentTeacher.voice.style || DEFAULT_VOICE.style,
+        teacher_id: teacher.id || appState.getCurrentTeacherId() || "T1",
+        provider: teacher.voice.provider || DEFAULT_VOICE.provider,
+        voice_id: teacher.voice.voice_id || DEFAULT_VOICE.voice_id,
+        style: teacher.voice.style || DEFAULT_VOICE.style,
       };
     }
     return clone(DEFAULT_VOICE);
@@ -115,7 +220,7 @@
     const voice = Object.assign({}, currentVoiceProfile(), overrideVoice || {});
     return {
       text: String(text || ""),
-      teacher_id: voice.teacher_id || app.currentTeacherId || "T1",
+      teacher_id: voice.teacher_id || appState.getCurrentTeacherId() || "T1",
       provider: voice.provider || DEFAULT_VOICE.provider,
       voice_id: voice.voice_id || DEFAULT_VOICE.voice_id,
       style: voice.style || DEFAULT_VOICE.style,
@@ -573,6 +678,8 @@
   global.GuitarApp = global.GuitarApp || {};
   Object.assign(global.GuitarApp, {
     app,
+    appState,
+    appEvents,
     isPremium,
     setCurrentTeacher,
     currentVoiceProfile,
@@ -588,6 +695,52 @@
     registerServiceWorker,
     mountBackupButtons,
     boot,
+
+    // ========================================================================
+    // NEW EVENT SUBSCRIPTION HELPERS — Use these in modules to react to state changes
+    // ========================================================================
+
+    /**
+     * Subscribe to teacher changes
+     * Usage: GuitarApp.onTeacherChanged(function(event) {
+     *   console.log("Teacher changed:", event.teacher.name);
+     *   console.log("From:", event.previousTeacherId, "To:", event.teacherId);
+     * });
+     */
+    onTeacherChanged: function (callback) {
+      return appEvents.on("teacher:changed", callback);
+    },
+
+    /**
+     * Subscribe to teacher changes (one-time only)
+     * Usage: GuitarApp.onceTeacherChanged(function(event) { ... });
+     */
+    onceTeacherChanged: function (callback) {
+      return appEvents.once("teacher:changed", callback);
+    },
+
+    /**
+     * Unsubscribe from teacher changes
+     * Usage: GuitarApp.offTeacherChanged(myCallback);
+     */
+    offTeacherChanged: function (callback) {
+      return appEvents.off("teacher:changed", callback);
+    },
+
+    /**
+     * Get the current state (safe, read-only snapshot)
+     * Usage: const state = GuitarApp.getAppState();
+     *   state.currentTeacher
+     *   state.currentTeacherId
+     *   state.dogfood
+     */
+    getAppState: function () {
+      return {
+        currentTeacher: appState.getCurrentTeacher(),
+        currentTeacherId: appState.getCurrentTeacherId(),
+        dogfood: appState.getDogfood()
+      };
+    }
   });
 
   global.__APP__ = global.__APP__ || {
