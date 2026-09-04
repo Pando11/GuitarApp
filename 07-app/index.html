@@ -51,7 +51,7 @@
       function esc(value){var node=document.createElement("span");node.textContent=String(value==null?"":value);return node.innerHTML;}
       function lessonNumber(index){return "Lesson "+String(index+1).padStart(2,"0");}
       function performanceState(config){var raw=localStorage.getItem(config.storageKey);var parsed=raw?JSON.parse(raw):null;var loops=parsed&&Number.isFinite(parsed.loopsCompleted)?parsed.loopsCompleted:0;var label=loops>=config.targetLoops?"Completed":(loops>0?"In progress":"Not started");return {loops:loops,label:label};}
-      function renderPerformanceRail(){if(!performanceRail)return;var flow=window.GuitarApp&&window.GuitarApp.Wave1Flow;if(!flow||!flow.performanceConfigs){performanceRail.textContent="Performance ladder loading...";return;}var l1=flow.performanceConfigs[1];var l2=flow.performanceConfigs[2];var s1=performanceState(l1);var s2=performanceState(l2);performanceRail.innerHTML='<span class="lesson-number">Performance ladder</span><h3>Same song, bigger moments</h3><p class="meta">Path B ships now. Path A stays visible on the roadmap.</p><ul class="objectives"><li><strong>Level 1 - Lesson 05:</strong> '+esc(s1.label)+' ('+s1.loops+'/'+l1.targetLoops+' loops) - '+esc(l1.heading)+'</li><li><strong>Level 2 - Lesson 12:</strong> '+esc(s2.label)+' ('+s2.loops+'/'+l2.targetLoops+' loops) - '+esc(l2.heading)+'</li><li><strong>Level 3 - Lesson 25:</strong> Coming later - full band capstone in Emerald Hollow.</li></ul><p class="meta">Roadmap: Path A live adaptive duet stays visible and does not ship in this slice.</p>'; }
+      function renderPerformanceRail(){if(!performanceRail)return;var flow=window.GuitarApp&&window.GuitarApp.Wave1Flow;if(!flow||!flow.performanceConfigs){performanceRail.textContent="Performance ladder loading...";return;}var l1=flow.performanceConfigs[1];var l2=flow.performanceConfigs[2];var s1=performanceState(l1);var s2=performanceState(l2);performanceRail.innerHTML="";var span=document.createElement("span");span.className="lesson-number";span.textContent="Performance ladder";performanceRail.appendChild(span);var h3=document.createElement("h3");h3.textContent="Same song, bigger moments";performanceRail.appendChild(h3);var p1=document.createElement("p");p1.className="meta";p1.textContent="Path B ships now. Path A stays visible on the roadmap.";performanceRail.appendChild(p1);var ul=document.createElement("ul");ul.className="objectives";var li1=document.createElement("li");var strong1=document.createElement("strong");strong1.textContent="Level 1 - Lesson 05:";li1.appendChild(strong1);li1.appendChild(document.createTextNode(" "+s1.label+" ("+s1.loops+"/"+l1.targetLoops+" loops) - "+l1.heading));ul.appendChild(li1);var li2=document.createElement("li");var strong2=document.createElement("strong");strong2.textContent="Level 2 - Lesson 12:";li2.appendChild(strong2);li2.appendChild(document.createTextNode(" "+s2.label+" ("+s2.loops+"/"+l2.targetLoops+" loops) - "+l2.heading));ul.appendChild(li2);var li3=document.createElement("li");var strong3=document.createElement("strong");strong3.textContent="Level 3 - Lesson 25:";li3.appendChild(strong3);li3.appendChild(document.createTextNode(" Coming later - full band capstone in Emerald Hollow."));ul.appendChild(li3);performanceRail.appendChild(ul);var p2=document.createElement("p");p2.className="meta";p2.textContent="Roadmap: Path A live adaptive duet stays visible and does not ship in this slice.";performanceRail.appendChild(p2);}
 
       function openLesson(index){
         if(!lessonRunner){status.textContent="Lessons are still loading.";return;}
@@ -71,7 +71,17 @@
           button.type="button";
           button.className="lesson-card";
           button.disabled=!unlocked;
-          button.innerHTML='<span class="lesson-number">'+lessonNumber(index)+'</span><h3>'+esc(info.title)+'</h3><span class="meta">'+esc(info.estimated_minutes||"")+" min"+(unlocked?" - Ready":" - On your path")+'</span>';
+          var span=document.createElement("span");
+          span.className="lesson-number";
+          span.textContent=lessonNumber(index);
+          button.appendChild(span);
+          var h3=document.createElement("h3");
+          h3.textContent=info.title;
+          button.appendChild(h3);
+          var meta=document.createElement("span");
+          meta.className="meta";
+          meta.textContent=(info.estimated_minutes||"")+" min"+(unlocked?" - Ready":" - On your path");
+          button.appendChild(meta);
           if(unlocked)button.addEventListener("click",function(){openLesson(index);});
           grid.appendChild(button);
         });
@@ -86,12 +96,14 @@
 
       window.addEventListener("guitarapp:self-report",function(event){var note=document.getElementById("report-note");note.textContent=event.detail&&event.detail.value==="got"?"Nice. Keep that relaxed feeling.":"No rush. Try the step once more.";note.hidden=false;clearTimeout(note._timer);note._timer=setTimeout(function(){note.hidden=true;},2600);});
 
+      function validateHTML(html){if(typeof html!=='string')return false;var dangerous=[/<script[\s\S]*?<\/script>/gi,/on\w+\s*=/gi,/<iframe/gi,/<object/gi,/<embed/gi];for(var i=0;i<dangerous.length;i++){if(dangerous[i].test(html))return false;}return true;}
       window.GuitarApp.loadLessons().then(function(result){
         lessons=result.lessons;
         lessonRunner=window.GuitarApp.LessonRunner.createLessonRunner({
           lessons: lessons,
           render: function(payload){
             var root=document.getElementById("lesson-content");
+            if(!validateHTML(payload.html))throw new Error('Invalid HTML');
             root.innerHTML=payload.html;
             if(window.GuitarApp && window.GuitarApp.Wave1Flow){
               window.GuitarApp.Wave1Flow.mountEnhancements(payload.model, root);
