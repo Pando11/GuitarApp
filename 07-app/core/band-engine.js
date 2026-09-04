@@ -8,6 +8,48 @@ import * as L from './listening-engine.js';
 export const SR = 22050;
 export const MAX_BARS = 256;
 
+// ============================================================================
+// SYNTHESIS CONSTANTS - Magic numbers extracted for clarity and maintainability
+// ============================================================================
+
+// Semitone increment for frequency calculations (12 semitones = 1 octave)
+const SEMITONE_INCREMENT = 12;
+
+// Tone default gain when not specified
+const DEFAULT_TONE_GAIN = 0.6;
+
+// Kick drum synthesis parameters
+const KICK_DECAY_RATE = 14;           // Exponential decay coefficient for kick envelope
+const KICK_BASE_FREQ = 120;           // Base frequency for kick drum (Hz)
+const KICK_FREQ_DECAY = 30;           // Decay rate for pitch bend effect
+const KICK_MIN_FREQ = 45;             // Minimum frequency after decay
+const KICK_AMPLITUDE = 0.9;           // Kick drum volume multiplier
+
+// Noise burst synthesis parameters
+const NOISE_HP_DECAY = 60;            // Decay rate for high-pass noise (snare-like)
+const NOISE_LP_DECAY = 18;            // Decay rate for low-pass noise (softer)
+const NOISE_HP_GAIN = 0.5;            // Gain for high-pass noise
+const NOISE_LP_GAIN = 0.7;            // Gain for low-pass noise
+
+// Drum timing constants (durations in seconds)
+const KICK_DURATION = 0.18;           // Kick drum note duration
+const SNARE_DURATION = 0.14;          // Snare drum note duration
+const HIHAT_DURATION = 0.04;          // Hi-hat note duration
+
+// Rhythmic timing ratios
+const SWING_RATIO = 0.66;             // Swing timing offset ratio (66% of beat)
+const STRAIGHT_RATIO = 0.5;           // Straight timing offset ratio (50% of beat)
+
+// Bass line parameters
+const BASS_TONE_DURATION_RATIO = 0.9; // Bass tone length relative to beat (0.9 = 90% of beat)
+const BASS_TONE_GAIN = 0.5;           // Bass tone volume
+const CHORD_DURATION_RATIO = 0.8;     // Chord stab duration ratio (0.8 = 80% of beat)
+const CHORD_STAB_GAIN = 0.22;         // Chord stab volume multiplier
+const CHORD_TIMING_RANDOMIZATION = 0.01; // Random timing offset for chord stabs (seconds)
+
+// Guitar tuning constants (open string frequencies in Hz)
+const GUITAR_TUNING = [82.41, 110.00, 146.83, 196.00, 246.94, 329.63];
+
 function makeRng(seed) {
   let a = (seed >>> 0) || 1;
   return function () {
@@ -18,19 +60,19 @@ function makeRng(seed) {
   };
 }
 
-const OPEN = [82.41, 110.00, 146.83, 196.00, 246.94, 329.63];
+const OPEN = GUITAR_TUNING;
 
 function tone(freq, seconds, gain) {
-  return T.makeStringTone(freq, SR, seconds, gain == null ? 0.6 : gain);
+  return T.makeStringTone(freq, SR, seconds, gain == null ? DEFAULT_TONE_GAIN : gain);
 }
 
 function kick(t0, dur, buf) {
   const len = Math.floor(SR * dur);
   for (let i = 0; i < len; i++) {
     const t = i / SR;
-    const env = Math.exp(-t * 14);
-    const f = 120 * Math.exp(-t * 30) + 45;
-    const s = Math.sin(2 * Math.PI * f * t) * env * 0.9;
+    const env = Math.exp(-t * KICK_DECAY_RATE);
+    const f = KICK_BASE_FREQ * Math.exp(-t * KICK_FREQ_DECAY) + KICK_MIN_FREQ;
+    const s = Math.sin(2 * Math.PI * f * t) * env * KICK_AMPLITUDE;
     const idx = Math.floor((t0 + t) * SR);
     if (idx >= 0 && idx < buf.length) buf[idx] += s;
   }
@@ -40,9 +82,9 @@ function noiseBurst(t0, dur, buf, hp, rng) {
   const r = rng || Math.random;
   for (let i = 0; i < len; i++) {
     const t = i / SR;
-    const env = Math.exp(-t * (hp ? 60 : 18));
+    const env = Math.exp(-t * (hp ? NOISE_HP_DECAY : NOISE_LP_DECAY));
     const n = r() * 2 - 1;
-    const s = n * env * (hp ? 0.5 : 0.7);
+    const s = n * env * (hp ? NOISE_HP_GAIN : NOISE_LP_GAIN);
     const idx = Math.floor((t0 + t) * SR);
     if (idx >= 0 && idx < buf.length) buf[idx] += s;
   }
@@ -87,30 +129,30 @@ export function buildBand(opts) {
 
     for (let b = 0; b < beats; b++) {
       const tBeat = bar * barSec + b * beatSec;
-      if (b === 0 || b === 2) { kick(tBeat, 0.18, buffer); nominal.push({ beat: b, stem: 'kick', note: 'kick' }); }
-      if (b === 1 || b === 3) { noiseBurst(tBeat, 0.14, buffer, false, rng); nominal.push({ beat: b, stem: 'snare', note: 'snare' }); }
-      const off = (feel === 'swing') ? beatSec * 0.66 : beatSec * 0.5;
-      noiseBurst(tBeat, 0.04, buffer, true, rng);
-      noiseBurst(tBeat + off, 0.04, buffer, true, rng);
+      if (b === 0 || b === 2) { kick(tBeat, KICK_DURATION, buffer); nominal.push({ beat: b, stem: 'kick', note: 'kick' }); }
+      if (b === 1 || b === 3) { noiseBurst(tBeat, SNARE_DURATION, buffer, false, rng); nominal.push({ beat: b, stem: 'snare', note: 'snare' }); }
+      const off = (feel === 'swing') ? beatSec * SWING_RATIO : beatSec * STRAIGHT_RATIO;
+      noiseBurst(tBeat, HIHAT_DURATION, buffer, true, rng);
+      noiseBurst(tBeat + off, HIHAT_DURATION, buffer, true, rng);
       nominal.push({ beat: b, stem: 'hat', note: 'hat' });
     }
     if (root) {
       const fifth = transposeName(root, 7);
-      const bass1 = tone(bassFreq, beatSec * 0.9, 0.5);
+      const bass1 = tone(bassFreq, beatSec * BASS_TONE_DURATION_RATIO, BASS_TONE_GAIN);
       addInto(buffer, bass1, bar * barSec);
-      const bass2 = tone(noteToFreq(fifth, bassShift), beatSec * 0.9, 0.5);
+      const bass2 = tone(noteToFreq(fifth, bassShift), beatSec * BASS_TONE_DURATION_RATIO, BASS_TONE_GAIN);
       addInto(buffer, bass2, bar * barSec + 2 * beatSec);
       nominal.push({ beat: 0, stem: 'bass', note: root });
       nominal.push({ beat: 2, stem: 'bass', note: fifth });
     }
     if (chord && Array.isArray(chord.frets)) {
-      const stabSec = beatSec * 0.8;
+      const stabSec = beatSec * CHORD_DURATION_RATIO;
       for (let i = 0; i < 6; i++) {
         const fret = chord.frets[i];
         if (fret == null || !isFinite(Number(fret))) continue;
-        const f = OPEN[i] * Math.pow(2, Number(fret) / 12);
-        const stab = tone(f, stabSec, 0.22);
-        addInto(buffer, stab, bar * barSec + rng() * 0.01);
+        const f = OPEN[i] * Math.pow(2, Number(fret) / SEMITONE_INCREMENT);
+        const stab = tone(f, stabSec, CHORD_STAB_GAIN);
+        addInto(buffer, stab, bar * barSec + rng() * CHORD_TIMING_RANDOMIZATION);
       }
       nominal.push({ beat: 0, stem: 'chord', note: chordName });
     }
@@ -156,7 +198,7 @@ export function transposeName(name, semi) {
   if (flatToSharp[n]) n = flatToSharp[n];
   let idx = keys.indexOf(n);
   if (idx < 0) idx = 0;
-  return keys[((idx + semi) % 12 + 12) % 12];
+  return keys[((idx + semi) % SEMITONE_INCREMENT + SEMITONE_INCREMENT) % SEMITONE_INCREMENT];
 }
 
 export function verifyStemPitch(buffer, expectedFreq, opts) {
