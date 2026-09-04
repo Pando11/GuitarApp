@@ -1,6 +1,6 @@
 # 02-spec/guitar-app-spec-AMENDMENT-17.md
 
-**Status:** proposed (Grill #4, 2026-08-23 — not yet ratified)
+**Status:** RATIFIED (2026-09-02 by owner Heidi; Grill #4 direction accepted)
 **Supersedes:** nothing (new amendment; builds on AMENDMENT-11 product thesis)
 **Latest word:** AMENDMENT-16 (PocketBase backend) remains current on backend;
 AMENDMENT-15 (curriculum re-sequence + ordering gate) remains current on curriculum;
@@ -89,7 +89,7 @@ with a lantern glow. Leaves rustling slightly, smoke from chimney.
 
 ---
 
-## First teacher = one chill instructor
+## First teacher = Sage
 
 ### Personality
 
@@ -141,28 +141,32 @@ means the teacher is always there in that world. Not a pop-up for performances o
 |-------|---------------------------|---------|-------------|
 | Level 1 | ~5–6 lessons (map vs actual curriculum) | Tavern porch, Emerald Hollow | Teacher senses student is doing well; invites them to perform what they've learned on the porch. Teacher accompanies. Low pressure. |
 | Level 2 | ~10–12 lessons (map vs actual curriculum) | Same or expanded Emerald Hollow moment | Student plays more chords / a simple song; teacher encourages a harder pace. Confidence building. |
-| Level 3 (capstone) | Lesson 25 (curriculum capstone, AMENDMENT-15) | Bar/stage with full band | Student "joins the band": bass, drums, teacher on second guitar. Student picks the song from the catalog (constrained: all chords must be taught by that point, per AMENDMENT-13). |
+| Level 3 (capstone) | Lesson 25 (curriculum capstone, AMENDMENT-15) | Bar/stage with full band | Student "joins the band": bass, drums, teacher on second guitar. The same recurring performance song returns in front of a crowd. |
 
 - **Level 1 is the first reward moment.** The student practices through their first set of lessons;
   the teacher senses they're doing well (via mastery/confidence from student memory, Rule 5); the
   teacher invites them to perform on the porch.
-- **Exact lesson gates for Level 1 and Level 2 are NOT decided in this amendment.** Hermes + owner
-  map them against the actual 25-lesson curriculum (AMENDMENT-15 order) in the tickets phase. The
-  ladder structure is locked; the numbers are not.
+- **Level 1 and Level 2 timing bands are now ratified.** Level 1 happens early, around lessons 5–6.
+  For the first shipped slice, Level 1 lands at the end of **Lesson 5**. Level 2 stays in the middle,
+  around lessons 10–12, with the exact lesson ID still open.
 - **Level 3 is fixed:** Lesson 25 capstone. The band = bass + drums + teacher on second guitar
-  (owner's picture). Student picks the song.
+  (owner's picture). The same recurring performance song comes back for the crowd moment.
+- **Level 1 should feel guided, not overwhelming.** The first performance moment should use a small,
+  curated set rather than dumping the student into a big song list.
+- **All three performance rewards use the same song.** Repetition is part of the design: the student
+  grows with one recurring performance song so the capstone feels earned, familiar, and practiced.
 
 ### Song constraint at Level 3
 
-The student picks a song to perform with the band. The song's chords must ALL be taught by Lesson
-25 (they are — the 25-lesson curriculum teaches F at L17 and A7 at L19, so all 10 song-progression
-songs are within the taught set per AMENDMENT-13). The song-progression gate (`node
-tools/verify-song-progressions.js`) enforces this. House of the Rising Sun is public domain
-(unrestricted); the other 9 need the "not affiliated / not endorsed" disclaimer on the select card
-+ reveal (AMENDMENT-12/14).
+The performance ladder uses one recurring song across Level 1, Level 2, and Level 3. The song's
+chords must ALL be taught by Lesson 25 (they are — the 25-lesson curriculum teaches F at L17 and A7
+at L19, so all 10 song-progression songs are within the taught set per AMENDMENT-13). The
+song-progression gate (`node tools/verify-song-progressions.js`) enforces this. House of the Rising
+Sun is public domain (unrestricted); the other 9 need the "not affiliated / not endorsed"
+disclaimer where relevant (AMENDMENT-12/14).
 
-**Open:** Does the student pick from the full 10-song catalog, or a smaller "you know these chords"
-subset curated for the performance moment? Not decided — see tickets.
+**Open:** Which exact recurring song should the ladder use? The structure is now decided; the title is
+still a ticket-phase choice.
 
 ### How the teacher extends the invitation (Rule 5)
 
@@ -302,9 +306,10 @@ scene files + character rig + FLUX stills for the owner to open in Godot.
 
 ## Open items (resolve in tickets phase)
 
-1. **Exact lesson gates for Level 1 and Level 2** — map against the 25-lesson AMENDMENT-15
-   curriculum. Hermes + owner.
-2. **Level 3 song pick scope** — full 10-song catalog or curated subset?
+1. **Choose the exact lesson ID for Level 2** — Level 1 is now fixed at the end of Lesson 5.
+   Level 2 stays open inside the ratified ~10–12 range.
+2. **Choose the recurring performance song** — the same song returns at Level 1, Level 2, and the
+   Level 3 crowd moment.
 3. **Level 3 band composition** — owner's picture (bass + drums + teacher on second guitar) is the
    starting point. Is the band pre-built per song or assembled by the app?
 4. **Animated character source** — hand-authored Godot rig vs AI-generated stills+motion (FLUX+Wan)

@@ -1,0 +1,11 @@
+{
+  "name": "guitarapp-gates",
+  "private": true,
+  "scripts": {
+    "test:app-smoke": "node 07-app/test/app-smoke.mjs",
+    "test:fidelity": "node 07-app/test/fidelity.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "27.0.0"
+  }
+}

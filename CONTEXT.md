@@ -7,6 +7,8 @@ in `docs/adr/`, not here.
 
 ## Core terms
 
+- **Performance ladder** — the per-world reward arc: Level 1 → Level 2 → Level 3 capstone. Each world owns its own ladder, whose lesson gates map to that world's lesson count; worlds do not share ladders. See `docs/adr/0004`.
+
 - **Student memory** — the per-student profile the app keeps so the teacher can
   coach *forward* ("last lesson you had E minor solid"). Defined by
   `02-spec/guitar-app-spec-STUDENT-MEMORY.md`. Always-on, encrypted, cross-device.
@@ -83,10 +85,18 @@ in `docs/adr/`, not here.
   looks). Defined by `docs/adr/0004-the-teacher-world-1-emerald-hollow.md`.
   Voice = Chatterbox (MIT) built-in voices; photo-real optional track, not v1.
   _Avoid_: "avatar", "instructor character", "AI teacher"
+|- **Sage** — the named World 1 teacher in Emerald Hollow. Chill, warm,
+  encouraging, and present through regular lessons and performances. Sage is the
+  first proof that the app feels like a teacher in a world, not a lesson list.
+  Defined by `docs/adr/0004-the-teacher-world-1-emerald-hollow.md`.
+  _Avoid_: generic "teacher" when the world-specific identity matters
 |- **Performance ladder** — the escalating reward arc: Level 1 (~5–6 lessons)
   → Level 2 (~10–12) → Level 3/capstone (L25, full band). Each level is a
   performance/invitation the teacher extends when the student is doing well.
-  Exact lesson gates TBD against the 25-lesson curriculum. Defined by
+  The same recurring performance song returns across the ladder so practice compounds.
+  The current chosen ladder song is the simple **Em→C first song**.
+  Level 1 is fixed at the end of Lesson 5 for the first shipped slice. Level 2
+  stays open inside the ~10–12 band. Defined by
   `docs/adr/0004-the-teacher-world-1-emerald-hollow.md`.
   _Avoid_: "reward", "level up", "unlock"
 |- **Path B duet (v1)** — pre-built teacher accompaniment tracks for each

@@ -1,0 +1,29 @@
+{
+  "wave": 5,
+  "status": "complete",
+  "notes": [
+    "Verified the song-progression preview page opens and toggles Mystery Mode in a real browser using local Edge + Playwright.",
+    "Verified the legal boundary copy is visible, the first mystery card reveals hint/reveal text, and the catalog contains no stored lyrics fields.",
+    "Human lyric read-through was confirmed by Heidi and no full lyrics or paraphrased lyrics were reported."
+  ],
+  "song_gate": {
+    "exit_code": 0,
+    "stdout": "verify-song-progressions.js \u2014 AMENDMENT-12/14 song-progression gate\nSong dir: C:\\Users\\Hendrickson\\Desktop\\GuitarApp\\07-app\\content\\song-progressions\n\nGating: progressions.json + shapes.json exist and parse...\n  \u2705 progressions.json parses\n  \u2705 shapes.json parses\nGating: progressions structure (required fields)...\n  \u2705 progressions structure valid (11 songs)\nGating: shapes structure (required fields)...\n  \u2705 shapes structure valid (11 shapes)\nGating: every song's chords are taught by L25...\n  \u2705 all song chords are within the L25 taught set\nGating: shape fret arrays are valid (6 strings, 0-24 range)...\n  \u2705 shape fret arrays valid\nGating: Mystery Mode constraints (no protected lyrics)...\n  \u2705 Mystery Mode constraints checked\nGating: legal disclaimer flags present...\n  \u2705 legal disclaimer flags checked (structural only \u2014 product disclaimer ships in-app)\n\n\u2705 GATE PASSED \u2014 0 errors AND 0 warnings\n",
+    "stderr": ""
+  },
+  "preview": {
+    "html_uri": "file:///C:/Users/Hendrickson/Desktop/GuitarApp/07-app/content/song-progressions/song-progressions-preview.html",
+    "legal_contains_boundary": true,
+    "mystery_toggle_before": "\ud83c\udfad Mystery Mode: OFF",
+    "mystery_toggle_after": "\ud83c\udfad Mystery Mode: ON",
+    "first_song_hint_2": "Hint 2: The chorus is one word, repeated.",
+    "first_song_reveal": "Reveal: That's the loop from 'Zombie' by The Cranberries (1994).",
+    "lyrics_fields_found": []
+  },
+  "artifacts": {
+    "json_path": "C:\\Users\\Hendrickson\\Desktop\\GuitarApp\\.scratch\\guitarapp-software-factory\\proof-wave5\\wave5-proof.json",
+    "dom_path": "C:\\Users\\Hendrickson\\Desktop\\GuitarApp\\.scratch\\guitarapp-software-factory\\proof-wave5\\wave5-dom.txt",
+    "screenshot_path": "C:\\Users\\Hendrickson\\Desktop\\GuitarApp\\.scratch\\guitarapp-software-factory\\proof-wave5\\wave5-screen.png",
+    "log_path": "C:\\Users\\Hendrickson\\Desktop\\GuitarApp\\.scratch\\guitarapp-software-factory\\proof-wave5\\wave5-log.txt"
+  }
+}

@@ -1,0 +1,7 @@
+l19-00-intro.wav
+l19-02-ex1.wav
+l19-03-ex2.wav
+l19-04-ex3.wav
+l19-05-ex4.wav
+l19-99-results.wav
+l19-99-wrap.wav

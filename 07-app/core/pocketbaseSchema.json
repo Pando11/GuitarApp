@@ -1,0 +1,92 @@
+{
+  "$comment": "PocketBase collection schema for Layer 3 encrypted student memory. PB is MIT (AMENDMENT-16). All sensitive blobs are stored as ciphertext+iv (AES-256-GCM) produced by pocketbaseSync.js. The 'student_memory' collection holds encrypted Layer 1 (practiceStore) + Layer 2 (storyMemory) blobs; 'settings' holds entitlement/feature flags (stub, no real payments).",
+  "collections": [
+    {
+      "name": "student_memory",
+      "type": "base",
+      "listRule": null,
+      "viewRule": null,
+      "createRule": null,
+      "updateRule": null,
+      "deleteRule": null,
+      "fields": [
+        {
+          "name": "id",
+          "type": "text",
+          "required": true,
+          "unique": false,
+          "options": { "min": null, "max": null, "pattern": "" },
+          "autogeneratePattern": "([a-z0-9]{15})"
+        },
+        {
+          "name": "student_id",
+          "type": "text",
+          "required": true,
+          "unique": true,
+          "options": { "min": null, "max": null, "pattern": "" }
+        },
+        {
+          "name": "ciphertext",
+          "type": "text",
+          "required": true,
+          "unique": false,
+          "options": { "min": null, "max": null, "pattern": "" }
+        },
+        {
+          "name": "iv",
+          "type": "text",
+          "required": true,
+          "unique": false,
+          "options": { "min": null, "max": null, "pattern": "" }
+        },
+        {
+          "name": "salt",
+          "type": "text",
+          "required": true,
+          "unique": false,
+          "options": { "min": null, "max": null, "pattern": "" }
+        },
+        {
+          "name": "updated_at",
+          "type": "text",
+          "required": false,
+          "unique": false,
+          "options": { "min": null, "max": null, "pattern": "" }
+        }
+      ]
+    },
+    {
+      "name": "settings",
+      "type": "base",
+      "listRule": null,
+      "viewRule": null,
+      "createRule": null,
+      "updateRule": null,
+      "deleteRule": null,
+      "fields": [
+        {
+          "name": "id",
+          "type": "text",
+          "required": true,
+          "unique": false,
+          "options": { "min": null, "max": null, "pattern": "" },
+          "autogeneratePattern": "([a-z0-9]{15})"
+        },
+        {
+          "name": "key",
+          "type": "text",
+          "required": true,
+          "unique": true,
+          "options": { "min": null, "max": null, "pattern": "" }
+        },
+        {
+          "name": "value",
+          "type": "text",
+          "required": false,
+          "unique": false,
+          "options": { "min": null, "max": null, "pattern": "" }
+        }
+      ]
+    }
+  ]
+}

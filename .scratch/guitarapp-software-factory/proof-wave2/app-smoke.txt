@@ -1,0 +1,2 @@
+
+APP SMOKE: 28 passed, 0 failed

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GuitarApp — Paywall (Step 7 demo)</title>
+<style>
+  :root { --bg:#0f1226; --card:#1b1f3b; --ink:#e8eaff; --muted:#9aa0c7; --accent:#7c5cff; --ok:#3ddc84; --lock:#ff6b6b; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--ink); padding:18px; }
+  h1 { font-size:20px; margin:0 0 4px; }
+  .sub { color:var(--muted); font-size:13px; margin-bottom:16px; }
+  .row { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:14px; }
+  button { font-size:14px; padding:10px 14px; border:0; border-radius:10px; background:var(--card); color:var(--ink); cursor:pointer; }
+  button.primary { background:var(--accent); }
+  button:active { transform:translateY(1px); }
+  .lessons { display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:10px; margin-bottom:16px; }
+  .lesson { background:var(--card); border-radius:12px; padding:14px; text-align:center; }
+  .lesson .name { font-weight:700; font-size:15px; }
+  .lesson .state { font-size:12px; margin-top:6px; }
+  .open { color:var(--ok); }
+  .locked { color:var(--lock); }
+  #status { background:var(--card); border-radius:12px; padding:14px; font-size:13px; line-height:1.5; }
+  #status b { color:var(--accent); }
+  .pill { display:inline-block; padding:2px 8px; border-radius:999px; font-size:11px; background:#2a2f55; color:var(--muted); margin-left:6px; }
+</style>
+</head>
+<body>
+<h1>GuitarApp — Paywall</h1>
+<div class="sub">$12/mo &middot; free = tuner + metronome + Lesson 1 only. (Sandbox demo — no real App Store purchase.)</div>
+
+<div class="row">
+  <button id="buy" class="primary">Sandbox buy $12/mo</button>
+  <button id="cancel">Cancel</button>
+  <button id="resub">Re-subscribe</button>
+  <button id="trial">Start 7-day trial</button>
+</div>
+
+<div class="lessons" id="lessons"></div>
+
+<div id="status">Loading&hellip;</div>
+
+<script>
+'use strict';
+/*
+ * entitlementStore.js — Step 7 (F12, Money) entitlement state machine.
+ *
+ * Pure logic. Hard Ban 5: ZERO network calls in this file. RevenueCat is an
+ * EXTERNAL BOUNDARY, wired via revenuecatStub.js (prototype discipline: prove
+ * the logic, stub the network — same pattern as Step 6 F6 SEND / F4 LLM).
+ *
+ * CONTRACT (from FEATURES-LOCKED-v1-2026-08-07.md §F12 + the build plan DONE BAR):
+ *   - Single tier: $12/month, free trial.
+ *   - Free tier = tuner + metronome + Lesson 1 ONLY. Nothing more.
+ *   - Cross-platform (iOS + Android): one entitlement source, identical on both.
+ *
+ * BUILD DECISION (spec is silent; flagged for owner confirm/override):
+ *   The spec's "tuner + metronome + Lesson 1 only" constrains CONTENT ACCESS
+ *   (lessons + the listening feature). The teacher roster (F3), chat (F4),
+ *   adaptive plan (F5), messages (F6) and streaks (F11) are the app's operating
+ *   SHELL — a free user playing Lesson 1 needs them to function. They are modeled
+ *   as tier 'shell' (available whenever the user has >=1 unlocked lesson, which a
+ *   free user does: L01). Everything else (L02–L20 lessons, F2 listening outside
+ *   L01, F7/F8/F9/F10) is 'premium'. Change the policy by editing FEATURE_TIER only.
+ */
+
+const FREE_LESSONS = ['L01'];
+
+// Single declarative source of the free/premium policy.
+//   'free'    = available to everyone (free + premium)
+//   'shell'   = operating layer, available whenever >=1 lesson is unlocked
+//   'premium' = requires an active subscription OR an active (unexpired) trial
+const FEATURE_TIER = {
+  tuner: 'free',          // F2 funnel front door
+  metronome: 'free',      // F2 funnel front door
+  teacherRoster: 'shell', // F3
+  chat: 'shell',          // F4
+  adaptive: 'shell',      // F5
+  messages: 'shell',      // F6
+  streaks: 'shell',       // F11
+  lesson: 'premium',      // F1 — gated per-lesson id via canAccessLesson
+  listening: 'premium',   // F2 full — gated per-lesson via canAccessListening
+  band: 'premium',        // F7
+  stylePacks: 'premium',  // F8
+  reports: 'premium',     // F9
+  voice: 'premium',       // F10
+};
+
+function tierFor(feature) { return FEATURE_TIER[feature]; }
+
+class EntitlementStore {
+  constructor(initial) {
+    const i = initial || {};
+    this.platform = i.platform || 'ios';        // 'ios' | 'android' — single source, same on both
+    this.subscriptionActive = !!i.subscriptionActive;
+    this.trialActive = !!i.trialActive;
+    this.trialExpiry = i.trialExpiry || null;    // epoch ms
+    this.sandbox = !!i.sandbox;                  // sandbox receipt marker (test purchases)
+  }
+
+  // ---- subscription lifecycle (driven by the RevenueCat adapter) ----
+  activateSandboxPurchase(platform) {
+    this.platform = platform || this.platform;
+    this.subscriptionActive = true;
+    this.trialActive = false;
+    this.sandbox = true;
+  }
+  activatePurchase(platform) {
+    this.platform = platform || this.platform;
+    this.subscriptionActive = true;
+    this.trialActive = false;
+    this.sandbox = false;
+  }
+  startTrial(days = 7, now = Date.now()) {
+    this.trialActive = true;
+    this.trialExpiry = now + days * 86400000;
+  }
+  cancel() {
+    // cancels the paid subscription (and any trial); user reverts to free.
+    this.subscriptionActive = false;
+    this.trialActive = false;
+    this.sandbox = false;
+  }
+  resubscribe(platform) { return this.activatePurchase(platform); }
+
+  // ---- queries ----
+  isPremium(now = Date.now()) {
+    if (this.subscriptionActive) return true;
+    if (this.trialActive && this.trialExpiry && now < this.trialExpiry) return true;
+    return false;
+  }
+  isTrialExpired(now = Date.now()) {
+    return this.trialActive && this.trialExpiry && now >= this.trialExpiry;
+  }
+  // roll a lapsed trial back to free at app launch
+  settleTrial(now = Date.now()) {
+    if (this.trialActive && this.trialExpiry && now >= this.trialExpiry) this.trialActive = false;
+  }
+
+  hasUnlockedLesson() { return FREE_LESSONS.length > 0; }
+
+  canAccessFeature(feature, now = Date.now()) {
+    const t = tierFor(feature);
+    if (t === 'free') return true;
+    if (t === 'shell') return this.hasUnlockedLesson();
+    return this.isPremium(now); // 'premium'
+  }
+
+  canAccessLesson(lessonId, now = Date.now()) {
+    if (FREE_LESSONS.includes(lessonId)) return true;
+    return this.isPremium(now);
+  }
+
+  // listening is free exactly where the lesson is free (L01); premium elsewhere
+  canAccessListening(lessonId, now = Date.now()) {
+    if (FREE_LESSONS.includes(lessonId)) return true;
+    return this.isPremium(now);
+  }
+
+  // paywall decision: what to show a free user hitting a premium surface
+  paywallDecision(featureOrLesson, now = Date.now()) {
+    let allowed;
+    if (typeof featureOrLesson === 'string' && /^L\d+/i.test(featureOrLesson)) {
+      allowed = this.canAccessLesson(featureOrLesson, now);
+    } else {
+      allowed = this.canAccessFeature(featureOrLesson, now);
+    }
+    return { allowed, paywalled: !allowed, tier: this.isPremium(now) ? 'premium' : 'free' };
+  }
+
+  // enumerate exactly what the current entitlement exposes (auditable vs spec)
+  exposedFeatures(now = Date.now()) {
+    const out = [];
+    for (const f of Object.keys(FEATURE_TIER)) if (this.canAccessFeature(f, now)) out.push(f);
+    return out;
+  }
+
+  toJSON() {
+    return {
+      platform: this.platform,
+      subscriptionActive: this.subscriptionActive,
+      trialActive: this.trialActive,
+      trialExpiry: this.trialExpiry,
+      sandbox: this.sandbox,
+    };
+  }
+  static fromJSON(o) { return new EntitlementStore(o); }
+}
+
+
+
+const store = new EntitlementStore();
+
+const LESSONS = [
+  { id:'L01', title:'Tuner & first chord', free:true },
+  { id:'L02', title:'Two-chord change' },
+  { id:'L05', title:'Open chords' },
+  { id:'L10', title:'Core open chords' },
+  { id:'L15', title:'Strumming' },
+  { id:'L20', title:'Read a chord chart' },
+];
+
+function lessonState(l){
+  const ok = store.canAccessLesson(l.id);
+  return ok ? 'open' : 'locked';
+}
+
+function render(){
+  const box = document.getElementById('lessons');
+  box.innerHTML = '';
+  for (const l of LESSONS){
+    const ok = store.canAccessLesson(l.id);
+    const div = document.createElement('div');
+    div.className = 'lesson';
+    div.innerHTML = '<div class="name">'+l.id+'</div><div class="state '+(ok?'open':'locked')+'">'+(ok?'UNLOCKED':'🔒 paywall')+'</div>';
+    box.appendChild(div);
+  }
+  const tier = store.isPremium() ? 'PREMIUM ($12/mo)' : 'FREE';
+  const sandbox = store.sandbox ? ' <span class="pill">sandbox</span>' : '';
+  const trial = (store.trialActive && store.trialExpiry && Date.now() < store.trialExpiry) ? ' <span class="pill">trial active</span>' : '';
+  document.getElementById('status').innerHTML =
+    'Tier: <b>'+tier+'</b>'+sandbox+trial+' &middot; platform: <b>'+store.platform+'</b><br>'+
+    'Free sees: tuner + metronome + Lesson 1. Everything else hits the paywall.';
+}
+
+document.getElementById('buy').onclick = ()=>{ store.activateSandboxPurchase('ios'); render(); };
+document.getElementById('cancel').onclick = ()=>{ store.cancel(); render(); };
+document.getElementById('resub').onclick = ()=>{ store.resubscribe('ios'); render(); };
+document.getElementById('trial').onclick = ()=>{ store.startTrial(7); render(); };
+
+render();
+window.__store = store; // exposed for the DOM-stub smoke test
+</script>
+</body>
+</html>

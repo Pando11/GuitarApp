@@ -6,7 +6,7 @@ Start here. Read this before touching anything.
 
 ## Current truth
 
-- **Latest amendment:** `02-spec/guitar-app-spec-AMENDMENT-17.md` (World 1 teacher + first performance ladder)
+- **Latest amendment:** `02-spec/guitar-app-spec-AMENDMENT-17.md` (ratified World 1 teacher Sage + first performance ladder)
 - **Previous amendments** (described in AGENTS.md §Hard rules, §Amendment chain; their individual files did not survive the PC transfer):
   - AMENDMENT-01 through AMENDMENT-16 are referenced in `AGENTS.md` as current truth.
   - AMENDMENT-16 (PocketBase backend, 2026-08-16) is the latest backend word.

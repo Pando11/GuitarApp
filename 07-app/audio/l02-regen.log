@@ -1,0 +1,20 @@
+WARNING: Defaulting repo_id to hexgrad/Kokoro-82M. Pass repo_id='hexgrad/Kokoro-82M' to suppress this warning.
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+C:\Users\The Yoda Trader\Desktop\GuitarApp\.venv-kokoro\Lib\site-packages\torch\nn\modules\rnn.py:1011: UserWarning: dropout option adds dropout after all but last recurrent layer, so non-zero dropout expects num_layers greater than 1, but got dropout=0.2 and num_layers=1
+  super().__init__("LSTM", *args, **kwargs)
+C:\Users\The Yoda Trader\Desktop\GuitarApp\.venv-kokoro\Lib\site-packages\torch\nn\utils\weight_norm.py:144: FutureWarning: `torch.nn.utils.weight_norm` is deprecated in favor of `torch.nn.utils.parametrizations.weight_norm`.
+  WeightNorm.apply(module, name, dim)
+  generating 01-intro ...
+  wrote C:\Users\The Yoda Trader\Desktop\GuitarApp\07-app\audio\l02-voice\l02-01-intro.wav (31.8s)
+  generating 02-teach-shape ...
+  wrote C:\Users\The Yoda Trader\Desktop\GuitarApp\07-app\audio\l02-voice\l02-02-teach-shape.wav (43.6s)
+  generating 03-teach-strum ...
+  wrote C:\Users\The Yoda Trader\Desktop\GuitarApp\07-app\audio\l02-voice\l02-03-teach-strum.wav (31.1s)
+  generating 04-practice ...
+  wrote C:\Users\The Yoda Trader\Desktop\GuitarApp\07-app\audio\l02-voice\l02-04-practice.wav (12.5s)
+  generating 05-praise ...
+  wrote C:\Users\The Yoda Trader\Desktop\GuitarApp\07-app\audio\l02-voice\l02-05-praise.wav (14.9s)
+  generating 06-wrap ...
+  wrote C:\Users\The Yoda Trader\Desktop\GuitarApp\07-app\audio\l02-voice\l02-06-wrap.wav (19.7s)
+  wrote l02-full.wav
+DONE

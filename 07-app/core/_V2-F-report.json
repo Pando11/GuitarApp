@@ -1,0 +1,21 @@
+{
+  "modules": [
+    "07-app/core/practiceRemix.js",
+    "07-app/core/stylisticExplorer.js",
+    "07-app/core/songDiscovery.js",
+    "07-app/core/celebration.js"
+  ],
+  "test_stdout": "===== practiceRemix =====\npracticeRemix PASS — 3 framings, selected=groove, weakPair=G↔D, rate=15/min\n[exit 0]\n===== stylisticExplorer =====\nstylisticExplorer PASS — category=ballad, counts=1 & 2 & 3 & 4 &\n[exit 0]\n===== songDiscovery =====\nsongDiscovery PASS — playToday=3, nextStep=3, total=6\n[exit 0]\n===== celebration =====\ncelebration PASS — streak=5, chordsCleaned=12, daysPracticed=8\n[exit 0]",
+  "test_files": [
+    "07-app/core/practiceRemix.test.mjs",
+    "07-app/core/stylisticExplorer.test.mjs",
+    "07-app/core/songDiscovery.test.mjs",
+    "07-app/core/celebration.test.mjs"
+  ],
+  "signatures": {
+    "practiceRemix.js": "export function remixPlan(plan, engagement) -> { framings[3], selected, weakPair, ratePerMin, fluency, diagnostic, goal }  (engagement-data-only framing selection)",
+    "stylisticExplorer.js": "export function exploreStyle(chordOrProgression, opts) -> { input, bar, styleCategory, pattern, arrows, rhythmFeel, countsPerBar, stylesAvailable }  (category-only, no artist names)",
+    "songDiscovery.js": "export function discoverSongs({taughtChords, lane}) -> { disclaimer, playToday[], nextStep[], matches[] }  (two-lane match + why cites real chord + public_domain flag)",
+    "celebration.js": "export function buildCelebration(numbers) -> { text, numbers, privacy{layer1,layer2}, localFirst }  (stored-numbers only, no banned praise words)"
+  }
+}

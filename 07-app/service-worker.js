@@ -15,25 +15,28 @@
  * The real SW passed verify-sw-cache.mjs (4/0 ✅) per HANDOFF.md 2026-08-16. That truth is intact; the file is not.
  */
 
-const CACHE = "guitarapp-v1";  // ← BUMP THIS on every content change
+const CACHE = "guitarapp-v3";  // ← BUMP THIS on every content change
 
 const PRECACHE_URLS = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
-  "./core/app.js",
-  "./core/chatEngine.js",
-  "./core/chord-theory-check.js",
-  "./core/asset-job.js",
-  "./core/entitlementStore.js",
-  "./core/drillSelector.js",
-  "./core/listener-twin.js",
+  "./app.js",
+  "./core/backupButtons.js",
+  "./icons/icon.svg",
   "./content/lessons/manifest.json",
 ];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(PRECACHE_URLS))
+    caches.open(CACHE).then(async (cache) => {
+      await cache.addAll(PRECACHE_URLS);
+      const response = await fetch("./content/lessons/manifest.json");
+      if (!response.ok) throw new Error("Lesson manifest could not be cached");
+      const manifest = await response.json();
+      const files = Array.isArray(manifest.files) ? manifest.files : [];
+      await cache.addAll(files.map((file) => `./content/lessons/${file}`));
+    })
   );
   self.skipWaiting();
 });

@@ -1,0 +1,124 @@
+{
+  "lesson": {
+    "id": "P-E-A",
+    "title": "Practice: E <-> A — 1-minute changes",
+    "level": "beginner",
+    "lesson_type": "technique",
+    "one_line_promise": "Build fluency on E <-> A until 30+ clean changes/min.",
+    "objectives": [
+      "Run a 1-minute E <-> A change count",
+      "Hit 30 clean changes/min (advance) and aim for 60 (goal)",
+      "Let the app remember your weak pairs for spaced review"
+    ],
+    "estimated_minutes": 3,
+    "practice_of": [
+      "L18-new-chord-e"
+    ],
+    "engine": "one-minute-changes",
+    "pair": [
+      "E",
+      "A"
+    ],
+    "prerequisites": [],
+    "app_feature_mapping": {
+      "free_metronome": [
+        "drill tempo"
+      ]
+    }
+  },
+  "chords": {
+    "A": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "A major",
+      "frets": [
+        null,
+        0,
+        2,
+        2,
+        2,
+        0
+      ],
+      "fingers": [
+        null,
+        0,
+        1,
+        2,
+        3,
+        0
+      ]
+    },
+    "E": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "E major",
+      "frets": [
+        0,
+        2,
+        2,
+        1,
+        0,
+        0
+      ],
+      "fingers": [
+        0,
+        2,
+        3,
+        1,
+        0,
+        0
+      ]
+    }
+  },
+  "exercises": [
+    {
+      "id": "EX1-named",
+      "name": "E↔A, A↔Em — E <-> A",
+      "purpose": "Drill E <-> A as taught in the lesson.",
+      "params": {
+        "chord_pair": [
+          "E",
+          "A"
+        ],
+        "duration_sec": 60,
+        "measure": "count completed changes",
+        "canon_key": "A::E",
+        "target_per_min": 30,
+        "goal_per_min": 60
+      },
+      "coaching": "Metronome on. E to A, back and forth, as many clean changes as you can in one minute.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-30-60",
+      "name": "1-minute change drill — E <-> A",
+      "purpose": "Count completed E <-> A changes in 60s; the 30/60 engine records your rate into the fluency memory.",
+      "params": {
+        "chord_pair": [
+          "E",
+          "A"
+        ],
+        "duration_sec": 60,
+        "measure": "count completed changes",
+        "canon_key": "A::E",
+        "target_per_min": 30,
+        "goal_per_min": 60
+      },
+      "coaching": "Metronome on. E to A, back and forth, as many clean changes as you can in one minute. The app remembers this pair — your weakest pairs come back for spaced review automatically.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "Today we drill E <-> A. Clean, even changes — not fast messy ones.",
+    "results": "A higher count than last time means your hands are learning. That is the only metric that matters here.",
+    "wrap": "Logged to your fluency memory. If this pair is weak, it will resurface in review."
+  },
+  "qa_block": {
+    "must_verify": [
+      "Automated: practice lesson passes schema/validateLesson (all keys present, frets/fingers length 6, qa_status whitelisted).",
+      "Automated: pair key canonicalized so easyC<->X == C<->X (chord-canon.js) — no moat fragmentation.",
+      "Engine: one-minute-changes 30/60 counter wired; weak-pair fluency recorded."
+    ],
+    "flagged_by": "founder (non-player) — cannot self-verify",
+    "verifier_role": "arithmetic (chord-theory-check.js) + schema validate",
+    "guitarist_signoff": "NOT REQUIRED — chord fingerings verified deterministically by chord-theory-check.js."
+  }
+}

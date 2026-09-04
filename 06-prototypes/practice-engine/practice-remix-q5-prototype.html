@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PROTOTYPE — Practice remix: one weak spot, three framings (Q5 rough take)</title>
+<style>
+  /* PROTOTYPE — throwaway rough take for Q5 (07-practice-remix). Do not ship. */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Georgia, 'Times New Roman', serif;
+    background: #f4efe6;
+    color: #3a322a;
+    padding: 24px 20px 60px;
+    line-height: 1.55;
+  }
+  .prototype-banner {
+    background: #c9452b;
+    color: #fff;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    letter-spacing: 0.5px;
+    margin-bottom: 18px;
+  }
+  h1 {
+    font-size: 26px;
+    margin-bottom: 4px;
+    color: #2c241b;
+  }
+  .sub {
+    font-size: 15px;
+    color: #6b5d4d;
+    margin-bottom: 22px;
+    font-style: italic;
+  }
+  .sage-box {
+    background: #fffdf8;
+    border: 1px solid #d8c9b0;
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 22px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .sage-box p { margin-bottom: 8px; }
+  .sage-box p:last-child { margin-bottom: 0; }
+  .sage-name {
+    font-weight: bold;
+    color: #5a4a34;
+    font-size: 16px;
+  }
+  .weak-box {
+    background: #fffdf8;
+    border: 1px solid #d8c9b0;
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 22px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .weak-label {
+    font-size: 13px;
+    font-weight: bold;
+    color: #8a7a64;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .weak-pair {
+    font-size: 30px;
+    color: #2c241b;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+  }
+  .weak-detail {
+    font-size: 14px;
+    color: #6b5d4d;
+    font-style: italic;
+    margin-bottom: 10px;
+  }
+  .stat-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .stat {
+    font-size: 13px;
+    background: #f0e8d8;
+    border: 1px solid #d8c9b0;
+    border-radius: 6px;
+    padding: 6px 10px;
+    color: #5a4a34;
+  }
+  .stat strong { color: #2c241b; }
+  .shapes-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+  .shape-tag {
+    font-size: 13px;
+    background: #f0e8d8;
+    border: 1px solid #d8c9b0;
+    border-radius: 6px;
+    padding: 6px 10px;
+    color: #5a4a34;
+  }
+  .shape-tag strong { color: #2c241b; }
+  .selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .frame-btn {
+    font-family: Georgia, serif;
+    font-size: 16px;
+    padding: 10px 18px;
+    border: 1px solid #b8a890;
+    border-radius: 8px;
+    background: #fff;
+    color: #3a322a;
+    cursor: pointer;
+    flex: 1 1 auto;
+    min-width: 150px;
+  }
+  .frame-btn:hover { background: #f0e8d8; }
+  .frame-btn.active { background: #5a4a34; color: #fff; border-color: #4a3c2a; }
+  .frame-detail {
+    background: #fffdf8;
+    border: 1px solid #d8c9b0;
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 22px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    display: none;
+  }
+  .frame-detail.active { display: block; }
+  .frame-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #2c241b;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #ece2d2;
+  }
+  .frame-title.tempo { color: #a8402a; }
+  .frame-title.groove { color: #4a7a6a; }
+  .frame-title.calm { color: #4a5a7a; }
+  .pattern-label {
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #8a7a64;
+    margin-bottom: 4px;
+  }
+  .pattern-counts {
+    font-size: 14px;
+    color: #5a4a34;
+    font-family: 'Courier New', monospace;
+    background: #f0e8d8;
+    border-radius: 6px;
+    padding: 6px 8px;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+  .frame-body {
+    font-size: 14px;
+    color: #3a322a;
+    margin-bottom: 10px;
+  }
+  .sage-line {
+    font-size: 14px;
+    color: #3a322a;
+    font-style: italic;
+    border-top: 1px solid #ece2d2;
+    padding-top: 10px;
+  }
+  .sage-line::before {
+    content: "Sage: ";
+    font-weight: bold;
+    font-style: normal;
+    color: #5a4a34;
+  }
+  .disclaimer {
+    font-size: 12px;
+    color: #8a7a64;
+    margin-top: 22px;
+    padding-top: 12px;
+    border-top: 1px solid #ece2d2;
+    font-style: italic;
+  }
+  .reset-link {
+    display: inline-block;
+    margin-top: 14px;
+    font-size: 14px;
+    color: #8a6a4a;
+    cursor: pointer;
+    text-decoration: underline;
+    background: none;
+    border: none;
+    font-family: Georgia, serif;
+    padding: 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="prototype-banner">PROTOTYPE — throwaway rough take for Q5 (practice remix). Do not ship. One weak spot (G↔D) shown three ways — react to whether it feels like teaching or a gimmick.</div>
+
+<h1>One weak spot, three framings</h1>
+<p class="sub">A rough take of the practice-remix idea: the same student weak pair, framed three different ways. Pick a framing to see the drill.</p>
+
+<div class="sage-box">
+  <p><span class="sage-name">Sage:</span> "Your weakest chord pair right now is G to D — fluency 0.25, about 15 clean changes a minute. The diagnostic line is 30 a minute and the goal is 60. Same pair, three ways to practice it. Which one do you want to try?"</p>
+</div>
+
+<div class="weak-box">
+  <div class="weak-label">The weak pair (from fluency-store memory)</div>
+  <div class="weak-pair">G &#8596; D</div>
+  <div class="weak-detail">both chords are taught in the curriculum — G first appears in Lesson 08 (new-chord-g), D in Lesson 10 (new-chord-d). This pair is the lowest-fluency active pair in memory.</div>
+  <div class="stat-row">
+    <div class="stat">Stored fluency: <strong>0.25</strong></div>
+    <div class="stat">Clean changes/min: <strong>15</strong> (0.25 &times; 60, per fluency-store scoring)</div>
+    <div class="stat">Diagnostic line: <strong>30/min</strong> (score 0.5)</div>
+    <div class="stat">Goal: <strong>60/min</strong> (score 1.0)</div>
+  </div>
+  <div class="shapes-row">
+    <div class="shape-tag"><strong>G</strong> — middle on 3rd fret low E, index on 2nd fret A, ring on 3rd fret high e (verified shape from shapes.json)</div>
+    <div class="shape-tag"><strong>D</strong> — index on 2nd fret G, ring on 3rd fret B, middle on 2nd fret high e (verified shape from shapes.json)</div>
+  </div>
+</div>
+
+<div class="selector">
+  <button class="frame-btn active" data-frame="tempo">Tempo challenge</button>
+  <button class="frame-btn" data-frame="groove">Play-along groove</button>
+  <button class="frame-btn" data-frame="calm">Calm slow</button>
+</div>
+
+<div class="frame-detail active" id="frame-tempo">
+  <div class="frame-title tempo">Tempo challenge</div>
+  <div class="pattern-label">Drill (reuses the engine's Tempo-Scaled Loop / Metronome ladder)</div>
+  <div class="pattern-counts">metronome 15 &rarr; 18 &rarr; 21 &rarr; 24 &rarr; 30 BPM-on-the-change, one clean G&#8596;D per click</div>
+  <div class="frame-body">Start the click at 15 changes/min (your stored rate). Each time you land a clean change on the beat for a full bar, step the click up one notch. The line to beat is 30/min — that's the diagnostic, not a wall. Miss it and Sage just reports the number and feeds memory; the next linear technique lesson is not blocked.</div>
+  <div class="sage-line">"You're at 15 a minute on this pair. Let's nudge it: 15, then 18, then 21. Stop the instant a change isn't clean — a muddled change doesn't count, per the 30/60 sensor. We're measuring the real number, not racing it."</div>
+</div>
+
+<div class="frame-detail" id="frame-groove">
+  <div class="frame-title groove">Play-along groove</div>
+  <div class="pattern-label">Drill (reuses the engine's Weak-Pair Review loop)</div>
+  <div class="pattern-counts">loop: G - D - G - D &nbsp;|&nbsp; one bar each, steady 4/4 at 15/min</div>
+  <div class="frame-body">Same G&#8596;D pair, but inside a four-bar loop you can stay on. Hold each chord a full bar and let it ring. This is the framing that maps onto a real song shape — Amazing Grace (SP11, traditional / public domain) runs G - C - G - D - G, so the D landing is the same move you'll use in a tune you already have every chord for.</div>
+  <div class="sage-line">"Same two chords, but now they're a loop, not a drill. Keep it even — one bar G, one bar D. When it feels like a groove instead of a change, that's the pair sticking."</div>
+</div>
+
+<div class="frame-detail" id="frame-calm">
+  <div class="frame-title calm">Calm slow</div>
+  <div class="pattern-label">Drill (slowed loop — same pair, lower tempo)</div>
+  <div class="pattern-counts">loop: G - D &nbsp;|&nbsp; 8 slow counts per chord, ~15/min, no click pressure</div>
+  <div class="frame-body">The same G&#8596;D pair at the same stored 15/min, but with no metronome pushing. Eight slow counts on G, eight on D, full ring, no rush. This is the framing for a tired hand or a short session — it still records the pair in memory, it just doesn't score against the 30/min line.</div>
+  <div class="sage-line">"No clock on this one. Eight slow counts on G, eight on D, let them ring. You're still practicing the pair — we're just not racing the number today."</div>
+</div>
+
+<p class="disclaimer">PROTOTYPE — throwaway rough take for Q5 (practice remix). Not production. Every number shown is a real stored value: fluency 0.25 and the 15/30/60 per-minute scale come from fluency-store.mjs (score = clamp(ratePerMin/60, 0, 1)); the G and D shapes are the verified open-chord shapes from shapes.json; lesson positions (G = Lesson 08, D = Lesson 10) are from 07-app/content/lessons. No invented musical opinion (Rule 5) — Sage cites stored numbers only. The Play-along framing references SP11 "Amazing Grace," which is traditional / public domain (progressions.json, public_domain: true) and unrestricted. Chord progressions and song titles only — no riffs, melodies, lyrics, or tabs (AMENDMENT-12/14).</p>
+
+<script>
+/* PROTOTYPE — throwaway rough take for Q5. Do not ship. */
+// Real stored weak pair + fluency (mirrors fluency-store.mjs scoring).
+const WEAK_PAIR = "G↔D";
+const FLUENCY = 0.25;                 // stored fluency for G↔D (cold-start = 0)
+const RATE_PER_MIN = Math.round(FLUENCY * 60);  // 15, per fluency-store: score = clamp(ratePerMin/60,0,1)
+const DIAGNOSTIC = 30;                // 30/min => score 0.5 (advance, diagnostic)
+const GOAL = 60;                      // 60/min => score 1.0 (goal)
+
+const buttons = document.querySelectorAll(".frame-btn");
+const details = document.querySelectorAll(".frame-detail");
+
+function selectFrame(name) {
+  buttons.forEach(b => b.classList.toggle("active", b.dataset.frame === name));
+  details.forEach(d => d.classList.toggle("active", d.id === "frame-" + name));
+}
+
+buttons.forEach(b => b.addEventListener("click", () => selectFrame(b.dataset.frame)));
+
+// Default framing shown (Tempo challenge) — all three are selectable above.
+selectFrame("tempo");
+</script>
+
+</body>
+</html>

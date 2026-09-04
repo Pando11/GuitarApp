@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PROTOTYPE — Song discovery by taste (Q5 rough take)</title>
+<style>
+  /* PROTOTYPE — throwaway, do not ship. Q5 rough take for Heidi to react to. */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Georgia, 'Times New Roman', serif;
+    background: #f4efe6;
+    color: #3a322a;
+    padding: 24px 20px 60px;
+    line-height: 1.55;
+  }
+  .prototype-banner {
+    background: #c9452b;
+    color: #fff;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    letter-spacing: 0.5px;
+    margin-bottom: 18px;
+  }
+  h1 {
+    font-size: 26px;
+    margin-bottom: 4px;
+    color: #2c241b;
+  }
+  .sub {
+    font-size: 15px;
+    color: #6b5d4d;
+    margin-bottom: 22px;
+    font-style: italic;
+  }
+  .sage-box {
+    background: #fffdf8;
+    border: 1px solid #d8c9b0;
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 22px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .sage-box p { margin-bottom: 8px; }
+  .sage-box p:last-child { margin-bottom: 0; }
+  .sage-name {
+    font-weight: bold;
+    color: #5a4a34;
+    font-size: 16px;
+  }
+  .input-area {
+    background: #fffdf8;
+    border: 1px solid #d8c9b0;
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .input-area label {
+    display: block;
+    font-size: 15px;
+    font-weight: bold;
+    color: #5a4a34;
+    margin-bottom: 6px;
+  }
+  .input-area .hint {
+    font-size: 13px;
+    color: #8a7a64;
+    margin-bottom: 12px;
+    font-style: italic;
+  }
+  .voice-field {
+    width: 100%;
+    font-size: 18px;
+    padding: 12px 14px;
+    border: 1px solid #b8a890;
+    border-radius: 8px;
+    background: #fff;
+    color: #3a322a;
+    font-family: Georgia, serif;
+    margin-bottom: 14px;
+  }
+  .voice-field:focus { outline: 2px solid #c9702b; border-color: #c9702b; }
+  .button-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .taste-btn {
+    font-family: Georgia, serif;
+    font-size: 16px;
+    padding: 10px 18px;
+    border: 1px solid #b8a890;
+    border-radius: 8px;
+    background: #fff;
+    color: #3a322a;
+    cursor: pointer;
+    flex: 1 1 auto;
+    min-width: 110px;
+  }
+  .taste-btn:hover { background: #f0e8d8; }
+  .taste-btn:active { background: #e2d4bd; }
+  .surprise-btn {
+    background: #c9702b;
+    color: #fff;
+    border-color: #a85a1e;
+    font-weight: bold;
+  }
+  .surprise-btn:hover { background: #b85e1f; }
+  .progress-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .progress-row span {
+    font-size: 14px;
+    color: #6b5d4d;
+  }
+  .progress-select {
+    font-family: Georgia, serif;
+    font-size: 15px;
+    padding: 6px 10px;
+    border: 1px solid #b8a890;
+    border-radius: 6px;
+    background: #fff;
+  }
+  .go-btn {
+    font-family: Georgia, serif;
+    font-size: 16px;
+    padding: 10px 22px;
+    border: none;
+    border-radius: 8px;
+    background: #5a4a34;
+    color: #fff;
+    cursor: pointer;
+    margin-top: 14px;
+  }
+  .go-btn:hover { background: #4a3c2a; }
+  .lanes {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-top: 6px;
+  }
+  @media (min-width: 700px) {
+    .lanes { grid-template-columns: 1fr 1fr; }
+  }
+  .lane {
+    background: #fffdf8;
+    border: 1px solid #d8c9b0;
+    border-radius: 10px;
+    padding: 16px 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .lane-title {
+    font-size: 17px;
+    font-weight: bold;
+    color: #5a4a34;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #ece2d2;
+  }
+  .lane-empty {
+    font-size: 15px;
+    color: #8a7a64;
+    font-style: italic;
+  }
+  .song-card {
+    background: #fff;
+    border: 1px solid #e2d4bd;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .song-card:last-child { margin-bottom: 0; }
+  .song-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #2c241b;
+  }
+  .song-artist {
+    font-size: 13px;
+    color: #8a7a64;
+    margin-bottom: 6px;
+  }
+  .song-loop {
+    font-size: 13px;
+    color: #6b5d4d;
+    font-style: italic;
+    margin-bottom: 6px;
+  }
+  .why {
+    font-size: 13px;
+    color: #5a4a34;
+    background: #f0e8d8;
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-top: 6px;
+    border-left: 3px solid #c9702b;
+  }
+  .why-label {
+    font-weight: bold;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #8a6a4a;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .disclaimer {
+    font-size: 12px;
+    color: #8a7a64;
+    margin-top: 18px;
+    padding-top: 12px;
+    border-top: 1px solid #ece2d2;
+    font-style: italic;
+  }
+  .reset-link {
+    display: inline-block;
+    margin-top: 14px;
+    font-size: 14px;
+    color: #8a6a4a;
+    cursor: pointer;
+    text-decoration: underline;
+    background: none;
+    border: none;
+    font-family: Georgia, serif;
+    padding: 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="prototype-banner">PROTOTYPE — throwaway rough take for Q5. Not production. Voice is the main way; buttons below are the backup.</div>
+
+<h1>Tell Sage what music you like</h1>
+<p class="sub">A rough take of taste → match, so you can react to how it feels.</p>
+
+<div class="sage-box">
+  <p><span class="sage-name">Sage:</span> "Hey — tell me what kind of music you love. You can just say it out loud, or tap a button below if you'd rather."</p>
+  <p>"Something like 'campfire songs,' 'upbeat party music,' 'the stuff my grandmother played,' or even 'I don't know — surprise me.' I'll find songs in your lessons that fit."</p>
+</div>
+
+<div class="input-area">
+  <label for="tasteInput">What do you like?</label>
+  <p class="hint">Type a phrase here (standing in for talking to Sage). Or tap a button — that's the backup.</p>
+  <input id="tasteInput" class="voice-field" type="text" placeholder="e.g. campfire songs, upbeat stuff, nothing I can name, surprise me..." autocomplete="off">
+
+  <div class="button-row">
+    <button class="taste-btn" data-taste="calm">Calm</button>
+    <button class="taste-btn" data-taste="upbeat">Upbeat</button>
+    <button class="taste-btn" data-taste="classic">Classic</button>
+    <button class="taste-btn" data-taste="surprise">Surprise me</button>
+  </div>
+
+  <div class="progress-row">
+    <span>Where are you in the lessons?</span>
+    <select id="lessonSelect" class="progress-select">
+      <option value="3">Lesson 3 — just learned Em</option>
+      <option value="4">Lesson 4 — added easy C</option>
+      <option value="8">Lesson 8 — added G</option>
+      <option value="10" selected>Lesson 10 — four-chord milestone (Em, C, G, D)</option>
+      <option value="12">Lesson 12 — added Am</option>
+      <option value="17">Lesson 17 — added F (easy)</option>
+      <option value="19">Lesson 19 — added A7</option>
+      <option value="20">Lesson 20 — all eight chords</option>
+    </select>
+  </div>
+
+  <button id="goBtn" class="go-btn">Show me what Sage finds</button>
+</div>
+
+<div id="results"></div>
+
+<p class="disclaimer">Prototype uses the real 11-song progression catalog. Song titles + chord progressions only — no riffs, melodies, lyrics, or tabs (AMENDMENT-12/14). Band names are nominative use only; Sage is not affiliated with and does not endorse the artists. "The House of the Rising Sun" and "Amazing Grace" are traditional/public domain.</p>
+
+<script>
+/* PROTOTYPE — throwaway rough take for Q5. Do not ship. */
+
+// ---- Real catalog (from progressions.json on disk) ----
+const SONGS = [
+  {
+    id: "SP01", title: "Zombie", artist: "The Cranberries",
+    difficulty: 1, key: "E minor",
+    chords: ["Em", "Ceasy", "G", "D"],
+    loop: "Em - C - G - D", bars_each: 1,
+    feel: "slow driving 4/4, heavy downstrokes", bpm: 84,
+    teaches: ["Em->C change", "G->D change", "holding a loop without stopping"],
+    unlock_after_lesson: 10,
+  }, {
+    id: "SP02", title: "Californication", artist: "Red Hot Chili Peppers",
+    difficulty: 1, key: "A minor",
+    chords: ["Am", "Feasy", "Ceasy", "G"],
+    loop: "Am - F - C - G", bars_each: 1,
+    feel: "clean, even eighth notes, relaxed", bpm: 96,
+    teaches: ["Am->F change", "the 2-finger F", "vi-IV-I-V - the most common loop in pop music"],
+    unlock_after_lesson: 17,
+  }, {
+    id: "SP03", title: "Sweet Home Alabama", artist: "Lynyrd Skynyrd",
+    difficulty: 1, key: "G major",
+    chords: ["D", "Ceasy", "G"],
+    loop: "D - C - G", bars_each: 1,
+    feel: "loose southern shuffle, accent the 2 and 4", bpm: 98,
+    teaches: ["D->C change", "C->G change", "three-chord loop with no minor chords"],
+    unlock_after_lesson: 10,
+  }, {
+    id: "SP04", title: "Highway to Hell", artist: "AC/DC",
+    difficulty: 2, key: "A major",
+    chords: ["A", "D", "G"],
+    loop: "A - D - G - D", bars_each: 1,
+    feel: "hard, short, stabbed chords - silence between them", bpm: 116,
+    teaches: ["A->D change", "muting between stabs", "playing LESS than you can"],
+    unlock_after_lesson: 11,
+  }, {
+    id: "SP05", title: "Johnny B. Goode", artist: "Chuck Berry",
+    difficulty: 2, key: "A major",
+    chords: ["A", "D", "E", "A7"],
+    loop: "A(3) - A7(1) - D(2) - A(2) - E(1) - D(1) - A(2)", bars_each: 1,
+    feel: "straight-eight rock and roll, drive it", bpm: 160,
+    teaches: ["the 12-bar blues form", "A->D->E changes at speed", "counting bars, not chords"],
+    unlock_after_lesson: 19,
+  }, {
+    id: "SP06", title: "The House of the Rising Sun", artist: "traditional (public domain)",
+    difficulty: 2, key: "A minor",
+    chords: ["Am", "Ceasy", "D", "Feasy", "E"],
+    loop: "Am - C - D - F - Am - C - E - E", bars_each: 1,
+    feel: "6/8 rolling arpeggios or slow strum", bpm: 76,
+    teaches: ["6/8 feel", "minor-key movement", "five chords in one progression"],
+    public_domain: true,
+    unlock_after_lesson: 18,
+  }, {
+    id: "SP07", title: "Nothing Else Matters", artist: "Metallica",
+    difficulty: 2, key: "E minor",
+    chords: ["Em", "D", "Ceasy"],
+    loop: "Em - D - C - D", bars_each: 2,
+    feel: "slow, quiet, let each chord ring", bpm: 70,
+    teaches: ["Em->D change", "letting chords ring full length", "dynamics - playing softly on purpose"],
+    unlock_after_lesson: 10,
+  }, {
+    id: "SP08", title: "Back In Black", artist: "AC/DC",
+    difficulty: 2, key: "E major",
+    chords: ["E", "D", "A"],
+    loop: "E - D - A", bars_each: 1,
+    feel: "heavy, swaggering, leave gaps", bpm: 92,
+    teaches: ["E->D change", "D->A change", "swagger - timing over speed"],
+    unlock_after_lesson: 18,
+  }, {
+    id: "SP09", title: "Wish You Were Here", artist: "Pink Floyd",
+    difficulty: 3, key: "G major",
+    chords: ["Em", "G", "A7", "Ceasy", "D"],
+    loop: "Em - G - Em - G - Em - A7 - Em - A7 - G - C - D - C - G", bars_each: 2,
+    feel: "gentle, spacious, brushed strums", bpm: 60,
+    teaches: ["A7 shape", "long-form progression (not a 4-bar loop)", "restraint"],
+    unlock_after_lesson: 19,
+  }, {
+    id: "SP10", title: "Stairway to Heaven", artist: "Led Zeppelin",
+    difficulty: 3, key: "A minor",
+    chords: ["Am", "Ceasy", "D", "Feasy", "G"],
+    loop: "Am - C - D - F - Am - C - G - D", bars_each: 1,
+    feel: "gentle arpeggios, one note at a time", bpm: 72,
+    teaches: ["Am->C->D movement", "arpeggiating instead of strumming", "F in a progression"],
+    unlock_after_lesson: 17,
+  }, {
+    id: "SP11", title: "Amazing Grace", artist: "traditional (public domain)",
+    difficulty: 1, key: "G major",
+    chords: ["G", "C", "D"],
+    loop: "G - C - G - D - G", bars_each: 1,
+    feel: "slow, reverent, full ringing strums", bpm: 70,
+    teaches: ["three-chord I-IV-I-V-I movement", "holding a slow, even strum", "a universally recognised hymn as an early win"],
+    public_domain: true,
+    unlock_after_lesson: 10,
+  },
+];
+
+// ---- Chords taught, by lesson (from chord-prereqs.json on disk) ----
+const FIRST_TAUGHT = {
+  Em: 3, C: 4, Ceasy: 4, G: 8, D: 10,
+  A: 11, Am: 12, E: 18, Dm: 20, Feasy: 17, A7: 19,
+};
+
+// ---- Taste -> feel tags ----
+// Each tag is a word/phrase a student might say; the value is the set of
+// feel-words that count as a match for it. Kept small and obvious on purpose.
+const TASTE_TAGS = {
+  calm:     ["slow", "quiet", "gentle", "reverent", "soft", "spacious", "rolling", "six-eight", "6/8"],
+  upbeat:   ["driving", "heavy", "upbeat", "party", "rock and roll", "straight-eight", "stabbing", "swagger", "bounce"],
+  classic:  ["classic", "traditional", "folk", "southern", "hymn", "old", "widely known", "recognised"],
+  campfire: ["campfire", "singalong", "three-chord", "simple", "driving", "rock and roll", "shuffle"],
+};
+
+// ---- Which feel-words each song carries (derived from the catalog's "feel") ----
+function songFeelWords(song) {
+  // Tokenize the feel field plus the loop simplicity signal.
+  const words = song.feel.toLowerCase().split(/[,\-–/]+/).map(w => w.trim()).filter(Boolean);
+  if (song.chords.length <= 3) words.push("three-chord", "simple");
+  if (song.bpm >= 110) words.push("fast", "driving");
+  if (song.bpm <= 76) words.push("slow", "quiet");
+  if (song.public_domain) words.push("traditional", "public domain", "folk", "hymn");
+  return words;
+}
+
+// ---- Student's taught-chord set at a given lesson ----
+function taughtChordsAtLesson(lesson) {
+  const set = new Set();
+  for (const [chord, firstLesson] of Object.entries(FIRST_TAUGHT)) {
+    if (firstLesson <= lesson) set.add(chord);
+  }
+  return set;
+}
+
+// ---- Does the student have every chord this song needs? ----
+function canPlayToday(song, taught) {
+  return song.chords.every(c => taught.has(c));
+}
+
+// ---- Taste match score: how many feel-words overlap ----
+function tasteOverlap(song, taste) {
+  const feelWords = songFeelWords(song);
+  const tags = TASTE_TAGS[taste];
+  if (!tags) return 0;
+  let count = 0;
+  for (const tag of tags) {
+    if (feelWords.includes(tag)) count++;
+  }
+  return count;
+}
+
+// ---- Build a "why" sentence for a given match ----
+function whySong(song, taste, lane) {
+  const feelWords = songFeelWords(song);
+  const tags = TASTE_TAGS[taste] || [];
+
+  // Find which taste tags hit.
+  const hits = tags.filter(t => feelWords.includes(t));
+  let feelBit = "";
+  if (hits.length) {
+    feelBit = `"${song.feel}" — that reads as ${hits.join(" / ")}`;
+  } else {
+    feelBit = `"${song.feel}"`;
+  }
+
+  let extra = "";
+  if (song.public_domain) extra = " This one's traditional and public domain, so it's yours to play and record freely.";
+
+  if (lane === "today") {
+    return `You already have every chord it needs (learned by lesson ${song.unlock_after_lesson}). ${feelBit}.${extra}`;
+  } else {
+    return `You don't have every chord yet — it unlocks after lesson ${song.unlock_after_lesson}, and you're at lesson ${currentLesson}. ${feelBit}${extra}`;
+  }
+}
+
+// ---- State ----
+let currentTaste = "surprise";
+let currentLesson = 10;
+
+// ---- Render ----
+const resultsEl = document.getElementById("results");
+const tasteInput = document.getElementById("tasteInput");
+const lessonSelect = document.getElementById("lessonSelect");
+const goBtn = document.getElementById("goBtn");
+
+function render() {
+  const taught = taughtChordsAtLesson(currentLesson);
+
+  // Play-today pool: can play AND has some taste signal (or surprise picks from the pool).
+  let todayPool = SONGS.filter(s => canPlayToday(s, taught));
+  let nextPool = SONGS.filter(s => !canPlayToday(s, taught) && s.unlock_after_lesson > currentLesson);
+
+  // Score and sort.
+  let todayScored = todayPool.map(s => ({ song: s, score: tasteOverlap(s, currentTaste) }));
+  let nextScored = nextPool.map(s => ({ song: s, score: tasteOverlap(s, currentTaste) }));
+
+  // For "surprise me": rank by difficulty then by how many chords you already have (smaller step = better).
+  if (currentTaste === "surprise") {
+    todayScored.sort((a, b) => a.song.difficulty - b.song.difficulty || a.song.chords.length - b.song.chords.length);
+    nextScored.sort((a, b) => a.song.unlock_after_lesson - b.song.unlock_after_lesson);
+  } else {
+    todayScored.sort((a, b) => b.score - a.score || a.song.difficulty - b.song.difficulty);
+    nextScored.sort((a, b) => b.score - a.score || a.song.unlock_after_lesson - b.song.unlock_after_lesson);
+  }
+
+  // Cap the visible set so it doesn't feel like a spreadsheet.
+  const todayShow = todayScored.slice(0, 4).filter(x => x.score > 0 || currentTaste === "surprise");
+  const nextShow = nextScored.slice(0, 3).filter(x => x.score > 0 || currentTaste === "surprise");
+
+  // If nothing matched the taste at all in a lane, surface the closest available as a nudge.
+  if (todayShow.length === 0 && todayPool.length) {
+    // Best available by difficulty.
+    const fallback = [...todayPool].sort((a, b) => a.song.difficulty - b.song.difficulty);
+    todayShow.push({ song: fallback[0], score: 0, fallback: true });
+  }
+  if (nextShow.length === 0 && nextPool.length) {
+    const fallback = [...nextPool].sort((a, b) => a.song.unlock_after_lesson - b.song.unlock_after_lesson);
+    nextShow.push({ song: fallback[0], score: 0, fallback: true });
+  }
+
+  let html = '<div class="lanes">';
+
+  // Lane 1: play today
+  html += '<div class="lane">';
+  html += '<div class="lane-title">Play today — songs you already have the chords for</div>';
+  if (todayShow.length === 0) {
+    html += '<p class="lane-empty">No songs you can play today match that. Try a different taste, or tap "Surprise me."</p>';
+  } else {
+    for (const item of todayShow) {
+      const s = item.song;
+      const publicTag = s.public_domain ? ' <span style="font-size:12px;color:#8a7a64;">(public domain)</span>' : '';
+      html += `<div class="song-card">
+        <div class="song-title">${s.title}${publicTag}</div>
+        <div class="song-artist">by ${s.artist}</div>
+        <div class="song-loop">${s.loop} &nbsp;·&nbsp; ${s.key} &nbsp;·&nbsp; ${s.bpm} bpm</div>
+        <div class="why">
+          <span class="why-label">Why Sage picked this</span>
+          ${item.fallback ? "Closest thing you can play today, by difficulty — no strong taste signal, but it's in reach." : whySong(s, currentTaste, "today")}
+        </div>
+      </div>`;
+    }
+  }
+  html += '</div>';
+
+  // Lane 2: next step
+  html += '<div class="lane">';
+  html += '<div class="lane-title">Next step — the smallest unlock toward something you might love</div>';
+  if (nextShow.length === 0) {
+    html += '<p class="lane-empty">Everything you'd love is already in "Play today." Nice spot to be in.</p>';
+  } else {
+    for (const item of nextShow) {
+      const s = item.song;
+      const chordsMissing = s.chords.filter(c => !taught.has(c));
+      const publicTag = s.public_domain ? ' <span style="font-size:12px;color:#8a7a64;">(public domain)</span>' : '';
+      const missingList = chordsMissing.length
+        ? `You're missing: ${chordsMissing.join(", ")}`
+        : "You have all but one of its chords";
+      html += `<div class="song-card">
+        <div class="song-title">${s.title}${publicTag}</div>
+        <div class="song-artist">by ${s.artist}</div>
+        <div class="song-loop">${s.loop} &nbsp;·&nbsp; ${s.key} &nbsp;·&nbsp; unlocks after lesson ${s.unlock_after_lesson}</div>
+        <div class="why">
+          <span class="why-label">Why Sage picked this</span>
+          ${item.fallback ? "Closest unlock by lesson number — no strong taste signal, but it's the smallest step forward." : whySong(s, currentTaste, "next")}
+          <br><span style="font-size:12px;color:#8a7a64;">${missingList}.</span>
+        </div>
+      </div>`;
+    }
+  }
+  html += '</div>';
+
+  html += '</div>';
+  resultsEl.innerHTML = html;
+}
+
+// ---- Wire events ----
+tasteInput.addEventListener("input", () => {
+  // Map free text to a taste tag when possible (case-insensitive substring).
+  const v = tasteInput.value.trim().toLowerCase();
+  if (!v) return;
+  if (v.includes("surprise") || v.includes("don't know") || v.includes("nothing i can name") || v.includes("pick something")) {
+    currentTaste = "surprise";
+  } else if (v.includes("calm") || v.includes("quiet") || v.includes("slow") || v.includes("soft") || v.includes("gentle")) {
+    currentTaste = "calm";
+  } else if (v.includes("upbeat") || v.includes("fast") || v.includes("party") || v.includes("driving") || v.includes("rock")) {
+    currentTaste = "upbeat";
+  } else if (v.includes("classic") || v.includes("traditional") || v.includes("folk") || v.includes("grandmother") || v.includes("hymn") || v.includes("old")) {
+    currentTaste = "classic";
+  } else if (v.includes("campfire") || v.includes("singalong") || v.includes("three-chord")) {
+    currentTaste = "campfire";
+  }
+});
+
+document.querySelectorAll(".taste-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const t = btn.dataset.taste;
+    currentTaste = t;
+    tasteInput.value = "";
+    if (t === "surprise") tasteInput.placeholder = "e.g. campfire songs, upbeat stuff, nothing I can name, surprise me...";
+    render();
+  });
+});
+
+goBtn.addEventListener("click", () => {
+  if (!tasteInput.value.trim()) {
+    // If the field is empty, default to surprise.
+    currentTaste = "surprise";
+  }
+  currentLesson = parseInt(lessonSelect.value, 10);
+  render();
+});
+
+lessonSelect.addEventListener("change", () => {
+  currentLesson = parseInt(lessonSelect.value, 10);
+  render();
+});
+
+// Initial render at the default state (lesson 10, taste = surprise so the page has something on it).
+currentTaste = "surprise";
+tasteInput.placeholder = "e.g. campfire songs, upbeat stuff, nothing I can name, surprise me...";
+render();
+</script>
+</body>
+</html>

@@ -1,8 +1,8 @@
-# HANDOFF — GuitarApp (current state, re-synced 2026-08-16 — AMENDMENT-16 PocketBase + fidelity gate GREEN)
+# HANDOFF — GuitarApp (current pointer re-synced 2026-09-02 — AMENDMENT-17 World 1 teacher + performance ladder ratified)
 
 Single source-of-truth pointer file (per owner preference). The current TRUTH is:
 `02-spec/FEATURES-LOCKED-v1-2026-08-07.md` + `PLAN-from-locked-spec-2026-08-07.md`,
-the amendment chain through **AMENDMENT-16** (PocketBase backend, 2026-08-16), the live PWA in `07-app/`, and this file.
+the amendment chain through **AMENDMENT-17** (World 1 teacher + first performance ladder, ratified 2026-09-02), the live PWA in `07-app/`, and this file.
 
 > This file was RE-WRITTEN on 2026-08-13. The prior version was frozen at the Aug-8 PWA spike
 > and did NOT reflect AMENDMENT-09/10/11, the Godot story-world, or the practice-engine (Aug 12).

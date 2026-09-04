@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Guitar Lessons — Kanban</title>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#161b22; --panel2:#1c232d; --col:#11161d;
+    --txt:#e6edf3; --mut:#8b97a7; --line:#2a323d;
+    --acc:#7c5cff; --acc2:#36d399; --warn:#f59e0b; --bad:#ff5c7c;
+    --shadow:0 8px 24px rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; height:100%;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:linear-gradient(180deg,#0e1116,#0b0e13); color:var(--txt);
+    overflow:hidden; touch-action:manipulation;
+  }
+  header{
+    display:flex; align-items:center; gap:12px; padding:12px 16px;
+    background:linear-gradient(90deg,#161b22,#11161d); border-bottom:1px solid var(--line);
+    position:sticky; top:0; z-index:30;
+  }
+  header h1{font-size:17px; margin:0; letter-spacing:.3px; flex:0 0 auto;}
+  header h1 .em{color:var(--acc);}
+  .spacer{flex:1 1 auto;}
+  .search{
+    background:var(--panel2); border:1px solid var(--line); border-radius:9px;
+    color:var(--txt); padding:8px 11px; font-size:14px; width:180px; outline:none;
+  }
+  .btn{
+    background:var(--panel2); border:1px solid var(--line); color:var(--txt);
+    border-radius:9px; padding:8px 12px; font-size:13px; cursor:pointer; white-space:nowrap;
+  }
+  .btn:hover{border-color:var(--acc);}
+  .btn.accent{background:var(--acc); border-color:var(--acc); color:#fff; font-weight:600;}
+  .board{
+    display:flex; gap:14px; padding:16px; height:calc(100% - 57px);
+    overflow-x:auto; overflow-y:hidden; align-items:flex-start;
+  }
+  .col{
+    background:var(--col); border:1px solid var(--line); border-radius:14px;
+    width:288px; min-width:288px; max-height:100%; display:flex; flex-direction:column;
+    box-shadow:var(--shadow);
+  }
+  .col.dragover{border-color:var(--acc); box-shadow:0 0 0 2px var(--acc) inset;}
+  .col-head{
+    display:flex; align-items:center; gap:8px; padding:12px 13px 9px; border-bottom:1px solid var(--line);
+  }
+  .dot{width:10px; height:10px; border-radius:50%; flex:0 0 auto;}
+  .col-title{font-weight:700; font-size:14px; flex:1 1 auto; letter-spacing:.2px;}
+  .count{background:var(--panel2); color:var(--mut); font-size:12px; padding:2px 8px; border-radius:20px; min-width:22px; text-align:center;}
+  .col-body{
+    padding:10px; overflow-y:auto; flex:1 1 auto; display:flex; flex-direction:column; gap:9px;
+    min-height:60px;
+  }
+  .wip{font-size:11px; color:var(--mut); padding:0 13px 4px; margin-top:-2px;}
+  .wip.over{color:var(--bad); font-weight:600;}
+  .card{
+    background:linear-gradient(180deg,var(--panel),var(--panel2));
+    border:1px solid var(--line); border-radius:11px; padding:10px 11px;
+    cursor:grab; position:relative; user-select:none; touch-action:none;
+  }
+  .card:active{cursor:grabbing;}
+  .card.dragging{opacity:.4;}
+  .card .txt{font-size:13.5px; line-height:1.4; white-space:pre-wrap; word-break:break-word;}
+  .card .meta{display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;}
+  .tag{font-size:10.5px; padding:2px 7px; border-radius:20px; border:1px solid var(--line); color:var(--mut);}
+  .tag.audio{color:#36d399; border-color:#1c5a40;}
+  .tag.build{color:#7c5cff; border-color:#3a2a7a;}
+  .tag.qa{color:#f59e0b; border-color:#5a4410;}
+  .tag.spec{color:#5bb8ff; border-color:#1f4a66;}
+  .tag.gate{color:#ff5c7c; border-color:#6a2436;}
+  .card .del{
+    position:absolute; top:6px; right:7px; color:var(--mut); font-size:14px; cursor:pointer;
+    opacity:0; transition:opacity .15s; line-height:1; padding:2px 4px;
+  }
+  .card:hover .del{opacity:1;}
+  .card .del:hover{color:var(--bad);}
+  .add{
+    margin:0 10px 11px; background:transparent; border:1px dashed var(--line);
+    color:var(--mut); border-radius:9px; padding:8px; font-size:13px; cursor:pointer;
+  }
+  .add:hover{border-color:var(--acc); color:var(--acc);}
+  .ghost{opacity:.85; transform:rotate(2deg); box-shadow:0 12px 30px rgba(0,0,0,.6);}
+  .card-edit{
+    width:100%; background:var(--panel); color:var(--txt); border:1px solid var(--acc);
+    border-radius:8px; padding:8px; font-size:13.5px; font-family:inherit; resize:vertical; min-height:54px; outline:none;
+  }
+  .footer-note{font-size:11px; color:var(--mut); padding:6px 16px; text-align:center; border-top:1px solid var(--line);}
+  @media (max-width:640px){
+    .search{width:120px;} header h1{font-size:15px;}
+    .board{padding:10px; gap:10px;}
+    .col{width:84vw; min-width:84vw;}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>🎸 <span class="em">Guitar Lessons</span> Kanban</h1>
+  <div class="spacer"></div>
+  <input class="search" id="search" placeholder="Filter cards…" oninput="applyFilter()">
+  <button class="btn" onclick="exportJSON()">Export</button>
+  <button class="btn" onclick="importJSON()">Import</button>
+  <button class="btn accent" onclick="resetBoard()">Reset</button>
+  <input type="file" id="fileIn" accept="application/json" style="display:none" onchange="doImport(event)">
+</header>
+
+<div class="board" id="board"></div>
+
+<div class="footer-note">Drag cards between columns (works with mouse &amp; touch). Stored locally in this browser — Export to back up. Double-click a card to edit.</div>
+
+<script>
+const STORAGE_KEY = "guitarKanban.v1";
+
+const COLUMNS = [
+  {id:"backlog", title:"Backlog",            color:"#8b97a7", wip:null},
+  {id:"spec",    title:"Spec & Design",      color:"#5bb8ff", wip:null},
+  {id:"build",   title:"Build",              color:"#7c5cff", wip:null},
+  {id:"gate",    title:"Validation Gate",    color:"#ff5c7c", wip:2},
+  {id:"qa",      title:"Guitarist QA",       color:"#f59e0b", wip:2},
+  {id:"done",    title:"Done / Ship",        color:"#36d399", wip:null},
+];
+
+const SEED = {
+  backlog:[
+    {t:"Course library: 12 starter lessons (open chords + strumming)", tags:["spec"]},
+    {t:"Free-tier tuner + metronome (no subscription wall)", tags:["build"]},
+    {t:"Amendment-03 AI movie-like intro frames (FLUX.1[schnell])", tags:["spec"]},
+    {t:"PostHog activation funnel + Sentry crash wiring", tags:["build"]},
+    {t:"Referral flow (referrer-only $50, unlimited distinct)", tags:["spec"]},
+  ],
+  spec:[
+    {t:"AMENDMENT-04: feedback copy tone (human-voiced, Rule E)", tags:["spec"]},
+    {t:"Data-driven 2D fretboard diagram spec (provably correct)", tags:["spec","qa"]},
+    {t:"RevenueCat paywall + $12/mo entitlement map", tags:["spec"]},
+  ],
+  build:[
+    {t:"Server-side chord matcher: basic-pitch + librosa, constrained", tags:["build","audio"]},
+    {t:"AVAudioEngine capture + AudioKitEX tuner", tags:["build","audio"]},
+    {t:"OpenAI TTS voice lines (≈$0.36 / 200 lesson lines)", tags:["build","audio"]},
+    {t:"Lottie + SwiftUI avatar layer (Rive dropped)", tags:["build"]},
+    {t:"Supabase auth + lesson progress schema", tags:["build"]},
+    {t:"Cloudflare Worker: audio upload → analysis queue", tags:["build"]},
+  ],
+  gate:[
+    {t:"Validation gate: accuracy threshold before feedback engine ships", tags:["gate"]},
+  ],
+  qa:[
+    {t:"Contracted guitarist QA: all v1 lesson audio + diagrams", tags:["qa"]},
+  ],
+  done:[
+    {t:"AGENTS.md hard rules + license blocklists locked", tags:["spec"]},
+    {t:"v1 scope: audio-only, iOS, acoustic-only, no camera", tags:["spec"]},
+  ],
+};
+
+let state = load() || seedState();
+let editId = null;
+
+function seedState(){
+  const s = {cards:{}}; let n=1;
+  COLUMNS.forEach(c=>{
+    (SEED[c.id]||[]).forEach(item=>{
+      const id="c"+(n++);
+      s.cards[id]={id, col:c.id, t:item.t, tags:item.tags||[]};
+    });
+  });
+  return s;
+}
+function load(){
+  try{ const r=localStorage.getItem(STORAGE_KEY); return r?JSON.parse(r):null; }
+  catch(e){ return null; }
+}
+function save(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){} }
+
+function render(){
+  const board=document.getElementById("board"); board.innerHTML="";
+  COLUMNS.forEach(col=>{
+    const cards=Object.values(state.cards).filter(c=>c.col===col.id);
+    const el=document.createElement("div"); el.className="col"; el.dataset.col=col.id;
+    const wipTxt = col.wip!=null ? `WIP ≤ ${col.wip}` : "";
+    el.innerHTML=`
+      <div class="col-head">
+        <span class="dot" style="background:${col.color}"></span>
+        <span class="col-title">${col.title}</span>
+        <span class="count">${cards.length}</span>
+      </div>
+      <div class="wip ${col.wip!=null && cards.length>col.wip?'over':''}">${wipTxt}</div>
+      <div class="col-body" data-col="${col.id}"></div>
+      <button class="add" onclick="addCard('${col.id}')">+ Add card</button>`;
+    const body=el.querySelector(".col-body");
+    cards.forEach(card=> body.appendChild(cardEl(card)));
+    board.appendChild(el);
+  });
+  save();
+}
+
+function cardEl(card){
+  const d=document.createElement("div"); d.className="card"; d.dataset.id=card.id;
+  const tags=(card.tags||[]).map(t=>`<span class="tag ${t}">${t}</span>`).join("");
+  d.innerHTML=`<span class="del" onclick="delCard('${card.id}',event)">✕</span>
+    <div class="txt">${escapeHtml(card.t)}</div>${tags?`<div class="meta">${tags}</div>`:""}`;
+  d.addEventListener("pointerdown", onPointerDown);
+  d.addEventListener("dblclick", ()=>startEdit(card.id));
+  return d;
+}
+function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+
+/* ---- Drag (mouse + touch) ---- */
+let drag=null;
+function onPointerDown(e){
+  if(e.target.classList.contains("del")) return;
+  const card=e.currentTarget; const id=card.dataset.id;
+  const r=card.getBoundingClientRect();
+  drag={id, el:card, ox:e.clientX-r.left, oy:e.clientY-r.top, moved:false, ghost:null, startX:e.clientX, startY:e.clientY};
+  card.setPointerCapture(e.pointerId);
+  card.addEventListener("pointermove", onPointerMove);
+  card.addEventListener("pointerup", onPointerUp);
+}
+function onPointerMove(e){
+  if(!drag) return;
+  const dx=e.clientX-drag.startX, dy=e.clientY-drag.startY;
+  if(!drag.moved && Math.hypot(dx,dy)<6) return;
+  if(!drag.moved){
+    drag.moved=true; drag.el.classList.add("dragging");
+    drag.ghost=drag.el.cloneNode(true); drag.ghost.classList.add("ghost");
+    drag.ghost.style.width=drag.el.offsetWidth+"px";
+    drag.ghost.style.position="fixed"; drag.ghost.style.pointerEvents="none";
+    drag.ghost.style.zIndex=100; document.body.appendChild(drag.ghost);
+  }
+  drag.ghost.style.left=(e.clientX-drag.ox)+"px";
+  drag.ghost.style.top=(e.clientY-drag.oy)+"px";
+  document.querySelectorAll(".col").forEach(c=>c.classList.remove("dragover"));
+  const col=colAt(e.clientX,e.clientY);
+  if(col) col.classList.add("dragover");
+}
+function onPointerUp(e){
+  if(!drag) return;
+  const d=drag; drag=null;
+  d.el.removeEventListener("pointermove", onPointerMove);
+  d.el.removeEventListener("pointerup", onPointerUp);
+  document.querySelectorAll(".col").forEach(c=>c.classList.remove("dragover"));
+  if(d.ghost) d.ghost.remove();
+  d.el.classList.remove("dragging");
+  if(!d.moved) return; // it was a click, ignore
+  const col=colAt(e.clientX,e.clientY);
+  if(col){
+    const newCol=col.dataset.col;
+    if(state.cards[d.id].col!==newCol) state.cards[d.id].col=newCol;
+  }
+  render();
+}
+function colAt(x,y){
+  let best=null;
+  document.querySelectorAll(".col").forEach(c=>{
+    const r=c.getBoundingClientRect();
+    if(x>=r.left && x<=r.right && y>=r.top && y<=r.bottom) best=c;
+  });
+  return best;
+}
+
+/* ---- CRUD ---- */
+function addCard(col){
+  const id="c"+Date.now();
+  state.cards[id]={id, col, t:"New card…", tags:[]};
+  render(); startEdit(id);
+}
+function delCard(id,e){ e.stopPropagation(); delete state.cards[id]; render(); }
+function startEdit(id){
+  editId=id; const card=state.cards[id]; if(!card) return;
+  const el=document.querySelector(`.card[data-id="${id}"]`); if(!el) return;
+  const ta=document.createElement("textarea"); ta.className="card-edit"; ta.value=card.t;
+  const meta=el.querySelector(".meta"); if(meta) meta.style.display="none";
+  el.querySelector(".txt").replaceWith(ta); ta.focus(); ta.select();
+  ta.addEventListener("blur", ()=>finishEdit(id,ta.value));
+  ta.addEventListener("keydown", ev=>{
+    if(ev.key==="Enter" && (ev.metaKey||ev.ctrlKey)){ ev.preventDefault(); ta.blur(); }
+    if(ev.key==="Escape"){ editId=null; render(); }
+  });
+}
+function finishEdit(id,val){
+  if(state.cards[id]){ state.cards[id].t=val.trim()||"Untitled"; }
+  editId=null; render();
+}
+
+/* ---- Filter ---- */
+function applyFilter(){
+  const q=document.getElementById("search").value.toLowerCase().trim();
+  document.querySelectorAll(".card").forEach(c=>{
+    const txt=c.querySelector(".txt").textContent.toLowerCase();
+    c.style.display = (!q || txt.includes(q)) ? "" : "none";
+  });
+}
+
+/* ---- Export / Import / Reset ---- */
+function exportJSON(){
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+  a.download="guitar-kanban-"+new Date().toISOString().slice(0,10)+".json"; a.click();
+}
+function importJSON(){ document.getElementById("fileIn").click(); }
+function doImport(e){
+  const f=e.target.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=()=>{ try{ const s=JSON.parse(rd.result); if(s&&s.cards){state=s; render();} }
+    catch(err){ alert("Invalid file."); } };
+  rd.readAsText(f); e.target.value="";
+}
+function resetBoard(){
+  if(confirm("Reset board to seed data? Current cards will be lost (Export first to keep them).")){
+    localStorage.removeItem(STORAGE_KEY); state=seedState(); render();
+  }
+}
+
+render();
+</script>
+</body>
+</html>

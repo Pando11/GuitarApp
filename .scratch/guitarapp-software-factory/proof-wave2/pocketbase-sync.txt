@@ -1,0 +1,22 @@
+
+=== pocketbaseSync Layer-3 crypto roundtrip (offline) ===
+  recovery phrase: willow harbor amber tide pine
+  PASS  recovery phrase has 4-6 words
+(node:3460) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/Hendrickson/Desktop/GuitarApp/07-app/core/pocketbaseSync.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to C:\Users\Hendrickson\Desktop\GuitarApp\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  PASS  ciphertext is non-empty base64
+  PASS  iv is non-empty base64
+  PASS  decrypt(encrypt(x)) === x
+  PASS  decrypted JSON parses back to original blob
+  PASS  ciphertext !== plaintext
+  PASS  bad passphrase throws on decrypt
+  PASS  pushMemory returns student_id
+  PASS  pushMemory returns ciphertext+iv+salt
+  PASS  pushMemory stamps updated_at
+  PASS  pullMemory roundtrips blob via push record
+  PASS  pullMemory with wrong phrase throws
+
+RESULT: 12 passed, 0 failed
+OVERALL: PASS

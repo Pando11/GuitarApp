@@ -1,0 +1,20 @@
+
+=== sageCoach Rule-5 self-test ===
+  A line: "Your Em shows 2 fails and 5 cleans over 8 tries."
+  PASS  A line cites a real input number
+  PASS  A line has NO banned opinion
+  B line: "You have 2 open help requests."
+  PASS  B line cites the help-request count
+  PASS  B line has NO banned opinion
+  C line: "Current streak: 5 days."
+  PASS  C line cites the streak number
+  PASS  C line has NO banned opinion
+  D line: "No practice numbers recorded yet."
+  PASS  D line has NO banned opinion (empty input)
+  E line: "You have 1 open help request."
+  PASS  E (real store) line cites a real input number
+  PASS  E (real store) line has NO banned opinion
+  PASS  negative control: banned scan DETECTS freelanced opinion
+
+RESULT: 10 passed, 0 failed
+OVERALL: PASS

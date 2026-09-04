@@ -30,6 +30,13 @@
   <script src="./core/backupButtons.js"></script>
   <script src="./core/lesson-runner.js"></script>
   <script src="./core/wave1-flow.js"></script>
+  <script type="module">
+    import * as pb from "./core/pocketbaseSync.js";
+    import * as sm from "./core/studentMemorySync.js";
+    import { PracticeStore } from "./core/practiceStore.js";
+    window.GuitarApp = window.GuitarApp || {};
+    window.GuitarApp.__encryptedSync = Object.assign({}, pb, sm, { PracticeStore });
+  </script>
   <script src="./app.js"></script>
   <script>
     (function(){

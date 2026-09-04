@@ -1,0 +1,16 @@
+{
+  "_schema": "Shared open-chord shape library for the SONG-PROGRESSION track. strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted. Every shape here is verified by tools/verify-song-progressions.js (arithmetic, AGENTS.md Rule 8).",
+  "chords": {
+    "Em":   { "name": "E minor",  "frets": [0, 2, 2, 0, 0, 0],           "fingers": [0, 2, 3, 0, 0, 0] },
+    "C":    { "name": "C major",  "frets": [null, 3, 2, 0, 1, 0],        "fingers": [null, 3, 2, 0, 1, 0] },
+    "Ceasy":{ "name": "C major",  "frets": [null, 3, 2, 0, null, 0],     "fingers": [null, 3, 2, 0, null, 0] },
+    "G":    { "name": "G major",  "frets": [3, 2, 0, 0, 0, 3],           "fingers": [2, 1, 0, 0, 0, 3] },
+    "D":    { "name": "D major",  "frets": [null, null, 0, 2, 3, 2],     "fingers": [null, null, 0, 1, 3, 2] },
+    "A":    { "name": "A major",  "frets": [null, 0, 2, 2, 2, 0],        "fingers": [null, 0, 1, 2, 3, 0] },
+    "Am":   { "name": "A minor",  "frets": [null, 0, 2, 2, 1, 0],        "fingers": [null, 0, 2, 3, 1, 0] },
+    "E":    { "name": "E major",  "frets": [0, 2, 2, 1, 0, 0],           "fingers": [0, 2, 3, 1, 0, 0] },
+    "Dm":   { "name": "D minor",  "frets": [null, null, 0, 2, 3, 1],     "fingers": [null, null, 0, 2, 3, 1] },
+    "Feasy":{ "name": "F major",  "frets": [null, null, 3, 2, 1, 1],     "fingers": [null, null, 4, 3, 1, 1] },
+    "A7":   { "name": "A7",       "frets": [null, 0, 2, 0, 2, 0],        "fingers": [null, 0, 2, 0, 3, 0] }
+  }
+}

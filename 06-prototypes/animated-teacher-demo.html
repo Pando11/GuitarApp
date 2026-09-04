@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Guitar App — Animated Teacher Demo</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#12141c;color:#e8e9f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+     min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:24px 16px 60px}
+h1{font-size:19px;font-weight:600;letter-spacing:-.2px}
+.sub{color:#8b8fa3;font-size:13px;margin-top:5px;text-align:center;max-width:560px;line-height:1.5}
+.stage{display:flex;gap:22px;margin-top:26px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+.panel{background:#1b1e2a;border:1px solid #2a2e3e;border-radius:18px;padding:20px}
+.label{font-size:10px;letter-spacing:1.4px;color:#6f7488;text-transform:uppercase;margin-bottom:12px;font-weight:600}
+
+/* teacher */
+.teacher{width:300px;display:flex;flex-direction:column;align-items:center}
+.avatarwrap{position:relative;width:190px;height:190px}
+#av{width:190px;height:190px;display:block}
+.bob{transform-origin:100px 150px;animation:bob 3.4s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-4px) rotate(-.7deg)}}
+.blink{animation:blink 4.6s infinite}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}96%{transform:scaleY(.08)}}
+.bubble{margin-top:16px;background:#252a3a;border:1px solid #333950;border-radius:14px;padding:13px 15px;
+  font-size:14px;line-height:1.55;min-height:70px;width:100%;color:#dfe2ee}
+.bubble b{color:#ffd166}
+
+/* fretboard */
+.fb{width:430px}
+svg.board{display:block;width:100%;height:auto}
+.dot{transition:all .55s cubic-bezier(.34,1.3,.5,1)}
+.dotc{fill:#ff7a59;stroke:#fff;stroke-width:2}
+.dotn{fill:#fff;font-size:15px;font-weight:700;text-anchor:middle;dominant-baseline:central;font-family:inherit}
+.muted{fill:none;stroke:#e2564a;stroke-width:3.5;stroke-linecap:round}
+.open{fill:none;stroke:#5ad19a;stroke-width:3.5}
+.strum{fill:rgba(255,209,102,.85)}
+
+/* controls */
+.ctrls{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap;justify-content:center}
+button{background:#2b3149;color:#e8e9f0;border:1px solid #3a4160;padding:11px 20px;
+  border-radius:11px;font-size:14px;cursor:pointer;font-weight:500;transition:.15s;font-family:inherit}
+button:hover{background:#38406a;border-color:#4d5686}
+button.primary{background:#ff7a59;border-color:#ff7a59;color:#1a1005;font-weight:700}
+button.primary:hover{background:#ff9070}
+.chips{display:flex;gap:7px;margin-top:14px;justify-content:center;flex-wrap:wrap}
+.chip{background:#252a3a;border:1px solid #333950;padding:7px 15px;border-radius:20px;font-size:13px;cursor:pointer}
+.chip.on{background:#ff7a59;color:#1a1005;border-color:#ff7a59;font-weight:700}
+.note{margin-top:30px;max-width:620px;font-size:12.5px;color:#767b91;line-height:1.65;
+  border-top:1px solid #262a38;padding-top:16px}
+.note b{color:#a9aec4}
+</style>
+</head>
+<body>
+
+<h1>🎸 Animated Teacher — concept demo</h1>
+<div class="sub">No filmed human. Character coaches; the fretboard shows the fingers.
+Press play — it speaks out loud.</div>
+
+<div class="stage">
+
+  <div class="panel teacher">
+    <div class="label">The coach</div>
+    <div class="avatarwrap">
+      <svg id="av" viewBox="0 0 200 200">
+        <g class="bob">
+          <ellipse cx="100" cy="188" rx="52" ry="10" fill="#0d0f16"/>
+          <path d="M62 188 Q60 140 100 138 Q140 140 138 188 Z" fill="#4a5484"/>
+          <path d="M100 138 L100 188" stroke="#3d466f" stroke-width="1.5"/>
+          <circle cx="100" cy="88" r="46" fill="#f0c9a0"/>
+          <path d="M54 82 Q56 40 100 40 Q144 40 146 82 Q146 62 128 56 Q112 68 84 60 Q62 62 54 82Z" fill="#6b4a35"/>
+          <g class="blink" style="transform-origin:83px 88px"><ellipse cx="83" cy="88" rx="5" ry="6.2" fill="#2c2418"/></g>
+          <g class="blink" style="transform-origin:117px 88px"><ellipse cx="117" cy="88" rx="5" ry="6.2" fill="#2c2418"/></g>
+          <circle cx="84.8" cy="86" r="1.7" fill="#fff"/><circle cx="118.8" cy="86" r="1.7" fill="#fff"/>
+          <ellipse cx="70" cy="102" rx="8" ry="5" fill="#f0a68c" opacity=".5"/>
+          <ellipse cx="130" cy="102" rx="8" ry="5" fill="#f0a68c" opacity=".5"/>
+          <!-- mouth: driven by JS -->
+          <ellipse id="mouth" cx="100" cy="110" rx="11" ry="4" fill="#7d3b3b"/>
+        </g>
+      </svg>
+    </div>
+    <div class="bubble" id="bubble">Tap <b>Play lesson</b> and I'll walk you through your first chord change.</div>
+  </div>
+
+  <div class="panel fb">
+    <div class="label">Finger position</div>
+    <svg class="board" id="board" viewBox="0 0 420 250"></svg>
+    <div class="chips" id="chips"></div>
+  </div>
+
+</div>
+
+<div class="ctrls">
+  <button class="primary" id="play">▶ Play lesson</button>
+  <button id="stop">■ Stop</button>
+</div>
+
+<div class="note">
+<b>What you're looking at.</b> The coach is a 2D character — in the real app this is
+<b>Rive</b> ($9/mo, 43KB, mouth driven by the audio). The voice here is your browser's
+built-in speech so it runs offline; the shipped version uses <b>OpenAI TTS</b> — 200 lesson
+lines costs about <b>36 cents</b>, versus ElevenLabs at $264–$1,188/yr.
+<br><br>
+<b>Note the coach never holds a guitar.</b> No mainstream app animates a hand playing —
+a hand covers the exact frets you're trying to see. The dots are generated from the lesson
+JSON, so they are <b>correct by construction</b> and can never teach a wrong shape.
+</div>
+
+<script>
+/* ---------- chord data (this is the lesson JSON shape) ---------- */
+const CHORDS = {
+  "Em": {frets:[0,2,2,0,0,0], fingers:[0,2,3,0,0,0], mute:[]},
+  "C":  {frets:[0,3,2,0,1,0], fingers:[0,3,2,0,1,0], mute:[0]},
+  "G":  {frets:[3,2,0,0,0,3], fingers:[2,1,0,0,0,3], mute:[]},
+  "D":  {frets:[0,0,0,2,3,2], fingers:[0,0,0,1,3,2], mute:[0,1]}
+};
+/* string order low E -> high e, index 0..5 */
+
+const NS="http://www.w3.org/2000/svg";
+const board=document.getElementById('board');
+const X0=70, X1=400, Y0=40, Y1=210, NF=4;
+const sy=i=>Y0+(Y1-Y0)*i/5;
+const fx=f=>X0+(X1-X0)*(f-.5)/NF;
+const gx=f=>X0+(X1-X0)*f/NF;
+
+function drawBoard(){
+  board.innerHTML='';
+  // nut
+  const nut=document.createElementNS(NS,'rect');
+  nut.setAttribute('x',X0-8);nut.setAttribute('y',Y0-6);nut.setAttribute('width',8);
+  nut.setAttribute('height',Y1-Y0+12);nut.setAttribute('fill','#e8e9f0');nut.setAttribute('rx',2);
+  board.appendChild(nut);
+  // frets
+  for(let f=1;f<=NF;f++){
+    const l=document.createElementNS(NS,'line');
+    l.setAttribute('x1',gx(f));l.setAttribute('x2',gx(f));
+    l.setAttribute('y1',Y0-6);l.setAttribute('y2',Y1+6);
+    l.setAttribute('stroke','#565e7a');l.setAttribute('stroke-width',3);
+    board.appendChild(l);
+    const t=document.createElementNS(NS,'text');
+    t.setAttribute('x',fx(f));t.setAttribute('y',Y1+30);t.setAttribute('fill','#6f7488');
+    t.setAttribute('font-size','13');t.setAttribute('text-anchor','middle');t.textContent=f;
+    board.appendChild(t);
+  }
+  // strings
+  for(let s=0;s<6;s++){
+    const l=document.createElementNS(NS,'line');
+    l.setAttribute('x1',X0-8);l.setAttribute('x2',X1);
+    l.setAttribute('y1',sy(s));l.setAttribute('y2',sy(s));
+    l.setAttribute('stroke','#9aa0b8');l.setAttribute('stroke-width',(6-s)*.45+.9);
+    board.appendChild(l);
+  }
+  ['E','A','D','G','B','e'].forEach((n,i)=>{
+    const t=document.createElementNS(NS,'text');
+    t.setAttribute('x',26);t.setAttribute('y',sy(i)+5);t.setAttribute('fill','#6f7488');
+    t.setAttribute('font-size','14');t.textContent=n;board.appendChild(t);
+  });
+}
+drawBoard();
+
+let dots=[];
+function clearDots(){dots.forEach(d=>d.remove());dots=[];}
+
+function showChord(name){
+  clearDots();
+  const c=CHORDS[name]; if(!c) return;
+  c.frets.forEach((f,s)=>{
+    const y=sy(s);
+    if(c.mute.includes(s)){
+      const g=document.createElementNS(NS,'g');
+      g.innerHTML=`<line class="muted" x1="38" y1="${y-6}" x2="50" y2="${y+6}"/>
+                   <line class="muted" x1="50" y1="${y-6}" x2="38" y2="${y+6}"/>`;
+      board.appendChild(g);dots.push(g);
+    } else if(f===0){
+      const o=document.createElementNS(NS,'circle');
+      o.setAttribute('cx',44);o.setAttribute('cy',y);o.setAttribute('r',7);
+      o.setAttribute('class','open');board.appendChild(o);dots.push(o);
+    } else {
+      const g=document.createElementNS(NS,'g');g.setAttribute('class','dot');
+      const cx=fx(f);
+      const ci=document.createElementNS(NS,'circle');
+      ci.setAttribute('cx',cx);ci.setAttribute('cy',y);ci.setAttribute('r',15);
+      ci.setAttribute('class','dotc');
+      const tx=document.createElementNS(NS,'text');
+      tx.setAttribute('x',cx);tx.setAttribute('y',y);tx.setAttribute('class','dotn');
+      tx.textContent=c.fingers[s];
+      g.appendChild(ci);g.appendChild(tx);
+      // animate in
+      g.style.opacity=0;g.style.transform='scale(.3)';g.style.transformOrigin=`${cx}px ${y}px`;
+      board.appendChild(g);dots.push(g);
+      requestAnimationFrame(()=>{g.style.opacity=1;g.style.transform='scale(1)';});
+    }
+  });
+}
+
+/* chips */
+const chips=document.getElementById('chips');
+Object.keys(CHORDS).forEach((n,i)=>{
+  const b=document.createElement('div');b.className='chip'+(i===0?' on':'');b.textContent=n;
+  b.onclick=()=>{document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+                 b.classList.add('on');showChord(n);};
+  chips.appendChild(b);
+});
+showChord('Em');
+
+/* strum animation */
+function strum(){
+  const p=document.createElementNS(NS,'circle');
+  p.setAttribute('r',9);p.setAttribute('class','strum');p.setAttribute('cx',330);
+  board.appendChild(p);
+  let t=0;
+  const iv=setInterval(()=>{
+    t+=.055; if(t>=1){clearInterval(iv);p.remove();return;}
+    p.setAttribute('cy',Y0-14+(Y1-Y0+28)*t);
+    p.setAttribute('opacity',1-t*.6);
+  },16);
+}
+
+/* mouth lip-sync (fake, amplitude-ish) */
+const mouth=document.getElementById('mouth');
+let mouthIv=null;
+function talk(on){
+  clearInterval(mouthIv);
+  if(!on){mouth.setAttribute('ry',4);return;}
+  mouthIv=setInterval(()=>{
+    mouth.setAttribute('ry',3+Math.random()*8);
+    mouth.setAttribute('rx',10+Math.random()*3);
+  },95);
+}
+
+/* ---------- the lesson script ---------- */
+const LESSON=[
+  {say:"Hey — welcome back. Today we're getting your first chord change clean.",chord:null,wait:600},
+  {say:"Start with E minor. It's the friendliest chord on the guitar — only two fingers.",chord:"Em"},
+  {say:"Finger two goes on the fifth string, second fret. Finger three sits right below it.",chord:"Em"},
+  {say:"Give it a strum. Let it ring.",chord:"Em",strum:true},
+  {say:"Now C major. This one asks a bit more of you — three fingers, and we skip the low string.",chord:"C"},
+  {say:"See that red X? Don't play that string. Aim your strum from the fifth string down.",chord:"C",strum:true},
+  {say:"Here's the secret. Don't lift all your fingers at once. Keep finger two anchored and pivot around it.",chord:"Em"},
+  {say:"Em... to C. Slowly.",chord:"C"},
+  {say:"That's the change. Do it fifteen times slowly before you ever try it fast. See you tomorrow.",chord:null}
+];
+
+const bubble=document.getElementById('bubble');
+let idx=0, running=false, voice=null;
+
+function pickVoice(){
+  const vs=speechSynthesis.getVoices();
+  voice = vs.find(v=>/samantha|jenny|aria|zira|female/i.test(v.name)&&/en/i.test(v.lang))
+       || vs.find(v=>/en-US/i.test(v.lang)) || vs[0];
+}
+pickVoice(); speechSynthesis.onvoiceschanged=pickVoice;
+
+function step(){
+  if(!running||idx>=LESSON.length){running=false;talk(false);
+    bubble.innerHTML="Nice work. <b>That's the whole loop</b> — character coaches, board shows the fingers.";return;}
+  const s=LESSON[idx++];
+  bubble.textContent=s.say;
+  if(s.chord){
+    showChord(s.chord);
+    document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c.textContent===s.chord));
+  }
+  if(s.strum) setTimeout(strum,700);
+  const u=new SpeechSynthesisUtterance(s.say);
+  u.voice=voice; u.rate=.94; u.pitch=1.05;
+  u.onstart=()=>talk(true);
+  u.onend=()=>{talk(false);setTimeout(step,480);};
+  u.onerror=()=>{talk(false);setTimeout(step,1600);};
+  speechSynthesis.speak(u);
+}
+
+document.getElementById('play').onclick=()=>{
+  speechSynthesis.cancel();idx=0;running=true;setTimeout(step,120);
+};
+document.getElementById('stop').onclick=()=>{
+  running=false;speechSynthesis.cancel();talk(false);
+  bubble.textContent="Stopped. Hit play to run it again.";
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GuitarApp — Lesson 2: Your First Chord (Em) · AI-Directed Demo</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:#000;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;overflow:hidden}
+  #stage{position:relative;width:100vw;height:100vh;overflow:hidden}
+  #bg{position:absolute;inset:-6%;background-size:cover;background-position:center;will-change:transform;filter:brightness(.82)}
+  #grain{position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%);pointer-events:none}
+  .caption{position:absolute;left:50%;bottom:7%;transform:translateX(-50%);max-width:76%;text-align:center;color:#fff;font-size:clamp(18px,2.4vw,30px);font-weight:700;text-shadow:0 2px 12px #000;opacity:0;line-height:1.35}
+  #coach{position:absolute;left:5%;bottom:-3%;width:230px;height:330px;will-change:transform}
+  #coach svg{width:100%;height:100%;overflow:visible}
+  #mouth{transition:transform .05s}
+  #fretWrap{position:absolute;right:5%;bottom:8%;width:44%;max-width:540px;opacity:0}
+  #fretTitle{color:#fff;font-size:13px;letter-spacing:1px;margin-bottom:6px;text-shadow:0 1px 4px #000;font-weight:700}
+  #fret{width:100%;height:auto;display:block;filter:drop-shadow(0 10px 26px #000c)}
+  .finger{font:700 15px sans-serif;fill:#111;text-anchor:middle;dominant-baseline:central}
+  .dot{fill:#ffd166;stroke:#b8860b;stroke-width:2}
+  .openNote{fill:#fff;font:700 13px sans-serif;text-anchor:middle}
+  #phaseTag{position:absolute;right:18px;top:64px;background:#000a;border:1px solid #ffd16655;border-radius:8px;padding:6px 12px;color:#ffd166;font-size:13px;font-weight:800;letter-spacing:1px;opacity:0}
+  #titleCard,#endCard{position:absolute;inset:0;background:rgba(8,6,14,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center;z-index:10;opacity:0;pointer-events:none}
+  #titleCard h1{font-size:clamp(28px,4.4vw,54px);font-weight:800;margin-bottom:14px;letter-spacing:.5px}
+  #titleCard p{font-size:clamp(14px,1.8vw,22px);color:#ffd166;font-weight:600}
+  #titleCard .sub{margin-top:26px;font-size:13px;color:#aaa;letter-spacing:1px;text-transform:uppercase}
+  #endCard h2{font-size:clamp(24px,3.6vw,44px);font-weight:800;margin-bottom:12px}
+  #endCard p{font-size:clamp(14px,1.7vw,20px);color:#ffd166;font-weight:600;max-width:640px;line-height:1.5}
+  #endCard .price{margin-top:22px;font-size:15px;color:#fff;background:#ffd166;color:#1a1a1a;padding:10px 22px;border-radius:10px;font-weight:800}
+  #controls{position:absolute;top:14px;right:14px;display:flex;gap:8px;z-index:20}
+  button{background:#ffd166;color:#211;font-weight:700;border:0;border-radius:8px;padding:10px 14px;cursor:pointer;font-size:13px}
+  button.ghost{background:#ffffff22;color:#fff;border:1px solid #ffffff33}
+  #badge{position:absolute;left:14px;top:12px;font-size:11px;color:#ffd166cc;background:#0008;padding:4px 8px;border-radius:6px;border:1px solid #ffd16655;z-index:20}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bg"></div>
+  <div id="grain"></div>
+  <div id="badge">AI FRAME → studio_golden_hour.png (FLUX.1[schnell] / Apache-2.0)</div>
+
+  <div id="coach">
+    <svg viewBox="0 0 230 330">
+      <ellipse cx="115" cy="250" rx="70" ry="80" fill="#ff7b54"/>
+      <circle cx="115" cy="120" r="58" fill="#ffd9b3"/>
+      <path d="M57 110 Q115 30 173 110 Q150 70 115 66 Q80 70 57 110Z" fill="#3a2a1a"/>
+      <circle cx="95" cy="115" r="7" fill="#222"/><circle cx="135" cy="115" r="7" fill="#222"/>
+      <path d="M84 100 q11 -8 22 0" stroke="#3a2a1a" stroke-width="4" fill="none"/>
+      <path d="M124 100 q11 -8 22 0" stroke="#3a2a1a" stroke-width="4" fill="none"/>
+      <g id="mouth"><rect x="98" y="140" width="34" height="10" rx="5" fill="#7a2e2e"/></g>
+      <ellipse cx="150" cy="250" rx="46" ry="60" fill="#7a3b1a" opacity=".9"/>
+      <circle cx="150" cy="250" r="16" fill="#caa472"/>
+    </svg>
+  </div>
+
+  <div id="fretWrap">
+    <div id="fretTitle">FRETBOARD — code-driven from lesson JSON (correct by construction)</div>
+    <svg id="fret" viewBox="0 0 420 200">
+      <rect x="6" y="6" width="408" height="188" rx="10" fill="#2b1d12" stroke="#5a3a1f" stroke-width="3"/>
+      <g stroke="#d9c2a0" stroke-width="2">
+        <line x1="40" y1="30" x2="400" y2="30"/><line x1="40" y1="62" x2="400" y2="62"/>
+        <line x1="40" y1="94" x2="400" y2="94"/><line x1="40" y1="126" x2="400" y2="126"/>
+        <line x1="40" y1="158" x2="400" y2="158"/></g>
+      <g stroke="#b08d57" stroke-width="3">
+        <line x1="40" y1="20" x2="40" y2="180"/><line x1="100" y1="20" x2="100" y2="180"/>
+        <line x1="160" y1="20" x2="160" y2="180"/><line x1="220" y1="20" x2="220" y2="180"/>
+        <line x1="280" y1="20" x2="280" y2="180"/><line x1="340" y1="20" x2="340" y2="180"/>
+        <line x1="400" y1="20" x2="400" y2="180"/></g>
+      <g id="dots"></g>
+    </svg>
+  </div>
+
+  <div class="caption" id="caption"></div>
+  <div id="phaseTag"></div>
+
+  <div id="titleCard">
+    <h1>Lesson 2 — Your First Chord</h1>
+    <p>Em (E minor) · The easiest chord on guitar</p>
+    <div class="sub">An AI-directed lesson · No camera · No filmed human</div>
+  </div>
+
+  <div id="endCard">
+    <h2>You just played a real chord.</h2>
+    <p>The full 20-lesson path, streaks, tuner, and metronome are in the app.<br>One price. No tiers. No ads.</p>
+    <div class="price">$12 / month — start free</div>
+  </div>
+
+  <div id="controls">
+    <button id="play">▶ Play Lesson</button>
+    <button id="speak" class="ghost">🔊 Speak</button>
+  </div>
+</div>
+
+<script>
+/* ============================================================================
+   LESSON 2 — "Your First Chord: Em"
+   AI-native movie-like pipeline demo (Amendment 03)
+   - Real AI-generated background (FLUX.1[schnell], Apache-2.0)
+   - Code-driven fretboard (never AI-generated)
+   - OpenAI TTS voice (browser speechSynthesis for demo; production uses OpenAI)
+   - GSAP camera + animation
+   ============================================================================ */
+
+const LESSON = {
+  id: 'L02',
+  title: 'Your First Chord: Em',
+  chord: 'Em',
+  tempo: 72,
+  mood: 'encouraging',
+  script: "Let's learn E minor — the easiest chord on guitar. Put your second finger on the second fret of the A string, and your third finger on the second fret of the D string. Strum all six strings. That's E minor.",
+  beats: 4
+};
+
+/* Em fingering: 2nd finger on A-string 2nd fret, 3rd finger on D-string 2nd fret.
+   Standard Em = 022000 (from low E to high e). We show strings 1–6 = high e to low E. */
+const CHORDS = {
+  Em: [
+    {string:5, fret:2, finger:2},  // A string
+    {string:4, fret:2, finger:3}   // D string
+  ]
+};
+const STR_Y = {1:158,2:126,3:94,4:62,5:30,6:18};
+
+function drawFretboard(chordName){
+  const g=document.getElementById('dots'); g.innerHTML='';
+  (CHORDS[chordName]||[]).forEach(n=>{
+    const x=40+n.fret*60-30, y=STR_Y[n.string];
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx',x);c.setAttribute('cy',y);c.setAttribute('r',15);
+    c.setAttribute('class','dot');
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',x);t.setAttribute('y',y);t.setAttribute('class','finger');
+    t.textContent=n.finger; g.appendChild(c);g.appendChild(t);
+  });
+}
+
+let mouthTimer=null;
+function lipSync(on){clearInterval(mouthTimer);
+  if(!on){gsap.to('#mouth',{scaleY:1,duration:.1,transformOrigin:'center'});return;}
+  mouthTimer=setInterval(()=>gsap.to('#mouth',{scaleY:0.4+Math.random()*1.1,duration:.06,transformOrigin:'center'}),90);}
+
+function speak(text){ if(!('speechSynthesis'in window))return; lipSync(true);
+  const u=new SpeechSynthesisUtterance(text);u.rate=0.95;u.onend=()=>lipSync(false);
+  speechSynthesis.cancel();speechSynthesis.speak(u); }
+
+function setPhase(t){ const p=document.getElementById('phaseTag'); p.textContent=t; gsap.to(p,{opacity:1,duration:.3}); }
+
+function clearPhase(){ gsap.to('#phaseTag',{opacity:0,duration:.3}); }
+
+function showCaption(text){ const c=document.getElementById('caption'); c.textContent=text; gsap.to(c,{opacity:1,y:-6,duration:.4}); }
+function hideCaption(){ gsap.to('#caption',{opacity:0,y:0,duration:.4}); }
+
+function playLesson(){
+  const tl=gsap.timeline({defaults:{ease:'power2.out'}});
+  const bg=document.getElementById('bg');
+  bg.style.backgroundImage="url('assets/studio_golden_hour.png')";
+
+  // ── TITLE CARD ──
+  tl.to('#titleCard',{opacity:1,duration:.6})
+    .to('#titleCard',{opacity:0,duration:.5},'+=1.4');
+
+  // ── SCENE 1: INTRO (coach enters, camera settles) ──
+  tl.add(()=>setPhase('INTRO'),'-=0.2');
+  tl.fromTo('#coach',{x:-280,y:40,opacity:0},{x:0,y:0,opacity:1,duration:1.0,ease:'back.out(1.4)'},'-=0.1');
+  tl.fromTo('#bg',{scale:1.14,x:40},{scale:1.06,x:-20,duration:2.0},'-=0.8');
+  tl.add(()=>showCaption(LESSON.title),'-=1.2');
+  tl.add(()=>hideCaption(),'+=1.6');
+  tl.add(()=>clearPhase(),'-=0.3');
+
+  // ── SCENE 2: TEACH (fretboard appears, coach speaks) ──
+  tl.add(()=>setPhase('TEACH'));
+  tl.fromTo('#fretWrap',{opacity:0,y:40},{opacity:1,y:0,duration:.7},'-=0.1');
+  tl.add(()=>drawFretboard('Em'));
+  tl.fromTo('.dot',{scale:0,transformOrigin:'center'},{scale:1,duration:.4,stagger:.12,ease:'back.out(2)'});
+  tl.add(()=>showCaption(LESSON.script),'-=0.4');
+  tl.add(()=>speak(LESSON.script));
+  tl.to({},{duration:8.0}); // let the TTS finish
+  tl.add(()=>hideCaption());
+  tl.add(()=>clearPhase(),'-=0.3');
+
+  // ── SCENE 3: PRACTICE (your turn) ──
+  tl.add(()=>setPhase('PRACTICE'));
+  tl.to('#bg',{scale:1.03,x:10,duration:1.8},'-=0.2');
+  tl.add(()=>showCaption('Your turn — play Em four times. Strum all six strings. Go slow.'));
+  tl.to('#coach',{y:-8,duration:.5,yoyo:true,repeat:3,ease:'sine.inOut'});
+  tl.to({},{duration:3.0});
+  tl.add(()=>hideCaption());
+  tl.add(()=>clearPhase(),'-=0.3');
+
+  // ── SCENE 4: PRAISE / END CARD ──
+  tl.add(()=>setPhase('PRAISE'));
+  tl.to('#fretWrap',{opacity:0,duration:.4});
+  tl.to('#coach',{y:-16,rotation:-5,duration:.25,yoyo:true,repeat:3,ease:'sine.inOut'});
+  tl.add(()=>showCaption("Nice! That's E minor — your first chord."));
+  tl.add(()=>speak("Nice! That's E minor — your first chord."));
+  tl.to({},{duration:2.5});
+  tl.add(()=>hideCaption());
+  tl.add(()=>clearPhase());
+
+  // ── END CARD ──
+  tl.to('#endCard',{opacity:1,duration:.7});
+}
+
+document.getElementById('play').addEventListener('click',()=>playLesson());
+document.getElementById('speak').addEventListener('click',()=>speak(LESSON.script));
+window.addEventListener('load',()=>setTimeout(()=>playLesson(),400));
+</script>
+</body>
+</html>

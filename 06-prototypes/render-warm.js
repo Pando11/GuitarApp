@@ -1,0 +1,23 @@
+const { chromium } = require('playwright');
+const path = require('path');
+(async () => {
+  const browser = await chromium.launch();
+  const page = await browser.newPage();
+  const errors = [];
+  page.on('console', m => { if (m.type()==='error') errors.push(m.text()); });
+  page.on('pageerror', e => errors.push('PAGEERR: '+e.message));
+  const url = 'file://' + path.resolve('06-prototypes/lesson-02-warm-flow-demo.html');
+  await page.goto(url);
+  const normTest = await page.evaluate(() => normalizeForTTS("That is Em. Easiest chord."));
+  const sceneCount = await page.evaluate(() => SCENES.length);
+  const firstCap = await page.evaluate(() => SCENES[0].cap);
+  const heartsInCopy = await page.evaluate(() => SCENES.filter(s=>/E minor/i.test(s.say)).length);
+  await page.screenshot({ path: '06-prototypes/lesson-02-warm-shot.png' });
+  console.log("NORMALIZER_IN_PAGE:", normTest);
+  console.log("SCENE_COUNT:", sceneCount);
+  console.log("SCENES_WITH_E_MINOR_SPELLED_OUT:", heartsInCopy);
+  console.log("FIRST_CAPTION:", firstCap);
+  console.log("CONSOLE_ERRORS:", errors.length ? errors.join(' | ') : 'NONE');
+  await browser.close();
+  process.exit(errors.length ? 1 : 0);
+})();

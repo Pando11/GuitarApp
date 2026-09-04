@@ -1,0 +1,64 @@
+{
+  "generated_at": "2026-08-28",
+  "note": "content_id values are the keys an install/subscription ledger (PocketBase / local) keys on. Free + offline.",
+  "attribution_ready": true,
+  "teachers": [
+    {
+      "name": "manifest.json",
+      "world_id": null
+    },
+    {
+      "teacherId": "T1",
+      "name": "Maggie Cole",
+      "world_id": null
+    },
+    {
+      "teacherId": "T2",
+      "name": "Ellis Nakamura",
+      "world_id": null
+    },
+    {
+      "teacherId": "T3",
+      "name": "Ray Boudreaux",
+      "world_id": null
+    }
+  ],
+  "asset_jobs": [
+    {
+      "jobId": "AJ-T1-still-001",
+      "teacherId": "T1",
+      "model": "flux.1-schnell",
+      "purpose": "teacher_still",
+      "world_id": "emerald-hollow",
+      "campaign_source": "world-locked-teacher-T1",
+      "content_id": "T1-old-village"
+    }
+  ],
+  "lessons_count": 25,
+  "godot_world_art": [
+    {
+      "id": "L01-open-c",
+      "world_art": "flux.1-schnell",
+      "style_anchor": "consistent-world-art-v1"
+    }
+  ],
+  "world_attribution_map": [
+    {
+      "world_id": "emerald-hollow",
+      "asset_jobs": [
+        "AJ-T1-still-001"
+      ],
+      "content_ids": [
+        "T1-old-village"
+      ]
+    }
+  ],
+  "install_attribution_keys": [
+    {
+      "content_id": "T1-old-village",
+      "campaign_source": "world-locked-teacher-T1",
+      "world_id": "emerald-hollow",
+      "teacher_id": "T1"
+    }
+  ]
+}

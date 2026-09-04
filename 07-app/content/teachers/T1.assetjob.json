@@ -1,0 +1,25 @@
+{
+  "id": "AJ-T1-still-001",
+  "teacherId": "T1",
+  "purpose": "teacher_still",
+  "model": "flux.1-schnell",
+  "fallbackModel": "qwen-image",
+  "t5MaxLength": 256,
+  "steps": 4,
+  "shift": false,
+  "guidance": 0.0,
+  "conditioning": {
+    "characterJsonRef": "content/teachers/T1.json",
+    "skin": "rig-A",
+    "palette": { "primary": "#4ea1ff", "secondary": "#123049", "accent": "#ffd166" },
+    "pose": "half-body-bust",
+    "styleAnchor": "consistent-teacher-art-v1"
+  },
+  "run": "cloud-gpu-worker",
+  "output": "assets/teachers/T1.png",
+  "attribution": {
+    "campaign_source": "world-locked-teacher-T1",
+    "content_id": "T1-old-village",
+    "world_id": "emerald-hollow"
+  }
+}

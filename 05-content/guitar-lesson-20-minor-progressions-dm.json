@@ -1,0 +1,159 @@
+{
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted.",
+    "C": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "C major (standard)",
+      "frets": [
+        null,
+        3,
+        2,
+        0,
+        1,
+        0
+      ],
+      "fingers": [
+        null,
+        3,
+        2,
+        0,
+        1,
+        0
+      ]
+    },
+    "G": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "G major (3-finger / 'easy G')",
+      "frets": [
+        3,
+        2,
+        0,
+        0,
+        0,
+        3
+      ],
+      "fingers": [
+        2,
+        1,
+        0,
+        0,
+        0,
+        3
+      ]
+    },
+    "Am": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "A minor",
+      "frets": [
+        null,
+        0,
+        2,
+        2,
+        1,
+        0
+      ],
+      "fingers": [
+        null,
+        0,
+        2,
+        3,
+        1,
+        0
+      ]
+    },
+    "Dm": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "D minor",
+      "frets": [
+        null,
+        null,
+        0,
+        2,
+        3,
+        1
+      ],
+      "fingers": [
+        null,
+        null,
+        0,
+        2,
+        3,
+        1
+      ]
+    }
+  },
+  "exercises": [
+    {
+      "id": "EX1-Dm",
+      "name": "Make Dm",
+      "purpose": "Land the D-minor shape.",
+      "params": {
+        "chord": "Dm",
+        "fingers": "index(1) on G? correct: index(1) on high-e 1st, middle(2) on B 3rd, ring(3) on G 2nd",
+        "open_strings": "D and A ring open; low E muted"
+      },
+      "coaching": "Dm: index on the high e first fret, middle on the B third, ring on the G second. Low E quiet. The saddest, most useful minor in pop.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-minorprog",
+      "name": "Minor progressions",
+      "purpose": "Two classic minor loops.",
+      "params": {
+        "chord_cycle": [
+          "C",
+          "G",
+          "Am",
+          "Dm"
+        ],
+        "tempo_bpm": 68,
+        "beats": 4,
+        "note": "for Am-F-C-G, put capo 0 and substitute F with capo? NO — teach Am-F-C-G using capo on appropriate fret; here we use C-G-Am-Dm (all open) and mention F via capo",
+        "cue": "one chord per 4 beats"
+      },
+      "coaching": "Loop C-G-Am-Dm — all open chords, pure minor emotion. For the famous Am-F-C-G, you would use a capo (Lesson 14) since F is a barre chord we have not covered; today we stay on open shapes.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "Major chords are happy; minor chords are the feeling. Dm is the most-used minor in pop. Add it and songs get emotional.",
+    "ex1_intro": "Dm: index on high e first fret, middle on B third, ring on G second. Low E quiet. That small shape carries a lot of feeling.",
+    "ex2_intro": "Loop C-G-Am-Dm — all open, all minor-ish emotion. The famous Am-F-C-G uses F, which needs a barre; for now we capo (Lesson 14) or stay on open shapes. The feeling is the lesson.",
+    "results": "Minor progressions give you the bittersweet songs. Dm is a small shape with a big emotional job.",
+    "wrap": "Dm in. Minor color unlocked. Lesson 18 we add fingerpicking — a whole new texture."
+  },
+  "qa_block": {
+    "must_verify": [
+      "Automated: every chord fingering verified deterministically by 06-prototypes/step0/schema/chord-theory-check.js (verifyChord) — 0 errors AND 0 warnings required before ship (Hard Ban 7 satisfied by arithmetic, per owner directive 2026-08-08: physical fingering correctness needs no contract guitarist).",
+      "Automated: lesson JSON passes schema/validate.js (validateLesson) — all required keys present, frets/fingers length 6, qa_status whitelisted.",
+      "Author pass: teaching copy is plain-English, beginner-appropriate, no AI-isms; pacing realistic.",
+      "Licensing: exercises only, zero copyrighted song material (spec §3/R6).",
+      "Dm uses open voicing (index high-e1, middle B3, ring G2). F (barre) is explicitly deferred to a later stage and reached via capo, per sequencing; no barre fingering is introduced or claimed here."
+    ],
+    "flagged_by": "founder (non-player) — cannot self-verify",
+    "verifier_role": "arithmetic (chord-theory-check.js) + author review",
+    "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
+  },
+  "lesson": {
+    "id": "L20-minor-progressions-dm",
+    "title": "Minor Progressions + Dm",
+    "level": "beginner",
+    "lesson_type": "technique",
+    "one_line_promise": "Dm adds the emotional minor color.",
+    "objectives": [
+      "Form D minor",
+      "Play C–G–Am–Dm and Am–F–C–G (capo for F)",
+      "Hear the sad-minor emotional shift"
+    ],
+    "estimated_minutes": 16,
+    "prerequisites": [
+      "C, G, Am, Dm available shapes (Am L12; Dm new)",
+      "capo (L22) for F"
+    ],
+    "app_feature_mapping": {
+      "free_metronome": [
+        "minor progression tempo"
+      ]
+    }
+  }
+}

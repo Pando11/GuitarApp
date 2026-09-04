@@ -85,6 +85,7 @@ function runClassicScript(source, filename) {
 }
 
 for (const script of Array.from(document.querySelectorAll('script'))) {
+  if (script.type === 'module') continue;
   if (script.src) {
     const full = path.join(APP_DIR, script.getAttribute('src').replace(/^\.\//, ''));
     runClassicScript(fs.readFileSync(full, 'utf8'), full);

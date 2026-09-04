@@ -1,0 +1,26 @@
+PASS: index loads lesson-runner
+PASS: index loads wave1-flow
+PASS: Wave 1 unlock count fixed at 5
+PASS: index mounts wave1 enhancements
+PASS: LessonRunner API exported
+PASS: Wave1Flow API exported
+PASS: 05-content parity guitar-lesson-01-welcome-anatomy-tuning.json
+PASS: 05-content parity guitar-lesson-02-holding-the-pick.json
+PASS: 05-content parity guitar-lesson-03-first-chord-em.json
+PASS: 05-content parity guitar-lesson-04-second-chord-first-song.json
+PASS: 05-content parity guitar-lesson-05-strumming-in-time.json
+PASS: Runner opens L01 correctly :: L01-welcome-anatomy-tuning
+PASS: Runner opens L05 correctly :: L05-strumming-in-time
+PASS: L05 has Em/easyC in rendered step data
+PASS: Sage intro line exists
+PASS: Sage encouragement line exists
+PASS: L05 wrap points to porch performance :: You strummed in time. Now take that same Em to easy C loop onto the porch for your first performance. Keep it steady and let the band follow you.
+PASS: Path B reset starts expecting Em :: Em
+PASS: Path B waits on wrong chord :: wait
+PASS: Path B follows correct Em :: follow
+PASS: Path B now expects easyC :: easyC
+PASS: Path B completes first loop after easyC :: 1
+PASS: Reopen/save proof: loops persisted :: 1
+PASS: Reopen/save proof: expected chord persisted to Em :: Em
+
+RESULT: GREEN (0 failures)

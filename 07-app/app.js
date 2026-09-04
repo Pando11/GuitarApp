@@ -300,11 +300,249 @@
     return function noopCleanup() {};
   }
 
+  function shouldEnableEncryptedSync() {
+    try {
+      if (!global.GuitarApp || !global.GuitarApp.__encryptedSync) return false;
+      const search = (typeof location !== 'undefined' && location && location.search) ? String(location.search) : '';
+      const params = new URLSearchParams(search);
+      const adminEmail = params.get('pbAdminEmail') || params.get('PB_ADMIN_EMAIL');
+      const adminPass = params.get('pbAdminPass') || params.get('PB_ADMIN_PASS');
+      return !!(adminEmail && adminPass);
+    } catch {
+      return false;
+    }
+  }
+
+  async function initEncryptedSync() {
+    const syncFns = global.GuitarApp && global.GuitarApp.__encryptedSync;
+    if (!syncFns) return;
+    if (!shouldEnableEncryptedSync()) return;
+
+    global.GuitarApp.__encryptedSyncState = global.GuitarApp.__encryptedSyncState || {};
+    if (global.GuitarApp.__encryptedSyncState.started) return;
+    global.GuitarApp.__encryptedSyncState.started = true;
+
+    const search = (typeof location !== 'undefined' && location && location.search) ? String(location.search) : '';
+    const params = new URLSearchParams(search);
+
+    const baseUrl = params.get('pbBaseUrl') || 'http://127.0.0.1:8091';
+    const adminEmail = params.get('pbAdminEmail') || params.get('PB_ADMIN_EMAIL');
+    const adminPass = params.get('pbAdminPass') || params.get('PB_ADMIN_PASS');
+    const collection = params.get('pbCollection') || 'student_memory';
+
+    const LOCAL_KEYS = {
+      passphrase: 'guitarapp.sync.passphrase',
+      studentId: 'guitarapp.sync.studentId',
+      practiceStore: 'guitarapp.sync.practiceStore',
+      lastLoops: function (level) { return 'guitarapp.sync.lastLoops.' + level; },
+    };
+
+    function lsGet(key) {
+      try { return global.localStorage && global.localStorage.getItem(key); } catch { return null; }
+    }
+    function lsSet(key, val) {
+      try { global.localStorage && global.localStorage.setItem(key, val); } catch { }
+    }
+
+    const studentId = lsGet(LOCAL_KEYS.studentId) || 'student-wave2-live';
+    lsSet(LOCAL_KEYS.studentId, studentId);
+
+    let passphrase = lsGet(LOCAL_KEYS.passphrase);
+    if (!passphrase) {
+      if (typeof syncFns.generateRecoveryPhrase === 'function') {
+        passphrase = syncFns.generateRecoveryPhrase(6);
+      } else {
+        passphrase = 'amber fern river sage tide';
+      }
+      lsSet(LOCAL_KEYS.passphrase, passphrase);
+    }
+
+    async function authSuperuser() {
+      const res = await fetch(baseUrl + '/api/collections/_superusers/auth-with-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identity: adminEmail, password: adminPass }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error('Superuser auth failed: ' + JSON.stringify(data));
+      return data.token;
+    }
+
+    function deriveLoopsFromStore(store, lessonId) {
+      let easyCPasses = 0;
+      const sessions = store && Array.isArray(store.sessions) ? store.sessions : [];
+      for (const s of sessions) {
+        if (s.lessonId !== lessonId) continue;
+        const attempts = Array.isArray(s.attempts) ? s.attempts : [];
+        for (const a of attempts) {
+          if (a && a.verdict === 'pass' && a.chordName === 'easyC') easyCPasses += 1;
+        }
+      }
+      return easyCPasses;
+    }
+
+    function writePerformanceState(level, loopsCompleted, opts) {
+      const isL1 = level === 1;
+      const key = isL1 ? 'guitarapp.wave1.pathb' : 'guitarapp.wave2.pathb.level2';
+      const tempoBpm = (opts && opts.tempoBpm) || (isL1 ? 72 : 84);
+      const songId = (opts && opts.songId) || 'em-easyc-first-song';
+      const state = {
+        expectedIndex: 0,
+        loopsCompleted: Math.max(0, Math.floor(Number(loopsCompleted) || 0)),
+        lastChord: 'Em',
+        lastAction: 'follow',
+        level: level,
+        tempoBpm: tempoBpm,
+        songId: songId,
+      };
+      lsSet(key, JSON.stringify(state));
+      lsSet(LOCAL_KEYS.lastLoops(level), String(state.loopsCompleted));
+    }
+
+    async function applyPull(authToken) {
+      try {
+        const pulledEnvelope = await syncFns.pullMemory(studentId, passphrase, {
+          live: true,
+          authToken,
+          baseUrl,
+          collection,
+        });
+        const restoredStore = syncFns.restorePracticeStore(pulledEnvelope);
+        lsSet(LOCAL_KEYS.practiceStore, JSON.stringify(restoredStore.toJSON()));
+
+        const l1 = deriveLoopsFromStore(restoredStore, 'L05-strumming-in-time');
+        const l2 = deriveLoopsFromStore(restoredStore, 'L12-new-chord-am-big-four');
+
+        writePerformanceState(1, Math.min(l1, 1), { tempoBpm: 72, songId: 'em-easyc-first-song' });
+        writePerformanceState(2, Math.min(l2, 3), { tempoBpm: 84, songId: 'em-easyc-first-song' });
+      } catch (e) {
+        console.warn('[sync] pull skipped (non-fatal):', e && e.message ? e.message : e);
+      }
+    }
+
+    function loadStore() {
+      const raw = lsGet(LOCAL_KEYS.practiceStore);
+      if (raw) {
+        try {
+          return syncFns.PracticeStore.fromJSON(JSON.parse(raw));
+        } catch { }
+      }
+      return new syncFns.PracticeStore({ currentTeacherId: 'T1' });
+    }
+
+    function saveStore(store) {
+      try { lsSet(LOCAL_KEYS.practiceStore, JSON.stringify(store.toJSON())); } catch { }
+    }
+
+    async function pushLevel(level, loopsCompleted, authToken) {
+      const isL1 = level === 1;
+      const lessonId = isL1 ? 'L05-strumming-in-time' : 'L12-new-chord-am-big-four';
+      const targetLoops = isL1 ? 1 : 3;
+
+      const store = loadStore();
+      const existing = (store.sessions || []).filter(s => s.lessonId === lessonId).slice(-1)[0];
+      const sessionId = existing && existing.id ? existing.id : store.startSession(lessonId, Date.now());
+
+      const lastLoops = Number(lsGet(LOCAL_KEYS.lastLoops(level)) || '0');
+      const delta = Math.max(0, Math.floor(loopsCompleted) - lastLoops);
+      if (delta <= 0) return;
+
+      for (let i = 0; i < delta; i++) {
+        store.logAttempt(sessionId, { chordName: 'Em', verdict: 'pass', ts: Date.now() });
+        store.logAttempt(sessionId, { chordName: 'easyC', verdict: 'pass', ts: Date.now() });
+      }
+
+      const completed = loopsCompleted >= targetLoops;
+      store.finalizeSession(sessionId, {
+        completed,
+        durationSec: Math.floor(loopsCompleted) * 180,
+        lessonId,
+      });
+
+      saveStore(store);
+
+      const envelope = syncFns.buildStudentMemoryEnvelope(store, {
+        studentId,
+        teacherId: store.getTeacher(),
+        worldId: 'emerald-hollow',
+      });
+
+      await syncFns.pushMemory(studentId, envelope, passphrase, {
+        live: true,
+        authToken,
+        baseUrl,
+        collection,
+      });
+
+      lsSet(LOCAL_KEYS.lastLoops(level), String(Math.floor(loopsCompleted)));
+    }
+
+    async function wireLocalPush(authToken) {
+      const watchKeys = {
+        'guitarapp.wave1.pathb': 1,
+        'guitarapp.wave2.pathb.level2': 2,
+      };
+
+      const last = { 1: 0, 2: 0 };
+      for (const level of [1, 2]) {
+        last[level] = Number(lsGet(LOCAL_KEYS.lastLoops(level)) || '0');
+      }
+
+      let pending = null;
+      let timer = null;
+      let isPushing = false;
+
+      const origSetItem = global.localStorage && global.localStorage.setItem;
+      if (typeof origSetItem !== 'function') return;
+
+      global.localStorage.setItem = function (key, value) {
+        const out = origSetItem.call(this, key, value);
+        try {
+          const level = watchKeys[key];
+          if (level) {
+            const parsed = JSON.parse(value);
+            const loopsCompleted = Number(parsed && parsed.loopsCompleted ? parsed.loopsCompleted : 0);
+            const prev = last[level] || 0;
+            if (loopsCompleted > prev) {
+              last[level] = loopsCompleted;
+              pending = { level, loopsCompleted };
+              if (timer) clearTimeout(timer);
+              timer = setTimeout(function () {
+                const p = pending;
+                pending = null;
+                if (!p) return;
+                if (isPushing) return;
+                isPushing = true;
+                pushLevel(p.level, p.loopsCompleted, authToken)
+                  .catch(function (e) {
+                    console.warn('[sync] push failed (non-fatal):', e && e.message ? e.message : e);
+                  })
+                  .then(function () {
+                    isPushing = false;
+                  });
+              }, 250);
+            }
+          }
+        } catch { }
+        return out;
+      };
+    }
+
+    try {
+      const authToken = await authSuperuser();
+      await applyPull(authToken);
+      await wireLocalPush(authToken);
+    } catch (e) {
+      console.warn('[sync] init skipped (non-fatal):', e && e.message ? e.message : e);
+    }
+  }
+
   function boot() {
     linkManifest();
     registerServiceWorker();
     loadTeacherCatalog();
     loadPackCatalog();
+    try { initEncryptedSync(); } catch { /* non-fatal */ }
     try {
       if (typeof document !== "undefined") {
         const root =

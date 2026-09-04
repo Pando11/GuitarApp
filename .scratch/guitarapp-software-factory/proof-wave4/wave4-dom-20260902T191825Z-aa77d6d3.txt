@@ -1,0 +1,20 @@
+CATALOG STATUS
+25 lessons in Emerald Hollow
+
+PERFORMANCE RAIL
+Performance ladder
+Same song, bigger moments
+
+Path B ships now. Path A stays visible on the roadmap.
+
+Level 1 - Lesson 05: Not started (0/1 loops) - First porch performance: E minor to easy C
+Level 2 - Lesson 12: Not started (0/3 loops) - Second porch performance: the same song, steadier and stronger
+Level 3 - Lesson 25: Coming later - full band capstone in Emerald Hollow.
+
+Roadmap: Path A live adaptive duet stays visible and does not ship in this slice.
+
+L1 OUTERHTML
+<section class="step" id="porch-performance-l1" data-performance-level="1"><span class="lesson-number">Porch performance — Level 1</span><h3>First porch performance: E minor to easy C</h3><p>Basic Path B behavior: the band follows when you hit the expected chord, and waits when you miss.</p><p class="meta">Song: em-easyc-first-song | Target loops: 1 | Tempo target: 72 bpm</p><div id="pathb-l1-invite" style="margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:14px;background:rgba(34,48,39,.55)" hidden=""><div class="lesson-number" style="margin-bottom:6px">Before you start</div><p style="margin:0">Tap the buttons to play along. The band follows when you hit the expected chord, and waits when you miss.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="primary" type="button" id="pathb-l1-play-a">I played Em</button><button class="primary" type="button" id="pathb-l1-play-b">I played easy C</button><button class="secondary" type="button" id="pathb-l1-reset">Reset loop</button></div><p class="meta" id="pathb-l1-status">Band state: FOLLOW | next expected: Em | loops completed: 1/1 | tempo target: 72 bpm</p><p class="meta" id="pathb-l1-progress">Level 1 complete — you can keep moving when you’re ready.</p><div id="pathb-l1-complete" style="margin-top:12px;padding:12px;border:1px solid var(--moss);border-radius:14px;background:rgba(159,181,108,.12)"><div class="lesson-number" style="margin-bottom:6px">Level complete</div><p style="margin:0">Nice work. You’ve hit the target loops for Level 2.</p><p style="margin:8px 0 0" class="meta">Next up: Lesson 12.</p><button class="primary" type="button" id="pathb-l1-next">Continue when you’re ready</button></div></section>
+
+L2 OUTERHTML
+<section class="step" id="porch-performance-l2" data-performance-level="2"><span class="lesson-number">Porch performance — Level 2</span><h3>Second porch performance: the same song, steadier and stronger</h3><p>Same Em-to-easy-C song, but Sage pushes the pace a little. Path B still loops and waits so the band never runs away from you.</p><p class="meta">Song: em-easyc-first-song | Target loops: 3 | Tempo target: 84 bpm</p><div id="pathb-l2-invite" style="margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:14px;background:rgba(34,48,39,.55)" hidden=""><div class="lesson-number" style="margin-bottom:6px">Before you start</div><p style="margin:0">Tap the buttons to play along. The band follows when you hit the expected chord, and waits when you miss.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="primary" type="button" id="pathb-l2-play-a">I played Em</button><button class="primary" type="button" id="pathb-l2-play-b">I played easy C</button><button class="secondary" type="button" id="pathb-l2-reset">Reset loop</button></div><p class="meta" id="pathb-l2-status">Band state: FOLLOW | next expected: Em | loops completed: 3/3 | tempo target: 84 bpm</p><p class="meta" id="pathb-l2-progress">Level 2 complete — you can keep moving when you’re ready.</p><div id="pathb-l2-complete" style="margin-top:12px;padding:12px;border:1px solid var(--moss);border-radius:14px;background:rgba(159,181,108,.12)"><div class="lesson-number" style="margin-bottom:6px">Level complete</div><p style="margin:0">Nice work. You’ve hit the target loops for Level 3 (coming later).</p><p style="margin:8px 0 0" class="meta">Next up: Lesson 25.</p><button class="primary" type="button" id="pathb-l2-next">Continue when you’re ready</button></div></section>

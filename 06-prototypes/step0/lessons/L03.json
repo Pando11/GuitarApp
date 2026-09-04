@@ -1,0 +1,157 @@
+{
+  "lesson": {
+    "id": "L03-finger-independence-one-minute-changes",
+    "title": "Finger Independence and One-Minute Changes",
+    "level": "absolute-beginner",
+    "lesson_type": "technique",
+    "objectives": [
+      "Move one finger at a time without the others collapsing",
+      "Form G, C and D shapes in the air away from the strings",
+      "Score a one-minute change count and log it",
+      "Beat last session's count by a single change"
+    ],
+    "estimated_minutes": 11
+  },
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted.",
+    "G": {
+      "name": "G major (3-finger)",
+      "frets": [
+        3,
+        2,
+        0,
+        0,
+        0,
+        3
+      ],
+      "fingers": [
+        2,
+        1,
+        0,
+        0,
+        0,
+        3
+      ],
+      "qa_status": "verified-by-theory-check-2026-08-07"
+    },
+    "C": {
+      "name": "C major",
+      "frets": [
+        null,
+        3,
+        2,
+        0,
+        1,
+        0
+      ],
+      "fingers": [
+        null,
+        3,
+        2,
+        0,
+        1,
+        0
+      ],
+      "qa_status": "verified-by-theory-check-2026-08-07"
+    },
+    "D": {
+      "name": "D major",
+      "frets": [
+        null,
+        null,
+        0,
+        2,
+        3,
+        2
+      ],
+      "fingers": [
+        null,
+        null,
+        0,
+        1,
+        3,
+        2
+      ],
+      "qa_status": "verified-by-theory-check-2026-08-07"
+    }
+  },
+  "exercises": [
+    {
+      "id": "EX1-single-finger-lifts",
+      "name": "Single-finger lifts inside a held shape",
+      "purpose": "Independence: one finger leaves, the rest stay planted.",
+      "params": {
+        "base_chord": "C",
+        "order": [
+          3,
+          2,
+          1
+        ],
+        "hold_beats": 2,
+        "duration_min": 3,
+        "caution": "Stop if the forearm aches — short sets only."
+      },
+      "coaching": "Only the named finger moves. If a neighbour lifts too, slow down until it stays put.",
+      "qa_status": "verified-by-theory-check-2026-08-08 (chord data verified; teaching quality reviewed by author)"
+    },
+    {
+      "id": "EX2-air-shapes",
+      "name": "Air shapes",
+      "purpose": "Build the shape from memory with no strings to lean on.",
+      "params": {
+        "chords": [
+          "G",
+          "C",
+          "D"
+        ],
+        "reps_each": 8,
+        "action": "Form the shape off the fretboard, then drop it on and check",
+        "duration_min": 3
+      },
+      "coaching": "Make the shape in the air, then land all fingers together. Landing together is the skill.",
+      "qa_status": "verified-by-theory-check-2026-08-08 (chord data verified; teaching quality reviewed by author)"
+    },
+    {
+      "id": "EX3-one-minute-changes",
+      "name": "One-minute change count",
+      "purpose": "Turn practice into a measurable, repeatable score.",
+      "params": {
+        "chord_pairs": [
+          [
+            "G",
+            "C"
+          ],
+          [
+            "C",
+            "D"
+          ],
+          [
+            "G",
+            "D"
+          ]
+        ],
+        "duration_sec": 60,
+        "measure": "completed changes per pair",
+        "log": "write the number down each session"
+      },
+      "coaching": "Speed first, clean second. Write the number down — next session, beat it by one.",
+      "qa_status": "verified-by-theory-check-2026-08-08 (chord data verified; teaching quality reviewed by author)"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "Your fingers move as a team because they have never been asked not to. Today we ask.",
+    "ex1_intro": "Hold C. Lift the ring finger only, put it back. Then middle. Then index. Nothing else moves.",
+    "ex2_intro": "Now off the strings. Build G in the air, drop it on, check it. Then C. Then D.",
+    "ex3_intro": "One minute per pair. G to C, C to D, G to D. Count every completed change.",
+    "results": "Three numbers on paper. Those are your baselines, not your limits.",
+    "wrap": "One finger at a time, shapes in the air, one minute on the clock. Most days beats every day."
+  },
+  "qa_block": {
+    "must_verify": [
+      "Automated: run `node run-chord-check.js` — it must report 0 errors and 0 warnings for every chord before ship."
+    ],
+    "flagged_by": "founder (non-player) — cannot self-verify",
+    "verifier_role": "contract guitarist / teacher",
+    "guitarist_signoff": "NOT REQUIRED — chord fingerings verified deterministically by schema/chord-theory-check.js (2026-08-07): every sounding string checked against the chord's own spelling, plus playability. 0 errors, 0 warnings."
+  }
+}

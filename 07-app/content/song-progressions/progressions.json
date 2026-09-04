@@ -1,0 +1,325 @@
+{
+  "_legal": "PROGRESSION-ONLY. This file contains chord progressions (unprotectable functional harmony) and factual song titles. It contains NO riffs, NO melodies, NO lyrics, NO tab, NO transcribed arrangement. Nothing here was scraped from a tab site. Lessons teach the progression and say honestly which song uses it; they never teach the song's signature riff or melodic line. See AMENDMENT-12.",
+  "_schema": "chords[] reference keys in ./shapes.json. mystery.* powers Mystery Mode: the student learns the loop blind, then the reveal names the song.",
+  "songs": [
+    {
+      "id": "SP01",
+      "title": "Zombie",
+      "artist": "The Cranberries",
+      "difficulty": 1,
+      "key": "E minor",
+      "chords": [
+        "Em",
+        "Ceasy",
+        "G",
+        "D"
+      ],
+      "loop": "Em - C - G - D",
+      "bars_each": 1,
+      "feel": "slow driving 4/4, heavy downstrokes",
+      "bpm": 84,
+      "honest_claim": "This is the four-chord loop the whole song sits on. Play it and it is recognisable.",
+      "teaches": [
+        "Em->C change",
+        "G->D change",
+        "holding a loop without stopping"
+      ],
+      "mystery": {
+        "hint_1": "Four chords. Irish band, early 90s. The whole song never leaves this loop.",
+        "hint_2": "The chorus is one word, repeated.",
+        "reveal": "That's the loop from 'Zombie' by The Cranberries (1994)."
+      },
+      "unlock_after_lesson": 10
+    },
+    {
+      "id": "SP02",
+      "title": "Californication",
+      "artist": "Red Hot Chili Peppers",
+      "difficulty": 1,
+      "key": "A minor",
+      "chords": [
+        "Am",
+        "Feasy",
+        "Ceasy",
+        "G"
+      ],
+      "loop": "Am - F - C - G",
+      "bars_each": 1,
+      "feel": "clean, even eighth notes, relaxed",
+      "bpm": 96,
+      "honest_claim": "The verse and chorus both ride this loop. The famous single-note line sits on top of it - we are not teaching that line, just the harmony under it.",
+      "teaches": [
+        "Am->F change",
+        "the 2-finger F",
+        "vi-IV-I-V - the most common loop in pop music"
+      ],
+      "mystery": {
+        "hint_1": "Four chords, minor start. You have heard this exact loop in a hundred other songs.",
+        "hint_2": "California. 1999. Bass player is more famous than the chords.",
+        "reveal": "That's the loop from 'Californication' by Red Hot Chili Peppers (1999)."
+      },
+      "unlock_after_lesson": 17
+    },
+    {
+      "id": "SP03",
+      "title": "Sweet Home Alabama",
+      "artist": "Lynyrd Skynyrd",
+      "difficulty": 1,
+      "key": "G major",
+      "chords": [
+        "D",
+        "Ceasy",
+        "G"
+      ],
+      "loop": "D - C - G",
+      "bars_each": 1,
+      "feel": "loose southern shuffle, accent the 2 and 4",
+      "bpm": 98,
+      "honest_claim": "Three chords, round and round, the entire song. The intro lick is separate and we do not teach it.",
+      "teaches": [
+        "D->C change",
+        "C->G change",
+        "three-chord loop with no minor chords"
+      ],
+      "mystery": {
+        "hint_1": "Three chords. Southern rock. It never changes.",
+        "hint_2": "There is a state in the title.",
+        "reveal": "That's the loop from 'Sweet Home Alabama' by Lynyrd Skynyrd (1974)."
+      },
+      "unlock_after_lesson": 10
+    },
+    {
+      "id": "SP04",
+      "title": "Highway to Hell",
+      "artist": "AC/DC",
+      "difficulty": 2,
+      "key": "A major",
+      "chords": [
+        "A",
+        "D",
+        "G"
+      ],
+      "loop": "A - D - G - D",
+      "bars_each": 1,
+      "feel": "hard, short, stabbed chords - silence between them",
+      "bpm": 116,
+      "honest_claim": "This is the harmony the riff is built from. We teach the chords and a generic stab rhythm; the recorded riff's specific timing and articulation stay off-limits.",
+      "teaches": [
+        "A->D change",
+        "muting between stabs",
+        "playing LESS than you can"
+      ],
+      "mystery": {
+        "hint_1": "Three chords, but the space between them is the point.",
+        "hint_2": "Australian. School uniform. 1979.",
+        "reveal": "That's the harmony behind 'Highway to Hell' by AC/DC (1979)."
+      },
+      "unlock_after_lesson": 11
+    },
+    {
+      "id": "SP05",
+      "title": "Johnny B. Goode",
+      "artist": "Chuck Berry",
+      "difficulty": 2,
+      "key": "A major",
+      "chords": [
+        "A",
+        "D",
+        "E",
+        "A7"
+      ],
+      "loop": "A(3) - A7(1) - D(2) - A(2) - E(1) - D(1) - A(2)",
+      "bars_each": 1,
+      "feel": "straight-eight rock and roll, drive it",
+      "bpm": 160,
+      "honest_claim": "This is the 12-bar blues form - a public, long-standing structure (over a century old), not anyone's property. Thousands of songs use it. The song's lead intro is separate and not taught.",
+      "teaches": [
+        "the 12-bar blues form",
+        "A->D->E changes at speed",
+        "counting bars, not chords"
+      ],
+      "mystery": {
+        "hint_1": "Twelve bars. Three chords. This form is older than rock and roll and built it.",
+        "hint_2": "1958. The most copied intro in history - which you are not playing.",
+        "reveal": "That's the 12-bar form under 'Johnny B. Goode' by Chuck Berry (1958) - and under a thousand blues songs."
+      },
+      "unlock_after_lesson": 19
+    },
+    {
+      "id": "SP06",
+      "title": "The House of the Rising Sun",
+      "artist": "traditional (public domain)",
+      "difficulty": 2,
+      "key": "A minor",
+      "chords": [
+        "Am",
+        "Ceasy",
+        "D",
+        "Feasy",
+        "E"
+      ],
+      "loop": "Am - C - D - F - Am - C - E - E",
+      "bars_each": 1,
+      "feel": "6/8 rolling arpeggios or slow strum",
+      "bpm": 76,
+      "honest_claim": "FULLY PUBLIC DOMAIN. This one is a traditional folk song - we can teach the melody, the words, and the traditional arrangement freely. The only song on this list where that is true.",
+      "teaches": [
+        "6/8 feel",
+        "minor-key movement",
+        "five chords in one progression"
+      ],
+      "mystery": {
+        "hint_1": "Five chords in a minor key, rolling in threes. Older than every other song here.",
+        "hint_2": "New Orleans. A house. Nobody owns it.",
+        "reveal": "That's 'The House of the Rising Sun' - traditional, public domain, yours to play and record freely."
+      },
+      "public_domain": true,
+      "unlock_after_lesson": 18
+    },
+    {
+      "id": "SP07",
+      "title": "Nothing Else Matters",
+      "artist": "Metallica",
+      "difficulty": 2,
+      "key": "E minor",
+      "chords": [
+        "Em",
+        "D",
+        "Ceasy"
+      ],
+      "loop": "Em - D - C - D",
+      "bars_each": 2,
+      "feel": "slow, quiet, let each chord ring",
+      "bpm": 70,
+      "honest_claim": "The verse harmony. The fingerpicked intro figure is a composed riff and is deliberately NOT taught here.",
+      "teaches": [
+        "Em->D change",
+        "letting chords ring full length",
+        "dynamics - playing softly on purpose"
+      ],
+      "mystery": {
+        "hint_1": "Three chords, descending, very slow, very quiet.",
+        "hint_2": "The loudest band in the world wrote it. 1991.",
+        "reveal": "That's the verse harmony of 'Nothing Else Matters' by Metallica (1991)."
+      },
+      "unlock_after_lesson": 10
+    },
+    {
+      "id": "SP08",
+      "title": "Back In Black",
+      "artist": "AC/DC",
+      "difficulty": 2,
+      "key": "E major",
+      "chords": [
+        "E",
+        "D",
+        "A"
+      ],
+      "loop": "E - D - A",
+      "bars_each": 1,
+      "feel": "heavy, swaggering, leave gaps",
+      "bpm": 92,
+      "honest_claim": "The three chords the song is built on. The riff that decorates them is the copyrighted part and is not taught.",
+      "teaches": [
+        "E->D change",
+        "D->A change",
+        "swagger - timing over speed"
+      ],
+      "mystery": {
+        "hint_1": "Three chords. Same band as one you have already learned.",
+        "hint_2": "1980. An album cover with nothing on it.",
+        "reveal": "That's the harmony behind 'Back In Black' by AC/DC (1980)."
+      },
+      "unlock_after_lesson": 18
+    },
+    {
+      "id": "SP09",
+      "title": "Wish You Were Here",
+      "artist": "Pink Floyd",
+      "difficulty": 3,
+      "key": "G major",
+      "chords": [
+        "Em",
+        "G",
+        "A7",
+        "Ceasy",
+        "D"
+      ],
+      "loop": "Em - G - Em - G - Em - A7 - Em - A7 - G - C - D - C - G",
+      "bars_each": 2,
+      "feel": "gentle, spacious, brushed strums",
+      "bpm": 60,
+      "honest_claim": "The verse harmony. The famous opening lead line is a composed melody and is not taught.",
+      "teaches": [
+        "A7 shape",
+        "long-form progression (not a 4-bar loop)",
+        "restraint"
+      ],
+      "mystery": {
+        "hint_1": "It breathes. Long chords, lots of space, a dominant 7th that aches.",
+        "hint_2": "1975. A handshake and a man on fire.",
+        "reveal": "That's the verse harmony of 'Wish You Were Here' by Pink Floyd (1975)."
+      },
+      "unlock_after_lesson": 19
+    },
+    {
+      "id": "SP10",
+      "title": "Stairway to Heaven",
+      "artist": "Led Zeppelin",
+      "difficulty": 3,
+      "key": "A minor",
+      "chords": [
+        "Am",
+        "Ceasy",
+        "D",
+        "Feasy",
+        "G"
+      ],
+      "loop": "Am - C - D - F - Am - C - G - D",
+      "bars_each": 1,
+      "feel": "gentle arpeggios, one note at a time",
+      "bpm": 72,
+      "honest_claim": "The chord movement under the intro. The picked figure itself is the single most litigated riff in rock - we do not teach it, and we do not reproduce it.",
+      "teaches": [
+        "Am->C->D movement",
+        "arpeggiating instead of strumming",
+        "F in a progression"
+      ],
+      "mystery": {
+        "hint_1": "Minor, climbing, five chords. Famously banned in guitar shops.",
+        "hint_2": "1971. Eight minutes long, and it starts this quietly.",
+        "reveal": "That's the chord movement under the intro of 'Stairway to Heaven' by Led Zeppelin (1971)."
+      },
+      "unlock_after_lesson": 17
+    },
+    {
+      "id": "SP11",
+      "title": "Amazing Grace",
+      "artist": "traditional (public domain)",
+      "difficulty": 1,
+      "key": "G major",
+      "chords": [
+        "G",
+        "C",
+        "D"
+      ],
+      "loop": "G - C - G - D - G",
+      "bars_each": 1,
+      "feel": "slow, reverent, full ringing strums",
+      "bpm": 70,
+      "honest_claim": "FULLY PUBLIC DOMAIN. A traditional 1779 hymn (John Newton); the melody is not under copyright. We teach the standard guitar chord progression G-C-G-D-G for strum-along only. Per AMENDMENT-12 we include no lyrics, no melody line, and no riff - progressions only. Like 'House of the Rising Sun', this one is yours to play and record freely.",
+      "teaches": [
+        "three-chord I-IV-I-V-I movement",
+        "holding a slow, even strum",
+        "a universally recognised hymn as an early win"
+      ],
+      "mystery": {
+        "hint_1": "A slow, reverent hymn sung at gatherings and memorials for over two centuries.",
+        "hint_2": "Just three chords - the tonic, its subdominant, and its dominant.",
+        "reveal": "That's 'Amazing Grace' - traditional, public domain, yours to play freely."
+      },
+      "public_domain": true,
+      "unlock_after_lesson": 10
+    }
+  ]
+}

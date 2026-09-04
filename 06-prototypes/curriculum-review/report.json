@@ -1,0 +1,250 @@
+{
+  "generated": "2026-08-12T21:46:59.580Z",
+  "findings": [
+    {
+      "sev": "OK",
+      "code": "C-IDENTITY-SPLIT",
+      "msg": "Two on-disk tokens for C exist (easyC [3,4,5,7,15] vs standard C [8,9,10,11,12,13,14,15,17,18,19,20]), but the practice memory NOW canon-ifies easyC->C (chord-canon.js), so a student's easyC progress in L03-07 shares ONE slot with the C they play from L08. Verified: canonPairKey(easyC,Em)==canonPairKey(C,Em) AND PracticeStore.getSkillMap collapses them. The weak-pair moat no longer fragments. (Finding originally MED; resolved 2026-08-12.)",
+      "evidence": {
+        "sameKey": true,
+        "merged": true,
+        "easyCfiles": [
+          3,
+          4,
+          5,
+          7,
+          15
+        ],
+        "Cfiles": [
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          17,
+          18,
+          19,
+          20
+        ]
+      }
+    },
+    {
+      "sev": "LOW",
+      "code": "SONGS-NOT-SEPARATED",
+      "msg": "§5.4/§5.6 says songs are a SEPARATE CATEGORY (moved out of the technique spine), but on-disk 1 lesson(s) still embed a song exercise inside the technique lesson: L3 (Your first song — Em to easy C). No SONGS category directory exists under 05-content or 07-app/content. The directive is documented as resolved but not executed on disk — flag for Heidi (structural, low urgency).",
+      "evidence": {
+        "embeddedSongs": [
+          {
+            "n": 3,
+            "songs": [
+              "Your first song — Em to easy C"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "sev": "LOW",
+      "code": "NO-C-GRADUATION-LESSON",
+      "msg": "easyC (2-finger) is taught from L3 and standard C appears at L8 with NO lesson that explicitly graduates the student from one shape to the other. The only file containing both (L15) does not name a transition exercise. NOTE: memory continuity is ALREADY solved (canonChord easyC==C, so fluency carries across the swap — verified). What's left is a pedagogical nicety: a short teaching beat that SAYS \"now \" +\n    \"we use the full C shape\" so the beginner isn't confused by the silent swap. Non-blocking; the moat is intact.",
+      "evidence": {
+        "easyCFirst": 3,
+        "cFirst": 8,
+        "bothInLessons": [
+          15
+        ],
+        "memoryContinuous": true
+      }
+    }
+  ],
+  "inventory": [
+    {
+      "n": 1,
+      "file": "guitar-lesson-01-welcome-anatomy-tuning.json",
+      "keys": []
+    },
+    {
+      "n": 2,
+      "file": "guitar-lesson-02-first-chord-em.json",
+      "keys": [
+        "Em"
+      ]
+    },
+    {
+      "n": 3,
+      "file": "guitar-lesson-03-second-chord-first-song.json",
+      "keys": [
+        "Em",
+        "easyC"
+      ]
+    },
+    {
+      "n": 4,
+      "file": "guitar-lesson-04-strumming-in-time.json",
+      "keys": [
+        "Em",
+        "easyC"
+      ]
+    },
+    {
+      "n": 5,
+      "file": "guitar-lesson-05-chord-changes-em-easyc.json",
+      "keys": [
+        "Em",
+        "easyC"
+      ]
+    },
+    {
+      "n": 6,
+      "file": "guitar-lesson-06-new-chord-g.json",
+      "keys": [
+        "Em",
+        "G"
+      ]
+    },
+    {
+      "n": 7,
+      "file": "guitar-lesson-07-new-chord-d.json",
+      "keys": [
+        "D",
+        "Em",
+        "G",
+        "easyC"
+      ]
+    },
+    {
+      "n": 8,
+      "file": "guitar-lesson-08-new-chord-a.json",
+      "keys": [
+        "A",
+        "C",
+        "D",
+        "Em",
+        "G"
+      ]
+    },
+    {
+      "n": 9,
+      "file": "guitar-lesson-09-new-chord-am-big-four.json",
+      "keys": [
+        "Am",
+        "C",
+        "D",
+        "Em",
+        "G"
+      ]
+    },
+    {
+      "n": 10,
+      "file": "guitar-lesson-10-four-chord-songs.json",
+      "keys": [
+        "C",
+        "D",
+        "Em",
+        "G"
+      ]
+    },
+    {
+      "n": 11,
+      "file": "guitar-lesson-11-up-strums.json",
+      "keys": [
+        "C",
+        "D",
+        "Em",
+        "G"
+      ]
+    },
+    {
+      "n": 12,
+      "file": "guitar-lesson-12-strumming-patterns.json",
+      "keys": [
+        "C",
+        "D",
+        "Em",
+        "G"
+      ]
+    },
+    {
+      "n": 13,
+      "file": "guitar-lesson-13-dynamics-alternating-bass.json",
+      "keys": [
+        "C",
+        "D",
+        "Em",
+        "G"
+      ]
+    },
+    {
+      "n": 14,
+      "file": "guitar-lesson-14-capo-basics.json",
+      "keys": [
+        "C",
+        "D",
+        "Em",
+        "G"
+      ]
+    },
+    {
+      "n": 15,
+      "file": "guitar-lesson-15-faster-chord-changes.json",
+      "keys": [
+        "C",
+        "D",
+        "Em",
+        "G",
+        "easyC"
+      ]
+    },
+    {
+      "n": 16,
+      "file": "guitar-lesson-16-new-chord-e.json",
+      "keys": [
+        "A",
+        "E",
+        "Em"
+      ]
+    },
+    {
+      "n": 17,
+      "file": "guitar-lesson-17-minor-progressions-dm.json",
+      "keys": [
+        "Am",
+        "C",
+        "Dm",
+        "G"
+      ]
+    },
+    {
+      "n": 18,
+      "file": "guitar-lesson-18-fingerpicking-travis.json",
+      "keys": [
+        "C",
+        "G"
+      ]
+    },
+    {
+      "n": 19,
+      "file": "guitar-lesson-19-read-chord-chart-tab.json",
+      "keys": [
+        "Am",
+        "C",
+        "Em",
+        "G"
+      ]
+    },
+    {
+      "n": 20,
+      "file": "guitar-lesson-20-consolidation-performance.json",
+      "keys": [
+        "Am",
+        "C",
+        "D",
+        "Em",
+        "G"
+      ]
+    }
+  ]
+}

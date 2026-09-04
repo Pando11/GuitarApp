@@ -1,0 +1,19 @@
+
+=== live PocketBase sync roundtrip ===
+  base url: http://127.0.0.1:8091
+  collection: student_memory
+  PASS  superuser auth token acquired
+  PASS  student_memory collection reachable
+  collection created now: false
+  PASS  first live push returns record id
+  PASS  first live push stores student id
+  PASS  first live push stores ciphertext only
+  PASS  first live pull roundtrips student id
+  PASS  first live pull restores completed lesson count
+  PASS  first live pull restores practice minutes
+  PASS  second live push reuses the same record id
+  PASS  second live pull reflects updated practice minutes
+  PASS  second live pull keeps teacher id
+  PASS  second live pull keeps story helpPending
+
+RESULT: 12 passed, 0 failed

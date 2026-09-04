@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GuitarApp — In-Lesson Listening (Step 5 · F2 full)</title>
+<style>
+  :root{
+    --bg:#0f1420; --card:#19202e; --ink:#f2f5fb; --muted:#9aa6bd;
+    --ok:#38d39f; --warn:#ffd24a; --bad:#ff6b6b; --accent:#6c8cff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+       background:var(--bg);color:var(--ink);display:flex;justify-content:center;padding:24px}
+  .wrap{width:min(720px,100%)}
+  h1{font-size:20px;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:18px}
+  .card{background:var(--card);border-radius:16px;padding:18px;margin-bottom:14px}
+  .teacher{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+  .avatar{width:44px;height:44px;border-radius:50%;background:var(--accent);
+          display:flex;align-items:center;justify-content:center;font-size:20px}
+  .coach{font-size:14px;line-height:1.5}
+  .fret{display:flex;gap:8px;justify-content:center;margin:14px 0}
+  .string{display:flex;flex-direction:column;align-items:center;gap:4px}
+  .dot{width:34px;height:34px;border-radius:50%;background:#2a3346;color:var(--muted);
+       display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600}
+  .dot.fret-on{background:var(--accent);color:#fff}
+  .dot.open{background:#2a3346;color:var(--muted)}
+  .dot.muted{opacity:.25}
+  .lbl{font-size:10px;color:var(--muted)}
+  .prompt{font-size:18px;font-weight:700;text-align:center;margin:10px 0}
+  button{font:inherit;font-weight:600;color:#fff;background:var(--accent);border:0;
+         border-radius:12px;padding:13px 20px;cursor:pointer;width:100%;font-size:16px}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  .verdict{margin-top:14px;text-align:center;font-size:16px;font-weight:700;
+           min-height:22px}
+  .verdict.pass{color:var(--ok)} .verdict.fail{color:var(--bad)} .verdict.unsure{color:var(--warn)}
+  .heard{color:var(--muted);font-size:12px;text-align:center;margin-top:6px}
+  .ban{font-size:11px;color:var(--muted);margin-top:14px;text-align:center}
+  .pill{display:inline-block;background:#22304a;color:var(--accent);border-radius:999px;
+        padding:3px 10px;font-size:11px;font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>In-Lesson Listening Check <span class="pill">Step 5 · F2 full</span></h1>
+  <div class="sub">The $12/mo feature. The app listens on-device and verifies the chord it asked for — no open transcription, audio never leaves your phone.</div>
+
+  <div class="card">
+    <div class="teacher">
+      <div class="avatar" id="avatar">🎸</div>
+      <div>
+        <div style="font-weight:700" id="tname">Maggie Cole</div>
+        <div class="sub" style="margin:0" id="tpill">“The Best Friend”</div>
+      </div>
+    </div>
+    <div class="coach" id="coach">Make the Em shape — middle on the A string, ring on the D string. Then strum all six.</div>
+  </div>
+
+  <div class="card">
+    <div class="prompt">Play <span id="chordname">Em</span> now</div>
+    <!-- Fretboard: dotted from the lesson frets array (code-driven, Ban 1). -->
+    <div class="fret" id="fret"></div>
+    <button id="listen">🎤 Listen</button>
+    <div class="verdict" id="verdict"></div>
+    <div class="heard" id="heard"></div>
+  </div>
+
+  <div class="ban">On-device only · constrained target-matching · no camera · no recording upload (Bans 2,3,5)</div>
+</div>
+
+<script>
+'use strict';
+/* Inline lesson data — generated from 05-content/guitar-lesson-02-first-chord-em.json
+   (Em frets 0,2,2,0,0,0). This is the REAL lesson data, embedded (not hand-copied):
+   the same frets array drives the fretboard dots AND the listening target, so they
+   can never diverge. */
+const LESSON = {
+  teacher: { name: 'Maggie Cole', tag: '“The Best Friend”', avatar: '🎸' },
+  coach: 'Make the Em shape — middle on the A string, ring on the D string. Then strum all six.',
+  chordName: 'Em',
+  // low E(6)..high e(1); null = muted
+  frets: [0, 2, 2, 0, 0, 0]
+};
+
+// Render the fretboard from the SAME frets array the listener uses (code-driven).
+const STRING_NAMES = ['E','A','D','G','B','e']; // low->high
+function renderFretboard(){
+  const root = document.getElementById('fret');
+  root.innerHTML = '';
+  LESSON.frets.forEach((fret, i) => {
+    const col = document.createElement('div'); col.className = 'string';
+    const dot = document.createElement('div');
+    dot.className = 'dot ' + (fret === null ? 'muted' : (fret === 0 ? 'open' : 'fret-on'));
+    dot.textContent = (fret === null) ? '×' : String(fret);
+    const lbl = document.createElement('div'); lbl.className = 'lbl'; lbl.textContent = STRING_NAMES[i];
+    col.appendChild(dot); col.appendChild(lbl);
+    root.appendChild(col);
+  });
+}
+
+// ---- Mic capture + verdict. Reuses the proven engine (no reimplementation). ----
+// In a real build these would be require()'d from the app bundle. Here we load them
+// as classic scripts (see <script src> at bottom) so the SAME math runs in-browser.
+let listening = false;
+async function runListening(){
+  if (listening) return;
+  listening = true;
+  const btn = document.getElementById('listen');
+  const v = document.getElementById('verdict');
+  const h = document.getElementById('heard');
+  btn.disabled = true; btn.textContent = '🎧 Listening…';
+  v.className = 'verdict'; v.textContent = ''; h.textContent = '';
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation:false, noiseSuppression:false, autoGainControl:false } });
+    const ac = new (window.AudioContext || window.webkitAudioContext)();
+    const src = ac.createMediaStreamSource(stream);
+    const bufSize = 4096;
+    const proc = ac.createScriptProcessor(bufSize, 1, 1);
+    let frames = [];
+    const need = Math.floor(ac.sampleRate * 0.6); // ~0.6s of audio
+    proc.onaudioprocess = (e) => {
+      const ch = e.inputBuffer.getChannelData(0);
+      for (let i=0;i<ch.length;i++) frames.push(ch[i]);
+      if (frames.length >= need) {
+        proc.onaudioprocess = null;
+        const buf = Float32Array.from(frames.slice(0, need));
+        stream.getTracks().forEach(t => t.stop());
+        const res = window.Listening.verifyChord(buf, ac.sampleRate, LESSON.frets);
+        showVerdict(res);
+        ac.close();
+      }
+    };
+    src.connect(proc); proc.connect(ac.destination);
+  } catch (err) {
+    // No mic / permission denied: fail LOUD, never silently (but NOT a "wrong chord" false X).
+    v.className = 'verdict unsure';
+    v.textContent = 'Mic blocked — allow microphone and try again';
+    h.textContent = String(err);
+    btn.disabled = false; btn.textContent = '🎤 Listen';
+    listening = false;
+  }
+}
+
+function showVerdict(res){
+  const v = document.getElementById('verdict');
+  const h = document.getElementById('heard');
+  const btn = document.getElementById('listen');
+  v.className = 'verdict ' + res.verdict;
+  v.textContent = (res.verdict === 'pass' ? '✓ ' : (res.verdict === 'fail' ? '⚠ ' : '')) + res.msg;
+  h.textContent = res.heard && res.heard.length ? 'Heard: ' + res.heard.join(', ') : '';
+  btn.disabled = false; btn.textContent = '🎤 Listen again';
+  listening = false;
+}
+
+// Wire up UI.
+function init(){
+  document.getElementById('tname').textContent = LESSON.teacher.name;
+  document.getElementById('tpill').textContent = LESSON.teacher.tag;
+  document.getElementById('avatar').textContent = LESSON.teacher.avatar;
+  document.getElementById('coach').textContent = LESSON.coach;
+  document.getElementById('chordname').textContent = LESSON.chordName;
+  renderFretboard();
+  document.getElementById('listen').addEventListener('click', runListening);
+}
+if (typeof document !== 'undefined') document.addEventListener('DOMContentLoaded', init);
+</script>
+
+<!-- Reuse the proven engines so the browser runs the EXACT same DSP the tests prove. -->
+<script src="../step2/engine/tuner-engine.js"></script>
+<script src="./engine/listening-engine.js"></script>
+<script>
+  // Engines attach themselves to window.* in classic-script context. Sanity guard:
+  if (!window.Listening || !window.TunerEngine) {
+    document.getElementById('verdict').textContent = 'Engine failed to load';
+  }
+</script>
+</body>
+</html>

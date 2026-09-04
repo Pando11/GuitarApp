@@ -26,7 +26,7 @@ Single-context: `CONTEXT.md` (root) + `docs/adr/`. See `docs/agents/domain.md`.
    AMENDMENT-09 (Wan2.1-I2V motion + Godot story-world), AMENDMENT-10 (AI-drawn fingers/fretboards
    PERMITTED), and **AMENDMENT-11 (2026-08-11 — the product thesis: world-locked teacher +
    longitudinal student memory + teacher–student duet, with redlines)** are current truth.
-   **AMENDMENT-16 (2026-08-16 — PocketBase replaces Supabase as the backend; MIT, self-hosted, no recurring fee) is the latest word.**
+   **AMENDMENT-17 (2026-09-02 ratified — World 1 teacher Sage + first performance ladder) is the latest word.**
    **AMENDMENT-15 (2026-08-14) — CURRICULUM RE-SEQUENCE + ORDERING GATE.** F moved L24→L17,
    A7 L25→L19, and three absolute-beginner lessons (holding-the-pick, switching-Em-and-C,
    first-three-chord-song) pulled from after the L20 capstone to L2/L6/L9 where they belong;

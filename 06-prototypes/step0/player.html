@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>GuitarApp — Step 0 Lesson Player</title>
+<style>
+  :root { --ink:#111; --muted:#666; --red:#b00020; --line:#ddd; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: Helvetica, Arial, sans-serif; color: var(--ink); background:#f4f4f6; }
+  header { background:#111; color:#fff; padding:14px 20px; }
+  header h1 { margin:0; font-size:17px; letter-spacing:.3px; }
+  header p { margin:4px 0 0; font-size:12px; color:#bbb; }
+  main { max-width: 980px; margin: 18px auto 60px; padding: 0 16px; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:8px; padding:16px; margin-bottom:16px; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  button { font: inherit; padding:8px 14px; border:1px solid #111; background:#111; color:#fff;
+           border-radius:6px; cursor:pointer; }
+  button.ghost { background:#fff; color:#111; }
+  button:disabled { opacity:.4; cursor:not-allowed; }
+  select, input[type=file] { font: inherit; padding:6px; }
+  #errorBanner { display:none; background: var(--red); color:#fff; padding:14px 16px; border-radius:6px;
+                 margin-bottom:16px; font-weight:bold; white-space:pre-wrap; line-height:1.45;
+                 border:3px solid #6d0014; }
+  #errorBanner.show { display:block; }
+  .caption { font-size:20px; line-height:1.5; min-height:64px; }
+  .kind { display:inline-block; font-size:11px; text-transform:uppercase; letter-spacing:1px;
+          background:#eee; border-radius:99px; padding:3px 10px; color:#444; margin-bottom:10px; }
+  .progress-outer { height:10px; background:#e6e6e9; border-radius:99px; overflow:hidden; margin:12px 0 6px; }
+  .progress-inner { height:100%; width:0%; background:#111; transition: width .1s linear; }
+  .meta { font-size:12px; color:var(--muted); }
+  .unverified { color:#fff; background:var(--red); border:2px solid #6d0014; border-radius:6px;
+                padding:8px 10px; font-weight:bold; font-size:12px; margin-top:8px; }
+  .chords-grid { display:flex; flex-wrap:wrap; gap:16px; }
+  .chip { border:1px solid var(--line); border-radius:8px; padding:10px; background:#fff; text-align:center; }
+  .chip .nm { font-size:12px; color:var(--muted); margin-top:4px; }
+  ol.scenes { font-size:13px; color:#333; padding-left:20px; }
+  ol.scenes li.active { font-weight:bold; color:#000; }
+</style>
+</head>
+<body>
+<header>
+  <h1>GuitarApp — Step 0 Lesson Player</h1>
+  <p>Self-contained file:// prototype. No server, no CDN, no network. Fretboards drawn from lesson JSON data only.</p>
+</header>
+
+<main>
+  <div id="errorBanner"></div>
+
+  <div class="card">
+    <div class="row">
+      <label><strong>Load lesson JSON:</strong> <input type="file" id="filePicker" accept=".json,application/json" multiple></label>
+      <select id="lessonSelect"></select>
+      <button class="ghost" id="btnLoad">Load selected</button>
+    </div>
+    <p class="meta" id="loadNote">Pick one or more lesson JSON files (lessons/L01.json …), or use the built-in demo lesson below.</p>
+  </div>
+
+  <div class="card" id="playerCard" style="display:none">
+    <div id="sceneKind" class="kind">intro</div>
+    <div class="caption" id="caption"></div>
+    <div id="chordArea" style="margin-top:12px"></div>
+    <div class="progress-outer"><div class="progress-inner" id="bar"></div></div>
+    <div class="meta" id="timeMeta"></div>
+    <div class="row" style="margin-top:12px">
+      <button id="btnPlay">Play</button>
+      <button class="ghost" id="btnPause">Pause</button>
+      <button class="ghost" id="btnRestart">Restart</button>
+      <button class="ghost" id="btnPrev">&#8592; Prev</button>
+      <button class="ghost" id="btnNext">Next &#8594;</button>
+    </div>
+  </div>
+
+  <div class="card" id="summaryCard" style="display:none">
+    <h3 style="margin-top:0">Chords in this lesson</h3>
+    <div class="chords-grid" id="chordsGrid"></div>
+    <h3>Scenes</h3>
+    <ol class="scenes" id="sceneList"></ol>
+  </div>
+</main>
+
+<script>
+/* ==================================================================
+ * INLINED VALIDATOR  (mirror of schema/validate.js — CONTRACT.md)
+ * ================================================================== */
+'use strict';
+
+function isObj(v) { return v !== null && typeof v === 'object' && !Array.isArray(v); }
+
+function validateLesson(obj) {
+  var errors = [];
+  function err(m) { errors.push(m); }
+
+  if (!isObj(obj)) {
+    return { valid: false, errors: ['root: lesson must be an object'] };
+  }
+
+  var topKeys = ['lesson', 'chords', 'exercises', 'avatar_coaching_copy', 'qa_block'];
+  for (var t = 0; t < topKeys.length; t++) {
+    if (!(topKeys[t] in obj)) { err('root: missing required key "' + topKeys[t] + '"'); }
+  }
+
+  /* ---- lesson ---- */
+  var L = obj.lesson;
+  if (!isObj(L)) {
+    err('lesson: must be an object');
+  } else {
+    var req = ['id', 'title', 'level', 'lesson_type', 'objectives', 'estimated_minutes'];
+    for (var i = 0; i < req.length; i++) {
+      if (!(req[i] in L)) { err('lesson: missing required key "' + req[i] + '"'); }
+    }
+    if ('lesson_type' in L && L.lesson_type !== 'technique') {
+      err('lesson.lesson_type: must be "technique" (got ' + JSON.stringify(L.lesson_type) + ')');
+    }
+    if ('objectives' in L && (!Array.isArray(L.objectives) || L.objectives.length === 0)) {
+      err('lesson.objectives: must be a non-empty array');
+    }
+    if ('estimated_minutes' in L && typeof L.estimated_minutes !== 'number') {
+      err('lesson.estimated_minutes: must be a number');
+    }
+    if ('id' in L && typeof L.id !== 'string') { err('lesson.id: must be a string'); }
+    if ('title' in L && typeof L.title !== 'string') { err('lesson.title: must be a string'); }
+  }
+
+  /* ---- chords ---- */
+  var C = obj.chords;
+  if (!isObj(C)) {
+    err('chords: must be an object of chordName -> chord object');
+  } else {
+    var names = Object.keys(C).filter(function (k) { return k !== '_schema'; });
+    if (names.length === 0) { err('chords: must contain at least one chord'); }
+    for (var n = 0; n < names.length; n++) {
+      var key = names[n];
+      var ch = C[key];
+      var p = 'chords.' + key;
+      if (!isObj(ch)) { err(p + ': must be an object'); continue; }
+      if (typeof ch.name !== 'string' || !ch.name.length) { err(p + '.name: must be a non-empty string'); }
+      if (typeof ch.qa_status !== 'string') { err(p + '.qa_status: must be a string'); }
+      ['frets', 'fingers'].forEach(function (f) {
+        var arr = ch[f];
+        if (!Array.isArray(arr)) { err(p + '.' + f + ': must be an array'); return; }
+        if (arr.length !== 6) { err(p + '.' + f + ': must have exactly 6 entries (got ' + arr.length + ')'); }
+        for (var s = 0; s < arr.length; s++) {
+          var v = arr[s];
+          if (v === null) { continue; }
+          if (typeof v !== 'number' || !isFinite(v) || v % 1 !== 0 || v < 0) {
+            err(p + '.' + f + '[' + s + ']: must be null or a non-negative integer (got ' + JSON.stringify(v) + ')');
+          } else if (f === 'fingers' && v > 4) {
+            err(p + '.fingers[' + s + ']: finger must be 0-4 (got ' + v + ')');
+          } else if (f === 'frets' && v > 24) {
+            err(p + '.frets[' + s + ']: fret out of range 0-24 (got ' + v + ')');
+          }
+        }
+      });
+      if (Array.isArray(ch.frets) && Array.isArray(ch.fingers) && ch.frets.length === ch.fingers.length) {
+        for (var k = 0; k < ch.frets.length; k++) {
+          if (ch.frets[k] === null && ch.fingers[k] !== null) {
+            err(p + '[' + k + ']: muted string must have null finger');
+          }
+          if (ch.frets[k] === 0 && ch.fingers[k] !== 0) {
+            err(p + '[' + k + ']: open string must have finger 0');
+          }
+        }
+      }
+    }
+  }
+
+  /* ---- exercises ---- */
+  var X = obj.exercises;
+  if (!Array.isArray(X)) {
+    err('exercises: must be an array');
+  } else if (X.length === 0) {
+    err('exercises: must be a non-empty array');
+  } else {
+    for (var e = 0; e < X.length; e++) {
+      var ex = X[e];
+      var xp = 'exercises[' + e + ']';
+      if (!isObj(ex)) { err(xp + ': must be an object'); continue; }
+      var xreq = ['id', 'name', 'purpose', 'params', 'coaching', 'qa_status'];
+      for (var q = 0; q < xreq.length; q++) {
+        if (!(xreq[q] in ex)) { err(xp + ': missing required key "' + xreq[q] + '"'); }
+      }
+      if ('params' in ex && !isObj(ex.params)) { err(xp + '.params: must be an object'); }
+    }
+  }
+
+  /* ---- avatar_coaching_copy ---- */
+  if ('avatar_coaching_copy' in obj) {
+    var A = obj.avatar_coaching_copy;
+    if (!isObj(A) && !Array.isArray(A) && typeof A !== 'string') {
+      err('avatar_coaching_copy: must be an object, array, or string');
+    }
+  }
+
+  /* ---- qa_block ---- */
+  var Q = obj.qa_block;
+  if (!isObj(Q)) {
+    err('qa_block: must be an object');
+  } else {
+    if (!Array.isArray(Q.must_verify) || Q.must_verify.length === 0) {
+      err('qa_block.must_verify: must be a non-empty array');
+    }
+    if (!('guitarist_signoff' in Q)) {
+      err('qa_block: missing required key "guitarist_signoff"');
+    } else if (Q.guitarist_signoff !== null && typeof Q.guitarist_signoff !== 'string') {
+      err('qa_block.guitarist_signoff: must be a string or null');
+    }
+  }
+
+  return { valid: errors.length === 0, errors: errors };
+}
+
+/* ==================================================================
+ * INLINED RENDERER  (mirror of engine/renderer.js)
+ * ================================================================== */
+
+var DEFAULT_SCENE_MS = 6000;
+var DEFAULT_INTRO_MS = 5000;
+var DEFAULT_WRAP_MS = 5000;
+var DEFAULT_CHORD_MS = 8000;
+var STRING_COUNT = 6;
+var VERIFIED = 'verified-standard';
+
+function esc(s) {
+  return String(s === undefined || s === null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function cloneVerbatim(v) {
+  if (Array.isArray(v)) {
+    var a = [];
+    for (var i = 0; i < v.length; i++) { a[i] = cloneVerbatim(v[i]); }
+    return a;
+  }
+  if (isObj(v)) {
+    var o = {}; var keys = Object.keys(v);
+    for (var k = 0; k < keys.length; k++) { o[keys[k]] = cloneVerbatim(v[keys[k]]); }
+    return o;
+  }
+  return v;
+}
+
+function pickCopy(copy, keys, fallback) {
+  if (typeof copy === 'string') { return copy; }
+  if (Array.isArray(copy)) {
+    for (var a = 0; a < keys.length; a++) {
+      var idx = keys[a];
+      if (typeof idx === 'number' && typeof copy[idx] === 'string') { return copy[idx]; }
+    }
+    return typeof copy[0] === 'string' ? copy[0] : fallback;
+  }
+  if (isObj(copy)) {
+    for (var i = 0; i < keys.length; i++) {
+      var kk = keys[i];
+      if (typeof kk !== 'string') { continue; }
+      var v = copy[kk];
+      if (typeof v === 'string' && v.length) { return v; }
+      if (isObj(v)) {
+        if (typeof v.text === 'string' && v.text.length) { return v.text; }
+        if (typeof v.caption === 'string' && v.caption.length) { return v.caption; }
+      }
+      if (Array.isArray(v) && typeof v[0] === 'string') { return v.join(' '); }
+    }
+  }
+  return fallback;
+}
+
+function num(v) { return (typeof v === 'number' && isFinite(v)) ? v : null; }
+
+function paceMs(tempoBpm, beats, fallbackMs) {
+  if (tempoBpm !== null && beats !== null && tempoBpm > 0 && beats > 0) {
+    return Math.round((60000 / tempoBpm) * beats);
+  }
+  return fallbackMs;
+}
+
+function buildManifest(lessonJson) {
+  var result = validateLesson(lessonJson);
+  if (!result || !result.valid) {
+    var errors = (result && Array.isArray(result.errors)) ? result.errors : ['validator returned no result'];
+    throw new Error('LESSON SCHEMA INVALID: ' + errors.join('; '));
+  }
+
+  var lesson = lessonJson.lesson;
+  var copy = lessonJson.avatar_coaching_copy;
+  var scenes = [];
+
+  scenes.push({
+    id: 'intro', kind: 'intro',
+    caption: pickCopy(copy, ['intro', 'opening', 'welcome', 'start', 0], lesson.title),
+    chord: null, tempoBpm: null, beats: null, durationMs: DEFAULT_INTRO_MS
+  });
+
+  var chordNames = Object.keys(lessonJson.chords);
+  for (var c = 0; c < chordNames.length; c++) {
+    var key = chordNames[c];
+    if (key === '_schema') { continue; }
+    var src = lessonJson.chords[key];
+    if (!isObj(src)) { continue; }
+    var chordCopy = cloneVerbatim(src);
+    var displayName = (typeof chordCopy.name === 'string' && chordCopy.name.length) ? chordCopy.name : key;
+    scenes.push({
+      id: 'chord-' + key, kind: 'chord',
+      caption: pickCopy(copy, [key, displayName, 'chords', 'chord'], 'Chord: ' + displayName),
+      chord: chordCopy, tempoBpm: null, beats: null, durationMs: DEFAULT_CHORD_MS
+    });
+  }
+
+  var exercises = lessonJson.exercises;
+  for (var e = 0; e < exercises.length; e++) {
+    var ex = exercises[e];
+    var params = isObj(ex.params) ? ex.params : {};
+    var tempoBpm = num(params.tempo_bpm);
+    if (tempoBpm === null) { tempoBpm = num(params.tempoBpm); }
+    if (tempoBpm === null) { tempoBpm = num(params.bpm); }
+    var beats = num(params.beats);
+    if (beats === null) { beats = num(params.beat_count); }
+    if (beats === null) { beats = num(params.reps); }
+    var exCaption = pickCopy(ex.coaching, ['text', 'caption', 'cue', 'say', 0], null);
+    if (exCaption === null) { exCaption = (typeof ex.purpose === 'string' ? ex.purpose : ex.name); }
+    var exChord = null;
+    var ref = ex.chord || params.chord || params.chord_name;
+    if (typeof ref === 'string' && ref !== '_schema' && isObj(lessonJson.chords[ref])) {
+      exChord = cloneVerbatim(lessonJson.chords[ref]);
+    }
+    scenes.push({
+      id: 'exercise-' + ex.id, kind: 'exercise', caption: exCaption, chord: exChord,
+      tempoBpm: tempoBpm, beats: beats, durationMs: paceMs(tempoBpm, beats, DEFAULT_SCENE_MS)
+    });
+  }
+
+  scenes.push({
+    id: 'wrap', kind: 'wrap',
+    caption: pickCopy(copy, ['wrap', 'outro', 'closing', 'end', 'wrap_up'],
+                      'Nice work - practice slowly and stay relaxed.'),
+    chord: null, tempoBpm: null, beats: null, durationMs: DEFAULT_WRAP_MS
+  });
+
+  var total = 0;
+  for (var s = 0; s < scenes.length; s++) { total += scenes[s].durationMs; }
+
+  return {
+    lessonId: lesson.id, title: lesson.title, estimatedMinutes: lesson.estimated_minutes,
+    scenes: scenes, totalDurationMs: total
+  };
+}
+
+/* ---- fretboard geometry ---- */
+var PAD_L = 34, PAD_T = 44, COL_W = 26, ROW_H = 30, FRET_ROWS = 5;
+var SVG_W = PAD_L + COL_W * (STRING_COUNT - 1) + 34;
+var SVG_H = PAD_T + ROW_H * FRET_ROWS + 26;
+function stringX(i) { return PAD_L + i * COL_W; }
+function fretY(row) { return PAD_T + row * ROW_H; }
+
+function CHORD_SVG_DOTS(chord) {
+  var frets = (chord && Array.isArray(chord.frets)) ? chord.frets : [];
+  var fingers = (chord && Array.isArray(chord.fingers)) ? chord.fingers : [];
+  var lowest = null, highest = null, i, f;
+  for (i = 0; i < frets.length; i++) {
+    f = frets[i];
+    if (typeof f === 'number' && f > 0) {
+      if (lowest === null || f < lowest) { lowest = f; }
+      if (highest === null || f > highest) { highest = f; }
+    }
+  }
+  var baseFret = 1;
+  if (lowest !== null && highest !== null && highest > FRET_ROWS) { baseFret = lowest; }
+  var dots = [], markers = [];
+  for (i = 0; i < STRING_COUNT; i++) {
+    f = frets[i];
+    var finger = (i < fingers.length) ? fingers[i] : null;
+    if (f === null || f === undefined) {
+      markers.push({ string: i, type: 'muted', cx: stringX(i), cy: PAD_T - 16 });
+    } else if (f === 0) {
+      markers.push({ string: i, type: 'open', cx: stringX(i), cy: PAD_T - 16 });
+    } else if (typeof f === 'number' && f > 0) {
+      var row = f - baseFret;
+      if (row < 0) { row = 0; }
+      if (row > FRET_ROWS - 1) { row = FRET_ROWS - 1; }
+      dots.push({
+        string: i, fret: f,
+        finger: (typeof finger === 'number' && finger > 0) ? finger : null,
+        cx: stringX(i), cy: fretY(row) + ROW_H / 2
+      });
+    }
+  }
+  return { baseFret: baseFret, dots: dots, markers: markers, width: SVG_W, height: SVG_H };
+}
+
+function chordSVG(chord) {
+  var g = CHORD_SVG_DOTS(chord);
+  var name = (chord && typeof chord.name === 'string') ? chord.name : '';
+  var unverified = !(chord && chord.qa_status === VERIFIED);
+  var parts = [];
+  parts.push('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + g.width + ' ' + g.height +
+             '" width="' + g.width + '" height="' + g.height +
+             '" role="img" aria-label="' + esc(name || 'chord diagram') + '">');
+  parts.push('<rect x="0" y="0" width="' + g.width + '" height="' + g.height + '" fill="#ffffff"/>');
+  var xL = stringX(0), xR = stringX(STRING_COUNT - 1);
+  if (g.baseFret === 1) {
+    parts.push('<rect x="' + (xL - 2) + '" y="' + (PAD_T - 6) + '" width="' + (xR - xL + 4) +
+               '" height="6" fill="#111111"/>');
+  } else {
+    parts.push('<text x="' + (xL - 12) + '" y="' + (fretY(0) + 20) +
+               '" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#111111" text-anchor="end">' +
+               g.baseFret + 'fr</text>');
+  }
+  for (var r = 0; r <= FRET_ROWS; r++) {
+    parts.push('<line x1="' + xL + '" y1="' + fretY(r) + '" x2="' + xR + '" y2="' + fretY(r) +
+               '" stroke="#555555" stroke-width="1.5"/>');
+  }
+  for (var s = 0; s < STRING_COUNT; s++) {
+    parts.push('<line x1="' + stringX(s) + '" y1="' + fretY(0) + '" x2="' + stringX(s) +
+               '" y2="' + fretY(FRET_ROWS) + '" stroke="#555555" stroke-width="1.5"/>');
+  }
+  for (var m = 0; m < g.markers.length; m++) {
+    var mk = g.markers[m];
+    if (mk.type === 'open') {
+      parts.push('<circle cx="' + mk.cx + '" cy="' + mk.cy + '" r="6" fill="none" stroke="#111111" stroke-width="1.8"/>');
+    } else {
+      parts.push('<g transform="translate(' + mk.cx + ',' + mk.cy + ')">' +
+                 '<line x1="-6" y1="-6" x2="6" y2="6" stroke="#b00020" stroke-width="2.2"/>' +
+                 '<line x1="-6" y1="6" x2="6" y2="-6" stroke="#b00020" stroke-width="2.2"/></g>');
+    }
+  }
+  for (var d = 0; d < g.dots.length; d++) {
+    var dot = g.dots[d];
+    parts.push('<circle cx="' + dot.cx + '" cy="' + dot.cy + '" r="10" fill="#111111"/>');
+    if (dot.finger !== null) {
+      parts.push('<text x="' + dot.cx + '" y="' + (dot.cy + 4.5) +
+                 '" font-family="Helvetica,Arial,sans-serif" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">' +
+                 dot.finger + '</text>');
+    }
+  }
+  if (name) {
+    parts.push('<text x="' + (g.width / 2) + '" y="18" font-family="Helvetica,Arial,sans-serif" font-size="15" font-weight="bold" fill="#111111" text-anchor="middle">' +
+               esc(name) + '</text>');
+  }
+  // QA caption removed from the diagram at owner request 2026-08-07 (display only).
+  // The requirement is UNCHANGED: chord.qa_status / qa_block.guitarist_signoff still
+  // gate ship per Hard Ban 7. `unverified` stays computed for any future use.
+  void unverified;
+  parts.push('</svg>');
+  return parts.join('');
+}
+
+/* ==================================================================
+ * BUILT-IN DEMO LESSON (used when no file is picked; file:// cannot
+ * fetch lessons/*.json without a server)
+ * ================================================================== */
+var DEMO_LESSONS = {
+  'DEMO — Em / Am switching': {
+    lesson: {
+      id: 'DEMO-01', title: 'Em and Am: your first chord switch', level: 'beginner',
+      lesson_type: 'technique',
+      objectives: ['Fret Em cleanly', 'Fret Am cleanly', 'Switch Em to Am in time'],
+      estimated_minutes: 8
+    },
+    chords: {
+      Em: { name: 'E minor', frets: [0, 2, 2, 0, 0, 0], fingers: [0, 2, 3, 0, 0, 0], qa_status: 'verified-standard' },
+      Am: { name: 'A minor', frets: [null, 0, 2, 2, 1, 0], fingers: [null, 0, 2, 3, 1, 0], qa_status: 'ai-generated-unverified' }
+    },
+    exercises: [
+      { id: 'ex1', name: 'Em hold', purpose: 'Build finger memory for E minor.',
+        chord: 'Em', params: { tempo_bpm: 60, beats: 8 },
+        coaching: { text: 'Press just behind the fret. Strum all six strings and listen for buzz.' },
+        qa_status: 'ai-generated-unverified' },
+      { id: 'ex2', name: 'Em to Am switch', purpose: 'Change chords in time.',
+        chord: 'Am', params: { tempo_bpm: 50, beats: 16 },
+        coaching: { text: 'Move both fingers together as one shape. Slow is fast.' },
+        qa_status: 'ai-generated-unverified' }
+    ],
+    avatar_coaching_copy: {
+      intro: 'Welcome back. Today we lock in two chords: E minor and A minor.',
+      Em: 'E minor - two fingers, all six strings ring.',
+      Am: 'A minor - three fingers, do not play the low E string.',
+      wrap: 'Great session. Five minutes a day beats one long practice a week.'
+    },
+    qa_block: {
+      must_verify: ['Em fingering', 'Am fingering', 'tempo suitability for beginners'],
+      guitarist_signoff: null
+    }
+  },
+  'DEMO — BROKEN (should show red banner)': {
+    lesson: { id: 'BROKEN-01', title: 'Broken lesson', level: 'beginner', lesson_type: 'song',
+              objectives: [], estimated_minutes: 'ten' },
+    chords: { Xx: { name: 'Bad chord', frets: [0, 2, 2, 0, 0], fingers: [0, 9, 3, 0, 0, 0], qa_status: 'unknown' } },
+    exercises: [{ id: 'e1', name: 'no purpose' }],
+    avatar_coaching_copy: { intro: 'hi' },
+    qa_block: { must_verify: [] }
+  }
+};
+
+/* ==================================================================
+ * UI WIRING
+ * ================================================================== */
+var $ = function (id) { return document.getElementById(id); };
+var loaded = {};              // label -> lesson JSON
+var manifest = null;
+var sceneIdx = 0;
+var elapsedInScene = 0;
+var playing = false;
+var lastTick = 0;
+var timer = null;
+var TICK_MS = 100;
+
+function showError(msg) {
+  var b = $('errorBanner');
+  b.textContent = 'LESSON FAILED VALIDATION\n' + msg;
+  b.className = 'show';
+  $('playerCard').style.display = 'none';
+  $('summaryCard').style.display = 'none';
+}
+function clearError() {
+  var b = $('errorBanner');
+  b.textContent = '';
+  b.className = '';
+}
+
+function refreshSelect() {
+  var sel = $('lessonSelect');
+  sel.innerHTML = '';
+  Object.keys(loaded).forEach(function (label) {
+    var o = document.createElement('option');
+    o.value = label; o.textContent = label;
+    sel.appendChild(o);
+  });
+}
+
+function loadLesson(label) {
+  stop();
+  var json = loaded[label];
+  try {
+    manifest = buildManifest(json);
+  } catch (err) {
+    manifest = null;
+    showError(String(err && err.message ? err.message : err));
+    return;
+  }
+  clearError();
+  sceneIdx = 0; elapsedInScene = 0;
+  $('playerCard').style.display = '';
+  $('summaryCard').style.display = '';
+  renderSummary(json);
+  renderScene();
+}
+
+function unverifiedNote(chord) {
+  // Red "NOT VERIFIED" box removed at owner request 2026-08-07 — DISPLAY ONLY.
+  // qa_status and qa_block.guitarist_signoff are untouched in the lesson data and
+  // still gate ship (Hard Ban 7 / Step 4 bar). This function now renders nothing.
+  return '';
+}
+
+function renderSummary(json) {
+  var grid = $('chordsGrid');
+  grid.innerHTML = '';
+  manifest.scenes.filter(function (s) { return s.kind === 'chord'; }).forEach(function (s) {
+    var div = document.createElement('div');
+    div.className = 'chip';
+    div.innerHTML = chordSVG(s.chord) +
+      '<div class="nm">' + esc(s.chord.frets.map(function (f) { return f === null ? 'x' : f; }).join(' ')) + '</div>' +
+      unverifiedNote(s.chord);
+    grid.appendChild(div);
+  });
+
+  var ol = $('sceneList');
+  ol.innerHTML = '';
+  manifest.scenes.forEach(function (s, i) {
+    var li = document.createElement('li');
+    li.id = 'sc-' + i;
+    li.textContent = s.kind + ' — ' + s.id + ' (' + Math.round(s.durationMs / 100) / 10 + 's)' +
+                     (s.tempoBpm ? ' @ ' + s.tempoBpm + 'bpm' : '');
+    ol.appendChild(li);
+  });
+
+  var qs = json.qa_block && json.qa_block.guitarist_signoff;
+  var note = $('loadNote');
+  note.innerHTML = 'Loaded <strong>' + esc(manifest.title) + '</strong> (' + esc(manifest.lessonId) + ') — ' +
+    manifest.scenes.length + ' scenes, ' + Math.round(manifest.totalDurationMs / 1000) + 's total.' +
+    (qs ? ' Guitarist signoff: ' + esc(qs) : ' <span style="color:#b00020;font-weight:bold">No guitarist signoff.</span>');
+}
+
+function renderScene() {
+  if (!manifest) { return; }
+  var s = manifest.scenes[sceneIdx];
+  $('sceneKind').textContent = s.kind;
+  $('caption').textContent = s.caption || '';
+  $('chordArea').innerHTML = s.chord ? (chordSVG(s.chord) + unverifiedNote(s.chord)) : '';
+  for (var i = 0; i < manifest.scenes.length; i++) {
+    var li = $('sc-' + i);
+    if (li) { li.className = (i === sceneIdx) ? 'active' : ''; }
+  }
+  updateProgress();
+}
+
+function updateProgress() {
+  if (!manifest) { return; }
+  var before = 0;
+  for (var i = 0; i < sceneIdx; i++) { before += manifest.scenes[i].durationMs; }
+  var done = before + elapsedInScene;
+  var pct = manifest.totalDurationMs ? (done / manifest.totalDurationMs) * 100 : 0;
+  if (pct > 100) { pct = 100; }
+  $('bar').style.width = pct.toFixed(2) + '%';
+  $('timeMeta').textContent = 'Scene ' + (sceneIdx + 1) + ' / ' + manifest.scenes.length +
+    ' — ' + (done / 1000).toFixed(1) + 's of ' + (manifest.totalDurationMs / 1000).toFixed(1) + 's';
+}
+
+function tick() {
+  if (!playing || !manifest) { return; }
+  var now = Date.now();
+  var dt = now - lastTick;
+  lastTick = now;
+  elapsedInScene += dt;
+  var s = manifest.scenes[sceneIdx];
+  if (elapsedInScene >= s.durationMs) {
+    if (sceneIdx < manifest.scenes.length - 1) {
+      sceneIdx++; elapsedInScene = 0; renderScene();
+    } else {
+      elapsedInScene = s.durationMs;
+      pause();
+    }
+  }
+  updateProgress();
+}
+
+function play() {
+  if (!manifest || playing) { return; }
+  playing = true; lastTick = Date.now();
+  timer = setInterval(tick, TICK_MS);
+  $('btnPlay').textContent = 'Playing…';
+}
+function pause() {
+  playing = false;
+  if (timer) { clearInterval(timer); timer = null; }
+  $('btnPlay').textContent = 'Play';
+}
+function stop() { pause(); sceneIdx = 0; elapsedInScene = 0; }
+function restart() { stop(); if (manifest) { renderScene(); play(); } }
+
+$('btnPlay').onclick = play;
+$('btnPause').onclick = pause;
+$('btnRestart').onclick = restart;
+$('btnPrev').onclick = function () {
+  if (!manifest || sceneIdx === 0) { return; }
+  sceneIdx--; elapsedInScene = 0; renderScene();
+};
+$('btnNext').onclick = function () {
+  if (!manifest || sceneIdx >= manifest.scenes.length - 1) { return; }
+  sceneIdx++; elapsedInScene = 0; renderScene();
+};
+$('btnLoad').onclick = function () {
+  var label = $('lessonSelect').value;
+  if (label && loaded[label]) { loadLesson(label); }
+};
+
+$('filePicker').onchange = function (evt) {
+  var files = evt.target.files;
+  var pending = files.length;
+  if (!pending) { return; }
+  var firstLabel = null;
+  var parseErrors = [];
+  for (var i = 0; i < files.length; i++) {
+    (function (file) {
+      var reader = new FileReader();
+      reader.onload = function () {
+        try {
+          loaded[file.name] = JSON.parse(reader.result);
+          if (!firstLabel) { firstLabel = file.name; }
+        } catch (e) {
+          parseErrors.push(file.name + ': not valid JSON — ' + e.message);
+        }
+        pending--;
+        if (pending === 0) {
+          refreshSelect();
+          if (parseErrors.length) { showError(parseErrors.join('\n')); }
+          else if (firstLabel) { $('lessonSelect').value = firstLabel; loadLesson(firstLabel); }
+        }
+      };
+      reader.readAsText(file);
+    })(files[i]);
+  }
+};
+
+/* boot with demos */
+Object.keys(DEMO_LESSONS).forEach(function (k) { loaded[k] = DEMO_LESSONS[k]; });
+refreshSelect();
+loadLesson(Object.keys(DEMO_LESSONS)[0]);
+</script>
+</body>
+</html>

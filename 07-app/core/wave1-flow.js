@@ -198,18 +198,42 @@
   function renderPorchPerformance(config) {
     const slug = config.domSlug;
     const cycle = config.cycle;
+
+    const nextLesson = config.level === 1
+      ? 'Lesson 12'
+      : 'Lesson 25';
+    const nextLessonLabel = config.level === 1
+      ? 'Level 2'
+      : 'Level 3 (coming later)';
+
     return [
       `<section class="step" id="porch-performance-${slug}" data-performance-level="${config.level}">`,
       `<span class="lesson-number">Porch performance — Level ${config.level}</span>`,
       `<h3>${escapeHtml(config.heading)}</h3>`,
       `<p>${escapeHtml(config.summary)}</p>`,
       `<p class="meta">Song: ${escapeHtml(config.songId)} | Target loops: ${config.targetLoops} | Tempo target: ${config.tempoBpm} bpm</p>`,
-      '<div style="display:flex;gap:8px;flex-wrap:wrap">',
+
+      `<div id="pathb-${slug}-invite" style="margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:14px;background:rgba(34,48,39,.55)">`,
+      `<div class="lesson-number" style="margin-bottom:6px">Before you start</div>`,
+      `<p style="margin:0">Tap the buttons to play along. The band follows when you hit the expected chord, and waits when you miss.</p>`,
+      `</div>`,
+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">',
       `<button class="primary" type="button" id="pathb-${slug}-play-a">${escapeHtml(config.buttonLabels[cycle[0]] || ('I played ' + cycle[0]))}</button>`,
       `<button class="primary" type="button" id="pathb-${slug}-play-b">${escapeHtml(config.buttonLabels[cycle[1]] || ('I played ' + cycle[1]))}</button>`,
       `<button class="secondary" type="button" id="pathb-${slug}-reset">Reset loop</button>`,
       '</div>',
+
       `<p class="meta" id="pathb-${slug}-status"></p>`,
+      `<p class="meta" id="pathb-${slug}-progress"></p>`,
+
+      `<div id="pathb-${slug}-complete" hidden style="margin-top:12px;padding:12px;border:1px solid var(--moss);border-radius:14px;background:rgba(159,181,108,.12)">`,
+      `<div class="lesson-number" style="margin-bottom:6px">Level complete</div>`,
+      `<p style="margin:0">Nice work. You’ve hit the target loops for ${escapeHtml(nextLessonLabel)}.</p>`,
+      `<p style="margin:8px 0 0" class="meta">Next up: ${escapeHtml(nextLesson)}.</p>`,
+      `<button class="primary" type="button" id="pathb-${slug}-next">Continue when you’re ready</button>`,
+      `</div>`,
+
       '</section>',
     ].join("");
   }
@@ -240,13 +264,27 @@
     const session = makePathBSession(null, performance);
     const slug = performance.domSlug;
     const statusNode = global.document.getElementById("pathb-" + slug + "-status");
+    const inviteNode = global.document.getElementById("pathb-" + slug + "-invite");
+    const progressNode = global.document.getElementById("pathb-" + slug + "-progress");
+    const completeNode = global.document.getElementById("pathb-" + slug + "-complete");
 
     function paint() {
       const s = session.load();
       const expected = session.expectedChord(s);
+      const isComplete = s.loopsCompleted >= performance.targetLoops;
+
       if (statusNode) {
         statusNode.textContent =
           `Band state: ${s.lastAction.toUpperCase()} | next expected: ${expected} | loops completed: ${s.loopsCompleted}/${performance.targetLoops} | tempo target: ${performance.tempoBpm} bpm`;
+      }
+
+      if (inviteNode) inviteNode.hidden = isComplete;
+      if (completeNode) completeNode.hidden = !isComplete;
+
+      if (progressNode) {
+        progressNode.textContent = isComplete
+          ? `Level ${performance.level} complete — you can keep moving when you’re ready.`
+          : `Keep going — ${s.loopsCompleted}/${performance.targetLoops} loops. Next expected: ${expected}.`;
       }
     }
 

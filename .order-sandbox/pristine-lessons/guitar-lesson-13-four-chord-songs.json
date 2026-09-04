@@ -1,0 +1,162 @@
+{
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted.",
+    "G": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "G major (3-finger / 'easy G')",
+      "frets": [
+        3,
+        2,
+        0,
+        0,
+        0,
+        3
+      ],
+      "fingers": [
+        2,
+        1,
+        0,
+        0,
+        0,
+        3
+      ]
+    },
+    "D": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "D major",
+      "frets": [
+        null,
+        null,
+        0,
+        2,
+        3,
+        2
+      ],
+      "fingers": [
+        null,
+        null,
+        0,
+        1,
+        3,
+        2
+      ]
+    },
+    "Em": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "E minor",
+      "frets": [
+        0,
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "fingers": [
+        0,
+        2,
+        3,
+        0,
+        0,
+        0
+      ]
+    },
+    "C": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "C major (standard)",
+      "frets": [
+        null,
+        3,
+        2,
+        0,
+        1,
+        0
+      ],
+      "fingers": [
+        null,
+        3,
+        2,
+        0,
+        1,
+        0
+      ]
+    }
+  },
+  "exercises": [
+    {
+      "id": "EX1-progression",
+      "name": "The G–D–Em–C loop",
+      "purpose": "Chain the four chords in order.",
+      "params": {
+        "chord_cycle": [
+          "G",
+          "D",
+          "Em",
+          "C"
+        ],
+        "tempo_bpm": 70,
+        "beats": 4,
+        "cue": "one chord per 4 beats, loop seamlessly"
+      },
+      "coaching": "Here it is: G, D, Em, C. One chord per four beats, then back to G. This exact loop is behind hundreds of famous songs. You are playing pop music.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-smooth",
+      "name": "Smooth the transitions",
+      "purpose": "Focus on the two hardest changes (Em→C, C→G).",
+      "params": {
+        "chord_cycle": [
+          "Em",
+          "C",
+          "G",
+          "D"
+        ],
+        "tempo_bpm": 70,
+        "beats": 4,
+        "focus": "land cleanly on the downbeat"
+      },
+      "coaching": "The trickiest moves are Em to C and C to G. Slow the metronome if you must, but land each chord ON the beat. Smooth beats fast.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "Milestone lesson. G, D, Em, C — loop them and you are playing the progression behind hundreds of hit songs. This is the moment it clicks.",
+    "ex1_intro": "G, D, Em, C. One chord per four beats, loop back to G. Do not rush the changes — land them. This is real music, right here.",
+    "ex2_intro": "Hardest changes: Em to C, C to G. Slow the click if you need to. The goal is landing each chord on the beat, every time.",
+    "results": "If you can loop G-D-Em-C without stopping, you have played a \"real song.\" That is the milestone. Be proud.",
+    "wrap": "G-D-Em-C. Hundreds of songs, one loop, you playing it. Lesson 11 we add up-strums and it really starts to groove."
+  },
+  "qa_block": {
+    "must_verify": [
+      "Automated: every chord fingering verified deterministically by 06-prototypes/step0/schema/chord-theory-check.js (verifyChord) — 0 errors AND 0 warnings required before ship (Hard Ban 7 satisfied by arithmetic, per owner directive 2026-08-08: physical fingering correctness needs no contract guitarist).",
+      "Automated: lesson JSON passes schema/validate.js (validateLesson) — all required keys present, frets/fingers length 6, qa_status whitelisted.",
+      "Author pass: teaching copy is plain-English, beginner-appropriate, no AI-isms; pacing realistic.",
+      "Licensing: exercises only, zero copyrighted song material (spec §3/R6)."
+    ],
+    "flagged_by": "founder (non-player) — cannot self-verify",
+    "verifier_role": "arithmetic (chord-theory-check.js) + author review",
+    "guitarist_signoff": "NOT REQUIRED for chord fingering correctness — verified deterministically by chord-theory-check.js on 2026-08-08 (every sounding string checked against the chord spelling; 0 errors, 0 warnings). Per owner directive 2026-08-08, physical fingering is proven by arithmetic, not a human."
+  },
+  "lesson": {
+    "id": "L13-four-chord-songs",
+    "title": "Four-Chord Songs (MILESTONE)",
+    "level": "beginner",
+    "lesson_type": "technique",
+    "one_line_promise": "G–D–Em–C. Hundreds of songs. You.",
+    "objectives": [
+      "Play the I–V–vi–IV loop (G–D–Em–C)",
+      "Hold even tempo across all four",
+      "Feel the milestone: a \"real song\""
+    ],
+    "estimated_minutes": 15,
+    "prerequisites": [
+      "Em, C, G, D (L03-L10)"
+    ],
+    "app_feature_mapping": {
+      "free_metronome": [
+        "hold the 4-chord loop tempo"
+      ]
+    }
+  }
+}

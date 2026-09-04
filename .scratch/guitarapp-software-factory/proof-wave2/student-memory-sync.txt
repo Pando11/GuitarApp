@@ -1,0 +1,18 @@
+
+=== studentMemorySync bridge roundtrip ===
+  PASS  envelope student id set
+  PASS  envelope world locked to Emerald Hollow
+  PASS  story memory carries a nemesis chord
+  PASS  story memory cites help pending
+  PASS  local envelope saved under stable key
+  PASS  local envelope reload matches saved envelope
+  PASS  restored store keeps completed lessons
+  PASS  restored store keeps chord canon state
+  PASS  encrypted record contains ciphertext
+  PASS  encrypted record hides plaintext
+  PASS  decrypted roundtrip keeps same student id
+  PASS  decrypted roundtrip keeps teacher id
+  PASS  decrypted roundtrip keeps practice minutes
+  PASS  decrypted roundtrip keeps story nemesis
+
+RESULT: 14 passed, 0 failed

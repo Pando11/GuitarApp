@@ -1,0 +1,15 @@
+WAVE4 hostile encrypted-sync verify
+baseUrl=http://127.0.0.1:8091
+studentId=student-wave4-proof-1788376648871
+passphrase_source=app-generated recovery phrase stored at localStorage[guitarapp.sync.passphrase]
+collection=student_memory
+pb_base_url=http://127.0.0.1:8091
+student_id=student-wave4-proof-1788376648871
+passphrase_source=app-generated recovery phrase stored at localStorage[guitarapp.sync.passphrase]
+record_id=3wben3m0c26czgo
+ciphertext_nonempty=true
+plaintext_tokens_absent=true
+restore_verified=true
+record_shape={"ciphertext_len":1196,"iv_len":16,"salt_len":24,"student_id":"student-wave4-proof-1788376648871","loops_completed":1,"expected_index":0}
+RESULT: GREEN
+SUMMARY_JSON={"pb_base_url":"http://127.0.0.1:8091","student_id":"student-wave4-proof-1788376648871","passphrase_source":"app-generated recovery phrase stored at localStorage[guitarapp.sync.passphrase]","record_id":"3wben3m0c26czgo","ciphertext_nonempty":true,"plaintext_tokens_absent":true,"restore_verified":true,"record_shape":{"ciphertext_len":1196,"iv_len":16,"salt_len":24,"student_id":"student-wave4-proof-1788376648871","loops_completed":1,"expected_index":0}}

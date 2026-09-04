@@ -1,6 +1,6 @@
 # docs/adr/0004-the-teacher-world-1-emerald-hollow.md
 
-**Status:** proposed (Grill #4, 2026-08-23 — not yet ratified by owner)
+**Status:** ratified (2026-09-02 by owner Heidi; Grill #4 direction accepted)
 **Supersedes:** nothing (new ADR)
 **Related:** ADR-0001 (always-on encrypted sync), ADR-0002 (practice delivery),
 ADR-0003 (mystery mode), AMENDMENT-06 (avatar/voice unlock),
@@ -47,7 +47,7 @@ light, early-morning damp atmosphere. Branded internally as **Emerald Hollow**.
   shadow (#202020), mid-dark stone (#404040), forest greens (#204020, #406040), and muted
   olive-tan (#404020, #606040). Any generated still must respect this muted/earthy range.
 
-### First teacher = one chill instructor
+### First teacher = Sage
 
 - **Personality:** Chill, warm, encouraging — inherits the Grill #3 teacher-voice rule
   ("warm and encouraging, never clinical"). Praise the past win, soften the turn, invite the
@@ -66,13 +66,17 @@ light, early-morning damp atmosphere. Branded internally as **Emerald Hollow**.
 |-------|--------------------|---------|-------------|
 | Level 1 | ~5–6 lessons (TBD by Hermes vs actual curriculum) | Tavern porch in Emerald Hollow | Student performs what they've learned; teacher accompanies. Low pressure. |
 | Level 2 | ~10–12 lessons (TBD) | Same or expanded Emerald Hollow moment | Student plays more chords/song; teacher encourages harder pace. |
-| Level 3 (capstone) | Lesson 25 (curriculum capstone) | Bar/stage with full band | Student "joins the band" — bass, drums, teacher on second guitar. Student picks the song. |
+| Level 3 (capstone) | Lesson 25 (curriculum capstone) | Bar/stage with full band | Student "joins the band" — bass, drums, teacher on second guitar. The same recurring performance song returns in front of a crowd. |
 
-- **Exact lesson gates are NOT decided here.** Hermes + owner will map the ladder against the
-  actual 25-lesson curriculum in the spec/tickets phase. The ladder structure is locked; the
-  numbers are not.
+- **Level 1 and Level 2 timing bands are ratified here.** Level 1 happens early, around lessons
+  5–6, and for the first shipped slice it lands at the end of **Lesson 5**. Level 2 happens in the
+  middle, around lessons 10–12, with the exact lesson ID still open.
 - **Level 1 is the first reward moment.** The student practices through their first set of
   lessons, the teacher senses they're doing well, and invites them to perform on the porch.
+- **Level 1 uses a curated small set.** The first performance moment should feel guided and easy
+  to win, not like a giant song menu.
+- **All three performance rewards use the same song.** Repetition is intentional: the student grows
+  with one recurring performance song so the capstone feels earned and familiar.
 
 ### Duet — Path A (goal) vs Path B (v1 ships)
 
@@ -143,19 +147,19 @@ light, early-morning damp atmosphere. Branded internally as **Emerald Hollow**.
 
 ## Open items (to resolve in spec/tickets phase)
 
-1. **Exact lesson gates for Level 1 and Level 2** — map against the 25-lesson curriculum.
-   Hermes + owner. Not decided here.
+1. **Choose the exact lesson ID for Level 2** — Level 1 is now fixed at the end of Lesson 5.
+   Level 2 stays open inside the ratified ~10–12 range.
 2. **Who is in the Level 3 band, exactly?** Bass + drums + teacher on second guitar is the
    owner's picture. Confirm: is the band pre-built per song, or assembled by the app?
-3. **Student picks the song at Level 3** — from the song-progression catalog (10 songs, 11
-   shapes)? Or from a smaller "you know these chords" subset? Constraint: the song's chords
-   must all be taught by that point (AMENDMENT-13 prereq gate).
-4. **Animated character source:** Hand-authored Godot character rig? AI-generated stills
+3. **Animated character source:** Hand-authored Godot character rig? AI-generated stills
    (FLUX) + motion (Wan)? Or a mix? Not decided — depends on what "high quality animated"
    means in production and what the pipeline produces when run.
-5. **Path A revisit trigger — refine the three prerequisites.** Currently: (a) student memory
+4. **Path A revisit trigger — refine the three prerequisites.** Currently: (a) student memory
    live + encrypted cross-device, (b) listening engine reliably classifies clean chord changes
    in real time, (c) adaptive accompaniment prototype exists. Owner may want to sharpen these.
+
+**Resolved 2026-09-02 by owner:** use the simple **Em→C first song** as the recurring performance
+song for the ladder.
 
 ---
 

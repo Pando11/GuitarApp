@@ -1,0 +1,89 @@
+{
+  "status": "pass",
+  "url": "http://127.0.0.1:8000/",
+  "card_count": 25,
+  "unlocked_count": 5,
+  "catalog_status": "25 lessons in Emerald Hollow",
+  "performance_rail": "Performance ladder\nSame song, bigger moments\n\nPath B ships now. Path A stays visible on the roadmap.\n\nLevel 1 - Lesson 05: Not started (0/1 loops) - First porch performance: E minor to easy C\nLevel 2 - Lesson 12: Not started (0/3 loops) - Second porch performance: the same song, steadier and stronger\nLevel 3 - Lesson 25: Coming later - full band capstone in Emerald Hollow.\n\nRoadmap: Path A live adaptive duet stays visible and does not ship in this slice.",
+  "l1": {
+    "invite_visible_before": true,
+    "progress_before_text": "Keep going \u2014 0/1 loops. Next expected: Em.",
+    "status_before_text": "Band state: WAIT | next expected: Em | loops completed: 0/1 | tempo target: 72 bpm",
+    "complete_hidden_before": true,
+    "after_first_click_progress_text": "Keep going \u2014 0/1 loops. Next expected: easyC.",
+    "after_first_click_status_text": "Band state: FOLLOW | next expected: easyC | loops completed: 0/1 | tempo target: 72 bpm",
+    "invite_visible_after_first_click": true,
+    "complete_hidden_after_first_click": true,
+    "after_completion_progress_text": "Level 1 complete \u2014 you can keep moving when you\u2019re ready.",
+    "after_completion_status_text": "Band state: FOLLOW | next expected: Em | loops completed: 1/1 | tempo target: 72 bpm",
+    "invite_visible_after_completion": false,
+    "complete_visible_after_completion": true,
+    "complete_text": "Level complete\n\nNice work. You\u2019ve hit the target loops for Level 2.\n\nNext up: Lesson 12.\n\nContinue when you\u2019re ready"
+  },
+  "l2": {
+    "invite_visible_before": true,
+    "progress_before_text": "Keep going \u2014 0/3 loops. Next expected: Em.",
+    "status_before_text": "Band state: WAIT | next expected: Em | loops completed: 0/3 | tempo target: 84 bpm",
+    "complete_hidden_before": true,
+    "progress_timeline": [
+      {
+        "step": 1,
+        "button": "#pathb-l2-play-a",
+        "progress_text": "Keep going \u2014 0/3 loops. Next expected: easyC.",
+        "status_text": "Band state: FOLLOW | next expected: easyC | loops completed: 0/3 | tempo target: 84 bpm",
+        "invite_visible": true,
+        "complete_hidden": true
+      },
+      {
+        "step": 2,
+        "button": "#pathb-l2-play-b",
+        "progress_text": "Keep going \u2014 1/3 loops. Next expected: Em.",
+        "status_text": "Band state: FOLLOW | next expected: Em | loops completed: 1/3 | tempo target: 84 bpm",
+        "invite_visible": true,
+        "complete_hidden": true
+      },
+      {
+        "step": 3,
+        "button": "#pathb-l2-play-a",
+        "progress_text": "Keep going \u2014 1/3 loops. Next expected: easyC.",
+        "status_text": "Band state: FOLLOW | next expected: easyC | loops completed: 1/3 | tempo target: 84 bpm",
+        "invite_visible": true,
+        "complete_hidden": true
+      },
+      {
+        "step": 4,
+        "button": "#pathb-l2-play-b",
+        "progress_text": "Keep going \u2014 2/3 loops. Next expected: Em.",
+        "status_text": "Band state: FOLLOW | next expected: Em | loops completed: 2/3 | tempo target: 84 bpm",
+        "invite_visible": true,
+        "complete_hidden": true
+      },
+      {
+        "step": 5,
+        "button": "#pathb-l2-play-a",
+        "progress_text": "Keep going \u2014 2/3 loops. Next expected: easyC.",
+        "status_text": "Band state: FOLLOW | next expected: easyC | loops completed: 2/3 | tempo target: 84 bpm",
+        "invite_visible": true,
+        "complete_hidden": true
+      },
+      {
+        "step": 6,
+        "button": "#pathb-l2-play-b",
+        "progress_text": "Level 2 complete \u2014 you can keep moving when you\u2019re ready.",
+        "status_text": "Band state: FOLLOW | next expected: Em | loops completed: 3/3 | tempo target: 84 bpm",
+        "invite_visible": false,
+        "complete_hidden": false
+      }
+    ],
+    "invite_visible_after_completion": false,
+    "complete_visible_after_completion": true,
+    "complete_text": "Level complete\n\nNice work. You\u2019ve hit the target loops for Level 3 (coming later).\n\nNext up: Lesson 25.\n\nContinue when you\u2019re ready"
+  },
+  "console": [],
+  "page_errors": [],
+  "artifacts": {
+    "json_path": "C:\\Users\\Hendrickson\\Desktop\\GuitarApp\\.scratch\\guitarapp-software-factory\\proof-wave4\\wave4-proof-20260902T191825Z-aa77d6d3.json",
+    "dom_path": "C:\\Users\\Hendrickson\\Desktop\\GuitarApp\\.scratch\\guitarapp-software-factory\\proof-wave4\\wave4-dom-20260902T191825Z-aa77d6d3.txt",
+    "screenshot_path": "C:\\Users\\Hendrickson\\Desktop\\GuitarApp\\.scratch\\guitarapp-software-factory\\proof-wave4\\wave4-screen-20260902T191825Z-aa77d6d3.png"
+  }
+}

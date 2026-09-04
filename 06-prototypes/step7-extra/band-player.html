@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>F7 Band Demo — the band that follows you</title>
+<style>
+  body { font-family: -apple-system, system-ui, sans-serif; background:#0e1116; color:#e9eef5; margin:0; padding:24px; }
+  h1 { font-size:20px; } .muted { color:#8b98a8; }
+  .card { background:#161b22; border:1px solid #232b36; border-radius:12px; padding:18px; max-width:640px; margin:16px 0; }
+  label { display:block; margin:10px 0 4px; font-size:13px; color:#aeb9c7; }
+  input, select { width:100%; box-sizing:border-box; padding:8px; border-radius:8px; border:1px solid #2a3340; background:#0e1116; color:#e9eef5; }
+  button { background:#2f81f7; color:#fff; border:0; border-radius:8px; padding:10px 16px; font-size:14px; cursor:pointer; margin-top:12px; }
+  button.ghost { background:#21262d; }
+  .readout { font-family: ui-monospace, monospace; font-size:13px; margin-top:10px; white-space:pre-wrap; color:#9fe6a0; }
+  .pill { display:inline-block; background:#21262d; border-radius:999px; padding:3px 10px; font-size:12px; margin-right:6px; }
+</style>
+</head>
+<body>
+  <h1>🎸 F7 — The band that follows you</h1>
+  <p class="muted">Synthesized original backing (drums + root–fifth bass + chord stabs). The band sits in <b>your last practice tempo</b>, not a fixed click. No audio leaves the device (Ban 5).</p>
+
+  <div class="card">
+    <label>Practice tempo (BPM) — what you actually played at</label>
+    <input id="bpm" type="number" value="58" min="30" max="240" />
+
+    <label>Beats per bar</label>
+    <input id="beats" type="number" value="4" min="2" max="12" />
+
+    <label>Feel</label>
+    <select id="feel">
+      <option value="swing">Swing (blues)</option>
+      <option value="straight">Straight</option>
+    </select>
+
+    <label>Chord cycle (comma separated, matches the lesson)</label>
+    <input id="cycle" type="text" value="E7,A7,B7" />
+
+    <label>Lesson default BPM (used when no practice reading exists)</label>
+    <input id="lessonDefault" type="number" value="68" min="30" max="240" />
+
+    <div>
+      <button id="play">▶ Play the band</button>
+      <button id="stop" class="ghost">■ Stop</button>
+      <button id="sample" class="ghost">Use E7/A7/B7 @ 58 (slow blues)</button>
+    </div>
+
+    <div class="readout" id="out">Press play to hear the band at your tempo.</div>
+  </div>
+
+  <script>
+  // Band engine + reused DSP, loaded as classic scripts (file:// safe, no CORS).
+  // band-engine.js attaches window.bandEngine via its module.exports-free browser path.
+  </script>
+
+  <!-- Reused proven DSP (must load first) -->
+  <script src="../step2/engine/tuner-engine.js"></script>
+  <script src="../step5/engine/listening-engine.js"></script>
+
+  <!-- band-engine.js source inlined as window.__bandSrc (must load BEFORE the shim below) -->
+  <script src="band-source.js"></script>
+
+  <script>
+  // band-engine.js is CommonJS; under file:// classic <script> its require() fails.
+  // We load it via a tiny inline CommonJS shim that exposes window.BandEngine.
+  (function () {
+    if (typeof window.__bandSrc === 'undefined') {
+      document.getElementById('out').textContent = 'ERROR: band-source.js did not load (window.__bandSrc missing).';
+      return;
+    }
+    const module = { exports: {} };
+    const fsStub = { readFileSync: function () { return ''; } }; // selfAudit only; never network
+    // Map require() to globals we already loaded.
+    const req = function (id) {
+      if (id.indexOf('step2') >= 0) return window.TunerEngine;
+      if (id.indexOf('step5') >= 0) return window.Listening;
+      if (id.indexOf('fs') >= 0) return fsStub;
+      throw new Error('no stub for ' + id);
+    };
+    // Evaluate band-engine.js in this scope with shimmed require.
+    const code = window.__bandSrc;
+    const fn = new Function('module', 'require', 'window', code);
+    fn(module, req, window);
+    window.BandEngine = module.exports;
+  })();
+  </script>
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  let node = null, srcBuf = null;
+
+  function buildBuffer(bpm, beats, feel, cycle, lessonDefault) {
+    const chords = {
+      E7: { frets: [0,2,0,1,0,0] }, A7: { frets: [null,0,2,0,2,0] },
+      B7: { frets: [null,2,1,2,0,2] }, C: { frets: [null,3,2,0,1,0] },
+      G: { frets: [3,2,0,0,0,3] }, D: { frets: [null,3,2,0,0,0] },
+      Am: { frets: [null,0,2,2,1,0] }, Em: { frets: [0,2,2,0,0,0] }
+    };
+    const cycleArr = cycle.split(',').map(s => s.trim()).filter(Boolean);
+    const r = window.BandEngine.buildBand({
+      chordCycle: cycleArr, chords, bpm: bpm || null,
+      lessonDefaultBpm: lessonDefault, beats: beats, feel: feel, bars: cycleArr.length, seed: 7
+    });
+    return r;
+  }
+
+  function floatToAudio(f32, sr) {
+    const ab = audioCtx.createBuffer(1, f32.length, sr);
+    ab.copyToChannel(f32, 0);
+    return ab;
+  }
+
+  function play() {
+    stop();
+    const bpm = parseFloat(document.getElementById('bpm').value);
+    const beats = parseInt(document.getElementById('beats').value, 10);
+    const feel = document.getElementById('feel').value;
+    const cycle = document.getElementById('cycle').value;
+    const lessonDefault = parseFloat(document.getElementById('lessonDefault').value);
+    const r = buildBuffer(isNaN(bpm) ? null : bpm, beats, feel, cycle, lessonDefault);
+    srcBuf = floatToAudio(r.buffer, r.sampleRate);
+    node = audioCtx.createBufferSource();
+    node.buffer = srcBuf;
+    node.connect(audioCtx.destination);
+    node.start();
+    document.getElementById('out').textContent =
+      'Playing at BPM ' + r.bpm + ' (' + (isNaN(bpm) ? 'lesson default ' + lessonDefault : 'your practice tempo') + ')\n' +
+      'loop length ' + r.durationSec.toFixed(2) + 's · feel ' + r.feel + ' · bars ' + r.bars + '\n' +
+      'stems: ' + r.nominal.length + ' audible events\n' +
+      'bass root ' + (r.nominal.find(n => n.stem === 'bass') || {}).note;
+  }
+  function stop() { if (node) { try { node.stop(); } catch (e) {} node = null; } }
+
+  document.getElementById('play').onclick = function () { audioCtx.resume(); play(); };
+  document.getElementById('stop').onclick = stop;
+  document.getElementById('sample').onclick = function () {
+    document.getElementById('bpm').value = 58;
+    document.getElementById('beats').value = 4;
+    document.getElementById('feel').value = 'swing';
+    document.getElementById('cycle').value = 'E7,A7,B7';
+    document.getElementById('lessonDefault').value = 68;
+    audioCtx.resume(); play();
+  };
+  </script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+{
+  "home": {
+    "totalCards": 25,
+    "unlocked": 5,
+    "locked": 20,
+    "status": "25 lessons in Emerald Hollow",
+    "performanceRail": "Performance ladderSame song, bigger momentsPath B ships now. Path A stays visible on the roadmap.Level 1 - Lesson 05: Not started (0/1 loops) - First porch performance: E minor to easy CLevel 2 - Lesson 12: Not started (0/3 loops) - Second porch performance: the same song, steadier and strongerLevel 3 - Lesson 25: Coming later - full band capstone in Emerald Hollow.Roadmap: Path A live adaptive duet stays visible and does not ship in this slice."
+  },
+  "lesson1": {
+    "title": "Welcome, Anatomy & Tuning",
+    "sageHeading": "You pull up a chair and I'm already there, guitar in my hands, playing a few notes so you can hear what 'in tune' sounds like. I set it down and nod at the one in your lap. 'First things first — we get you in tune. And I'll be straight with you why: if your guitar's not in tune, it doesn't matter where you put your fingers later, it's not going to sound right, and you'll think you're the problem when you're not. So today? We're not learning chords. We're just making a sound. And that part — that's the fun part.'",
+    "sagePhase": "You pull up a chair and I'm already there, guitar in my hands, playing a few notes so you can hear what 'in tune' sounds like. I set it down and nod at the one in your lap. 'First things first — we get you in tune. And I'll be straight with you why: if your guitar's not in tune, it doesn't matter where you put your fingers later, it's not going to sound right, and you'll think you're the problem when you're not. So today? We're not learning chords. We're just making a sound. And that part — that's the fun part.'"
+  },
+  "lesson5Before": {
+    "title": "Strumming in Time",
+    "status": "Band state: WAIT | next expected: Em | loops completed: 0/1 | tempo target: 72 bpm"
+  },
+  "lesson5After": {
+    "status": "Band state: FOLLOW | next expected: Em | loops completed: 1/1 | tempo target: 72 bpm",
+    "saved": {
+      "expectedIndex": 0,
+      "loopsCompleted": 1,
+      "lastChord": "easyC",
+      "lastAction": "follow",
+      "level": 1,
+      "tempoBpm": 72,
+      "songId": "em-easyc-first-song"
+    }
+  },
+  "lesson5Reopen": {
+    "status": "Band state: FOLLOW | next expected: Em | loops completed: 1/1 | tempo target: 72 bpm"
+  },
+  "homeAfterLevel1": {
+    "performanceRail": "Performance ladderSame song, bigger momentsPath B ships now. Path A stays visible on the roadmap.Level 1 - Lesson 05: Completed (1/1 loops) - First porch performance: E minor to easy CLevel 2 - Lesson 12: Not started (0/3 loops) - Second porch performance: the same song, steadier and strongerLevel 3 - Lesson 25: Coming later - full band capstone in Emerald Hollow.Roadmap: Path A live adaptive duet stays visible and does not ship in this slice."
+  },
+  "lesson12": {
+    "config": {
+      "level": 2,
+      "lessonNumber": 12,
+      "storageKey": "guitarapp.wave2.pathb.level2",
+      "heading": "Second porch performance: the same song, steadier and stronger",
+      "summary": "Same Em-to-easy-C song, but Sage pushes the pace a little. Path B still loops and waits so the band never runs away from you.",
+      "buttonLabels": {
+        "Em": "I played Em",
+        "easyC": "I played easy C"
+      },
+      "targetLoops": 3,
+      "tempoBpm": 84,
+      "songId": "em-easyc-first-song",
+      "worldId": "emerald-hollow",
+      "duetPath": "path-b",
+      "cycle": [
+        "Em",
+        "easyC"
+      ],
+      "domSlug": "l2"
+    },
+    "status": "Band state: FOLLOW | next expected: Em | loops completed: 3/3 | tempo target: 84 bpm",
+    "saved": {
+      "expectedIndex": 0,
+      "loopsCompleted": 3,
+      "lastChord": "easyC",
+      "lastAction": "follow",
+      "level": 2,
+      "tempoBpm": 84,
+      "songId": "em-easyc-first-song"
+    }
+  }
+}
+screenshots saved to C:\Users\Hendrickson\Desktop\GuitarApp\.scratch\guitarapp-software-factory\proof-wave2

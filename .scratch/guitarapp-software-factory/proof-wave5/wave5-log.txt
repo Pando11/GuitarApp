@@ -1,0 +1,7 @@
+WAVE 5 PREVIEW PROOF
+song_gate_exit=0
+lyrics_fields_found=0
+mystery_before=🎭 Mystery Mode: OFF
+mystery_after=🎭 Mystery Mode: ON
+first_song_hint_2=Hint 2: The chorus is one word, repeated.
+first_song_reveal=Reveal: That's the loop from 'Zombie' by The Cranberries (1994).

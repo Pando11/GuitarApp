@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Faster Chord Changes — Lesson Preview</title>
+<style>
+  :root{ --bg:#0f1115; --card:#1a1d24; --ink:#e9edf2; --mut:#9aa3b2; --acc:#ffb454; --ok:#5fd08a; --warn:#ff7a7a; }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body{ margin:0; background:var(--bg); color:var(--ink); font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; padding:16px; max-width:640px; margin:0 auto; }
+  h1{ font-size:22px; margin:8px 0 2px; }
+  .sub{ color:var(--mut); font-size:13px; margin-bottom:16px; }
+  .intro{ background:var(--card); border-left:3px solid var(--acc); padding:12px 14px; border-radius:8px; margin-bottom:18px; }
+  .sec{ font-size:13px; text-transform:uppercase; letter-spacing:.08em; color:var(--acc); margin:22px 0 8px; }
+  .card{ background:var(--card); border-radius:12px; padding:14px; margin-bottom:12px; }
+  .chords{ display:flex; flex-wrap:wrap; gap:14px; justify-content:flex-start; }
+  .chord{ text-align:center; }
+  .chord svg{ display:block; }
+  .chord .nm{ font-size:13px; margin-top:6px; color:var(--ink); }
+  .chord .qa{ font-size:10px; margin-top:2px; }
+  .qa-pending{ color:var(--warn); } .qa-ok{ color:var(--ok); }
+  .ex h3{ margin:0 0 6px; font-size:17px; }
+  .ex p{ margin:4px 0; color:var(--mut); }
+  .ex .coach{ color:var(--ink); background:rgba(255,180,84,.08); border-radius:8px; padding:8px 10px; margin-top:8px; font-style:italic; }
+  .pill{ display:inline-block; background:#262b35; color:var(--acc); font-size:11px; padding:2px 8px; border-radius:99px; margin:2px 4px 2px 0; }
+  .avatar{ background:linear-gradient(135deg,#222633,#1a1d24); border:1px solid #2c3240; }
+  .avatar .who{ font-size:12px; color:var(--acc); }
+  .mistakes li{ color:var(--mut); margin:6px 0; }
+  .flag{ background:#2a1f1f; border:1px solid #5a2c2c; border-radius:12px; padding:14px; margin-top:24px; }
+  .flag h2{ color:var(--warn); font-size:15px; margin:0 0 8px; }
+  .flag li{ font-size:14px; margin:6px 0; }
+  .foot{ color:var(--mut); font-size:11px; text-align:center; margin:24px 0 8px; }
+</style>
+</head>
+<body>
+<h1 id="title"></h1>
+<div class="sub" id="sub"></div>
+<div class="intro" id="intro"></div>
+
+<div class="sec">Chords (tap-none — diagrams drawn from data)</div>
+<div class="card"><div class="chords" id="chords"></div></div>
+
+<div class="sec">Pivot points</div>
+<div class="card" id="pivots"></div>
+
+<div class="sec">Exercises</div>
+<div id="exercises"></div>
+
+<div class="sec">Avatar coaching</div>
+<div class="card avatar" id="avatar"></div>
+
+<div class="sec">Common mistakes</div>
+<div class="card"><ul class="mistakes" id="mistakes"></ul></div>
+
+<div class="flag">
+  <h2>⚠ Not verified by a guitarist yet</h2>
+  <ul id="flags"></ul>
+  <p style="color:var(--mut);font-size:12px;margin-top:10px">You (the founder) can't play — these must be checked by the contract guitarist before this ships. Until then it's a prototype.</p>
+</div>
+
+<div class="foot">Prototype render of guitar-lesson-01 JSON · not a real app build</div>
+
+<script>
+const D = {
+  title:"The Real Secret to Faster Chord Changes",
+  sub:"Absolute-beginner technique · ~12 min · from Lauren Bateman's lesson",
+  intro:"Slow chord changes aren't a talent problem — they're a muscle-memory problem. Tension slows your hands; speed comes from repetition that lets you relax. You can't rush the relaxation.",
+  chords:{
+    Em:{name:"E minor", frets:[0,2,2,0,0,0], fingers:[0,2,3,0,0,0], qa:"ok"},
+    C:{name:"C major", frets:[null,3,2,0,1,0], fingers:[null,3,2,0,1,0], qa:"ok"},
+    easyC:{name:"Easy C (Lauren's 2-finger)", frets:[null,3,2,0,null,0], fingers:[null,3,2,0,null,0], qa:"pending"},
+    G:{name:"G major (3-finger)", frets:[3,2,0,0,0,3], fingers:[2,1,0,0,0,3], qa:"ok"},
+    D:{name:"D major", frets:[null,null,0,2,3,2], fingers:[null,null,0,1,3,2], qa:"ok"}
+  },
+  pivots:[
+    "Em → C: middle (2nd) finger stays on the 4th string, 2nd fret. Only ring + index move.",
+    "Em → G: index (1st) finger stays on the 5th string, 2nd fret. Only ring + middle move."
+  ],
+  exercises:[
+    {id:"EX1", name:"Spider (warm-up)", purpose:"Blood flow + finger control + hand coordination.",
+      params:["Start at 7th fret (least stretch)","Fingers 1-2-3, one per fret (7-8-9)","Top string → bottom → back, 3 slow picks each","Count 1-2-3-4, advance on each 1","~5 min · breathe, don't hold breath"],
+      coach:"Keep fingers relaxed and close to the fretboard. They'll feel floppy — that floppy feeling IS the control you're building."},
+    {id:"EX2", name:"Finger lift-off", purpose:"Finger independence; keep the chord shape when lifting.",
+      params:["Make a C, lift 3rd finger, then 2nd, then 1st, one at a time","Progress to peeling all off and landing together","Air variant: make shapes off the guitar","Few minutes only — tendon caution"],
+      coach:"If your hand flattens when you let go, that's normal — muscle memory hasn't formed yet. Reps fix it."},
+    {id:"EX3", name:"1-min chord-change drill", purpose:"Metronome as a scorecard for speed.",
+      params:["Em ↔ Easy C, 60 seconds, count your changes","Baseline ~16-30/min (anecdotal)","Push ABOVE comfort tempo, then drop back — comfort feels slow","Buzz is OK during speed push; clean up later","Variant: 30s slow (clarity) + 30s fast"],
+      coach:"Write the number down. That's your scorecard — next week, beat it. Speed first, clean second."}
+  ],
+  avatar:{
+    intro:"Slow chord changes aren't a talent problem — they're a muscle-memory problem. Today we warm up your hands and turn your metronome into a scorecard. Grab your guitar.",
+    ex1:"First, the spider. Start at the 7th fret where it's least stretchy. One finger per fret — index, middle, ring. Three slow picks per string, top to bottom and back. Breathe. Floppy fingers are normal.",
+    ex2:"Now make a C shape and lift fingers one at a time. If your hand forgets the shape when you let go, that's expected. We're teaching your fingers where to go.",
+    ex3:"Here's the scorecard. Metronome on, Em to C, back and forth, for one minute. Count your changes. Don't worry about buzz — we're chasing speed. Write the number down.",
+    results:"Your count this session is your baseline. Next session, beat it by one. That's how 16 becomes 30.",
+    wrap:"You're never too old for this. Consistency beats talent. Three drills, five minutes, most days — that's the whole secret."
+  },
+  mistakes:[
+    "Learning too many chords at once — teach 4 at a time (G, Em, C, D = thousands of songs).",
+    "Going too fast too soon — slow builds muscle memory; push speed only inside drills.",
+    "Practicing songs instead of transitions — dedicate a block to chord changes specifically."
+  ],
+  flags:[
+    "Easy C exact fingering vs Lauren's teaching — currently a placeholder.",
+    "Easy G = 3-finger G (320003) assumption needs confirming.",
+    "Spider start fret 7 = least stretch; confirm 3 fingers not 4.",
+    "'16-30 changes/min' baseline is anecdotal, not validated.",
+    "Pivot claims hold for the voicings actually shipped.",
+    "No song material used — exercises only (licensing safe)."
+  ]
+};
+
+/* fretboard SVG: 6 strings (low E left), frets vertical, nut at top */
+function chordSVG(frets, fingers, w=110, h=140){
+  const pad=14, nStr=6, nFret=4;
+  const sx=(w-pad*2)/(nStr-1), sy=(h-pad*2)/nFret;
+  let s=`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">`;
+  // frets
+  for(let f=0;f<=nFret;f++){ const y=pad+f*sy; s+=`<line x1="${pad}" y1="${y}" x2="${w-pad}" y2="${y}" stroke="#5b6472" stroke-width="${f===0?4:1.5}"/>`; }
+  // strings
+  for(let st=0;st<nStr;st++){ const x=pad+st*sx; s+=`<line x1="${x}" y1="${pad}" x2="${x}" y2="${h-pad}" stroke="#7a8597" stroke-width="1.5"/>`; }
+  // dots
+  for(let st=0;st<nStr;st++){
+    const fr=frets[st], fg=fingers[st], x=pad+st*sx;
+    if(fr===null){ // muted
+      s+=`<text x="${x}" y="${pad-3}" fill="#ff7a7a" font-size="13" text-anchor="middle">×</text>`;
+    } else if(fr===0){ // open
+      s+=`<circle cx="${x}" cy="${pad-7}" r="4" fill="none" stroke="#5fd08a" stroke-width="2"/>`;
+    } else {
+      const y=pad+(fr-0.5)*sy; // lowest fret shown is 1
+      const fnum = fg===0? "": String(fg);
+      s+=`<circle cx="${x}" cy="${y}" r="8" fill="#ffb454"/><text x="${x}" y="${y+3.5}" fill="#0f1115" font-size="10" font-weight="700" text-anchor="middle">${fnum}</text>`;
+    }
+  }
+  s+=`</svg>`;
+  return s;
+}
+
+document.getElementById('title').textContent=D.title;
+document.getElementById('sub').textContent=D.sub;
+document.getElementById('intro').textContent=D.intro;
+
+const ch=document.getElementById('chords');
+for(const k in D.chords){
+  const c=D.chords[k];
+  const qaTxt = c.qa==='ok' ? '<span class="qa qa-ok">✓ verified</span>' : '<span class="qa qa-pending">⚠ not verified</span>';
+  ch.innerHTML+=`<div class="chord">${chordSVG(c.frets,c.fingers)}<div class="nm">${c.name}</div>${qaTxt}</div>`;
+}
+
+document.getElementById('pivots').innerHTML = D.pivots.map(p=>`<p style="margin:6px 0;color:var(--ink)">${p}</p>`).join('');
+
+const ex=document.getElementById('exercises');
+D.exercises.forEach(e=>{
+  ex.innerHTML+=`<div class="card ex"><h3>${e.id} · ${e.name}</h3><p>${e.purpose}</p>`+
+    e.params.map(p=>`<span class="pill">${p}</span>`).join('')+
+    `<div class="coach">“${e.coach}”</div></div>`;
+});
+
+const av=document.getElementById('avatar');
+av.innerHTML=`<div class="who">🤖 Coach</div>`+
+  Object.entries(D.avatar).map(([k,v])=>`<p style="margin:8px 0"><b style="color:var(--acc)">${k}</b><br>${v}</p>`).join('');
+
+document.getElementById('mistakes').innerHTML = D.mistakes.map(m=>`<li>${m}</li>`).join('');
+document.getElementById('flags').innerHTML = D.flags.map(f=>`<li>${f}</li>`).join('');
+</script>
+</body>
+</html>
