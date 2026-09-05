@@ -95,7 +95,7 @@ available yet; Tier 0's code is done, see above)
 | T1.2 Adaptive planning | DONE | fixed a confidence-scale bug (0-1 vs 0-100) caught during integration with T1.1 |
 | T1.3 Copy variants L01–L05 | DONE | |
 | T1.4 Client integration | DONE | coach-client/adaptive-plan seams built; only the learner-profile→lesson-copy path is actually wired into the shell (see gaps below) |
-| T1.5 Reason to renew | TODO | **decision not yet made** — see T1.5 options |
+| T1.5 Reason to renew | DONE | weekly practice plan card, degrades to honest "no-data" state today (no drill screen exists to feed it real data yet) |
 
 **Not yet done, blocking a full end-to-end Tier 1 demo:**
 - The coaching service has never made a real model call — no
@@ -114,6 +114,52 @@ available yet; Tier 0's code is done, see above)
   explicit index from catalog clicks only, unchanged from Tier 0.
 - Only the copy-variant selection (kid/adult-beginner/returning phrasing on
   lessons 01-05) is genuinely reachable by a real user right now.
+
+## Handoff to Tier 2 (written 2026-09-05, after Tier 1 build)
+
+Tier 1's code is done (T1.1-T1.5 all DONE), started early at the owner's
+explicit direction before Tier 0's own exit check was met (still 0/5
+friends, no deploy). Per `TIER-2-business.md`'s presumed header (not yet
+read in this session), the same caution applies: **code-complete is not
+the same as validated.** Nothing in Tier 1 has been exercised by a real
+student yet.
+
+**The one gap that touches almost everything built in Tier 1:** there is
+still no drill/practice-taking screen anywhere in the app. This was flagged
+in the Tier 0→1 handoff above and remains true after all of Tier 1:
+- The coaching service's `justHappened` field will always be null in real
+  traffic.
+- `adaptivePlan.js`'s mastery-gate logic will never see real confidence
+  data, so it will always take the "gate clear, advance" branch.
+- The weekly practice plan (T1.5) will always render its honest "no-data"
+  message, never a real weak-pair-driven week.
+- `chatEngine.js`'s `askCoach`/`replyWithCoach` (the actual AI coaching
+  functions) are built, tested, and **not called from anywhere in the
+  shell** — there is no chat/coach UI surface in `index.html`/`app.js` at
+  all. A student today cannot trigger a single real coaching moment no
+  matter how correct the server is.
+- `lessonRunner.planNext()` (adaptive next-lesson selection) is also built
+  and unwired — no "continue"/next-lesson navigation exists to attach it to.
+
+In short: Tier 1 built the entire adaptive/AI *engine* correctly, but the
+app still has no UI surface that produces the input data that engine needs,
+and no UI surface that shows the engine's output to a student (beyond the
+one copy-variant path that's wired). **Before Tier 2's business layer
+(accounts, payments) makes this worth paying for, the practice/drill screen
+is probably the highest-leverage next build** — it's the one missing piece
+that would make T1.1, T1.2, and T1.5 all become real simultaneously. It
+isn't in either tier's task list as written.
+
+Other facts for whoever starts Tier 2:
+- No `ANTHROPIC_API_KEY` has ever been set in this environment — the
+  coaching service has never made one real model call. `coach_served`
+  telemetry, the guardrail, and the cache-hit behavior are all verified
+  only against a mocked SDK client.
+- `adaptivePlan.js`'s confidence scale is 0-100 (fixed during Tier 1 — it
+  was originally coded as 0-1, contradicting `CONTEXT.md`). Any new code
+  reading `mastery[].confidence` should assume 0-100.
+- `app-refactored.js` is still unresolved (see Tier 0 handoff).
+- GitHub Pages deploy is still deferred — app runs locally only.
 
 ## Tier 2 — Business — **BLOCKED (Tier 1)**
 
