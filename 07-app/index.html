@@ -81,11 +81,15 @@
     // script below) so ES-module import ordering is guaranteed; the classic
     // script only ever reaches into window.GuitarApp.Telemetry lazily, inside
     // event handlers that fire well after this module has finished loading.
-    import { isComplete } from "./core/learnerProfile.js";
+    import { isComplete, getProfile } from "./core/learnerProfile.js";
     import * as telemetry from "./core/telemetry.js";
 
     window.GuitarApp = window.GuitarApp || {};
     window.GuitarApp.Telemetry = telemetry;
+    // T1.4 wiring: expose the stored learner profile so the classic lesson
+    // shell script below can hand it to lesson-runner.js (copyVariants
+    // selection) without this module needing to know anything about lessons.
+    window.GuitarApp.getLearnerProfile = getProfile;
 
     telemetry.log("app_open");
     telemetry.installUnloadFlush();
@@ -158,9 +162,15 @@
       function performanceState(config){var raw=localStorage.getItem(config.storageKey);var parsed=raw?JSON.parse(raw):null;var loops=parsed&&Number.isFinite(parsed.loopsCompleted)?parsed.loopsCompleted:0;var label=loops>=config.targetLoops?"Completed":(loops>0?"In progress":"Not started");return {loops:loops,label:label};}
       function renderPerformanceRail(){if(!performanceRail)return;var flow=window.GuitarApp&&window.GuitarApp.Wave1Flow;if(!flow||!flow.performanceConfigs){performanceRail.textContent="Performance ladder loading...";return;}var l1=flow.performanceConfigs[1];var l2=flow.performanceConfigs[2];var s1=performanceState(l1);var s2=performanceState(l2);performanceRail.innerHTML="";var span=document.createElement("span");span.className="lesson-number";span.textContent="Performance ladder";performanceRail.appendChild(span);var h3=document.createElement("h3");h3.textContent="Same song, bigger moments";performanceRail.appendChild(h3);var p1=document.createElement("p");p1.className="meta";p1.textContent="Path B ships now. Path A stays visible on the roadmap.";performanceRail.appendChild(p1);var ul=document.createElement("ul");ul.className="objectives";var li1=document.createElement("li");var strong1=document.createElement("strong");strong1.textContent="Level 1 - Lesson 05:";li1.appendChild(strong1);li1.appendChild(document.createTextNode(" "+s1.label+" ("+s1.loops+"/"+l1.targetLoops+" loops) - "+l1.heading));ul.appendChild(li1);var li2=document.createElement("li");var strong2=document.createElement("strong");strong2.textContent="Level 2 - Lesson 12:";li2.appendChild(strong2);li2.appendChild(document.createTextNode(" "+s2.label+" ("+s2.loops+"/"+l2.targetLoops+" loops) - "+l2.heading));ul.appendChild(li2);var li3=document.createElement("li");var strong3=document.createElement("strong");strong3.textContent="Level 3 - Lesson 25:";li3.appendChild(strong3);li3.appendChild(document.createTextNode(" Coming later - full band capstone in Emerald Hollow."));ul.appendChild(li3);performanceRail.appendChild(ul);var p2=document.createElement("p");p2.className="meta";p2.textContent="Roadmap: Path A live adaptive duet stays visible and does not ship in this slice.";performanceRail.appendChild(p2);}
 
+      function currentLearnerProfile(){
+        return (window.GuitarApp && typeof window.GuitarApp.getLearnerProfile==="function")
+          ? window.GuitarApp.getLearnerProfile()
+          : undefined;
+      }
+
       function openLesson(index){
         if(!lessonRunner){status.textContent="Lessons are still loading.";return;}
-        var model=lessonRunner.openLesson(index);
+        var model=lessonRunner.openLesson(index, currentLearnerProfile());
         document.getElementById("lesson-time").textContent=(model.estimatedMinutes||10)+" minutes";
         document.getElementById("home-view").hidden=true;
         document.getElementById("lesson-view").hidden=false;
@@ -348,6 +358,7 @@
             lessons=result.lessons;
             lessonRunner=window.GuitarApp.LessonRunner.createLessonRunner({
               lessons: lessons,
+              learnerProfile: currentLearnerProfile(),
               render: function(payload){
                 var root=document.getElementById("lesson-content");
                 if(!validateHTML(payload.html))throw new Error('Invalid HTML');
