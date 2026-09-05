@@ -10,8 +10,8 @@ in `docs/adr/`, not here.
 - **Performance ladder** — the per-world reward arc: Level 1 → Level 2 → Level 3 capstone. Each world owns its own ladder, whose lesson gates map to that world's lesson count; worlds do not share ladders. See `docs/adr/0004`.
 
 - **Student memory** — the per-student profile the app keeps so the teacher can
-  coach *forward* ("last lesson you had E minor solid"). Defined by
-  `02-spec/guitar-app-spec-STUDENT-MEMORY.md`. Always-on, encrypted, cross-device.
+  coach *forward* ("last lesson you had E minor solid"). Always-on, encrypted,
+  cross-device.
 - **Mastery** — per-chord state. Has two parts: a `label`
   (`mastered` / `needs_work` / `not_started`) that drives the rules, and a
   `confidence` (0–100) that drives the teacher's *tone* ("solid" vs "shaky").
@@ -31,8 +31,7 @@ in `docs/adr/`, not here.
   law), Rule 2 (no camera, no hand tracking).
 - **Practice lesson** — a practice session assembled from the §5.2 drill menu
   in a fixed evidence order (warm-up → accuracy → retrieval → speed →
-  weak-pair). Distinct from a *technique lesson* and from a *song*. Defined by
-  `02-spec/guitar-app-spec-PRACTICE-DELIVERY.md`.
+  weak-pair). Distinct from a *technique lesson* and from a *song*.
   _Avoid_: "practice mode", "drill session"
 - **Drill** — one self-contained exercise from the §5.2 menu (e.g. One-Minute
   Changes, Chord-Perfect). Canonical form is `drills/<drill>.mjs` returning an
@@ -59,8 +58,7 @@ in `docs/adr/`, not here.
   required) or plays along (listening engine verifies). A reveal then plays the
   progression + shows the chord names + a one-line "why it works." Progress
   (mysteries solved, success rate) saves to Student Memory, encrypted
-  cross-device. Defined by `docs/adr/0003-mystery-mode.md`. _Avoid_: "song
-  quiz", "ear test", "mystery song game"
+  cross-device. _Avoid_: "song quiz", "ear test", "mystery song game"
 - **Mystery pool** — the 10 songs from the song-progression track
   (`07-app/content/song-progressions/`). Each unlocks only after every chord it
   uses is taught (AMENDMENT-13 prereq gate). House of the Rising Sun is public
