@@ -94,14 +94,26 @@ available yet; Tier 0's code is done, see above)
 | T1.1 Coaching service | DONE | `server/`, no live-key smoke test yet (no `ANTHROPIC_API_KEY` set anywhere) |
 | T1.2 Adaptive planning | DONE | fixed a confidence-scale bug (0-1 vs 0-100) caught during integration with T1.1 |
 | T1.3 Copy variants L01–L05 | DONE | |
-| T1.4 Client integration | TODO | wires chatEngine.js/lesson-runner.js to the coaching service + adaptivePlan |
+| T1.4 Client integration | DONE | coach-client/adaptive-plan seams built; only the learner-profile→lesson-copy path is actually wired into the shell (see gaps below) |
 | T1.5 Reason to renew | TODO | **decision not yet made** — see T1.5 options |
 
-**Not yet done, blocking a full end-to-end Tier 1 demo:** the coaching
-service has never made a real model call — no `ANTHROPIC_API_KEY` exists in
-this environment. Someone needs to supply one (in `server/.env`, gitignored)
-before `coach_served` telemetry or the prompt-cache-hit check can be verified
-for real, not just against a mocked SDK client.
+**Not yet done, blocking a full end-to-end Tier 1 demo:**
+- The coaching service has never made a real model call — no
+  `ANTHROPIC_API_KEY` exists in this environment. Someone needs to supply one
+  (in `server/.env`, gitignored) before `coach_served` telemetry or the
+  prompt-cache-hit check can be verified for real, not just against a mocked
+  SDK client.
+- `chatEngine.js`'s `askCoach`/`replyWithCoach` (the actual AI coaching path)
+  are built and tested but **not called from anywhere in the shell** —
+  there's no chat/coach UI surface in `index.html`/`app.js` at all. Until one
+  exists, the coaching service can be fully correct and still never produce
+  a single real coaching moment for a student.
+- `lessonRunner.planNext()` (adaptive next-lesson selection) is built but
+  also **not called from anywhere** — there's no "continue"/next-lesson
+  navigation logic in the shell to attach it to; lessons are opened by
+  explicit index from catalog clicks only, unchanged from Tier 0.
+- Only the copy-variant selection (kid/adult-beginner/returning phrasing on
+  lessons 01-05) is genuinely reachable by a real user right now.
 
 ## Tier 2 — Business — **BLOCKED (Tier 1)**
 
