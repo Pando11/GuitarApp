@@ -15,7 +15,7 @@
  * The real SW passed verify-sw-cache.mjs (4/0 ✅) per HANDOFF.md 2026-08-16. That truth is intact; the file is not.
  */
 
-const CACHE = "guitarapp-v3";  // ← BUMP THIS on every content change
+const CACHE = "guitarapp-v4";  // ← BUMP THIS on every content change
 
 const PRECACHE_URLS = [
   "./",
@@ -54,7 +54,9 @@ self.addEventListener("fetch", (event) => {
   // Network-first for app shell + content; cache-fallback for audio (proof-only wavs)
   const url = new URL(event.request.url);
 
-  if (url.pathname.endsWith(".wav") || url.pathname.endsWith(".mp3")) {
+  if (url.pathname.endsWith(".wav") || url.pathname.endsWith(".mp3") || url.pathname.endsWith(".m4a")) {
+    // Audio is cached on first play (lazy), never precached on install — a full
+    // lesson's audio can be 10s of MB and would blow the install-time budget.
     event.respondWith(cacheFirst(event.request));
   } else {
     event.respondWith(networkFirst(event.request));

@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#17231b">
+  <meta name="description" content="Tell us a little about you before your first lesson.">
+  <title>GuitarApp - Getting to know you</title>
+  <style>
+    :root{color-scheme:dark;--ink:#f2efe3;--muted:#b8c1b5;--forest:#17231b;--panel:#223027;--moss:#9fb56c;--warm:#d69b5b;--line:#3b4b40}
+    *{box-sizing:border-box}
+    body{margin:0;background:radial-gradient(circle at 80% 0,#344233 0,transparent 38%),linear-gradient(#17231b,#101713);color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+    button{font:inherit}
+    .shell{width:min(100%,640px);margin:auto;padding:clamp(18px,4vw,44px);min-height:100vh;display:flex;flex-direction:column;justify-content:center}
+    .eyebrow{text-transform:uppercase;letter-spacing:.14em;color:var(--moss);font-size:.82rem}
+    h1{font-family:Georgia,serif;font-size:clamp(1.8rem,5vw,2.6rem);line-height:1.1;margin:.3em 0}
+    p.lede{color:var(--muted);max-width:60ch}
+    .progress{display:flex;gap:6px;margin:18px 0 28px}
+    .progress span{flex:1;height:4px;border-radius:2px;background:var(--line)}
+    .progress span[data-done="true"]{background:var(--moss)}
+    .options{display:grid;gap:10px;margin:20px 0}
+    .option{text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px;color:inherit;cursor:pointer;font-size:1rem}
+    .option:hover{border-color:var(--moss)}
+    .option[aria-pressed="true"]{border-color:var(--moss);background:#2b3b30;box-shadow:0 0 0 1px var(--moss) inset}
+    .option:focus-visible{outline:3px solid var(--warm);outline-offset:2px}
+    .actions{display:flex;justify-content:space-between;gap:12px;margin-top:22px}
+    .primary,.secondary{border:0;border-radius:999px;padding:13px 22px;font-weight:750;cursor:pointer}
+    .primary{background:var(--moss);color:#111a13}
+    .primary:disabled{opacity:.45;cursor:not-allowed}
+    .secondary{background:transparent;color:var(--muted);border:1px solid var(--line)}
+    .primary:focus-visible,.secondary:focus-visible{outline:3px solid var(--warm);outline-offset:3px}
+    .done{display:none}
+    .done.visible{display:block}
+    [hidden]{display:none!important}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section id="onboarding-flow">
+      <div class="eyebrow">Before we start</div>
+      <div class="progress" id="progress" aria-hidden="true"></div>
+      <div id="step-root"></div>
+      <div class="actions">
+        <button class="secondary" id="skip-btn" type="button">Skip</button>
+        <button class="primary" id="next-btn" type="button" disabled>Continue</button>
+      </div>
+    </section>
+    <section id="onboarding-done" class="done" role="status">
+      <div class="eyebrow">All set</div>
+      <h1>Thanks — Sage has what they need.</h1>
+      <p class="lede">You can always change this later. Head back to the path when you're ready to play.</p>
+      <div class="actions">
+        <span></span>
+        <a class="primary" id="continue-link" href="./index.html" style="text-decoration:none;display:inline-block">Go to lessons</a>
+      </div>
+    </section>
+  </main>
+  <script type="module">
+    import { getProfile, setProfile, isComplete, PROFILE_SCHEMA } from './core/learnerProfile.js';
+
+    // One screen per question, in this fixed order. Each is skippable
+    // individually (Skip just advances without writing a value).
+    const STEPS = [
+      {
+        field: 'ageBand',
+        title: 'How old are you?',
+        lede: "This just helps Sage pace things right for you.",
+        options: [
+          { value: 'under-13', label: 'Under 13' },
+          { value: '13-17', label: '13 to 17' },
+          { value: '18-34', label: '18 to 34' },
+          { value: '35-54', label: '35 to 54' },
+          { value: '55+', label: '55 or older' },
+        ],
+      },
+      {
+        field: 'experience',
+        title: 'Have you played guitar before?',
+        lede: 'No wrong answer here — we meet you where you are.',
+        options: [
+          { value: 'never-held-one', label: "Never held one" },
+          { value: 'tried-and-quit', label: 'Tried it, then stopped' },
+          { value: 'returning-player', label: "I've played before and I'm coming back" },
+        ],
+      },
+      {
+        field: 'goal',
+        title: "What's pulling you toward guitar?",
+        lede: 'Pick whatever feels closest.',
+        options: [
+          { value: 'play-a-song', label: 'Play a specific song' },
+          { value: 'campfire-friends', label: 'Play with friends, campfire-style' },
+          { value: 'understand-music', label: 'Understand music better' },
+          { value: 'just-curious', label: 'Just curious' },
+        ],
+      },
+      {
+        field: 'minutesPerDay',
+        title: 'How many minutes can you practice most days?',
+        lede: 'Be realistic — a little, often, beats a lot, rarely.',
+        options: [
+          { value: 5, label: '5 minutes' },
+          { value: 15, label: '15 minutes' },
+          { value: 30, label: '30 minutes' },
+          { value: 60, label: '60+ minutes' },
+        ],
+      },
+    ];
+
+    const stepRoot = document.getElementById('step-root');
+    const progressEl = document.getElementById('progress');
+    const nextBtn = document.getElementById('next-btn');
+    const skipBtn = document.getElementById('skip-btn');
+    const flowSection = document.getElementById('onboarding-flow');
+    const doneSection = document.getElementById('onboarding-done');
+
+    let stepIndex = 0;
+    let pendingValue = null;
+
+    // Render the progress dots.
+    progressEl.innerHTML = STEPS.map((_, i) => `<span data-done="${i < stepIndex}"></span>`).join('');
+
+    function renderStep() {
+      const step = STEPS[stepIndex];
+      const existing = getProfile()[step.field];
+      pendingValue = (existing !== undefined) ? existing : null;
+
+      stepRoot.innerHTML = `
+        <h1>${step.title}</h1>
+        <p class="lede">${step.lede}</p>
+        <div class="options" role="group" aria-label="${step.title}"></div>
+      `;
+      const optionsEl = stepRoot.querySelector('.options');
+      for (const opt of step.options) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'option';
+        btn.textContent = opt.label;
+        btn.dataset.value = String(opt.value);
+        btn.setAttribute('aria-pressed', String(pendingValue === opt.value));
+        btn.addEventListener('click', () => {
+          pendingValue = opt.value;
+          for (const other of optionsEl.querySelectorAll('.option')) {
+            other.setAttribute('aria-pressed', String(other.dataset.value === String(opt.value)));
+          }
+          nextBtn.disabled = false;
+        });
+        optionsEl.appendChild(btn);
+      }
+      nextBtn.disabled = pendingValue === null;
+      nextBtn.textContent = (stepIndex === STEPS.length - 1) ? 'Finish' : 'Continue';
+
+      progressEl.innerHTML = STEPS.map((_, i) => `<span data-done="${i <= stepIndex}"></span>`).join('');
+    }
+
+    function finishFlow() {
+      flowSection.hidden = true;
+      doneSection.classList.add('visible');
+    }
+
+    function advance() {
+      stepIndex += 1;
+      if (stepIndex >= STEPS.length) {
+        finishFlow();
+      } else {
+        renderStep();
+      }
+    }
+
+    nextBtn.addEventListener('click', () => {
+      const step = STEPS[stepIndex];
+      if (pendingValue !== null) {
+        setProfile({ [step.field]: pendingValue });
+      }
+      advance();
+    });
+
+    skipBtn.addEventListener('click', () => {
+      advance();
+    });
+
+    // If every field is already filled in (returning visitor), skip straight
+    // to the done screen rather than re-asking.
+    if (isComplete()) {
+      finishFlow();
+    } else {
+      renderStep();
+    }
+
+    // Exposed for manual/dev inspection only; not used by lesson content.
+    window.GuitarApp = window.GuitarApp || {};
+    window.GuitarApp.__learnerProfileSchema = PROFILE_SCHEMA;
+  </script>
+</body>
+</html>

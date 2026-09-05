@@ -1,0 +1,253 @@
+{
+  "l01": {
+    "l01-00-intro": "l01-voice/l01-00-intro.m4a",
+    "l01-01-ex1_intro": "l01-voice/l01-01-ex1_intro.m4a",
+    "l01-02-ex1": "l01-voice/l01-02-ex1.m4a",
+    "l01-02-ex2_intro": "l01-voice/l01-02-ex2_intro.m4a",
+    "l01-03-ex2": "l01-voice/l01-03-ex2.m4a",
+    "l01-03-ex3_intro": "l01-voice/l01-03-ex3_intro.m4a",
+    "l01-04-ex3": "l01-voice/l01-04-ex3.m4a",
+    "l01-99-results": "l01-voice/l01-99-results.m4a",
+    "l01-99-wrap": "l01-voice/l01-99-wrap.m4a"
+  },
+  "l02": {
+    "l02-00-intro": "l02-voice/l02-00-intro.m4a",
+    "l02-01-ex1_intro": "l02-voice/l02-01-ex1_intro.m4a",
+    "l02-02-ex1": "l02-voice/l02-02-ex1.m4a",
+    "l02-02-ex2_intro": "l02-voice/l02-02-ex2_intro.m4a",
+    "l02-03-ex2": "l02-voice/l02-03-ex2.m4a",
+    "l02-03-ex3_intro": "l02-voice/l02-03-ex3_intro.m4a",
+    "l02-04-ex3": "l02-voice/l02-04-ex3.m4a",
+    "l02-99-results": "l02-voice/l02-99-results.m4a",
+    "l02-99-wrap": "l02-voice/l02-99-wrap.m4a"
+  },
+  "l03": {
+    "l03-00-intro": "l03-voice/l03-00-intro.m4a",
+    "l03-01-ex1_intro": "l03-voice/l03-01-ex1_intro.m4a",
+    "l03-02-ex1": "l03-voice/l03-02-ex1.m4a",
+    "l03-02-ex2_intro": "l03-voice/l03-02-ex2_intro.m4a",
+    "l03-03-ex2": "l03-voice/l03-03-ex2.m4a",
+    "l03-99-results": "l03-voice/l03-99-results.m4a",
+    "l03-99-wrap": "l03-voice/l03-99-wrap.m4a"
+  },
+  "l04": {
+    "l04-00-intro": "l04-voice/l04-00-intro.m4a",
+    "l04-01-ex1_intro": "l04-voice/l04-01-ex1_intro.m4a",
+    "l04-02-ex1": "l04-voice/l04-02-ex1.m4a",
+    "l04-02-ex2_intro": "l04-voice/l04-02-ex2_intro.m4a",
+    "l04-03-ex2": "l04-voice/l04-03-ex2.m4a",
+    "l04-99-results": "l04-voice/l04-99-results.m4a",
+    "l04-99-wrap": "l04-voice/l04-99-wrap.m4a"
+  },
+  "l05": {
+    "l05-00-intro": "l05-voice/l05-00-intro.m4a",
+    "l05-01-ex1_intro": "l05-voice/l05-01-ex1_intro.m4a",
+    "l05-02-ex1": "l05-voice/l05-02-ex1.m4a",
+    "l05-02-ex2_intro": "l05-voice/l05-02-ex2_intro.m4a",
+    "l05-03-ex2": "l05-voice/l05-03-ex2.m4a",
+    "l05-99-results": "l05-voice/l05-99-results.m4a",
+    "l05-99-wrap": "l05-voice/l05-99-wrap.m4a"
+  },
+  "l06": {
+    "l06-00-intro": "l06-voice/l06-00-intro.m4a",
+    "l06-01-ex1_intro": "l06-voice/l06-01-ex1_intro.m4a",
+    "l06-02-ex1": "l06-voice/l06-02-ex1.m4a",
+    "l06-02-ex2_intro": "l06-voice/l06-02-ex2_intro.m4a",
+    "l06-03-ex2": "l06-voice/l06-03-ex2.m4a",
+    "l06-03-ex3_intro": "l06-voice/l06-03-ex3_intro.m4a",
+    "l06-04-ex3": "l06-voice/l06-04-ex3.m4a",
+    "l06-05-ex4": "l06-voice/l06-05-ex4.m4a",
+    "l06-99-results": "l06-voice/l06-99-results.m4a",
+    "l06-99-wrap": "l06-voice/l06-99-wrap.m4a"
+  },
+  "l07": {
+    "l07-00-intro": "l07-voice/l07-00-intro.m4a",
+    "l07-01-ex1_intro": "l07-voice/l07-01-ex1_intro.m4a",
+    "l07-02-ex1": "l07-voice/l07-02-ex1.m4a",
+    "l07-02-ex2_intro": "l07-voice/l07-02-ex2_intro.m4a",
+    "l07-03-ex2": "l07-voice/l07-03-ex2.m4a",
+    "l07-03-ex3_intro": "l07-voice/l07-03-ex3_intro.m4a",
+    "l07-04-ex3": "l07-voice/l07-04-ex3.m4a",
+    "l07-99-results": "l07-voice/l07-99-results.m4a",
+    "l07-99-wrap": "l07-voice/l07-99-wrap.m4a"
+  },
+  "l08": {
+    "l08-00-intro": "l08-voice/l08-00-intro.m4a",
+    "l08-01-ex1_intro": "l08-voice/l08-01-ex1_intro.m4a",
+    "l08-02-ex1": "l08-voice/l08-02-ex1.m4a",
+    "l08-02-ex2_intro": "l08-voice/l08-02-ex2_intro.m4a",
+    "l08-03-ex2": "l08-voice/l08-03-ex2.m4a",
+    "l08-03-ex3_intro": "l08-voice/l08-03-ex3_intro.m4a",
+    "l08-04-ex3": "l08-voice/l08-04-ex3.m4a",
+    "l08-99-results": "l08-voice/l08-99-results.m4a",
+    "l08-99-wrap": "l08-voice/l08-99-wrap.m4a"
+  },
+  "l09": {
+    "l09-00-intro": "l09-voice/l09-00-intro.m4a",
+    "l09-01-ex1_intro": "l09-voice/l09-01-ex1_intro.m4a",
+    "l09-02-ex1": "l09-voice/l09-02-ex1.m4a",
+    "l09-02-ex2_intro": "l09-voice/l09-02-ex2_intro.m4a",
+    "l09-03-ex2": "l09-voice/l09-03-ex2.m4a",
+    "l09-03-ex3_intro": "l09-voice/l09-03-ex3_intro.m4a",
+    "l09-04-ex3": "l09-voice/l09-04-ex3.m4a",
+    "l09-05-ex4": "l09-voice/l09-05-ex4.m4a",
+    "l09-99-results": "l09-voice/l09-99-results.m4a",
+    "l09-99-wrap": "l09-voice/l09-99-wrap.m4a"
+  },
+  "l10": {
+    "l10-00-intro": "l10-voice/l10-00-intro.m4a",
+    "l10-01-ex1_intro": "l10-voice/l10-01-ex1_intro.m4a",
+    "l10-02-ex1": "l10-voice/l10-02-ex1.m4a",
+    "l10-02-ex2_intro": "l10-voice/l10-02-ex2_intro.m4a",
+    "l10-03-ex2": "l10-voice/l10-03-ex2.m4a",
+    "l10-99-results": "l10-voice/l10-99-results.m4a",
+    "l10-99-wrap": "l10-voice/l10-99-wrap.m4a"
+  },
+  "l11": {
+    "l11-00-intro": "l11-voice/l11-00-intro.m4a",
+    "l11-01-ex1_intro": "l11-voice/l11-01-ex1_intro.m4a",
+    "l11-02-ex1": "l11-voice/l11-02-ex1.m4a",
+    "l11-02-ex2_intro": "l11-voice/l11-02-ex2_intro.m4a",
+    "l11-03-ex2": "l11-voice/l11-03-ex2.m4a",
+    "l11-99-results": "l11-voice/l11-99-results.m4a",
+    "l11-99-wrap": "l11-voice/l11-99-wrap.m4a"
+  },
+  "l12": {
+    "l12-00-intro": "l12-voice/l12-00-intro.m4a",
+    "l12-01-ex1_intro": "l12-voice/l12-01-ex1_intro.m4a",
+    "l12-02-ex1": "l12-voice/l12-02-ex1.m4a",
+    "l12-02-ex2_intro": "l12-voice/l12-02-ex2_intro.m4a",
+    "l12-03-ex2": "l12-voice/l12-03-ex2.m4a",
+    "l12-99-results": "l12-voice/l12-99-results.m4a",
+    "l12-99-wrap": "l12-voice/l12-99-wrap.m4a"
+  },
+  "l13": {
+    "l13-00-intro": "l13-voice/l13-00-intro.m4a",
+    "l13-01-ex1_intro": "l13-voice/l13-01-ex1_intro.m4a",
+    "l13-02-ex1": "l13-voice/l13-02-ex1.m4a",
+    "l13-02-ex2_intro": "l13-voice/l13-02-ex2_intro.m4a",
+    "l13-03-ex2": "l13-voice/l13-03-ex2.m4a",
+    "l13-99-results": "l13-voice/l13-99-results.m4a",
+    "l13-99-wrap": "l13-voice/l13-99-wrap.m4a"
+  },
+  "l14": {
+    "l14-00-intro": "l14-voice/l14-00-intro.m4a",
+    "l14-01-ex1_intro": "l14-voice/l14-01-ex1_intro.m4a",
+    "l14-02-ex1": "l14-voice/l14-02-ex1.m4a",
+    "l14-02-ex2_intro": "l14-voice/l14-02-ex2_intro.m4a",
+    "l14-03-ex2": "l14-voice/l14-03-ex2.m4a",
+    "l14-99-results": "l14-voice/l14-99-results.m4a",
+    "l14-99-wrap": "l14-voice/l14-99-wrap.m4a"
+  },
+  "l15": {
+    "l15-00-intro": "l15-voice/l15-00-intro.m4a",
+    "l15-01-ex1_intro": "l15-voice/l15-01-ex1_intro.m4a",
+    "l15-02-ex1": "l15-voice/l15-02-ex1.m4a",
+    "l15-02-ex2_intro": "l15-voice/l15-02-ex2_intro.m4a",
+    "l15-03-ex2": "l15-voice/l15-03-ex2.m4a",
+    "l15-99-results": "l15-voice/l15-99-results.m4a",
+    "l15-99-wrap": "l15-voice/l15-99-wrap.m4a"
+  },
+  "l16": {
+    "l16-00-intro": "l16-voice/l16-00-intro.m4a",
+    "l16-01-ex1_intro": "l16-voice/l16-01-ex1_intro.m4a",
+    "l16-02-ex1": "l16-voice/l16-02-ex1.m4a",
+    "l16-02-ex2_intro": "l16-voice/l16-02-ex2_intro.m4a",
+    "l16-03-ex2": "l16-voice/l16-03-ex2.m4a",
+    "l16-03-ex3_intro": "l16-voice/l16-03-ex3_intro.m4a",
+    "l16-04-ex3": "l16-voice/l16-04-ex3.m4a",
+    "l16-99-results": "l16-voice/l16-99-results.m4a",
+    "l16-99-wrap": "l16-voice/l16-99-wrap.m4a"
+  },
+  "l17": {
+    "l17-00-intro": "l17-voice/l17-00-intro.m4a",
+    "l17-01-ex1_intro": "l17-voice/l17-01-ex1_intro.m4a",
+    "l17-02-ex1": "l17-voice/l17-02-ex1.m4a",
+    "l17-02-ex2_intro": "l17-voice/l17-02-ex2_intro.m4a",
+    "l17-03-ex2": "l17-voice/l17-03-ex2.m4a",
+    "l17-03-ex3_intro": "l17-voice/l17-03-ex3_intro.m4a",
+    "l17-04-ex3": "l17-voice/l17-04-ex3.m4a",
+    "l17-05-ex4": "l17-voice/l17-05-ex4.m4a",
+    "l17-99-results": "l17-voice/l17-99-results.m4a",
+    "l17-99-wrap": "l17-voice/l17-99-wrap.m4a"
+  },
+  "l18": {
+    "l18-00-intro": "l18-voice/l18-00-intro.m4a",
+    "l18-01-ex1_intro": "l18-voice/l18-01-ex1_intro.m4a",
+    "l18-02-ex1": "l18-voice/l18-02-ex1.m4a",
+    "l18-02-ex2_intro": "l18-voice/l18-02-ex2_intro.m4a",
+    "l18-03-ex2": "l18-voice/l18-03-ex2.m4a",
+    "l18-99-results": "l18-voice/l18-99-results.m4a",
+    "l18-99-wrap": "l18-voice/l18-99-wrap.m4a"
+  },
+  "l19": {
+    "l19-00-intro": "l19-voice/l19-00-intro.m4a",
+    "l19-01-ex1_intro": "l19-voice/l19-01-ex1_intro.m4a",
+    "l19-02-ex1": "l19-voice/l19-02-ex1.m4a",
+    "l19-02-ex2_intro": "l19-voice/l19-02-ex2_intro.m4a",
+    "l19-03-ex2": "l19-voice/l19-03-ex2.m4a",
+    "l19-03-ex3_intro": "l19-voice/l19-03-ex3_intro.m4a",
+    "l19-04-ex3": "l19-voice/l19-04-ex3.m4a",
+    "l19-05-ex4": "l19-voice/l19-05-ex4.m4a",
+    "l19-99-results": "l19-voice/l19-99-results.m4a",
+    "l19-99-wrap": "l19-voice/l19-99-wrap.m4a"
+  },
+  "l20": {
+    "l20-00-intro": "l20-voice/l20-00-intro.m4a",
+    "l20-01-ex1_intro": "l20-voice/l20-01-ex1_intro.m4a",
+    "l20-02-ex1": "l20-voice/l20-02-ex1.m4a",
+    "l20-02-ex2_intro": "l20-voice/l20-02-ex2_intro.m4a",
+    "l20-03-ex2": "l20-voice/l20-03-ex2.m4a",
+    "l20-99-results": "l20-voice/l20-99-results.m4a",
+    "l20-99-wrap": "l20-voice/l20-99-wrap.m4a"
+  },
+  "l21": {
+    "l21-00-intro": "l21-voice/l21-00-intro.m4a",
+    "l21-01-ex1_intro": "l21-voice/l21-01-ex1_intro.m4a",
+    "l21-02-ex1": "l21-voice/l21-02-ex1.m4a",
+    "l21-02-ex2_intro": "l21-voice/l21-02-ex2_intro.m4a",
+    "l21-03-ex2": "l21-voice/l21-03-ex2.m4a",
+    "l21-99-results": "l21-voice/l21-99-results.m4a",
+    "l21-99-wrap": "l21-voice/l21-99-wrap.m4a"
+  },
+  "l22": {
+    "l22-00-intro": "l22-voice/l22-00-intro.m4a",
+    "l22-01-ex1_intro": "l22-voice/l22-01-ex1_intro.m4a",
+    "l22-02-ex1": "l22-voice/l22-02-ex1.m4a",
+    "l22-02-ex2_intro": "l22-voice/l22-02-ex2_intro.m4a",
+    "l22-03-ex2": "l22-voice/l22-03-ex2.m4a",
+    "l22-99-results": "l22-voice/l22-99-results.m4a",
+    "l22-99-wrap": "l22-voice/l22-99-wrap.m4a"
+  },
+  "l23": {
+    "l23-00-intro": "l23-voice/l23-00-intro.m4a",
+    "l23-01-ex1_intro": "l23-voice/l23-01-ex1_intro.m4a",
+    "l23-02-ex1": "l23-voice/l23-02-ex1.m4a",
+    "l23-02-ex2_intro": "l23-voice/l23-02-ex2_intro.m4a",
+    "l23-03-ex2": "l23-voice/l23-03-ex2.m4a",
+    "l23-99-results": "l23-voice/l23-99-results.m4a",
+    "l23-99-wrap": "l23-voice/l23-99-wrap.m4a"
+  },
+  "l24": {
+    "l24-00-intro": "l24-voice/l24-00-intro.m4a",
+    "l24-01-ex1_intro": "l24-voice/l24-01-ex1_intro.m4a",
+    "l24-02-ex1": "l24-voice/l24-02-ex1.m4a",
+    "l24-02-ex2_intro": "l24-voice/l24-02-ex2_intro.m4a",
+    "l24-03-ex2": "l24-voice/l24-03-ex2.m4a",
+    "l24-03-ex3_intro": "l24-voice/l24-03-ex3_intro.m4a",
+    "l24-04-ex3": "l24-voice/l24-04-ex3.m4a",
+    "l24-99-results": "l24-voice/l24-99-results.m4a",
+    "l24-99-wrap": "l24-voice/l24-99-wrap.m4a"
+  },
+  "l25": {
+    "l25-00-intro": "l25-voice/l25-00-intro.m4a",
+    "l25-01-ex1_intro": "l25-voice/l25-01-ex1_intro.m4a",
+    "l25-02-ex1": "l25-voice/l25-02-ex1.m4a",
+    "l25-02-ex2_intro": "l25-voice/l25-02-ex2_intro.m4a",
+    "l25-03-ex2": "l25-voice/l25-03-ex2.m4a",
+    "l25-03-ex3_intro": "l25-voice/l25-03-ex3_intro.m4a",
+    "l25-04-ex3": "l25-voice/l25-04-ex3.m4a",
+    "l25-99-results": "l25-voice/l25-99-results.m4a",
+    "l25-99-wrap": "l25-voice/l25-99-wrap.m4a"
+  }
+}

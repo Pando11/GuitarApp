@@ -1,5 +1,8 @@
 node_modules/
 
+# Uncompressed audio masters (shipped audio is transcoded .m4a; see scripts/transcode-audio.mjs)
+07-app/audio/_masters/
+
 
 # PocketBase runtime (dev)
 pocketbase-dev/pocketbase.exe

@@ -1,0 +1,21 @@
+# Netlify deploy config for GuitarApp.
+#
+# One-time owner action: create a Netlify site linked to this repo (or drag-and-drop
+# the 07-app folder at app.netlify.com), then set the publish directory below —
+# Netlify auto-detects this file at the repo root once the site exists. No build
+# step, no env vars, no npm install needed.
+
+[build]
+  base = "07-app"
+  publish = "07-app"
+  command = ""
+
+[[headers]]
+  for = "/service-worker.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
