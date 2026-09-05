@@ -102,4 +102,34 @@ export function sageCoach(store) {
   return coachLine(snapshotFromStore(store));
 }
 
-export default { BANNED_PHRASES, snapshotFromStore, coachLine, sageCoach };
+// ---------------------------------------------------------------------------
+// T1.4 — coachClient seam.
+//
+// sageCoach()/coachLine() above remain 100% local/deterministic (Rule 5) and
+// are unchanged — snapshotFromStore's output IS the facts envelope's
+// `mastery`-adjacent numbers, so it doubles as the payload for the coaching
+// service (server/, T1.1), which re-voices these same numbers as prose
+// without ever inventing a new one (guardrail-enforced server-side).
+//
+// sageCoachWithModel() tries the service first and falls back to the local
+// deterministic line on any failure (network error, non-200, timeout) — see
+// chatEngine.js's coachClient for the identical fallback contract, reused
+// here via dynamic import so this module has no hard runtime dependency on
+// chatEngine.js and existing callers/tests of sageCoach()/coachLine() are
+// unaffected.
+// ---------------------------------------------------------------------------
+
+export async function sageCoachWithModel(store, envelope, options = {}) {
+  const localLine = sageCoach(store);
+  try {
+    const { askCoach } = await import('./chatEngine.js');
+    const result = await askCoach(envelope, localLine, options);
+    return { text: result.text, source: result.source, latencyMs: result.latencyMs };
+  } catch (e) {
+    // chatEngine.js unavailable for some reason (e.g. bundling edge case) —
+    // never let the coaching seam break the deterministic fallback line.
+    return { text: localLine, source: 'template', latencyMs: 0 };
+  }
+}
+
+export default { BANNED_PHRASES, snapshotFromStore, coachLine, sageCoach, sageCoachWithModel };

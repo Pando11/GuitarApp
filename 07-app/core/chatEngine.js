@@ -99,6 +99,118 @@ export function getLessons() { return _lessons || []; }
 // were injected (safe fallback — chat still works, just without served drills).
 export function loadLessons() { return getLessons(); }
 
+// ---------------------------------------------------------------------------
+// T1.4 — coachClient seam.
+//
+// The coaching service (server/, T1.1) turns a facts envelope into 2-3
+// sentences of model-written prose and ALWAYS answers 200 {prose, source}
+// — even on its own timeout/guardrail-rejection/rate-limit, it falls back to
+// a template internally. So from this client's point of view, "falling
+// back to the local templates below" only happens when the HTTP call itself
+// fails: network error, non-200 status, or the request timing out client-side.
+// A 200 response with {source: 'template'} is still a normal successful
+// response — it is NOT a client-side error — but it still counts as a
+// fallback for telemetry, since the service didn't get a model line out.
+//
+// Ban 5 (zero network) governs the deterministic reply() logic above, which
+// never changes: it stays fully local. This seam is additive and only used
+// by askCoach()/replyWithCoach() below, which are new entry points — nothing
+// above this point talks to the network, so reply()'s existing callers and
+// tests are unaffected.
+// ---------------------------------------------------------------------------
+
+const DEFAULT_COACH_URL = 'http://127.0.0.1:8787/coach';
+const DEFAULT_COACH_TIMEOUT_MS = 2500;
+
+// Lazily resolved so this module has no hard dependency on telemetry.js at
+// import time (keeps existing tests, which never call askCoach/replyWithCoach,
+// completely unaffected).
+function logCoachServed(source, latencyMs) {
+  try {
+    import('./telemetry.js').then((telemetry) => {
+      if (telemetry && typeof telemetry.log === 'function') {
+        telemetry.log('coach_served', { payload: { source, latencyMs } });
+      }
+    }).catch(() => { /* non-fatal: telemetry must never break coaching */ });
+  } catch (e) { /* non-fatal */ }
+}
+
+// Calls the coaching service with a facts envelope. Resolves to
+// { prose, source: 'model'|'template' } on any 200 response, or `null` when
+// the service is unreachable, errors, times out, or answers non-200 — the
+// caller (askCoach) treats `null` as "use the local template fallback".
+// Never throws.
+export async function coachClient(envelope, options = {}) {
+  const url = options.url || DEFAULT_COACH_URL;
+  const timeoutMs = typeof options.timeoutMs === 'number' ? options.timeoutMs : DEFAULT_COACH_TIMEOUT_MS;
+  const fetchImpl = options.fetchImpl || (typeof fetch === 'function' ? fetch : null);
+  if (!fetchImpl) return null;
+
+  const controller = (typeof AbortController === 'function') ? new AbortController() : null;
+  const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
+  try {
+    const res = await fetchImpl(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(envelope || {}),
+      signal: controller ? controller.signal : undefined,
+    });
+    if (!res || !res.ok) return null;
+    const data = await res.json();
+    if (!data || typeof data.prose !== 'string') return null;
+    const source = data.source === 'model' ? 'model' : 'template';
+    return { prose: data.prose, source };
+  } catch (e) {
+    return null; // network error, abort/timeout, bad JSON — all fall back.
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
+// Tries the coaching service first; on any failure (see coachClient above),
+// falls back to the given local template string/function. Fires the
+// `coach_served` telemetry event either way. `localTemplate` may be a string
+// or a zero-arg function returning one (so callers can defer building the
+// fallback text until it's actually needed).
+export async function askCoach(envelope, localTemplate, options = {}) {
+  const start = (typeof performance !== 'undefined' && typeof performance.now === 'function')
+    ? performance.now()
+    : Date.now();
+  const result = await coachClient(envelope, options);
+  const end = (typeof performance !== 'undefined' && typeof performance.now === 'function')
+    ? performance.now()
+    : Date.now();
+  const latencyMs = Math.max(0, Math.round(end - start));
+
+  const fallbackText = typeof localTemplate === 'function' ? localTemplate() : localTemplate;
+
+  if (result && result.source === 'model') {
+    logCoachServed('model', latencyMs);
+    return { text: result.prose, source: 'model', latencyMs };
+  }
+  if (result && result.source === 'template') {
+    // The service itself fell back internally — still a fallback for
+    // telemetry purposes, but we prefer ITS template prose (it has the same
+    // facts envelope) over the local one when available.
+    logCoachServed('template', latencyMs);
+    return { text: result.prose, source: 'template', latencyMs };
+  }
+  // Service unreachable/errored/non-200 — use the local template.
+  logCoachServed('template', latencyMs);
+  return { text: fallbackText, source: 'template', latencyMs };
+}
+
+// Convenience wrapper: same shape as reply(), but tries the coaching service
+// first for the final text of an on-topic response, falling back to reply()'s
+// existing local logic untouched. Off-topic replies never hit the network —
+// there is nothing coachable about them.
+export async function replyWithCoach(store, teacherId, message, envelope, options = {}) {
+  const local = reply(store, teacherId, message);
+  if (local.offTopic) return { ...local, source: 'local' };
+  const coached = await askCoach(envelope, local.text, options);
+  return { ...local, text: coached.text, source: coached.source, latencyMs: coached.latencyMs };
+}
+
 export function reply(store, teacherId, message) {
   const p = PERSONA[teacherId] || PERSONA.T1;
   if (!isOnTopic(message)) return { persona: p.name, offTopic: true, text: OFFTOPIC };
@@ -142,4 +254,7 @@ export function reply(store, teacherId, message) {
   return { persona: p.name, offTopic: false, text };
 }
 
-export default { reply, isOnTopic, PERSONA, findDrillForChord, drillForStruggle, loadLessons, setLessons, getLessons };
+export default {
+  reply, isOnTopic, PERSONA, findDrillForChord, drillForStruggle, loadLessons, setLessons, getLessons,
+  coachClient, askCoach, replyWithCoach,
+};

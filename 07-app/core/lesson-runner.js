@@ -9,6 +9,58 @@
     return Array.isArray(value) ? value : [];
   }
 
+  // --- T1.4: copyVariants selection by learner profile -----------------
+  //
+  // Lessons L01-L05 carry a `copyVariants` object (keys: 'kid',
+  // 'adult-beginner', 'returning') alongside the legacy `avatar_coaching_copy`
+  // (see docs/plans/TIER-1-make-ai-real.md T1.3). Lessons 06-25 have no
+  // `copyVariants` yet. This picks the right variant for a learner profile
+  // (07-app/core/learnerProfile.js's PROFILE_SCHEMA: ageBand, experience, ...),
+  // defaulting to 'adult-beginner' whenever the profile is absent, the lesson
+  // has no copyVariants, or the mapped key isn't present in that lesson's
+  // copyVariants object.
+  //
+  // Mapping chosen (not specified by the tier doc, documented here):
+  //   - ageBand 'under-13' or '13-17'      -> 'kid'      (checked first: a
+  //     young learner's register matters more than experience level)
+  //   - experience 'returning-player'      -> 'returning'
+  //   - everything else (including no profile at all, or an adult with
+  //     'never-held-one'/'tried-and-quit') -> 'adult-beginner'
+  function mapProfileToVariant(profile) {
+    if (!profile || typeof profile !== "object") return "adult-beginner";
+    if (profile.ageBand === "under-13" || profile.ageBand === "13-17") return "kid";
+    if (profile.experience === "returning-player") return "returning";
+    return "adult-beginner";
+  }
+
+  // Resolves the avatar-coaching copy object for a lesson + learner profile.
+  // Returns { copy, variantKey } where `copy` is always a usable object
+  // (falls back to the lesson's legacy avatar_coaching_copy, then {}), and
+  // `variantKey` is the copyVariants key actually used, or null when none of
+  // copyVariants applied (no copyVariants on this lesson, or empty).
+  function resolveAvatarCopy(raw, profile) {
+    const legacy =
+      raw && typeof raw.avatar_coaching_copy === "object" && raw.avatar_coaching_copy !== null
+        ? raw.avatar_coaching_copy
+        : {};
+    const variants =
+      raw && typeof raw.copyVariants === "object" && raw.copyVariants !== null
+        ? raw.copyVariants
+        : null;
+    if (!variants) return { copy: legacy, variantKey: null };
+
+    const wanted = mapProfileToVariant(profile);
+    if (variants[wanted] && typeof variants[wanted] === "object") {
+      return { copy: variants[wanted], variantKey: wanted };
+    }
+    // Mapped variant missing on this lesson -> default to adult-beginner.
+    if (variants["adult-beginner"] && typeof variants["adult-beginner"] === "object") {
+      return { copy: variants["adult-beginner"], variantKey: "adult-beginner" };
+    }
+    // No usable variant at all -> legacy copy.
+    return { copy: legacy, variantKey: null };
+  }
+
   /**
    * Validates lesson data structure and types.
    * @param {*} raw - Raw lesson data to validate
@@ -171,7 +223,7 @@
    * @returns {Object} Normalized lesson model
    * @throws {Error} If validation fails and strict mode enabled
    */
-  function normalizeLesson(raw, lessonIndex) {
+  function normalizeLesson(raw, lessonIndex, learnerProfile) {
     // Validate before processing
     const validation = validateLesson(raw, lessonIndex);
     if (!validation.valid) {
@@ -206,10 +258,8 @@
       lesson && typeof lesson.app_feature_mapping === "object" && lesson.app_feature_mapping !== null
         ? lesson.app_feature_mapping
         : {};
-    const avatarCopy =
-      raw && typeof raw.avatar_coaching_copy === "object" && raw.avatar_coaching_copy !== null
-        ? raw.avatar_coaching_copy
-        : {};
+    const resolvedCopy = resolveAvatarCopy(raw, learnerProfile);
+    const avatarCopy = resolvedCopy.copy;
     const chords =
       raw && typeof raw.chords === "object" && raw.chords !== null
         ? raw.chords
@@ -251,6 +301,7 @@
       objectives,
       appFeatureMapping,
       avatarCopy,
+      copyVariantKey: resolvedCopy.variantKey,
       steps,
       chords,
     };
@@ -406,7 +457,7 @@
       );
     }
 
-    function openLesson(index) {
+    function openLesson(index, learnerProfile) {
       if (!Number.isInteger(index) || index < 0 || index >= lessons.length) {
         throw new Error(`Lesson index out of range: ${index} (total: ${lessons.length})`);
       }
@@ -422,7 +473,8 @@
         );
       }
 
-      const model = normalizeLesson(raw, index);
+      const profile = learnerProfile !== undefined ? learnerProfile : options.learnerProfile;
+      const model = normalizeLesson(raw, index, profile);
       const html = renderLessonHTML(model, manifestState.data);
 
       if (typeof options.render === "function") {
@@ -448,10 +500,69 @@
 
     function currentLesson() {
       if (openIndex.value == null) return null;
-      return normalizeLesson(lessons[openIndex.value], openIndex.value);
+      return normalizeLesson(lessons[openIndex.value], openIndex.value, options.learnerProfile);
     }
 
-    return { openLesson, currentLesson, normalizeLesson, validateLesson };
+    // --- T1.4: ask adaptivePlan for the next unit, instead of the caller
+    // naively incrementing `openIndex`. Pure with respect to this runner's
+    // own state (it only reads `lessons`); the planning decision itself
+    // comes entirely from 07-app/core/adaptivePlan.js's planNextUnit(),
+    // which is the single source of truth for "what's next" (Rule 5: this
+    // runner never decides a musical/pedagogical fact itself).
+    //
+    // `progress` carries whatever real state the caller has:
+    //   { learnerProfile, mastery, gateHistory, recentHistory, justHappened,
+    //     isReinforcementLesson, unprovenLessonId }
+    // All fields are optional — see the KNOWN GAP note below for which of
+    // these nothing in the current app actually populates yet.
+    //
+    // Returns { plan, index } where `plan` is planNextUnit's raw result and
+    // `index` is the resolved lesson-array index for `plan.lessonId` (or the
+    // first id of `plan.lessonIds` for a 'chain' action), or null if that
+    // lesson id isn't found in `lessons` (e.g. plan said 'hold'/'drill' and
+    // stayed on the current lesson, or asked for a lesson past the catalog).
+    async function planNext(currentIndex, progress) {
+      const p = progress || {};
+      const normalized = lessons.map((raw, i) => normalizeLesson(raw, i, p.learnerProfile || options.learnerProfile));
+      const current = Number.isInteger(currentIndex) && currentIndex >= 0 && currentIndex < normalized.length
+        ? normalized[currentIndex]
+        : null;
+      const next = current ? normalized[currentIndex + 1] || null : null;
+      const afterNext = current ? normalized[currentIndex + 2] || null : null;
+
+      let planNextUnit;
+      try {
+        ({ planNextUnit } = await import("./adaptivePlan.js"));
+      } catch (e) {
+        // adaptivePlan.js unreachable (e.g. non-module environment) — hold
+        // rather than guess a lesson id ourselves.
+        return { plan: null, index: null };
+      }
+
+      const plan = planNextUnit({
+        learnerProfile: p.learnerProfile || options.learnerProfile || {},
+        currentLessonId: current ? current.lessonId : null,
+        mastery: p.mastery || [],
+        gateHistory: p.gateHistory || [],
+        recentHistory: p.recentHistory || [],
+        justHappened: p.justHappened || null,
+        nextLessonId: next ? next.lessonId : null,
+        isReinforcementLesson: !!p.isReinforcementLesson,
+        lessonAfterNextId: afterNext ? afterNext.lessonId : null,
+        unprovenLessonId: p.unprovenLessonId || null,
+      });
+
+      const targetId = plan.action === "chain" && Array.isArray(plan.lessonIds)
+        ? plan.lessonIds[0]
+        : plan.lessonId;
+      const index = targetId != null
+        ? normalized.findIndex((m) => m.lessonId === targetId)
+        : -1;
+
+      return { plan, index: index >= 0 ? index : null };
+    }
+
+    return { openLesson, currentLesson, normalizeLesson, validateLesson, planNext };
   }
 
   // Kick the manifest fetch off as early as possible so it has resolved by
@@ -467,5 +578,7 @@
     validateLesson,
     renderLessonHTML,
     loadAudioManifest,
+    mapProfileToVariant,
+    resolveAvatarCopy,
   };
 })(typeof window !== "undefined" ? window : this);
