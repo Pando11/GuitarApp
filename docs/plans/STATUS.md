@@ -27,9 +27,11 @@ five-friend test (no lessons currently render a drill), but worth tracking.
 
 **Exit check:** code is done; the remaining items are things only the owner
 can do:
-- [ ] Pick Netlify or GitHub Pages (see `docs/plans/STATUS.md` open decision
-  #5) and do the one-time host setup — instructions are in T0.3's report,
-  captured in commit `414742a`.
+- [ ] Deploy via GitHub Pages (decision made — see open decision #5). Repo
+  Settings → Pages → set "Source" to "GitHub Actions"; the existing
+  `.github/workflows/deploy-pages.yml` does the rest on the next push to
+  `main` that touches `07-app/**`. **Deliberately deferred** — running
+  locally for now, deploy when ready.
 - [ ] Once deployed, confirm on a real phone: a lesson plays audio on
   cellular in under 5 seconds.
 - [ ] **Get five people who are not you to open it.**
@@ -40,6 +42,48 @@ can do:
   `telemetry.js`'s `baseUrl` at it).
 
 Five real users have opened it: **0 / 5**
+
+## Handoff to Tier 1 (written 2026-09-05, after Tier 0 build)
+
+Tier 0's code is done and green, but its own Exit Check hasn't been met yet
+(0/5 friends, no deploy) — per `TIER-1-make-ai-real.md`'s own header, **do
+not start Tier 1 until Tier 0 is marked SHIPPED above**, not just
+build-complete. This section is here so whoever starts Tier 1 doesn't have
+to re-derive state from commit history.
+
+Facts learned while building Tier 0 that Tier 1's tasks should account for:
+
+- **Lesson model field is `model.lessonId`, not `model.id`.** T0.7 caught
+  this the hard way in `lesson-runner.js`'s `openLesson()`. T1.2/T1.4 will
+  touch `adaptivePlan.js`/`lesson-runner.js` again — check this before
+  assuming a field name.
+- **`lesson-runner.js` has no real "current step" concept** — it renders a
+  lesson as one flat document. T0.7 approximated `stepIndex` from scroll
+  position for telemetry. T1.2's adaptive planning and T1.3's copy-variant
+  selection will need an actual step/unit boundary if they're going to
+  target specific steps; consider whether that's worth formalizing before
+  building on the scroll-position hack.
+- **`drill_result` telemetry is defined but nothing fires it** — there is no
+  drill/practice screen reachable from the current shell. T1.2's adaptive
+  planning explicitly reasons about drill results (`justHappened:
+  {drillId, passed, score, ratePerMin}`); that data path does not exist yet
+  end-to-end. This is probably the single biggest gap between "Tier 0
+  shipped" and "Tier 1 can build on real data" — investigate before writing
+  T1.1's facts-envelope integration.
+- **PocketBase is local-only.** `pocketbase-dev/` runs on `127.0.0.1:8090`;
+  nothing is deployed. Tier 1's coaching service (`server/**`) will need its
+  own decision about where it runs and how it reaches student data — this
+  wasn't scoped in Tier 0 and isn't automatically solved by the GitHub Pages
+  static deploy (Pages serves static files only, no server-side code).
+- **`app-refactored.js`** (07-app/) is still sitting there, ~1500 lines
+  diverged from `app.js`, unresolved from before Tier 0. Nobody has decided
+  whether to delete it. Low risk, but it's dead weight in every future
+  agent's search results.
+- **Host decision:** GitHub Pages (see open decision #5). Deploy itself is
+  deliberately deferred — the app is being run locally for now. Whoever
+  picks this back up should deploy before running the five-friend test, not
+  before Tier 1 — Tier 1 doesn't require a public URL, only Tier 0's exit
+  check does.
 
 ## Tier 1 — Make the AI real — **BLOCKED (Tier 0)**
 
@@ -72,7 +116,8 @@ Five real users have opened it: **0 / 5**
    (b) weekly new song / (c) scored challenges. — *undecided*
 3. **Acquisition channel.** YouTube is the standing suggestion. — *undecided*
 4. **Under-13 policy:** support with parental consent, or exclude from paid. — *undecided*
-5. **Static host** for Tier 0: Netlify vs GitHub Pages. — *undecided*
+5. **Static host** for Tier 0: **decided — GitHub Pages.** Deploy itself is
+   deferred; app runs locally for now.
 
 ## Measured numbers (fill these in as they become real)
 
