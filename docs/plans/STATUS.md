@@ -7,19 +7,39 @@ Legend: `TODO` · `IN PROGRESS` · `BLOCKED (reason)` · `DONE`
 
 ---
 
-## Tier 0 — Ship it — **IN PROGRESS**
+## Tier 0 — Ship it — **BUILD COMPLETE, AWAITING OWNER STEPS**
 
 | Task | Status | Notes |
 |------|--------|-------|
 | T0.1 Archive doc sprawl | DONE | `app-refactored.js` kept as-is — differs substantially from `app.js`, not a safe delete; needs an owner call on whether to remove it |
 | T0.2 Audio transcode | DONE | 201 WAVs → `.m4a`, masters moved to gitignored `_masters/` |
 | T0.3 Deploy target | DONE | both Netlify + GH Pages configs written; owner still must do the one-time host setup |
-| T0.4 Learner profile | DONE | not yet wired into the shell (T0.7's job) |
-| T0.5 Wire lesson audio | TODO | fixes the known Playwright failure |
-| T0.6 Event logging | TODO | |
-| T0.7 Shell integration | TODO | single agent, contended files |
+| T0.4 Learner profile | DONE | wired into the shell by T0.7 |
+| T0.5 Wire lesson audio | DONE | fixed the known Playwright failure; 19/19 passing |
+| T0.6 Event logging | DONE | `events` PocketBase collection added, separate from encrypted `student_memory` |
+| T0.7 Shell integration | DONE | onboarding banner, telemetry hooks, feedback button all wired |
 
-**Exit check:** not met. Five real users have opened it: **0 / 5**
+`npm run test:all` is fully green: 28/28 smoke + 19/19 Playwright.
+
+**Known gap:** `drill_result` telemetry event is defined but never fired — no
+drill/practice screen is reachable from the current shell. Not blocking the
+five-friend test (no lessons currently render a drill), but worth tracking.
+
+**Exit check:** code is done; the remaining items are things only the owner
+can do:
+- [ ] Pick Netlify or GitHub Pages (see `docs/plans/STATUS.md` open decision
+  #5) and do the one-time host setup — instructions are in T0.3's report,
+  captured in commit `414742a`.
+- [ ] Once deployed, confirm on a real phone: a lesson plays audio on
+  cellular in under 5 seconds.
+- [ ] **Get five people who are not you to open it.**
+- [ ] Confirm the feedback button produces a readable row (requires a live
+  PocketBase instance reachable from the deployed URL — currently only
+  `pocketbase-dev` local dev config exists; the owner needs to stand up
+  PocketBase somewhere the deployed app can reach, and point
+  `telemetry.js`'s `baseUrl` at it).
+
+Five real users have opened it: **0 / 5**
 
 ## Tier 1 — Make the AI real — **BLOCKED (Tier 0)**
 
