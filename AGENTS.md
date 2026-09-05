@@ -2,6 +2,12 @@
 
 Auto-loaded project context. Also read `01-START-HERE/README.md` before acting.
 
+> **ACTIVE WORK PLAN (added 2026-09-05):** the current ordered plan lives in
+> `docs/plans/`. Read `CLAUDE.md` at the repo root, then `docs/plans/STATUS.md`,
+> then `docs/plans/README.md` before starting work or spawning subagents.
+> Do not create new handoff/phase/summary markdown files — update
+> `docs/plans/STATUS.md` instead.
+
 <!-- BEGIN mattpocock/skills — added 2026-08-21 (MIT, see skills/LICENSE). Revert: delete this block through EOF. -->
 ## Agent skills
 
