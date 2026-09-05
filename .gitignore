@@ -1,2 +1,10 @@
 node_modules/
 
+
+# PocketBase runtime (dev)
+pocketbase-dev/pocketbase.exe
+pocketbase-dev/pocketbase.zip
+pocketbase-dev/pb_data/
+pocketbase-dev/pb_server.log
+pocketbase-dev/CHANGELOG.md
+pocketbase-dev/LICENSE.md
