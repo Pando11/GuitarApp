@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "audio:transcode": "node scripts/transcode-audio.mjs",
+    "start": "node scripts/serve.mjs",
     "test:app-smoke": "node 07-app/test/app-smoke.mjs",
     "test:fidelity": "node 07-app/test/fidelity.mjs",
     "test:playwright": "node 07-app/test/guitar-app.playwright.mjs",
