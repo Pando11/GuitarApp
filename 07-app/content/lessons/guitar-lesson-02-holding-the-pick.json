@@ -51,6 +51,32 @@
     "results": "Dropping the pick is normal in week one. Even volume and a smooth sweep are what we are after.",
     "wrap": "That is the pick handled. Next lesson we take two chords you already know and make them talk to each other."
   },
+  "copyVariants": {
+    "kid": {
+      "intro": "You already made the guitar sound good, now let's grab a pick! It's this little triangle that makes your strums sound sharp and bright instead of soft and thuddy.",
+      "ex1_intro": "Lay the pick flat on your pointer finger, then squish your thumb on top so just a tiny bit pokes out, like a little beak. Not a death-grip, just a friendly hold. If your knuckles turn white, loosen up.",
+      "ex2_intro": "Pick the fat low E string ten times, all downward, like tiny taps. Keep your wrist doing the work, not your whole arm. Then do ten more on the next string over.",
+      "ex3_intro": "Now strum down across all six strings with the pick. Tilt it a hair so it slides smooth instead of catching, one swoosh, not six little bumps.",
+      "results": "Dropping the pick a few times? Totally normal, happens to everyone at first. A smooth swoosh sound means you're getting it.",
+      "wrap": "Pick: handled! Next time we take two chords you already sort of know and make them talk to each other."
+    },
+    "adult-beginner": {
+      "intro": "You've got a tuned guitar and a first strum under your belt. Now we add the pick, it's the difference between a dull thud and a genuinely bright guitar tone.",
+      "ex1_intro": "Rest the pick flat against the side of your index finger, thumb pressed on top, with about five millimetres of tip exposed. Aim for firm-but-relaxed, white knuckles mean you're gripping too hard.",
+      "ex2_intro": "Ten down-picks on the low E string, using a small wrist motion rather than the elbow, aiming for consistent volume. Then repeat on the open A string.",
+      "ex3_intro": "Strum all six open strings downward with the pick, angling it slightly so it glides through the strings instead of catching. You're after one smooth sweep, not six separate hits.",
+      "results": "Dropping the pick occasionally in week one is completely expected. Even volume and a smooth sweep are the actual goals here.",
+      "wrap": "Pick technique is in place. Next lesson, two chords you already know start talking to each other."
+    },
+    "returning": {
+      "intro": "You've held a pick before, this is a quick calibration pass, not new territory. Get the grip feeling right again and we'll move on.",
+      "ex1_intro": "Same grip you remember: pick flat on the index finger, thumb on top, a few millimetres exposed. If it's been a while, this should come back fast.",
+      "ex2_intro": "Ten down-picks on low E, small wrist motion, even volume, then ten on the A string. Muscle memory should carry most of this.",
+      "ex3_intro": "Full downward strum across all six open strings, angled pick, one smooth sweep. This should feel familiar.",
+      "results": "If the sweep's smooth and the volume's even, your hands remember. That's the whole check for this lesson.",
+      "wrap": "Pick grip confirmed. Next up: two chords you already know, working together."
+    }
+  },
   "qa_block": {
     "must_verify": [
       "Automated: lesson JSON passes schema/validate.js (validateLesson) — all required keys present, qa_status whitelisted.",

@@ -57,6 +57,32 @@
     "results": "If it makes a sound and it's in tune, today's a win. No chord, no trick, just you and a guitar that agrees with itself. Tomorrow we put a finger down — and I promise it's just as easy.",
     "wrap": "Look at you. You met the guitar, tuned it, strummed it. That's the whole scary part, done. Most folks talk themselves out of even picking it up. You didn't. I'll see you in lesson two."
   },
+  "copyVariants": {
+    "kid": {
+      "intro": "Ready for guitar? Grab it and sit however feels comfy. First we're going to make it sound just right, like tuning a radio till the fuzz goes away. Then you get to strum it, no rules yet, just noise-making. That's today's whole mission.",
+      "ex1_intro": "Quick game, I'll point, you repeat the word. This knob-covered part up top? Headstock. These metal lines? Frets. The fat string on top: low E. Skinny one on the bottom: high e. You don't have to remember any of it, just nod along.",
+      "ex2_intro": "Time for a tuning game! Open the tuner, pluck the fat string, and watch the dot. If it wiggles left or right, turn the matching knob till it settles in the middle. Do that for every string. When they're all lined up, ta-da, instant guitar magic.",
+      "ex3_intro": "Now the fun part, no fingers on the frets, just strum straight down across all six strings. Wrist loose and floppy, like you're shaking off water. That sound? You made that. You're a guitar player now.",
+      "results": "Made a sound and it was in tune? You win today. No tricky chords needed, just you and a guitar that's finally friends with itself.",
+      "wrap": "Look at that, you met the guitar, got it in tune, and strummed it loud and proud. That's the whole nervous part, over and done. See you next time for finger stuff."
+    },
+    "adult-beginner": {
+      "intro": "Let's get you set up properly before we touch a single chord. Sit however's comfortable, guitar resting on your leg. First job: tuning, because nothing you play later will sound right on an out-of-tune instrument. Then you'll strum it, just to hear it work. That's the entire lesson.",
+      "ex1_intro": "A fast orientation pass, nothing to memorize. Headstock up top holds the tuning pegs. The metal strips along the neck are frets. Strings run from the thick low E to the thin high e. You'll pick up this vocabulary naturally as we go.",
+      "ex2_intro": "Open the free tuner and pluck the low E string on its own. Watch the display and adjust the matching peg until it settles on pitch. Repeat for A, D, G, B, and high e. Once every string reads true, you'll notice the whole instrument suddenly sounds right.",
+      "ex3_intro": "With no fingers fretting anything, strum straight down across all six open strings. Keep the wrist loose, think brushing crumbs off a table, not chopping. That's a genuine guitar tone coming from your own hands.",
+      "results": "A clean sound from a tuned guitar is a real result for lesson one. No chords required yet, just confirm the instrument is ready and you're comfortable holding it.",
+      "wrap": "You've covered the anatomy, tuned the guitar, and gotten your first strum out of it. That's the intimidating part behind you. Next lesson, your first finger goes down."
+    },
+    "returning": {
+      "intro": "Back in the saddle, let's just confirm the basics are still solid before we move fast. Get the guitar in tune first; you already know why that matters, everything downstream depends on it. Then a quick strum to make sure it feels right in your hands again.",
+      "ex1_intro": "You know this part already, headstock, frets, low E to high e. Consider this a refresh, not new material. Skim it and move on.",
+      "ex2_intro": "Tune it the way you always did: pluck each string, match the tuner, adjust the peg. Work low E through high e. You'll feel it lock in faster than you remember.",
+      "ex3_intro": "One clean down-strum across all six open strings, wrist loose. This should feel automatic, and if it does, you're already warmed back up.",
+      "results": "Tuned and strumming clean means you're picked back up right where things left off. No rust worth worrying about.",
+      "wrap": "Anatomy, tuning, first strum, all confirmed. You're back. Next lesson we get a finger down and pick up the pace."
+    }
+  },
   "qa_block": {
     "must_verify": [
       "Automated: every chord fingering verified deterministically by 06-prototypes/step0/schema/chord-theory-check.js (verifyChord) — 0 errors AND 0 warnings required before ship (Hard Ban 7 satisfied by arithmetic, per owner directive 2026-08-08: physical fingering correctness needs no contract guitarist).",

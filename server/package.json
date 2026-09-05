@@ -1,0 +1,15 @@
+{
+  "name": "guitarapp-coach-service",
+  "version": "1.0.0",
+  "description": "T1.1 coaching service — the only process holding the Anthropic API key. Turns stored facts into coaching prose. Never decides mastery, never invents a chord.",
+  "type": "module",
+  "private": true,
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.65.0"
+  }
+}

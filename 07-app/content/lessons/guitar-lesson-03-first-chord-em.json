@@ -57,6 +57,29 @@
     "results": "If you can hold E minor and strum it clean, you have officially played a chord. I'm serious — that's the door opening. Every song you love starts with some shape like this one. You're not 'trying guitar' anymore. You're playing it.",
     "wrap": "You just played a chord. Two fingers, one shape, a real guitar sound coming out of your own hands. I'm genuinely chuffed for you, and I don't hand that out for free. Next time, I'll show you a second chord and we'll actually play a little song. For real this time. Pull up a crate and I'll be here."
   },
+  "copyVariants": {
+    "kid": {
+      "intro": "See that guy on the corner playing guitar like it's magic? He waves you over and says: 'Sit down, watch my hands, this is the first thing I ever learned. Two fingers, that's the whole secret. You'll have it in two minutes, promise.'",
+      "ex1_intro": "Put your guitar on your knee, neck tilted up a little. Now bring your hand up: middle finger lands on the A string, second fret. Ring finger sits right next to it on the D string, same fret. Thumb hangs out behind the neck, relaxed. Feels like a stretch? Good, that means it's working. That shape is called E minor!",
+      "ex2_intro": "Keep those two fingers where they are and strum straight down across all six strings. Loose wrist, like wiping crumbs off your knee. Hear a buzz? No big deal, just scoot your finger a touch closer to the metal fret. When it rings out clean, that's your first real chord sound!",
+      "results": "Hold E minor and strum it clean, that means you officially played a chord! Every song ever starts with a shape just like this one.",
+      "wrap": "You just played a real chord with your own two fingers. That's huge! Next time you get a second chord, and we actually play a little song."
+    },
+    "adult-beginner": {
+      "intro": "Here's the good part most apps make you wait for. This is E minor, two fingers, that's the entire chord. Nobody's born knowing it. You'll have it in about two minutes.",
+      "ex1_intro": "Rest the guitar on your leg, neck tilted slightly up. Bring your hand up to the neck: middle finger on the A string, second fret; ring finger right beside it on the D string, same fret. Let the thumb rest behind the neck rather than wrapping over it, that's a common early habit and it just makes things harder. A stretchy feeling here is normal; it means your hand hasn't learned the shape yet. That's E minor.",
+      "ex2_intro": "Keeping that shape, strum straight down across all six strings with a relaxed wrist. Any buzzing usually just means pressing a bit closer to the fret, not in the middle of the space. When it rings clean, that's a real chord coming out of your hands.",
+      "results": "Holding E minor and strumming it clean means you've played your first chord. That's the actual milestone, every song you know starts from a shape like this one.",
+      "wrap": "You played a real chord today. Next lesson adds a second one, and we'll actually string together a short song."
+    },
+    "returning": {
+      "intro": "E minor, you know this shape already. Quick refresher, then we move at your pace.",
+      "ex1_intro": "You know this one: middle finger on the A string second fret, ring finger on the D string second fret, thumb relaxed behind the neck. Check the thumb, that's usually the first thing that slips when you've been away a while.",
+      "ex2_intro": "Full down-strum across all six strings, wrist loose. If anything buzzes, it's almost always finger placement drifting slightly off the fret, an easy fix.",
+      "results": "Clean E minor, clean strum, you're right back where you left off. No real reteaching needed here.",
+      "wrap": "E minor's solid. Next lesson brings a second chord and your first proper loop, should feel quick."
+    }
+  },
   "qa_block": {
     "must_verify": [
       "Automated: every chord fingering verified deterministically by 06-prototypes/step0/schema/chord-theory-check.js (verifyChord) — 0 errors AND 0 warnings required before ship (Hard Ban 7 satisfied by arithmetic, per owner directive 2026-08-08: physical fingering correctness needs no contract guitarist).",

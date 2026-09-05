@@ -11,3 +11,7 @@ pocketbase-dev/pb_data/
 pocketbase-dev/pb_server.log
 pocketbase-dev/CHANGELOG.md
 pocketbase-dev/LICENSE.md
+
+# Secrets — never commit
+server/.env
+.env

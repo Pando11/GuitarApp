@@ -86,6 +86,29 @@
     "results": "If your strums land on the clicks, your rhythm is real. Everything from here builds on this.",
     "wrap": "You strummed in time. Now take that same Em to easy C loop onto the porch for your first performance. Keep it steady and let the band follow you."
   },
+  "copyVariants": {
+    "kid": {
+      "intro": "Chords are only half the fun, the other half is TIME! Today you strum right on the beat so it sounds like real music instead of just noise.",
+      "ex1_intro": "Set the metronome to 72 and strum down on every single click, down, down, down, down. Keep your wrist loose and your arm still. This is your very first rhythm rep!",
+      "ex2_intro": "Now do your Em-to-easyC loop with the beat under it, four strums on each chord. Try to keep every strum the same volume. That steady beat is what makes people want to tap their foot!",
+      "results": "If your strums land right on the clicks, your rhythm is real! Everything you learn from here builds on this.",
+      "wrap": "You strummed in time, awesome! Take that same loop and show it off. Keep it steady and everything else follows."
+    },
+    "adult-beginner": {
+      "intro": "Chords are only half of playing guitar, timing is the other half. Today's focus is strumming precisely on the beat so it reads as music rather than noise.",
+      "ex1_intro": "Set the metronome to 72 BPM and strum down on every click, keeping the wrist loose and the arm mostly still. This is your first deliberate rhythm rep, treat it as its own skill.",
+      "ex2_intro": "Apply the same idea to the Em-to-easy-C loop, four beats per chord, aiming for consistent volume across every strum. That steady pulse is what actually reads as rhythm to a listener.",
+      "results": "Strums landing squarely on the clicks means your timing is functioning as a real skill, not luck. Everything from here builds on this foundation.",
+      "wrap": "You've strummed in time. Take that same loop further and keep the tempo steady, consistency here pays off in every lesson after this one."
+    },
+    "returning": {
+      "intro": "Timing check, you've done rhythm work before, so this should mostly confirm your internal clock is still solid.",
+      "ex1_intro": "Metronome at 72, down-strum on every click. If your timing's intact, this will feel almost too easy, good, that's the point.",
+      "ex2_intro": "Same Em-to-easy-C loop, now locked to the beat, four counts per chord. Watch for any drift in volume or timing as the changes get automatic.",
+      "results": "Strums locked to the click confirm your rhythm sense carried over. No rebuilding needed here.",
+      "wrap": "Timing's solid. You're fully caught up, next lessons can move at a normal clip from here."
+    }
+  },
   "qa_block": {
     "must_verify": [
       "Automated: every chord fingering verified deterministically by 06-prototypes/step0/schema/chord-theory-check.js (verifyChord) \u2014 0 errors AND 0 warnings required before ship (Hard Ban 7 satisfied by arithmetic, per owner directive 2026-08-08: physical fingering correctness needs no contract guitarist).",

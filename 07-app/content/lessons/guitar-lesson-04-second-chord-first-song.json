@@ -90,6 +90,29 @@
     "results": "If you can go E minor to easy C to E minor without a full stop, you played a song. That's the hook that keeps people coming back — protect it. It won't be smooth yet, and it's not supposed to be.",
     "wrap": "Two chords, one loop, a real song. Most apps make you wait weeks for this — you got it in lesson three. Practice the loop a little every day. Lesson four adds the rhythm, and then it really sounds like music. See you there."
   },
+  "copyVariants": {
+    "kid": {
+      "intro": "This is the fun part, two chords and you get to play a whole song! Today you'll learn a super easy version of C, then loop it with the E minor you already know. That loop? That IS a song.",
+      "ex1_intro": "Easy C is just two fingers, we picked the easy version so it's not a fight. Ring finger on the A string, third fret. Middle finger on the D string, second fret. Everything else just stays open and rings by itself.",
+      "ex2_intro": "Now the fun bit: strum E minor, then switch to easy C, strum, then back to E minor. Slow is totally fine, the goal is not stopping, not speed. Fumbling at first? Normal! That's what practicing the loop is for.",
+      "results": "If you can go E minor to easy C and back without stopping, you played a whole song! That's the trick that makes people want to keep going.",
+      "wrap": "Two chords, one loop, a real song, you did that in lesson four! Practice the loop a little every day. Next time we add rhythm and it starts sounding like real music."
+    },
+    "adult-beginner": {
+      "intro": "This is the payoff lesson, two chords and you can already play a song. You'll learn a simplified version of C, then loop it with the E minor from last time. That loop is genuinely a song.",
+      "ex1_intro": "Easy C uses just two fingers, deliberately reduced so it's manageable early on. Ring finger on the A string, third fret; middle finger on the D string, second fret. The remaining strings stay open and ring on their own. It's the same chord as full C, just easier to land, you'll build up to the standard voicing later.",
+      "ex2_intro": "Now loop it: E minor, strum, switch to easy C, strum, back to E minor. Keep it slow, the goal is continuity, not speed. Fumbling the change at first is completely normal; that's exactly what repeating the loop trains.",
+      "results": "Moving from E minor to easy C and back without a full stop means you've played a song. That continuity is the actual skill being built here, it won't be smooth yet, and it isn't expected to be.",
+      "wrap": "Two chords, one loop, a real song completed in lesson four. Keep practicing that loop daily. Next lesson adds rhythm, and it'll start sounding like actual music."
+    },
+    "returning": {
+      "intro": "Easy C plus the E minor you've got down, quick refresher on the loop, since you've likely played this before.",
+      "ex1_intro": "Easy C: ring on the A string third fret, middle on the D string second fret, rest ringing open. You know this shape, check that the ring/middle assignment hasn't flipped from muscle memory of full C.",
+      "ex2_intro": "Loop E minor to easy C and back, unhurried. This should come back quickly, focus on eliminating any hesitation at the switch rather than relearning the shapes.",
+      "results": "A smooth, unhurried loop between the two shapes confirms you're back up to speed on this pairing.",
+      "wrap": "Loop's solid. Next lesson layers rhythm on top, should click fast given where you're starting from."
+    }
+  },
   "qa_block": {
     "must_verify": [
       "Automated: every chord fingering verified deterministically by 06-prototypes/step0/schema/chord-theory-check.js (verifyChord) — 0 errors AND 0 warnings required before ship (Hard Ban 7 satisfied by arithmetic, per owner directive 2026-08-08: physical fingering correctness needs no contract guitarist).",
