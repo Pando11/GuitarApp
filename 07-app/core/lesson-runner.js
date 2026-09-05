@@ -264,23 +264,112 @@
     return node.innerHTML;
   }
 
-  function renderLessonHTML(model) {
+  function escAttr(value) {
+    return esc(value).replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  // --- Lesson audio manifest (T0.5) -----------------------------------
+  // Manifest shape: { lessonId: { clipId: relativePathFromAudioDir } }
+  // lessonId here is the lowercase "lNN" form (e.g. "l01"), independent of
+  // the human-readable lesson.id field in the lesson JSON.
+  const AUDIO_MANIFEST_URL = "./audio/manifest.json";
+  const manifestState = { data: null, promise: null };
+
+  function loadAudioManifest() {
+    if (manifestState.promise) return manifestState.promise;
+    if (typeof fetch !== "function") {
+      manifestState.data = {};
+      manifestState.promise = Promise.resolve(manifestState.data);
+      return manifestState.promise;
+    }
+    manifestState.promise = fetch(AUDIO_MANIFEST_URL)
+      .then((r) => (r && r.ok ? r.json() : {}))
+      .catch(() => ({}))
+      .then((data) => {
+        manifestState.data = data && typeof data === "object" ? data : {};
+        return manifestState.data;
+      });
+    return manifestState.promise;
+  }
+
+  function lessonManifestId(lessonNumber) {
+    return "l" + String(lessonNumber).padStart(2, "0");
+  }
+
+  // Clip naming convention produced by the TTS pipeline (T0.2):
+  //   lNN-0N-exN_intro   -> spoken lead-in for step N (1-indexed)
+  //   lNN-0(N+1)-exN      -> the step's own coaching audio
+  function findStepClips(lessonClips, lid, stepIndex) {
+    if (!lessonClips || typeof lessonClips !== "object") return null;
+    const n = stepIndex + 1;
+    const introKey = `${lid}-0${n}-ex${n}_intro`;
+    const mainKey = `${lid}-0${n + 1}-ex${n}`;
+    const altMainKey = `${lid}-0${n}-ex${n}`;
+    const intro = typeof lessonClips[introKey] === "string" ? lessonClips[introKey] : null;
+    const main =
+      typeof lessonClips[mainKey] === "string"
+        ? lessonClips[mainKey]
+        : typeof lessonClips[altMainKey] === "string"
+          ? lessonClips[altMainKey]
+          : null;
+    if (!intro && !main) return null;
+    return { introKey, introPath: intro, mainKey, mainPath: main };
+  }
+
+  function findNamedClip(lessonClips, lid, suffix) {
+    if (!lessonClips || typeof lessonClips !== "object") return null;
+    const matchKey = Object.keys(lessonClips).find((key) => key.indexOf(`-${suffix}`) !== -1);
+    if (!matchKey) return null;
+    const path = lessonClips[matchKey];
+    return typeof path === "string" ? { key: matchKey, path } : null;
+  }
+
+  function audioElementHTML(path, label) {
+    if (!path) return "";
+    const src = `./audio/${path}`;
+    return `<audio controls preload="none" src="${escAttr(src)}" aria-label="${escAttr(label)}">Your browser does not support audio playback.</audio>`;
+  }
+
+  function renderLessonHTML(model, manifestData) {
+    const lid = lessonManifestId(model.lessonNumber);
+    const lessonClips = manifestData && typeof manifestData === "object" ? manifestData[lid] : null;
+    const introClip = findNamedClip(lessonClips, lid, "00-intro");
+    const wrapClip = findNamedClip(lessonClips, lid, "99-wrap");
+
     return [
       `<div class="lesson-intro">`,
       `<div class="eyebrow">Lesson ${String(model.lessonNumber).padStart(2, "0")}</div>`,
       `<h1 id="lesson-title">${esc(model.title)}</h1>`,
       `<p>${esc(model.oneLinePromise)}</p>`,
+      introClip
+        ? `<div class="lesson-audio">${audioElementHTML(introClip.path, `Play lesson introduction: ${model.title}`)}</div>`
+        : "",
       `<h3>By the end</h3>`,
       `<ul class="objectives">${model.objectives.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>`,
       `</div>`,
       `<div class="steps">${model.steps
-        .map(
-          (step, i) =>
-            `<section class="step"><span class="lesson-number">Step ${i + 1}</span><h3>${esc(step.name)}</h3><p>${esc(
-              step.coaching || step.purpose
-            )}</p></section>`
-        )
+        .map((step, i) => {
+          const clips = findStepClips(lessonClips, lid, i);
+          const introAudio = clips && clips.introPath
+            ? `<div class="step-audio"><span class="lesson-number">Listen first</span>${audioElementHTML(
+                clips.introPath,
+                `Play intro audio for step: ${step.name}`
+              )}</div>`
+            : "";
+          const mainAudio = clips && clips.mainPath
+            ? `<div class="step-audio">${audioElementHTML(
+                clips.mainPath,
+                `Play coaching audio for step: ${step.name}`
+              )}</div>`
+            : "";
+          return `<section class="step"><span class="lesson-number">Step ${i + 1}</span><h3>${esc(step.name)}</h3><p>${esc(
+            step.coaching || step.purpose
+          )}</p>${introAudio}${mainAudio}</section>`;
+        })
         .join("")}</div>`,
+      wrapClip
+        ? `<div class="lesson-audio">${audioElementHTML(wrapClip.path, `Play lesson wrap-up: ${model.title}`)}</div>`
+        : "",
     ].join("");
   }
 
@@ -334,13 +423,26 @@
       }
 
       const model = normalizeLesson(raw, index);
-      const html = renderLessonHTML(model);
+      const html = renderLessonHTML(model, manifestState.data);
 
       if (typeof options.render === "function") {
         options.render({ model, html });
       }
 
       openIndex.value = index;
+
+      // Audio manifest may still be in flight (T0.5). Re-render once it
+      // resolves so audio elements appear without forcing a synchronous
+      // fetch on every lesson open. A missing/failed manifest resolves to
+      // {} and simply renders no audio elements - the lesson stays usable.
+      if (!manifestState.data) {
+        loadAudioManifest().then((data) => {
+          if (openIndex.value !== index || typeof options.render !== "function") return;
+          const updatedHtml = renderLessonHTML(model, data);
+          options.render({ model, html: updatedHtml });
+        });
+      }
+
       return model;
     }
 
@@ -352,11 +454,18 @@
     return { openLesson, currentLesson, normalizeLesson, validateLesson };
   }
 
+  // Kick the manifest fetch off as early as possible so it has resolved by
+  // the time a user opens a lesson (catalog load + a click take a while).
+  if (typeof fetch === "function") {
+    loadAudioManifest();
+  }
+
   global.GuitarApp = global.GuitarApp || {};
   global.GuitarApp.LessonRunner = {
     createLessonRunner,
     normalizeLesson,
     validateLesson,
     renderLessonHTML,
+    loadAudioManifest,
   };
 })(typeof window !== "undefined" ? window : this);

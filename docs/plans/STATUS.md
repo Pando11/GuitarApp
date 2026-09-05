@@ -7,14 +7,14 @@ Legend: `TODO` · `IN PROGRESS` · `BLOCKED (reason)` · `DONE`
 
 ---
 
-## Tier 0 — Ship it — **NOT STARTED**
+## Tier 0 — Ship it — **IN PROGRESS**
 
 | Task | Status | Notes |
 |------|--------|-------|
-| T0.1 Archive doc sprawl | TODO | |
-| T0.2 Audio transcode | TODO | needs `ffmpeg` on PATH |
-| T0.3 Deploy target | TODO | owner must do the one-time host setup |
-| T0.4 Learner profile | TODO | |
+| T0.1 Archive doc sprawl | DONE | `app-refactored.js` kept as-is — differs substantially from `app.js`, not a safe delete; needs an owner call on whether to remove it |
+| T0.2 Audio transcode | DONE | 201 WAVs → `.m4a`, masters moved to gitignored `_masters/` |
+| T0.3 Deploy target | DONE | both Netlify + GH Pages configs written; owner still must do the one-time host setup |
+| T0.4 Learner profile | DONE | not yet wired into the shell (T0.7's job) |
 | T0.5 Wire lesson audio | TODO | fixes the known Playwright failure |
 | T0.6 Event logging | TODO | |
 | T0.7 Shell integration | TODO | single agent, contended files |

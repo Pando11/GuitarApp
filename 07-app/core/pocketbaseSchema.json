@@ -87,6 +87,68 @@
           "options": { "min": null, "max": null, "pattern": "" }
         }
       ]
+    },
+    {
+      "name": "events",
+      "type": "base",
+      "$comment": "Deliberately plaintext, deliberately not personal — anonId is a random UUID, never an email/name/IP. Separate from the encrypted student_memory collection.",
+      "listRule": null,
+      "viewRule": null,
+      "createRule": "",
+      "updateRule": null,
+      "deleteRule": null,
+      "fields": [
+        {
+          "name": "id",
+          "type": "text",
+          "required": true,
+          "unique": false,
+          "options": { "min": null, "max": null, "pattern": "" },
+          "autogeneratePattern": "([a-z0-9]{15})"
+        },
+        {
+          "name": "event",
+          "type": "text",
+          "required": true,
+          "unique": false,
+          "options": { "min": null, "max": null, "pattern": "" }
+        },
+        {
+          "name": "ts",
+          "type": "number",
+          "required": true,
+          "unique": false,
+          "options": { "min": null, "max": null }
+        },
+        {
+          "name": "sessionId",
+          "type": "text",
+          "required": true,
+          "unique": false,
+          "options": { "min": null, "max": null, "pattern": "" }
+        },
+        {
+          "name": "anonId",
+          "type": "text",
+          "required": true,
+          "unique": false,
+          "options": { "min": null, "max": null, "pattern": "" }
+        },
+        {
+          "name": "lessonId",
+          "type": "text",
+          "required": false,
+          "unique": false,
+          "options": { "min": null, "max": null, "pattern": "" }
+        },
+        {
+          "name": "payload",
+          "type": "json",
+          "required": false,
+          "unique": false,
+          "options": { "maxSize": 20000 }
+        }
+      ]
     }
   ]
 }
