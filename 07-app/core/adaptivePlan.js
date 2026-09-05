@@ -76,7 +76,7 @@ const LONG_MINUTES_PER_DAY = 60;
 // Pick a drill from the §5.2 menu for the given failing chord(s). Pure,
 // deterministic mapping — no randomness, so the same inputs always produce
 // the same drill and the choice is explainable in the reason string.
-function pickDrill(failingSorted) {
+export function pickDrill(failingSorted) {
   if (failingSorted.length >= 2) {
     return {
       drill: 'Weak-Pair Review',

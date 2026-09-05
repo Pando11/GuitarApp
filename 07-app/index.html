@@ -11,6 +11,9 @@
   <style>
     :root{color-scheme:dark;--ink:#f2efe3;--muted:#b8c1b5;--forest:#17231b;--panel:#223027;--moss:#9fb56c;--warm:#d69b5b;--line:#3b4b40}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 80% 0,#344233 0,transparent 38%),linear-gradient(#17231b,#101713);color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}button{font:inherit}.shell{width:min(100%,1080px);margin:auto;padding:clamp(18px,4vw,44px)}header{display:flex;align-items:center;justify-content:space-between;gap:16px}.brand{display:flex;gap:12px;align-items:center}.brand img{width:44px;height:44px}.brand strong{display:block;font-family:Georgia,serif;font-size:1.1rem}.brand span,.eyebrow,.meta{color:var(--muted);font-size:.82rem}.hero{padding:clamp(44px,9vw,92px) 0 36px;max-width:750px}.eyebrow{text-transform:uppercase;letter-spacing:.14em;color:var(--moss)}h1,h2,h3{font-family:Georgia,serif;line-height:1.08;margin:.35em 0}h1{font-size:clamp(2.5rem,8vw,5.5rem)}h2{font-size:clamp(1.8rem,5vw,3rem)}p{max-width:65ch}.primary,.secondary{border:0;border-radius:999px;padding:13px 20px;font-weight:750;cursor:pointer}.primary{background:var(--moss);color:#111a13}.secondary{background:transparent;color:var(--ink);border:1px solid var(--line)}.primary:focus-visible,.secondary:focus-visible,.lesson-card:focus-visible{outline:3px solid var(--warm);outline-offset:3px}.catalog-head{display:flex;align-items:end;justify-content:space-between;gap:14px;margin:28px 0 14px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(225px,1fr));gap:12px}.lesson-card{text-align:left;color:inherit;background:rgba(34,48,39,.8);border:1px solid var(--line);border-radius:16px;padding:18px;min-height:155px}.lesson-card:not([disabled]){cursor:pointer}.lesson-card:not([disabled]):hover{border-color:var(--moss);transform:translateY(-2px)}.lesson-card[disabled]{opacity:.62}.lesson-card h3{font-size:1.15rem}.lesson-number{color:var(--warm);font-size:.78rem;font-weight:800}.statu... [truncated]
     .onboarding-banner{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:16px 0}
+    #weekly-plan-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:16px 0}
+    #weekly-plan-card .objectives{margin:8px 0 0;padding-left:1.2em}
+    #weekly-plan-card .objectives li{margin:4px 0}
     .onboarding-banner-actions{display:flex;gap:8px;flex-shrink:0}
     .lesson-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
     .feedback-fab{position:fixed;right:18px;bottom:18px;z-index:40;border:0;border-radius:999px;padding:12px 18px;font-weight:750;cursor:pointer;background:var(--warm);color:#2a1a0c;box-shadow:0 4px 14px rgba(0,0,0,.35)}
@@ -36,6 +39,7 @@
       </section>
       <div class="hero"><div class="eyebrow">Your first evening at the tavern</div><h1>Pull up a chair.</h1><p>Sage is waiting on the porch. Start with ten calm minutes: meet your guitar, tune it, and make your first sound.</p><button class="primary" id="start-l01" type="button">Begin Lesson 1</button></div>
       <section class="step" id="performance-rail" aria-live="polite">Loading your performance ladder...</section>
+      <section class="step" id="weekly-plan-card" aria-live="polite">Loading your weekly practice plan...</section>
       <div class="catalog-head"><div><div class="eyebrow">The path ahead</div><h2>25 lessons, one song at a time</h2></div><div class="status" id="catalog-status" role="status">Loading your lessons...</div></div>
       <div class="grid" id="lesson-grid" aria-live="polite"></div>
     </section>
@@ -137,6 +141,84 @@
     if (isComplete()) {
       try { localStorage.removeItem(BANNER_DISMISSED_KEY); } catch (e) { /* non-fatal */ }
     }
+  </script>
+  <script type="module">
+    // T1.5 — renders the weekly practice plan card on the home view.
+    // There is no persisted general PracticeStore wired into the shell yet
+    // (T1.4 handoff), so we construct a fresh, empty one each load; that
+    // means getOrGenerateWeeklyPlan realistically always takes the
+    // 'no-data' path today. Rendering must never break the rest of the
+    // home view (lesson grid, performance rail) if anything here throws.
+    import { getOrGenerateWeeklyPlan } from "./core/weeklyPlan.js";
+    import { PracticeStore } from "./core/practiceStore.js";
+    import { getProfile } from "./core/learnerProfile.js";
+
+    function dayLineText(day) {
+      var label = day && day.day ? day.day : "";
+      var bits = [];
+      if (day && day.drill) bits.push(day.drill);
+      var reason = day && (day.why || day.reason);
+      if (reason) bits.push(reason);
+      if (day && day.chord) bits.push("Chord: " + day.chord);
+      if (!bits.length && day && day.lessonId) bits.push("Next up: " + day.lessonId);
+      return (label ? label + " — " : "") + (bits.length ? bits.join(" — ") : "Practice time");
+    }
+
+    function renderWeeklyPlanCard() {
+      var card = document.getElementById("weekly-plan-card");
+      if (!card) return;
+      try {
+        var store = new PracticeStore({ currentTeacherId: "T1" });
+        var plan = getOrGenerateWeeklyPlan(store, getProfile());
+        card.textContent = "";
+
+        var eyebrow = document.createElement("span");
+        eyebrow.className = "lesson-number";
+        eyebrow.textContent = "Weekly practice plan";
+        card.appendChild(eyebrow);
+
+        if (plan && plan.source === "weak-pairs") {
+          var h3 = document.createElement("h3");
+          h3.textContent = plan.headline || "Your week ahead";
+          card.appendChild(h3);
+
+          var ul = document.createElement("ul");
+          ul.className = "objectives";
+          (plan.days || []).forEach(function (day) {
+            var li = document.createElement("li");
+            li.textContent = dayLineText(day);
+            ul.appendChild(li);
+          });
+          card.appendChild(ul);
+        } else {
+          var h3b = document.createElement("h3");
+          h3b.textContent = "Your week ahead";
+          card.appendChild(h3b);
+
+          var p = document.createElement("p");
+          p.className = "meta";
+          p.textContent = "Your personalized week will build up as you complete lessons — for now, here's what's next.";
+          card.appendChild(p);
+
+          var days = (plan && plan.days) || [];
+          if (days.length) {
+            var ul2 = document.createElement("ul");
+            ul2.className = "objectives";
+            days.forEach(function (day) {
+              var li2 = document.createElement("li");
+              li2.textContent = dayLineText(day);
+              ul2.appendChild(li2);
+            });
+            card.appendChild(ul2);
+          }
+        }
+      } catch (e) {
+        console.warn("weekly-plan-card: render failed, hiding card", e);
+        card.hidden = true;
+      }
+    }
+
+    renderWeeklyPlanCard();
   </script>
   <script src="./app.js"></script>
   <script>
