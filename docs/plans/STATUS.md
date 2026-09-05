@@ -132,8 +132,9 @@ available yet; Tier 0's code is done, see above)
 
 1. **Free tier scope.** Current code: tuner + metronome + L1 only. Recommendation
    in the redline: free through the Lesson 5 performance. — *undecided*
-2. **T1.5 renewal feature:** (a) weekly practice plan [recommended] /
-   (b) weekly new song / (c) scored challenges. — *undecided*
+2. **T1.5 renewal feature:** **decided (2026-09-05, owner) — (a) weekly
+   practice plan.** Cheapest to build, reuses adaptivePlan.js (T1.2), no
+   licensing exposure. Do not build (b) or (c).
 3. **Acquisition channel.** YouTube is the standing suggestion. — *undecided*
 4. **Under-13 policy:** support with parental consent, or exclude from paid. — *undecided*
 5. **Static host** for Tier 0: **decided — GitHub Pages.** Deploy itself is
