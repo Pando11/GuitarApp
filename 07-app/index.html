@@ -10,23 +10,61 @@
   <title>GuitarApp - Emerald Hollow</title>
   <style>
     :root{color-scheme:dark;--ink:#f2efe3;--muted:#b8c1b5;--forest:#17231b;--panel:#223027;--moss:#9fb56c;--warm:#d69b5b;--line:#3b4b40}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 80% 0,#344233 0,transparent 38%),linear-gradient(#17231b,#101713);color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}button{font:inherit}.shell{width:min(100%,1080px);margin:auto;padding:clamp(18px,4vw,44px)}header{display:flex;align-items:center;justify-content:space-between;gap:16px}.brand{display:flex;gap:12px;align-items:center}.brand img{width:44px;height:44px}.brand strong{display:block;font-family:Georgia,serif;font-size:1.1rem}.brand span,.eyebrow,.meta{color:var(--muted);font-size:.82rem}.hero{padding:clamp(44px,9vw,92px) 0 36px;max-width:750px}.eyebrow{text-transform:uppercase;letter-spacing:.14em;color:var(--moss)}h1,h2,h3{font-family:Georgia,serif;line-height:1.08;margin:.35em 0}h1{font-size:clamp(2.5rem,8vw,5.5rem)}h2{font-size:clamp(1.8rem,5vw,3rem)}p{max-width:65ch}.primary,.secondary{border:0;border-radius:999px;padding:13px 20px;font-weight:750;cursor:pointer}.primary{background:var(--moss);color:#111a13}.secondary{background:transparent;color:var(--ink);border:1px solid var(--line)}.primary:focus-visible,.secondary:focus-visible,.lesson-card:focus-visible{outline:3px solid var(--warm);outline-offset:3px}.catalog-head{display:flex;align-items:end;justify-content:space-between;gap:14px;margin:28px 0 14px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(225px,1fr));gap:12px}.lesson-card{text-align:left;color:inherit;background:rgba(34,48,39,.8);border:1px solid var(--line);border-radius:16px;padding:18px;min-height:155px}.lesson-card:not([disabled]){cursor:pointer}.lesson-card:not([disabled]):hover{border-color:var(--moss);transform:translateY(-2px)}.lesson-card[disabled]{opacity:.62}.lesson-card h3{font-size:1.15rem}.lesson-number{color:var(--warm);font-size:.78rem;font-weight:800}.statu... [truncated]
+    .onboarding-banner{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:16px 0}
+    .onboarding-banner-actions{display:flex;gap:8px;flex-shrink:0}
+    .lesson-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    .feedback-fab{position:fixed;right:18px;bottom:18px;z-index:40;border:0;border-radius:999px;padding:12px 18px;font-weight:750;cursor:pointer;background:var(--warm);color:#2a1a0c;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+    .feedback-fab:focus-visible{outline:3px solid var(--moss);outline-offset:3px}
+    .feedback-panel{position:fixed;right:18px;bottom:70px;z-index:41;width:min(88vw,320px);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+    .feedback-panel h3{margin-top:0;font-size:1rem}
+    .feedback-options{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+    .feedback-options button{padding:10px 8px;font-size:.85rem}
+    #feedback-text{width:100%;background:var(--forest);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px;font:inherit;resize:vertical}
+    .feedback-panel-actions{display:flex;justify-content:flex-end;margin-top:10px}
   </style>
 </head>
 <body>
   <main class="shell">
     <section id="home-view">
       <header><div class="brand"><img src="./icons/icon.svg" alt=""><div><strong>GuitarApp</strong><span>Emerald Hollow</span></div></div><span class="meta">World 1</span></header>
+      <section id="onboarding-banner" class="onboarding-banner" hidden role="region" aria-label="Getting to know you">
+        <span>New here? Tell Sage a little about you — takes about 30 seconds.</span>
+        <span class="onboarding-banner-actions">
+          <button class="secondary" id="onboarding-start" type="button">Get started</button>
+          <button class="secondary" id="onboarding-skip" type="button">Skip</button>
+        </span>
+      </section>
       <div class="hero"><div class="eyebrow">Your first evening at the tavern</div><h1>Pull up a chair.</h1><p>Sage is waiting on the porch. Start with ten calm minutes: meet your guitar, tune it, and make your first sound.</p><button class="primary" id="start-l01" type="button">Begin Lesson 1</button></div>
       <section class="step" id="performance-rail" aria-live="polite">Loading your performance ladder...</section>
       <div class="catalog-head"><div><div class="eyebrow">The path ahead</div><h2>25 lessons, one song at a time</h2></div><div class="status" id="catalog-status" role="status">Loading your lessons...</div></div>
       <div class="grid" id="lesson-grid" aria-live="polite"></div>
     </section>
     <section id="lesson-view" class="lesson-view" data-lesson-view hidden aria-labelledby="lesson-title">
-      <div class="lesson-top"><button class="secondary" id="back-home" type="button">Back to the path</button><span class="meta" id="lesson-time"></span></div>
+      <div class="lesson-top">
+        <button class="secondary" id="back-home" type="button">Back to the path</button>
+        <span class="meta" id="lesson-time"></span>
+        <button class="secondary" id="lesson-done" type="button">Mark lesson complete</button>
+      </div>
       <article id="lesson-content"></article>
     </section>
   </main>
   <div class="report-note" id="report-note" role="status" hidden></div>
+  <button class="feedback-fab" id="feedback-fab" type="button" hidden aria-haspopup="dialog" aria-expanded="false" aria-controls="feedback-panel">Feedback</button>
+  <section class="feedback-panel" id="feedback-panel" role="dialog" aria-label="Send feedback" hidden>
+    <h3>What's going on?</h3>
+    <div class="feedback-options" id="feedback-options">
+      <button type="button" class="secondary" data-reason="confusing">Confusing</button>
+      <button type="button" class="secondary" data-reason="too-fast">Too fast</button>
+      <button type="button" class="secondary" data-reason="too-slow">Too slow</button>
+      <button type="button" class="secondary" data-reason="broke">Something broke</button>
+    </div>
+    <label for="feedback-text" class="meta">Anything else? (optional)</label>
+    <textarea id="feedback-text" rows="2"></textarea>
+    <div class="feedback-panel-actions">
+      <button type="button" class="secondary" id="feedback-close">Close</button>
+    </div>
+    <p class="meta" id="feedback-thanks" hidden>Thanks — that's logged.</p>
+  </section>
   <script src="./core/backupButtons.js"></script>
   <script src="./core/lesson-runner.js"></script>
   <script src="./core/wave1-flow.js"></script>
@@ -36,6 +74,65 @@
     import { PracticeStore } from "./core/practiceStore.js";
     window.GuitarApp = window.GuitarApp || {};
     window.GuitarApp.__encryptedSync = Object.assign({}, pb, sm, { PracticeStore });
+  </script>
+  <script type="module">
+    // T0.7 — wires T0.4's learner profile and T0.6's telemetry into the shell.
+    // Kept as its own module (rather than folded into the classic inline
+    // script below) so ES-module import ordering is guaranteed; the classic
+    // script only ever reaches into window.GuitarApp.Telemetry lazily, inside
+    // event handlers that fire well after this module has finished loading.
+    import { isComplete } from "./core/learnerProfile.js";
+    import * as telemetry from "./core/telemetry.js";
+
+    window.GuitarApp = window.GuitarApp || {};
+    window.GuitarApp.Telemetry = telemetry;
+
+    telemetry.log("app_open");
+    telemetry.installUnloadFlush();
+
+    // Log onboarding_complete exactly once, the first time we observe a
+    // complete profile (covers both "just finished onboarding.html" and
+    // "profile was already complete from a previous visit").
+    var ONBOARDING_LOGGED_KEY = "guitarapp.telemetry.onboardingLogged.v1";
+    try {
+      if (isComplete() && !localStorage.getItem(ONBOARDING_LOGGED_KEY)) {
+        telemetry.log("onboarding_complete");
+        localStorage.setItem(ONBOARDING_LOGGED_KEY, "1");
+      }
+    } catch (e) { /* non-fatal */ }
+
+    // Non-blocking onboarding banner: shown until the profile is complete or
+    // the learner dismisses it. Never hides the lesson grid or Lesson 1 —
+    // onboarding and using the app are not mutually exclusive in Tier 0.
+    var BANNER_DISMISSED_KEY = "guitarapp.onboarding.bannerDismissed.v1";
+    var banner = document.getElementById("onboarding-banner");
+    function updateBannerVisibility() {
+      if (!banner) return;
+      var dismissed = false;
+      try { dismissed = !!localStorage.getItem(BANNER_DISMISSED_KEY); } catch (e) { /* non-fatal */ }
+      banner.hidden = isComplete() || dismissed;
+    }
+    updateBannerVisibility();
+    var onboardingStart = document.getElementById("onboarding-start");
+    var onboardingSkip = document.getElementById("onboarding-skip");
+    if (onboardingStart) {
+      onboardingStart.addEventListener("click", function () {
+        window.location.href = "./onboarding.html";
+      });
+    }
+    if (onboardingSkip) {
+      onboardingSkip.addEventListener("click", function () {
+        try { localStorage.setItem(BANNER_DISMISSED_KEY, "1"); } catch (e) { /* non-fatal */ }
+        updateBannerVisibility();
+      });
+    }
+    // Returning from onboarding.html (or completing the profile some other
+    // way) should clear the dismissal so a future incomplete profile can
+    // show the banner again; cheapest correct place to reconcile is here,
+    // each load.
+    if (isComplete()) {
+      try { localStorage.removeItem(BANNER_DISMISSED_KEY); } catch (e) { /* non-fatal */ }
+    }
   </script>
   <script src="./app.js"></script>
   <script>
@@ -47,6 +144,14 @@
       var status=document.getElementById("catalog-status");
       var performanceRail=document.getElementById("performance-rail");
       var LESSON_UNLOCK_COUNT=5; // Wave 1 first slice
+      var currentLessonState=null; // {id, index, completed}
+
+      function telemetry(){return (window.GuitarApp && window.GuitarApp.Telemetry) || null;}
+      function logEvent(name, opts){
+        var t=telemetry();
+        if(!t)return;
+        try{t.log(name, opts||{});}catch(e){/* telemetry must never break the lesson flow */}
+      }
 
       function esc(value){var node=document.createElement("span");node.textContent=String(value==null?"":value);return node.innerHTML;}
       function lessonNumber(index){return "Lesson "+String(index+1).padStart(2,"0");}
@@ -59,8 +164,13 @@
         document.getElementById("lesson-time").textContent=(model.estimatedMinutes||10)+" minutes";
         document.getElementById("home-view").hidden=true;
         document.getElementById("lesson-view").hidden=false;
+        var feedbackFab=document.getElementById("feedback-fab");
+        if(feedbackFab)feedbackFab.hidden=false;
+        currentLessonState={id:model.lessonId||("lesson-"+index), index:index, completed:false};
+        logEvent("lesson_start", {lessonId:currentLessonState.id});
         window.scrollTo(0,0);
       }
+
 
       function renderCatalog(){
         grid.innerHTML="";
@@ -89,12 +199,114 @@
         renderPerformanceRail();
       }
 
-      function home(){document.getElementById("lesson-view").hidden=true;document.getElementById("home-view").hidden=false;renderPerformanceRail();window.scrollTo(0,0);}
+      function home(){
+        document.getElementById("lesson-view").hidden=true;
+        document.getElementById("home-view").hidden=false;
+        var feedbackFab=document.getElementById("feedback-fab");
+        if(feedbackFab)feedbackFab.hidden=true;
+        closeFeedbackPanel();
+        if(currentLessonState && !currentLessonState.completed){
+          logEvent("lesson_abandon", {lessonId:currentLessonState.id});
+        }
+        currentLessonState=null;
+        renderPerformanceRail();
+        window.scrollTo(0,0);
+      }
+
+      function markLessonComplete(){
+        if(!currentLessonState)return;
+        currentLessonState.completed=true;
+        logEvent("lesson_complete", {lessonId:currentLessonState.id});
+      }
 
       document.getElementById("start-l01").addEventListener("click",function(){openLesson(0);});
       document.getElementById("back-home").addEventListener("click",home);
 
-      window.addEventListener("guitarapp:self-report",function(event){var note=document.getElementById("report-note");note.textContent=event.detail&&event.detail.value==="got"?"Nice. Keep that relaxed feeling.":"No rush. Try the step once more.";note.hidden=false;clearTimeout(note._timer);note._timer=setTimeout(function(){note.hidden=true;},2600);});
+      window.addEventListener("guitarapp:self-report",function(event){
+        var note=document.getElementById("report-note");
+        var value=event.detail&&event.detail.value;
+        note.textContent=value==="got"?"Nice. Keep that relaxed feeling.":"No rush. Try the step once more.";
+        note.hidden=false;
+        clearTimeout(note._timer);
+        note._timer=setTimeout(function(){note.hidden=true;},2600);
+        if(currentLessonState&&value==="got"){
+          logEvent("lesson_step_complete",{lessonId:currentLessonState.id,payload:{stepIndex:currentStepIndex()}});
+        }
+      });
+
+      // Delegated, capture-phase listener: HTMLMediaElement "play" doesn't
+      // bubble, but capture still sees it on the way down from #lesson-content
+      // to the <audio> element, so this works without lesson-runner.js (which
+      // renders the <audio> tags) exposing any hook of its own.
+      var lessonContentEl=document.getElementById("lesson-content");
+      if(lessonContentEl){
+        lessonContentEl.addEventListener("play",function(event){
+          var target=event.target;
+          if(!target||target.tagName!=="AUDIO")return;
+          if(!currentLessonState)return;
+          logEvent("audio_play",{lessonId:currentLessonState.id,payload:{stepIndex:currentStepIndex(),src:target.currentSrc||target.getAttribute("src")||""}});
+        },true);
+      }
+
+      function currentStepIndex(){
+        var root=document.getElementById("lesson-content");
+        if(!root)return 0;
+        var steps=root.querySelectorAll(".step");
+        var best=0;
+        for(var i=0;i<steps.length;i++){
+          var rect=steps[i].getBoundingClientRect();
+          if(rect.top<=140)best=i;
+        }
+        return best;
+      }
+
+      var lessonDoneBtn=document.getElementById("lesson-done");
+      if(lessonDoneBtn)lessonDoneBtn.addEventListener("click",markLessonComplete);
+
+      // ---- Feedback (T0.7 step 3) ----------------------------------------
+      var feedbackFab=document.getElementById("feedback-fab");
+      var feedbackPanel=document.getElementById("feedback-panel");
+      var feedbackText=document.getElementById("feedback-text");
+      var feedbackThanks=document.getElementById("feedback-thanks");
+      var feedbackCloseBtn=document.getElementById("feedback-close");
+      var feedbackOptionsEl=document.getElementById("feedback-options");
+
+      function openFeedbackPanel(){
+        if(!feedbackPanel)return;
+        feedbackPanel.hidden=false;
+        if(feedbackFab)feedbackFab.setAttribute("aria-expanded","true");
+        if(feedbackThanks)feedbackThanks.hidden=true;
+        if(feedbackText)feedbackText.focus();
+      }
+      function closeFeedbackPanel(){
+        if(!feedbackPanel||feedbackPanel.hidden)return;
+        feedbackPanel.hidden=true;
+        if(feedbackFab){feedbackFab.setAttribute("aria-expanded","false");feedbackFab.focus();}
+      }
+      function submitFeedback(reason){
+        var note=feedbackText?feedbackText.value.trim():"";
+        var payload={reason:reason,stepIndex:currentStepIndex()};
+        if(note)payload.note=note.slice(0,500);
+        logEvent("feedback_submit",{lessonId:currentLessonState?currentLessonState.id:undefined,payload:payload});
+        if(feedbackText)feedbackText.value="";
+        if(feedbackThanks)feedbackThanks.hidden=false;
+        setTimeout(closeFeedbackPanel,1200);
+      }
+
+      if(feedbackFab)feedbackFab.addEventListener("click",function(){
+        if(feedbackPanel&&!feedbackPanel.hidden){closeFeedbackPanel();}else{openFeedbackPanel();}
+      });
+      if(feedbackCloseBtn)feedbackCloseBtn.addEventListener("click",closeFeedbackPanel);
+      if(feedbackOptionsEl)feedbackOptionsEl.addEventListener("click",function(event){
+        var btn=event.target.closest?event.target.closest("[data-reason]"):null;
+        if(!btn)return;
+        submitFeedback(btn.getAttribute("data-reason"));
+      });
+      // Escape closes the panel; this is a non-modal popover, so nothing else
+      // traps focus or blocks interaction with the rest of the page.
+      window.addEventListener("keydown",function(event){
+        if(event.key==="Escape"&&feedbackPanel&&!feedbackPanel.hidden)closeFeedbackPanel();
+      });
 
       function validateHTML(html){if(typeof html!=='string')return false;var dangerous=[/<script[\s\S]*?<\/script>/gi,/on\w+\s*=/gi,/<iframe/gi,/<object/gi,/<embed/gi];for(var i=0;i<dangerous.length;i++){if(dangerous[i].test(html))return false;}return true;}
 
