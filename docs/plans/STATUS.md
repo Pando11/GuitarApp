@@ -85,15 +85,23 @@ Facts learned while building Tier 0 that Tier 1's tasks should account for:
   before Tier 1 — Tier 1 doesn't require a public URL, only Tier 0's exit
   check does.
 
-## Tier 1 — Make the AI real — **BLOCKED (Tier 0)**
+## Tier 1 — Make the AI real — **IN PROGRESS** (started before Tier 0's exit
+check was fully met — owner's explicit call, since 5 friends aren't
+available yet; Tier 0's code is done, see above)
 
 | Task | Status | Notes |
 |------|--------|-------|
-| T1.1 Coaching service | TODO | |
-| T1.2 Adaptive planning | TODO | |
-| T1.3 Copy variants L01–L05 | TODO | |
-| T1.4 Client integration | TODO | |
+| T1.1 Coaching service | DONE | `server/`, no live-key smoke test yet (no `ANTHROPIC_API_KEY` set anywhere) |
+| T1.2 Adaptive planning | DONE | fixed a confidence-scale bug (0-1 vs 0-100) caught during integration with T1.1 |
+| T1.3 Copy variants L01–L05 | DONE | |
+| T1.4 Client integration | TODO | wires chatEngine.js/lesson-runner.js to the coaching service + adaptivePlan |
 | T1.5 Reason to renew | TODO | **decision not yet made** — see T1.5 options |
+
+**Not yet done, blocking a full end-to-end Tier 1 demo:** the coaching
+service has never made a real model call — no `ANTHROPIC_API_KEY` exists in
+this environment. Someone needs to supply one (in `server/.env`, gitignored)
+before `coach_served` telemetry or the prompt-cache-hit check can be verified
+for real, not just against a mocked SDK client.
 
 ## Tier 2 — Business — **BLOCKED (Tier 1)**
 
