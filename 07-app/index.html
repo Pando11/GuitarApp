@@ -88,6 +88,18 @@
   <script src="./core/backupButtons.js"></script>
   <script src="./core/lesson-runner.js"></script>
   <script src="./core/wave1-flow.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./service-worker.js").then(
+        function (reg) {
+          console.log("✓ Service Worker registered for offline lessons");
+        },
+        function (err) {
+          console.warn("Service Worker registration failed:", err);
+        }
+      );
+    }
+  </script>
   <script type="module">
     import * as pb from "./core/pocketbaseSync.js";
     import * as sm from "./core/studentMemorySync.js";
