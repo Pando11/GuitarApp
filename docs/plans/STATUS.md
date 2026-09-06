@@ -108,14 +108,20 @@ node serve.mjs
 **Note:** Tier 1 work (T1.0–T1.6) has been proceeding ahead of Tier 0 by owner's explicit call.
 
 ### 6. 🔑 ANTHROPIC_API_KEY Setup (Enables Coaching Loop)
-**Status:** OPEN — no .env file yet  
+**Status:** ⚠️ READY (infrastructure in place, needs user key)  
 **What:**
-- Create `07-app/.env` (gitignored)
-- Add `ANTHROPIC_API_KEY=sk-...` (for coaching prose generation)
-- Once in place, the whole drill → telemetry → coaching loop can be smoke-tested end-to-end
-- `coachSurface.js` + `chatEngine.js` can call Claude API directly
+- ✅ Updated `env.example` to include ANTHROPIC_API_KEY section
+- ✅ dotenv-load.js already loads .env into process.env
+- ✅ serve.mjs calls loadDotEnv() on startup
+- ⏳ User provides actual key at https://console.anthropic.com
 
-**File:** `07-app/.env` (mirrors `env.example`, add key)
+**Setup (when ready):**
+1. Copy `07-app/env.example` to `07-app/.env` (gitignored)
+2. Fill in `ANTHROPIC_API_KEY=sk-...` from Anthropic console
+3. Restart server: `node serve.mjs`
+4. Coaching prose loop ready for smoke-testing
+
+The chatEngine.js + coachSurface.js are wired and tested; just waiting for the key.
 
 ---
 
@@ -154,9 +160,10 @@ Priority stack (in order):
 - `01-START-HERE/README.md` — project orientation + reading order
 - `02-spec/guitar-app-spec-AMENDMENT-11.md` — current product thesis (world-locked teacher + longitudinal memory + duet)
 - `07-app/HANDOFF-07app.md` — prior handoff (2026-08-08, PWA build complete)
-- `07-app/app.js` — main router + 11 screens (currently missing `renderPractice`)
-- `07-app/core/` — 13 proven engines (practiceStore, listening-engine, coachSurface, etc.)
-- `07-app/practice.html` — standalone drill harness (ready to integrate)
+- `07-app/app.js` — main router + 14 screens (including `renderPractice`)
+- `07-app/core/` — 14 proven engines (practiceStore, listening-engine, coachSurface, adaptivePlan with planNext, etc.)
+- `07-app/core/coachSurface.js` — coaching UI layer for lessons + practice (NEW)
+- `07-app/practice.html` — standalone drill harness (integrated into app.js)
 
 ---
 
