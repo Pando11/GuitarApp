@@ -11,6 +11,9 @@ import { reply as chatReply } from './core/chatEngine.js';
 import { buildTomorrowPlan } from './core/adaptivePlan.js';
 import { readout as progressReadout } from './core/streaks.js';
 import { isDogfood, setDogfood } from './lib/dogfood.js';
+import { measureOneMinute } from './../06-prototypes/practice-engine/one-minute-changes.mjs';
+import { createFluencyStore } from './../06-prototypes/practice-engine/fluency-store.mjs';
+import { pairKey } from './../06-prototypes/practice-engine/pair-key.mjs';
 
 const app = new AppState();
 let CATALOG = { lessons: [], packs: [], teachers: [] };
@@ -47,7 +50,7 @@ const routes = {
   home: renderHome, lessons: renderLessons, tuner: renderTuner, metronome: renderMetronome,
   roster: renderRoster, chat: renderChat, plan: renderPlan, progress: renderProgress,
   band: renderBand, packs: renderPacks, upgrade: renderUpgrade, lesson: renderLesson,
-  teacherDetail: renderTeacherDetail
+  practice: renderPractice, teacherDetail: renderTeacherDetail
 };
 let stopActiveTuner = null;  // set by renderTuner; torn down when leaving the screen
 function navigate(route, params) {
@@ -90,7 +93,7 @@ function renderHome() {
   const grid = el('div', { class: 'quick-grid' });
   [['lessons', '📚 Lessons'], ['tuner', '🎯 Free Tuner'], ['metronome', '⏱ Metronome'],
    ['roster', '👤 Teachers'], ['chat', isPremium() ? '💬 Ask Teacher' : '💬 Ask Teacher (Pro)'],
-   ['plan', '🗺 Practice Plan'], ['progress', '🔥 ' + streak + '-day streak'], ['band', '🎸 Band']].forEach(([r, label]) => {
+   ['practice', '🎯 Practice Drills'], ['plan', '🗺 Practice Plan'], ['progress', '🔥 ' + streak + '-day streak'], ['band', '🎸 Band']].forEach(([r, label]) => {
     grid.appendChild(el('button', { class: 'quick', 'data-route': r, text: label }));
   });
   screen.appendChild(grid);
@@ -431,6 +434,132 @@ function renderBand() {
     }});
     screen.appendChild(playBtn);
     screen.appendChild(el('p', { class: 'muted', text: 'Loop: Em → A → D. The band adopts your last-practice tempo so it never snaps to a fixed click.' }));
+  });
+}
+
+function renderPractice() {
+  guardPremium('practice', async () => {
+    // Load the practice index to get available pairs
+    try {
+      const practiceIndex = await loadJson('./content/practice/index.json');
+      const knownPairs = practiceIndex.pairs.map(p => [p.a, p.b]);
+      const fluencyStore = createFluencyStore({ knownPairs, now: () => Date.now() });
+
+      screen.appendChild(el('h2', { text: 'Practice — 1-minute chord changes' }));
+      screen.appendChild(el('p', { class: 'sub', text: 'The 30/60 engine measures clean changes/min and remembers your weak chord pairs for spaced review.' }));
+
+      // Pair selector
+      const pairSelector = el('select');
+      practiceIndex.pairs.forEach((p, i) => {
+        const opt = el('option', { text: `${p.a} ↔ ${p.b}` });
+        opt.value = i;
+        pairSelector.appendChild(opt);
+      });
+
+      // Run drill button
+      const runBtn = el('button', { class: 'btn primary', text: '▶ Run 1-minute drill', onclick: () => {
+        const pairIdx = +pairSelector.value;
+        const p = practiceIndex.pairs[pairIdx];
+        // Simulate drill (no real listener yet)
+        const baseSkill = { Em:0.98, easyC:0.9, C:0.9, G:0.8, D:0.6, A:0.7, Am:0.5, E:0.75, Dm:0.4 };
+        const skill = Math.min(baseSkill[p.a] ?? 0.7, baseSkill[p.b] ?? 0.7);
+        const seed = Math.max(1, pairIdx);
+        const simulatedEvents = simulateDrill(p.a, p.b, skill, seed);
+        const result = measureOneMinute([p.a, p.b], simulatedEvents);
+        fluencyStore.record(pairKey(p.a, p.b), { ratePerMin: result.ratePerMin });
+        renderDrillResult(result, p);
+      }});
+
+      // Weak pair review button
+      const reviewBtn = el('button', { class: 'btn', text: '📋 Build weak-pair review (K=3)' });
+      reviewBtn.onclick = () => {
+        const weak = fluencyStore.selectWeakest(3);
+        if (!weak.length) {
+          alert('No weak pairs yet — run some drills!');
+          return;
+        }
+        renderWeakPairs(weak, fluencyStore);
+      };
+
+      const card1 = el('div', { class: 'card' }, [
+        el('label', { text: 'Pick a chord pair to drill' }),
+        pairSelector,
+        el('div', { class: 'row', style: 'margin-top: 12px' }, [runBtn, reviewBtn])
+      ]);
+      screen.appendChild(card1);
+
+      // Result card
+      const resultCard = el('div', { class: 'card', id: 'drillResult' });
+      screen.appendChild(resultCard);
+
+      // Weak pairs card
+      const weakCard = el('div', { class: 'card', id: 'weakPairs' });
+      screen.appendChild(weakCard);
+      renderWeakPairs(fluencyStore.selectWeakest(8), fluencyStore);
+
+      // Info card
+      const infoCard = el('div', { class: 'card' }, [
+        el('label', { text: 'All practice pairs generated from the 20-lesson spine' }),
+        el('p', { class: 'muted', text: `${practiceIndex.pairs.length} pairs across the curriculum ladder.` })
+      ]);
+      screen.appendChild(infoCard);
+
+      function renderDrillResult(result, pair) {
+        const card = document.getElementById('drillResult');
+        card.innerHTML = '';
+        card.appendChild(el('div', { class: 'stat' }, [
+          el('span', { text: 'Last drill rate' }),
+          el('span', { class: 'big', text: result.ratePerMin })
+        ]));
+        const pill = el('span', { class: 'pill' + (result.goal ? ' goal' : result.advance ? ' advance' : ' weak') });
+        pill.textContent = result.goal ? 'GOAL: 60/min reached' : result.advance ? 'ADVANCE: 30+/min' : 'keep practicing';
+        card.appendChild(pill);
+        const verdict = el('div', { class: 'verdict' });
+        verdict.innerHTML = result.advance
+          ? '<span style="color:var(--good)">Clean changes counted. Rate logged to fluency memory.</span>'
+          : '<span style="color:var(--bad)">Below 30/min — logged so this pair resurfaces in review.</span>';
+        card.appendChild(verdict);
+      }
+
+      function renderWeakPairs(weak, store) {
+        const card = document.getElementById('weakPairs');
+        card.innerHTML = '<label style="display:block; color:var(--mut); font-size:13px; margin:0 0 10px">Weakest pairs in memory (adaptive review queue)</label>';
+        const list = el('ul', { class: 'queue' });
+        if (!weak.length) {
+          list.appendChild(el('li', { text: 'Run drills to populate memory.' }));
+        } else {
+          weak.forEach(w => {
+            const flu = Math.round((w.fluency ?? 0) * 100);
+            const tag = flu < 35 ? 'weak' : flu < 70 ? '' : 'advance';
+            const li = el('li', { class: 'queue' }, [
+              el('span', { text: w.pair }),
+              el('span', { class: 'pill ' + tag, text: `fluency ${flu}%` })
+            ]);
+            list.appendChild(li);
+          });
+        }
+        card.appendChild(list);
+      }
+
+      function simulateDrill(X, old, skill, seed) {
+        let s = seed * 9301 + 49297;
+        const rnd = () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
+        const events = [];
+        let t = 0;
+        const N = Math.round(60 * (30 + skill * 35));
+        for (let i = 0; i < N; i++) {
+          t += 1000;
+          const flip = rnd() < 0.5;
+          const next = flip ? X : old;
+          const confident = rnd() < (0.55 + skill * 0.4);
+          events.push({ chord: next, confident, t });
+        }
+        return events;
+      }
+    } catch (e) {
+      console.error('Practice load failed:', e);
+      screen.appendChild(el('p', { text: 'Error loading practice content.' }));
+    }
   });
 }
 

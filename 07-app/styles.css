@@ -68,6 +68,16 @@ input[type=range] { width: 100%; }
 .upgrade, .paywall { text-align: center; background: var(--panel); border-radius: var(--radius); padding: 24px; margin-top: 20px; }
 .price { color: var(--accent2); font-size: 18px; font-weight: 700; margin: 8px 0; }
 
+.card { background: var(--panel); border-radius: var(--radius); padding: 16px; margin: 14px 0; }
+.queue { list-style: none; padding: 0; margin: 0; }
+.queue li { padding: 10px 12px; background: var(--panel2); border-radius: 10px; margin: 6px 0; display: flex; justify-content: space-between; }
+.pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 13px; font-weight: 600; }
+.pill.advance { background: rgba(90, 209, 122, 0.15); color: var(--ok); }
+.pill.goal { background: rgba(78, 161, 255, 0.18); color: var(--accent); }
+.pill.weak { background: rgba(255, 107, 107, 0.15); color: var(--danger); }
+.big { font-size: 42px; font-weight: 700; letter-spacing: 1px; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; }
+
 .dogfood-badge { background:#f5a623; color:#1a1206; font-size:11px; font-weight:700; padding:2px 8px; border-radius:999px; margin-left:8px; vertical-align:middle; }
 .dogfood-feedback { font-size:12px; margin-left:6px; color:#f5a623; }
 
