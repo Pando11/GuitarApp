@@ -41,13 +41,18 @@ broken; they just never came back together.
   `07-app/godot/assets/worlds/emerald-hollow/` (`.ogv` only). Godot reads the
   second. Deduplicating is a Wave 5 cleanup, not a blocker.
 
-### The freeze problem — read this or every agent will refuse the work
+### The freeze problem — RESOLVED 2026-09-06
 
-[`README.md`](README.md) § "What is explicitly frozen" currently lists **"Godot
+`README.md` § "What is explicitly frozen" and `CLAUDE.md` both listed **"Godot
 world shell, Emerald Hollow art production"** as frozen until Tier 2 ships, and
 the standard subagent prompt tells agents to report-and-stop if a task touches a
-frozen item. **Task W0.1 lifts that freeze.** Until W0.1 is committed, a
-correctly-behaving subagent will refuse every task in this file.
+frozen item — so a correctly-behaving subagent would have refused every task in
+this file. **The owner lifted that freeze on 2026-09-06 (W0.1, done).** Both
+lists are amended and you can dispatch against this tier.
+
+**The lift covers those two items only.** `band-engine.js` and Path A live duet
+are still frozen despite being adjacent to world work — do not touch either
+because the world is now in scope.
 
 ---
 
@@ -87,26 +92,17 @@ git push github boardroom/content-pipeline-recon-20260825
 
 **Acceptance:** `git ls-remote --heads github` lists all four branches.
 
-### W0.1 — Lift the Emerald Hollow freeze (OWNER SIGN-OFF REQUIRED)
+### W0.1 — Lift the Emerald Hollow freeze — **DONE 2026-09-06**
 
-`OWNS: docs/plans/README.md, docs/plans/STATUS.md`
+`OWNS: docs/plans/README.md, docs/plans/STATUS.md, CLAUDE.md`
 
-The owner decided on 2026-09-06 to unfreeze World 1. Record it, or every
-subagent below will correctly refuse to work.
+The owner signed off on unfreezing World 1 on 2026-09-06. Both frozen-scope
+lists were amended — `docs/plans/README.md` **and** `CLAUDE.md`, which carried
+its own copy of the list and would otherwise have kept blocking agents on its
+own. `STATUS.md` has a Tier W section.
 
-1. In `README.md` § "What is explicitly frozen", **remove** `Godot world shell`
-   and `Emerald Hollow art production` from the list. Add immediately below the
-   list:
-
-   > **Unfrozen 2026-09-06 (owner):** the Godot world shell and Emerald Hollow
-   > are now active work — see [`TIER-W-emerald-hollow.md`](TIER-W-emerald-hollow.md).
-   > Everything else in the list above remains frozen.
-
-2. In `STATUS.md`, add a `## Tier W — Emerald Hollow` section with the task
-   table from this file, all rows `TODO`.
-
-**Acceptance:** `grep -i "emerald hollow art production" docs/plans/README.md`
-returns nothing from the frozen list; STATUS.md has a Tier W section.
+Nothing further to do here. Recorded so a later session doesn't re-litigate it:
+the lift covers the Godot world shell and Emerald Hollow art production only.
 
 ---
 
