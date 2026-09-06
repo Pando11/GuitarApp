@@ -218,7 +218,7 @@ at the owner's direction.
 | Task | Status | Notes |
 |------|--------|-------|
 | W0.0 Push all branches to GitHub | DONE (2026-09-06) | the three local branches had never been pushed; 16 commits existed on one disk only |
-| W0.1 Lift the Emerald Hollow freeze | **TODO — owner sign-off required** | see the conflict noted below |
+| W0.1 Lift the Emerald Hollow freeze | DONE (2026-09-06) | owner signed off; lifted in both `README.md` and `CLAUDE.md`. Only the Godot world shell + Emerald Hollow art were unfrozen — everything else on that list still stands |
 | W1.1/W1.2 Run the world in Godot | TODO | needs Godot 4.7.x installed (O.1); not installed on this machine as of 2026-09-06 |
 | W2 Merge the world branch into main | DONE (2026-09-06) | commit `67305e2`, 825 files, +86,877 lines |
 | W3 Wire the world to a real lesson | TODO | |
@@ -241,12 +241,15 @@ branches were defective in different ways — and `07-app/core/chatEngine.test.m
 (32 assertions) was added to cover it. That test file is new coverage, not a
 port; it is the one place W2 went past a pure merge.
 
-**Unresolved contradiction after W2:** `README.md`'s "What is explicitly frozen"
-list still names *Godot world shell* and *Emerald Hollow art production*, but
-the world is now merged into main and the owner has directed work on it. Until
-W0.1 is signed off, that list and this tier disagree, and a correctly-behaving
-subagent will refuse Tier W tasks. Resolve W0.1 before dispatching any agent
-against this tier.
+**Freeze resolved 2026-09-06 (was blocking every task in this tier).** The
+"explicitly frozen" lists in `README.md` and `CLAUDE.md` both named the Godot
+world shell and Emerald Hollow art, which contradicted the world now being
+merged into `main`. A subagent following the orchestration contract would have
+refused every Tier W task. The owner signed off and both lists were amended.
+**Scope of the lift: those two items only.** `band-engine.js`, Path A live duet,
+Mystery Mode, song-from-hum, voice commands, jam session, style packs, and
+teachers T2/T3 all remain frozen — the first two are adjacent enough to world
+work to be mistaken for fair game.
 
 ## Tier 2 — Business — **BLOCKED (Tier 1)**
 

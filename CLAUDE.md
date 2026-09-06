@@ -21,9 +21,14 @@ Background on why the plan is shaped this way: `REDLINE-2026-09-05.md`.
   against 11 code commits. Record progress by editing `docs/plans/STATUS.md`.
 - **File ownership is enforced.** When running subagents in parallel, no two may
   write the same file in the same wave. See the orchestration contract.
-- **Frozen scope** until Tier 2 ships: Godot world shell, Emerald Hollow art,
-  Mystery Mode, song-from-hum, voice commands, jam session, band engine, style
-  packs, teachers T2/T3, Path A live duet, encrypted cross-device sync.
+- **Frozen scope** until Tier 2 ships: Mystery Mode, song-from-hum, voice
+  commands, jam session, band engine, style packs, teachers T2/T3, Path A live
+  duet, encrypted cross-device sync.
+- **Emerald Hollow is NOT frozen** (unfrozen 2026-09-06 by the owner). The Godot
+  world shell and Emerald Hollow art are active work — the world lives on `main`
+  under `07-app/godot/` and the plan is `docs/plans/TIER-W-emerald-hollow.md`.
+  Note that `band-engine.js` and Path A live duet are still frozen even though
+  they sit adjacent to the world.
 - **Non-negotiables:** no camera or hand tracking; no copyrighted song content;
   the teacher cites stored numbers and never invents a musical diagnosis; audio
   never leaves the device; no API key ever ships to the client.

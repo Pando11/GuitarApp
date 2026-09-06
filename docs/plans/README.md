@@ -103,7 +103,18 @@ Carried forward from the project's existing rules — do not silently break thes
 ### What is explicitly frozen
 
 Do not build, extend, or refactor these until Tier 2 has shipped, no matter how
-tempting the adjacency: Godot world shell, Emerald Hollow art production,
-Mystery Mode, song-from-hum, voice commands, jam session, band engine, style
-packs (blues/country), teachers T2 and T3, Path A live duet, encrypted
-cross-device sync. If a task seems to need one of them, it doesn't — report it.
+tempting the adjacency: Mystery Mode, song-from-hum, voice commands, jam
+session, band engine, style packs (blues/country), teachers T2 and T3, Path A
+live duet, encrypted cross-device sync. If a task seems to need one of them, it
+doesn't — report it.
+
+> **Unfrozen 2026-09-06 (owner).** The **Godot world shell** and **Emerald
+> Hollow art production** were on the list above and have been lifted off it.
+> They are active work — see [`TIER-W-emerald-hollow.md`](TIER-W-emerald-hollow.md).
+> The world was merged into `main` on 2026-09-06 (commit `67305e2`), so the
+> freeze contradicted the shipping tree.
+>
+> This lifts the freeze on **those two items only**. Everything still named in
+> the paragraph above remains frozen, including `band-engine.js` and Path A
+> live duet — both of which sit close enough to the world work to look fair
+> game. They are not.
