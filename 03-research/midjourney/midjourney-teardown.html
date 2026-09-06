@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Midjourney Teardown — GuitarApp (Reverse-Engineering, License Redline)</title>
+<style>
+  :root { --bg:#0d1117; --card:#161b22; --ink:#e6edf3; --mut:#8b949e; --red:#ff6b6b; --grn:#3fb950; --blu:#58a6ff; --bd:#30363d; }
+  * { box-sizing:border-box; }
+  body { font:15px/1.5 -apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--ink); margin:0; padding:24px; }
+  h1 { font-size:22px; margin:0 0 4px; } h2 { font-size:17px; margin:28px 0 8px; color:var(--blu); }
+  .sub { color:var(--mut); margin:0 0 16px; }
+  .redline { border:1px solid var(--red); background:#2d1418; color:#ffb3b3; padding:12px 14px; border-radius:8px; margin:14px 0; }
+  .redline b { color:var(--red); }
+  .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+  .layer { background:var(--card); border:1px solid var(--bd); border-radius:8px; padding:12px; }
+  .layer h3 { margin:0 0 6px; font-size:15px; }
+  .layer ul { margin:0; padding-left:18px; color:var(--ink); }
+  .layer li { margin:3px 0; }
+  table { border-collapse:collapse; width:100%; margin:10px 0; }
+  th,td { border:1px solid var(--bd); padding:7px 9px; text-align:left; vertical-align:top; }
+  th { background:var(--card); color:var(--blu); }
+  .tag { display:inline-block; padding:1px 7px; border-radius:10px; font-size:12px; }
+  .bad { background:#2d1418; color:var(--red); } .ok { background:#11261a; color:var(--grn); }
+  .map { background:var(--card); }
+  footer { color:var(--mut); margin-top:26px; font-size:12px; }
+  code { background:#1f2630; padding:1px 5px; border-radius:4px; color:#ffd9a0; }
+</style>
+</head>
+<body>
+<h1>Midjourney — Reverse-Engineering Teardown</h1>
+<p class="sub">GuitarApp research · 2026-08-10 · product/UX teardown only (model is closed + ToS-forbidden to RE)</p>
+
+<div id="root"></div>
+
+<script>
+// ---- Schema-driven teardown (mirrors the app's data-driven renderer pattern) ----
+const TEARDOWN = {
+  verdict: "BLOCKED — closed-source, ToS forbids reverse engineering + competitive research, no commercial-embed license for a paid app.",
+  redline: [
+    "Official GitHub org (github.com/midjourney) has 16 repos — ALL are upstream OSS they fork (JAX/Flax/transformers/flash-attn/SageAttention). ZERO is the model. Nothing to clone (unlike Flux).",
+    "ToS (midjourney/docs, terms-of-service-discord.md): \"You may not use the Services for competitive research. You may not reverse engineer the Services or the Assets.\"",
+    "No public API. Paid tiers license YOUR outputs commercially — not a model license. You cannot embed their generator in a paid product."
+  ],
+  layers: [
+    { name:"1 · Content Model", items:[
+      "No JSON schema — prompt + CLI flags (--ar, --s, --c, --v, --style, --cref, --sref, --seed, --no).",
+      "Job → 4-image grid (latent batch) → per-image asset id.",
+      "Asset = image URL + job id + seed + params. No lesson/content schema.",
+      "Consistency via --cref (char ref) + --sref (style ref) — the teacher-relevant pattern."
+    ]},
+    { name:"2 · Delivery Model", items:[
+      "Discord-first: /imagine → 4-grid with U1–U4 (upscale) + V1–V4 (vary).",
+      "Web app for organize/edit/pan-zoom/redo/editorial remix.",
+      "Loop: imagine → upscale → vary → pan → redo → editor.",
+      "NO curriculum / progression / teaching layer — it is a generator, not a product."
+    ]},
+    { name:"3 · Platform / Build", items:[
+      "Closed latent-diffusion, trained on Google TPUs, no open-source, no model card.",
+      "Delivery: Discord bot + React-ish web app on their GPUs.",
+      "Their GitHub = OSS forks (JAX/Flax/transformers/flash-attn) — they USE open foundations; only the model is private.",
+      "Architecture dims UNVERIFIED (closed weights) — flagged, not asserted."
+    ]}
+  ],
+  moat: "MJ's gap for us: closed, non-embeddable, ToS-locked, NO teaching layer. Steal the UX (variation grid, upscale/vary loop, --cref consistency, stylization control) — supply the lesson sequencing + verified fingering MJ will never have. That absence is our moat.",
+  map: [
+    ["Image generation", "FLUX.1[schnell] (server-side cloud GPU)", "Apache-2.0", "ok"],
+    ["Character consistency", "AssetJob.conditioning.characterJsonRef + styleAnchor", "schema", "ok"],
+    ["Talking/video teacher", "TalkingHead (MIT) + RPM  ·or·  Wan2.1 / LTX-Video / Mochi", "MIT / Apache-2.0", "ok"],
+    ["Voice", "Chatterbox (MIT)", "MIT", "ok"],
+    ["Editing/consistency", "Qwen-Image", "Apache-2.0", "ok"],
+    ["Midjourney (the model)", "NOT ADOPTABLE — closed + ToS + no embed license", "BLOCKED", "bad"]
+  ]
+};
+
+function render(t){
+  const r = document.getElementById('root');
+  let h = '';
+  h += '<div class="redline"><b>🔴 VERDICT: '+t.verdict+'</b><ul>';
+  t.redline.forEach(function(x){ h += '<li>'+x+'</li>'; });
+  h += '</ul></div>';
+  h += '<h2>Three-layer teardown</h2><div class="grid">';
+  t.layers.forEach(function(l){
+    h += '<div class="layer"><h3>'+l.name+'</h3><ul>';
+    l.items.forEach(function(i){ h += '<li>'+i+'</li>'; });
+    h += '</ul></div>';
+  });
+  h += '</div>';
+  h += '<h2>The gap = our moat</h2><div class="layer">'+t.moat+'</div>';
+  h += '<h2>Legal substitution (binding — do not re-decide)</h2>';
+  h += '<table class="map"><tr><th>MJ capability</th><th>Legal OSS substitute</th><th>License</th><th></th></tr>';
+  t.map.forEach(function(row){
+    const cls = row[3]==='ok' ? 'ok' : 'bad';
+    const lbl = row[3]==='ok' ? 'ALLOWED' : 'BLOCKED';
+    h += '<tr><td>'+row[0]+'</td><td>'+row[1]+'</td><td><code>'+row[2]+'</code></td><td><span class="tag '+cls+'">'+lbl+'</span></td></tr>';
+  });
+  h += '</table>';
+  h += '<footer>Source-verified: gh api orgs/midjourney (16 OSS-fork repos, 0 model) · midjourney/docs ToS raw · Wikipedia. Artifact runs offline (file://), no external fetches.</footer>';
+  r.innerHTML = h;
+}
+render(TEARDOWN);
+// expose for the Node DOM-mock test harness
+if (typeof window !== 'undefined') window.__TEARDOWN__ = TEARDOWN;
+</script>
+</body>
+</html>

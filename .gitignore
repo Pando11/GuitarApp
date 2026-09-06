@@ -1,8 +1,24 @@
+# Secrets — never commit
+server/.env
+.env
+
+# Node / tooling noise
 node_modules/
+*.log
+.DS_Store
+
+# Session scratch
+.order-sandbox/
+
+# Python
+__pycache__/
+*.pyc
+
+# Godot import cache (regenerated on import)
+.godot/
 
 # Uncompressed audio masters (shipped audio is transcoded .m4a; see scripts/transcode-audio.mjs)
 07-app/audio/_masters/
-
 
 # PocketBase runtime (dev)
 pocketbase-dev/pocketbase.exe
@@ -11,7 +27,3 @@ pocketbase-dev/pb_data/
 pocketbase-dev/pb_server.log
 pocketbase-dev/CHANGELOG.md
 pocketbase-dev/LICENSE.md
-
-# Secrets — never commit
-server/.env
-.env

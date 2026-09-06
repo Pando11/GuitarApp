@@ -1,0 +1,16 @@
+[gd_scene load_steps=4 format=3 uid="uid://blessonguitaraap1"]
+
+[ext_resource type="Script" path="res://lesson/LessonScene.gd" id="1_lesson"]
+[ext_resource type="PackedScene" uid="uid://boverlayfingeraap2" path="res://lesson/FingeringOverlay.tscn" id="2_overlay"]
+
+[node name="LessonScene" type="Node2D"]
+script = ExtResource("1_lesson")
+
+[node name="VideoStreamPlayer" type="VideoStreamPlayer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+
+[node name="FingeringOverlay" parent="." instance=ExtResource("2_overlay")]

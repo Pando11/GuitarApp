@@ -1,0 +1,192 @@
+{
+  "lesson": {
+    "id": "PS42-song-style-louie-louie",
+    "title": "Practice: Song-style: Louie Louie",
+    "level": "beginner",
+    "lesson_type": "technique",
+    "category": "song",
+    "one_line_promise": "Drill the A / D / E loop until automatic.",
+    "objectives": [
+      "Run 1-minute change counts on every adjacent pair in the loop",
+      "Hit 30 clean changes/min, aim 60",
+      "Weak pairs resurface in review"
+    ],
+    "estimated_minutes": 8,
+    "practice_of": [
+      "S42-louie-louie"
+    ],
+    "engine": "one-minute-changes",
+    "chords_in_scope": [
+      "A",
+      "D",
+      "E"
+    ],
+    "pair": [
+      [
+        "A",
+        "D"
+      ]
+    ],
+    "prerequisites": [],
+    "app_feature_mapping": {
+      "free_metronome": [
+        "drill tempo"
+      ]
+    }
+  },
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted.",
+    "A": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "A major",
+      "frets": [
+        null,
+        0,
+        2,
+        2,
+        2,
+        0
+      ],
+      "fingers": [
+        null,
+        0,
+        1,
+        2,
+        3,
+        0
+      ],
+      "note": "Verified deterministically by chord-theory-check.js (2026-08-08) as A E C#."
+    },
+    "D": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "D major",
+      "frets": [
+        null,
+        null,
+        0,
+        2,
+        3,
+        2
+      ],
+      "fingers": [
+        null,
+        null,
+        0,
+        1,
+        3,
+        2
+      ],
+      "note": "Verified deterministically by chord-theory-check.js (2026-08-08) as D A F#."
+    },
+    "E": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "E major",
+      "frets": [
+        0,
+        2,
+        2,
+        1,
+        0,
+        0
+      ],
+      "fingers": [
+        0,
+        2,
+        3,
+        1,
+        0,
+        0
+      ],
+      "note": "Verified deterministically by chord-theory-check.js (2026-08-08) as E B G#."
+    }
+  },
+  "exercises": [
+    {
+      "id": "EX1-menu",
+      "name": "Warm-up: spider + Chord-Perfect",
+      "purpose": "Warm the hand, lock each voicing.",
+      "params": {
+        "drill": "spider-then-chord-perfect",
+        "chords": [
+          "A",
+          "D",
+          "E"
+        ]
+      },
+      "coaching": "Spider to warm up, then Chord-Perfect each chord in the loop.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-1min-A-D",
+      "name": "1-minute changes — A <-> D",
+      "practice_type": "one-minute-changes",
+      "purpose": "Count A <-> D in 60s.",
+      "params": {
+        "chord_pair": [
+          "A",
+          "D"
+        ],
+        "duration_sec": 60,
+        "measure": "count completed changes",
+        "canon_key": "A::D",
+        "target_per_min": 30,
+        "goal_per_min": 60
+      },
+      "coaching": "A to D, back and forth, as many clean changes as you can in a minute.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-1min-D-E",
+      "name": "1-minute changes — D <-> E",
+      "practice_type": "one-minute-changes",
+      "purpose": "Count D <-> E in 60s.",
+      "params": {
+        "chord_pair": [
+          "D",
+          "E"
+        ],
+        "duration_sec": 60,
+        "measure": "count completed changes",
+        "canon_key": "D::E",
+        "target_per_min": 30,
+        "goal_per_min": 60
+      },
+      "coaching": "D to E, back and forth, as many clean changes as you can in a minute.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-1min-E-A",
+      "name": "1-minute changes — E <-> A",
+      "practice_type": "one-minute-changes",
+      "purpose": "Count E <-> A in 60s.",
+      "params": {
+        "chord_pair": [
+          "E",
+          "A"
+        ],
+        "duration_sec": 60,
+        "measure": "count completed changes",
+        "canon_key": "A::E",
+        "target_per_min": 30,
+        "goal_per_min": 60
+      },
+      "coaching": "E to A, back and forth, as many clean changes as you can in a minute.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "Drill the loop behind \"Louie Louie\".",
+    "results": "Higher count than last time = learning.",
+    "wrap": "Logged to fluency memory."
+  },
+  "qa_block": {
+    "must_verify": [
+      "schema validate",
+      "1:1 pairing (practice_of)",
+      "chords_in_scope == loop chords"
+    ],
+    "flagged_by": "founder",
+    "verifier_role": "arithmetic + schema",
+    "guitarist_signoff": "NOT REQUIRED"
+  }
+}

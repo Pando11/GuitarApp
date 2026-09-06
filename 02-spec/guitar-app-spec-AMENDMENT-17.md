@@ -1,6 +1,10 @@
 # 02-spec/guitar-app-spec-AMENDMENT-17.md
 
-**Status:** RATIFIED (2026-09-02 by owner Heidi; Grill #4 direction accepted)
+**Status:** RATIFIED (2026-08-29 by owner Heidi; the Grill #4 direction is also recorded as accepted
+by the owner on 2026-09-02) — was proposed Grill #4 2026-08-23. Ratified with one change: World 1
+creation routes through the `world-building-prompt` skill (produce the L2→L5 Emerald Hollow world
+brief first; the FLUX→Wan2.2→Chatterbox→Godot pipeline consumes it). Animated-character source
+decided inside that skill run (L5 character sheet), not pre-decided here.
 **Supersedes:** nothing (new amendment; builds on AMENDMENT-11 product thesis)
 **Latest word:** AMENDMENT-16 (PocketBase backend) remains current on backend;
 AMENDMENT-15 (curriculum re-sequence + ordering gate) remains current on curriculum;
@@ -160,13 +164,17 @@ means the teacher is always there in that world. Not a pop-up for performances o
 
 The performance ladder uses one recurring song across Level 1, Level 2, and Level 3. The song's
 chords must ALL be taught by Lesson 25 (they are — the 25-lesson curriculum teaches F at L17 and A7
-at L19, so all 10 song-progression songs are within the taught set per AMENDMENT-13). The
-song-progression gate (`node tools/verify-song-progressions.js`) enforces this. House of the Rising
-Sun is public domain (unrestricted); the other 9 need the "not affiliated / not endorsed"
-disclaimer where relevant (AMENDMENT-12/14).
+at L19, so all 11 song-progression songs are within the taught set per AMENDMENT-13). The
+song-progression gate (`node tools/verify-song-progressions.js`) enforces this. Two of the 11 are
+fully public domain (SP06 House of the Rising Sun, SP11 Amazing Grace); the other 9 need the
+"not affiliated / not endorsed" disclaimer on the select card + reveal (AMENDMENT-12/14).
 
-**Open:** Which exact recurring song should the ladder use? The structure is now decided; the title is
-still a ticket-phase choice.
+**Resolved 2026-09-02 by owner** (see `docs/adr/0004-the-teacher-world-1-emerald-hollow.md`):
+the recurring ladder song is the simple **Em→C first song**.
+
+**Open:** at Level 3, does the student pick from the full 11-song catalog, or a smaller "you know
+these chords" subset curated for the performance moment? Not decided — see tickets. This is a
+question about the Level 3 band moment only; it does not reopen the recurring-song decision above.
 
 ### How the teacher extends the invitation (Rule 5)
 
@@ -306,10 +314,11 @@ scene files + character rig + FLUX stills for the owner to open in Godot.
 
 ## Open items (resolve in tickets phase)
 
-1. **Choose the exact lesson ID for Level 2** — Level 1 is now fixed at the end of Lesson 5.
-   Level 2 stays open inside the ratified ~10–12 range.
-2. **Choose the recurring performance song** — the same song returns at Level 1, Level 2, and the
-   Level 3 crowd moment.
+1. **Choose the exact lesson ID for Level 2** — Level 1 is fixed at the end of Lesson 5; Level 2
+   stays open inside the ratified ~10–12 range. Map against the 25-lesson AMENDMENT-15 curriculum.
+   Hermes + owner. (The recurring performance song is no longer open — resolved 2026-09-02 to the
+   Em→C first song; see "Song constraint at Level 3" above.)
+2. **Level 3 song pick scope** — full 11-song catalog or curated subset?
 3. **Level 3 band composition** — owner's picture (bass + drums + teacher on second guitar) is the
    starting point. Is the band pre-built per song or assembled by the app?
 4. **Animated character source** — hand-authored Godot rig vs AI-generated stills+motion (FLUX+Wan)

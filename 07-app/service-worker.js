@@ -15,7 +15,7 @@
  * The real SW passed verify-sw-cache.mjs (4/0 ✅) per HANDOFF.md 2026-08-16. That truth is intact; the file is not.
  */
 
-const CACHE = "guitarapp-v4";  // ← BUMP THIS on every content change
+const CACHE = "guitarapp-v5";  // ← BUMP THIS on every content change
 
 const PRECACHE_URLS = [
   "./",
@@ -24,6 +24,10 @@ const PRECACHE_URLS = [
   "./app.js",
   "./core/backupButtons.js",
   "./icons/icon.svg",
+  "./core/chatEngine.js",
+  "./core/chord-theory-check.js",
+  "./core/asset-job.js",
+  "./core/entitlementStore.js",
   "./content/lessons/manifest.json",
 ];
 

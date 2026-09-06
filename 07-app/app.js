@@ -382,6 +382,14 @@
     console.log("[app] chat: " + message);
   }
 
+  // ── PWA shell hardening (A2.1) ────────────────────────────────────────────
+  //
+  // The shell is the app: there is no separate index.html to register the SW or
+  // link the manifest, so app.js owns both. Everything here is file://-tolerant
+  // and ?dogfood=1-tolerant: a failure (e.g. SW unsupported on file://) MUST
+  // never hard-block the lesson. dogfood is a URL param only (works on file://
+  // and localhost) — there is no server-only guard that could break boot.
+
   function linkManifest() {
     try {
       if (typeof document === "undefined") return;
@@ -398,6 +406,8 @@
   function registerServiceWorker() {
     try {
       if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return;
+      // Service workers require a secure context (https or localhost). On file://
+      // registration throws — that's expected, not an error. The app still runs.
       if (typeof location !== "undefined" && location.protocol === "file:") {
         console.warn("[app] service worker skipped on file:// (unsupported); app still works");
         return;
@@ -412,6 +422,9 @@
     }
   }
 
+  // BI-8: mount the always-visible "Got it" / "Not yet" buttons on a lesson view.
+  // Delegates to core/backupButtons.js (loaded as a non-module <script> before or
+  // after this file). Never throws if backupButtons is absent or root is missing.
   function mountBackupButtons(rootEl, opts) {
     try {
       const bb = global.GuitarApp && global.GuitarApp.BackupButtons;
@@ -775,6 +788,7 @@
     loadPractice,
   };
 
+  // ── Boot (runs only in a real browser; no-op under node) ───────────────────
   if (typeof document !== "undefined") {
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", boot);

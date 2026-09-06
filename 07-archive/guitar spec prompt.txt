@@ -1,0 +1,48 @@
+You are to produce a single, buildable product spec for a guitar-learning app. Do NOT just summarize the ideas below — make hard decisions, cut features, and force tradeoffs. Your job is to act as a ruthless product lead, not a yes-machine. If an idea is technically risky, say so plainly. If the scope is too big for a first version, cut it and tell me what I'm losing.
+
+=== ORIGINAL CONCEPT (from user) ===
+An app where video lessons act as the "teacher," the student replays the lesson, and an AI listens via the phone microphone and gives real-time pitch/timing/rhythm feedback. Fully AI, no human teachers. Target: both absolute beginners and intermediate players stuck on a plateau.
+
+=== COMPETITIVE LANDSCAPE (verified by web research) ===
+Audio-based pitch/timing feedback is now table stakes, shipped by at least 5 real products:
+- Yousician (+ AI coach "June", chat-based) — 20M combined MAU with GuitarTuna; GuitarTuna free tuner is the top-of-funnel (180M downloads)
+- Gibson App — listens via mic, performance reports, ~1M learners, rated most feature-complete but smallest distribution
+- Simply Guitar — 10M+ downloads, family-friendly
+- Fender Play — 2.5M downloads, bundled with guitar hardware purchases
+- JustinGuitar — 1,400 free lessons, organic/SEO only
+Microsoft has demonstrated AI guitar-tutor prototypes. Nobody in this set does camera-based hand/posture technique analysis as a core feature — that is the genuine open gap (reviewers consistently say these apps "can't see why something sounds wrong").
+
+=== PRICING BAND (verified) ===
+Market converged at $10–20/mo or ~$90–150/yr. Yousician runs constant 50%-off promos. No competitor charges a premium tier for technique/posture correction specifically.
+
+=== COST MODEL (verified, architecture-dependent) ===
+Audio-only + on-device pitch detection: ~$0.50–1.50/user/mo (LLM coaching + CDN). Very healthy margin.
+Camera technique analysis: cheap ONLY if hand-pose runs on-device (MediaPipe Hands — 21 3D landmarks/hand, real-time on CPU, handles self-occlusion; academic precedent for guitar chord recognition + 3D fingering-quality scoring). Fine-grained pressure/wrist-angle coaching ("apply more pressure," "thumb causing buzz") is still open research needing custom training on labeled data — NOT off-the-shelf.
+Real-time jam: JackTrip Virtual Studio API, per-musician-minute ($0.29–0.67/musician-hour, ~$11.20/session at 20 people, ~$135/mo at 3x/week). Jamulus is free software but you own the ops. Latency threshold ~30ms; local/same-city reliable, cross-country loose-only.
+
+=== FULL FEATURE LIST PROPOSED (do NOT ship all of these — prioritize) ===
+Core: video lessons, mic pitch/timing feedback (on-device), camera hand-tracking, chord-shape correction, adaptive curriculum, micro-practice loops, long-term technique-health tracking.
+Personalization: song-based learning, on-demand AI arrangement of any named song, woven-in ear-training, memory/voice-memo coach.
+Social: streaks/gamification, recital clip sharing, async duets, living AI backing band, scheduled live jam sessions (rotating 4–8 "stage" players, breakout rooms, AI host, staggered time zones).
+Fun extras: story-driven campaigns (boss-battle songs), AI-composed personal song, genre remix, auto "then vs now" reels, mood-based practice suggestions, selectable animated teacher avatars.
+
+=== USER'S STATED POSITION ===
+- Fully AI, no humans.
+- Loves the live community jam concept (user personally attends Friday jams at their lessons and finds it the most motivating part).
+- Real target = 1,000 engaged monthly users, NOT millions. At $10–15/mo that's $120K–180K/yr — a sustainable small business.
+- Acquisition without third-party partnerships: free tuner + free metronome as the funnel front door, plus content/ASO/community-led growth, treating retention itself as marketing.
+
+=== WHAT I NEED FROM YOU ===
+
+RED LINE RULE — READ THIS FIRST AND OBEY IT:
+Do NOT yes-man me. Do NOT agree with my ideas to be agreeable. Your explicit job is to redline this — name the real weaknesses, the technically immature bets, the scope that will kill the project, and where my own stated preferences conflict with the evidence. Disagree with me wherever the research doesn't support me. I would rather hear "this part is dumb and here's why" than "fantastic idea." If you find yourself writing "this is a great idea" or any variant, delete it and write the critique instead. Be blunt, specific, and cite the numbers above when you push back. A yes-man answer is a failed answer.
+
+Now deliver:
+1. A PHASED ROADMAP (v1 → v2 → v3) with explicit cuts. v1 must be shippable by a lean team without outside funding and must reach the 1,000-engaged-user bar. State what each version deliberately does NOT include and why.
+2. For v1 specifically: the smallest feature set that is NOT a me-too clone of Yousician/Gibson, plus the technical approach (on-device vs server) for each piece.
+3. The honest risk call: the camera technique moat is the differentiator but also the riskiest bet. Tell me whether to put it in v1, run it as a parallel research spike, or defer — with reasoning. Push back on my jam-session priority if you think it's wrong.
+4. A validation step: 5–10 questions to ask real guitar students BEFORE any code is written.
+5. One paragraph naming the single hardest tradeoff you had to make and what it costs me.
+6. Your single highest-confidence recommendation for what to build first, and your single biggest concern about the whole concept.
+
+Be direct. Challenge the user's assumptions where the evidence doesn't support them. No "fantastic idea" fluff. No flattery.

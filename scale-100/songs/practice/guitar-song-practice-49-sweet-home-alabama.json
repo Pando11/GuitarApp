@@ -1,0 +1,234 @@
+{
+  "lesson": {
+    "id": "PS49-song-style-sweet-home-alabama",
+    "title": "Practice: Song-style: Sweet Home Alabama",
+    "level": "beginner",
+    "lesson_type": "technique",
+    "category": "song",
+    "one_line_promise": "Drill the G / D / easyC / A loop until automatic.",
+    "objectives": [
+      "Run 1-minute change counts on every adjacent pair in the loop",
+      "Hit 30 clean changes/min, aim 60",
+      "Weak pairs resurface in review"
+    ],
+    "estimated_minutes": 8,
+    "practice_of": [
+      "S49-sweet-home-alabama"
+    ],
+    "engine": "one-minute-changes",
+    "chords_in_scope": [
+      "G",
+      "D",
+      "easyC",
+      "A"
+    ],
+    "pair": [
+      [
+        "G",
+        "D"
+      ]
+    ],
+    "prerequisites": [],
+    "app_feature_mapping": {
+      "free_metronome": [
+        "drill tempo"
+      ]
+    }
+  },
+  "chords": {
+    "_schema": "strings ordered low E (6) to high e (1). frets: null = muted/not played, 0 = open. fingers: 0 = open, 1 = index, 2 = middle, 3 = ring, 4 = pinky, null = muted.",
+    "G": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "G major",
+      "frets": [
+        3,
+        2,
+        0,
+        0,
+        0,
+        3
+      ],
+      "fingers": [
+        2,
+        1,
+        0,
+        0,
+        0,
+        3
+      ],
+      "note": "Verified deterministically by chord-theory-check.js (2026-08-08) as G B D."
+    },
+    "D": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "D major",
+      "frets": [
+        null,
+        null,
+        0,
+        2,
+        3,
+        2
+      ],
+      "fingers": [
+        null,
+        null,
+        0,
+        1,
+        3,
+        2
+      ],
+      "note": "Verified deterministically by chord-theory-check.js (2026-08-08) as D A F#."
+    },
+    "easyC": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "C major (Lauren's 'easy C' — 2-finger reduction)",
+      "frets": [
+        null,
+        3,
+        2,
+        0,
+        null,
+        0
+      ],
+      "fingers": [
+        null,
+        3,
+        2,
+        0,
+        null,
+        0
+      ],
+      "note": "Verified deterministically by chord-theory-check.js (2026-08-08) as C E G."
+    },
+    "A": {
+      "qa_status": "verified-by-theory-check-2026-08-08",
+      "name": "A major",
+      "frets": [
+        null,
+        0,
+        2,
+        2,
+        2,
+        0
+      ],
+      "fingers": [
+        null,
+        0,
+        1,
+        2,
+        3,
+        0
+      ],
+      "note": "Verified deterministically by chord-theory-check.js (2026-08-08) as A E C#."
+    }
+  },
+  "exercises": [
+    {
+      "id": "EX1-menu",
+      "name": "Warm-up: spider + Chord-Perfect",
+      "purpose": "Warm the hand, lock each voicing.",
+      "params": {
+        "drill": "spider-then-chord-perfect",
+        "chords": [
+          "G",
+          "D",
+          "easyC",
+          "A"
+        ]
+      },
+      "coaching": "Spider to warm up, then Chord-Perfect each chord in the loop.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-1min-G-D",
+      "name": "1-minute changes — G <-> D",
+      "practice_type": "one-minute-changes",
+      "purpose": "Count G <-> D in 60s.",
+      "params": {
+        "chord_pair": [
+          "G",
+          "D"
+        ],
+        "duration_sec": 60,
+        "measure": "count completed changes",
+        "canon_key": "D::G",
+        "target_per_min": 30,
+        "goal_per_min": 60
+      },
+      "coaching": "G to D, back and forth, as many clean changes as you can in a minute.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-1min-D-easyC",
+      "name": "1-minute changes — D <-> easyC",
+      "practice_type": "one-minute-changes",
+      "purpose": "Count D <-> easyC in 60s.",
+      "params": {
+        "chord_pair": [
+          "D",
+          "easyC"
+        ],
+        "duration_sec": 60,
+        "measure": "count completed changes",
+        "canon_key": "C::D",
+        "target_per_min": 30,
+        "goal_per_min": 60
+      },
+      "coaching": "D to easyC, back and forth, as many clean changes as you can in a minute.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-1min-easyC-A",
+      "name": "1-minute changes — easyC <-> A",
+      "practice_type": "one-minute-changes",
+      "purpose": "Count easyC <-> A in 60s.",
+      "params": {
+        "chord_pair": [
+          "easyC",
+          "A"
+        ],
+        "duration_sec": 60,
+        "measure": "count completed changes",
+        "canon_key": "A::C",
+        "target_per_min": 30,
+        "goal_per_min": 60
+      },
+      "coaching": "easyC to A, back and forth, as many clean changes as you can in a minute.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    },
+    {
+      "id": "EX2-1min-A-G",
+      "name": "1-minute changes — A <-> G",
+      "practice_type": "one-minute-changes",
+      "purpose": "Count A <-> G in 60s.",
+      "params": {
+        "chord_pair": [
+          "A",
+          "G"
+        ],
+        "duration_sec": 60,
+        "measure": "count completed changes",
+        "canon_key": "A::G",
+        "target_per_min": 30,
+        "goal_per_min": 60
+      },
+      "coaching": "A to G, back and forth, as many clean changes as you can in a minute.",
+      "qa_status": "verified-by-theory-check-2026-08-08"
+    }
+  ],
+  "avatar_coaching_copy": {
+    "intro": "Drill the loop behind \"Sweet Home Alabama\".",
+    "results": "Higher count than last time = learning.",
+    "wrap": "Logged to fluency memory."
+  },
+  "qa_block": {
+    "must_verify": [
+      "schema validate",
+      "1:1 pairing (practice_of)",
+      "chords_in_scope == loop chords"
+    ],
+    "flagged_by": "founder",
+    "verifier_role": "arithmetic + schema",
+    "guitarist_signoff": "NOT REQUIRED"
+  }
+}

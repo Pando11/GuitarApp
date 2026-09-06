@@ -8,15 +8,35 @@ Auto-loaded project context. Also read `01-START-HERE/README.md` before acting.
 > Do not create new handoff/phase/summary markdown files — update
 > `docs/plans/STATUS.md` instead.
 
-<!-- BEGIN mattpocock/skills — added 2026-08-21 (MIT, see skills/LICENSE). Revert: delete this block through EOF. -->
+<!-- BEGIN world-1-pointers (added 2026-08-29; updated 2026-09-06 at the world/app merge) -->
+## World 1 (Emerald Hollow) — where to find everything
+Before building/creating World 1 assets, read these files (all committed):
+- **World brief (owner's directions):** `brand-references/worlds/world-brief-emerald-hollow-L1.md`
+- **RunPod access (start pod, Jupyter proxy, model paths):** `brand-references/worlds/RUNPOD-ACCESS.md`
+- **Asset-pipeline BUILD SPEC (what to build, verified gaps):** `brand-references/worlds/WORLD-1-BUILD-SPEC.md`
+- **Next-conversation handoff (build order + first action):** `NEXT-CONVERSATION-WORLD1.md`
+- **Current plan for the world:** `docs/plans/TIER-W-emerald-hollow.md`
+
+Models (FLUX.1[schnell] + Wan2.2-I2V-A14B) are downloaded on pod `xgcitppkl4lcm9`,
+volume `6nvscrbt2s` @ `/workspace`. Pod was STOPPED 2026-08-29 — restart via
+RUNPOD-ACCESS.md before generating anything new.
+
+**Asset status (corrected 2026-09-06):** the "0 world assets produced yet" line that
+stood here is out of date. Stage 4 shipped three Theora clips
+(`B00_walkin.ogv`, `B01_meetsage.ogv`, `B02_twoshot.ogv`), four Emerald Hollow stills,
+and five Chatterbox voice takes under `07-app/godot/assets/worlds/emerald-hollow/`.
+The Godot project plays them today via the `W1-coldopen` entry in
+`07-app/godot/data/lesson_manifest.json`. Per-lesson assets
+(`assets/lessons/L01-open-c.mp4`) are still ungenerated — that gap is real.
+<!-- END world-1-pointers -->
+
+<!-- BEGIN mattpocock/skills — added 2026-08-24 (MIT, see skills/LICENSE). Revert: delete this block through EOF. -->
 ## Agent skills
 
 ### Issue tracker
-GitHub Issues (owner: Pando11). See `docs/agents/issue-tracker.md`.
-### Triage labels
-Five canonical roles (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+Local markdown under `.scratch/`. Wayfinder maps live at `.scratch/<effort>/map.md`; tickets at `.scratch/<effort>/issues/NN-<slug>.md`. See `docs/agents/issue-tracker.md`.
 ### Domain docs
-Single-context: `CONTEXT.md` (root) + `docs/adr/`. See `docs/agents/domain.md`.
+Single-context: `CONTEXT.md` (root glossary) + `docs/adr/`. See `docs/agents/domain.md`.
 <!-- END mattpocock/skills -->
 
 ## Hard rules
@@ -32,11 +52,18 @@ Single-context: `CONTEXT.md` (root) + `docs/adr/`. See `docs/agents/domain.md`.
    AMENDMENT-09 (Wan2.1-I2V motion + Godot story-world), AMENDMENT-10 (AI-drawn fingers/fretboards
    PERMITTED), and **AMENDMENT-11 (2026-08-11 — the product thesis: world-locked teacher +
    longitudinal student memory + teacher–student duet, with redlines)** are current truth.
-   **AMENDMENT-17 (2026-09-02 ratified — World 1 teacher Sage + first performance ladder) is the latest word.**
+   **AMENDMENT-18 (2026-08-29 — RATIFIED — Fun-Delivers-Learning: goal = "I learned to
+   play and it was fun"; six build items BI-1..BI-6; de-risk vertical slice tested on real
+   beginners first) is the latest word.** AMENDMENT-17 (RATIFIED — World 1 = Emerald Hollow
+   + teacher Sage + performance ladder + Path B duet v1; World creation routes through the
+   world-building-prompt skill) remains current on World 1; it is dated 2026-08-29 here and
+   2026-09-02 in `docs/adr/0004-the-teacher-world-1-emerald-hollow.md`, which records the
+   owner's ratification of the same direction. AMENDMENT-16 (2026-08-16 — PocketBase replaces
+   Supabase as the backend; MIT, self-hosted, no recurring fee) remains current on backend.
    **AMENDMENT-15 (2026-08-14) — CURRICULUM RE-SEQUENCE + ORDERING GATE.** F moved L24→L17,
    A7 L25→L19, and three absolute-beginner lessons (holding-the-pick, switching-Em-and-C,
    first-three-chord-song) pulled from after the L20 capstone to L2/L6/L9 where they belong;
-   capstone now LAST at L25. All 10 song `unlock_after_lesson` values recomputed (F→L17,
+   capstone now LAST at L25. All 11 song `unlock_after_lesson` values recomputed (F→L17,
    A7→L19). New permanent gate `node tools/verify-curriculum-order.js` (0 errors) enforces
    filename/manifest/id triple-agreement, no-forward-prereqs, pedagogical ordering invariants,
    capstone-last, and no-absolute-beginner-after-graduate; proven to bite by
@@ -57,7 +84,7 @@ Single-context: `CONTEXT.md` (root) + `docs/adr/`. See `docs/agents/domain.md`.
    **AMENDMENT-13 (2026-08-14) — MYSTERY-MODE READINESS GATE.** Mystery Mode is an opt-in
    ADVANCED lane for students already in the program; a song may only be offered once every
    chord it uses has been taught. The curriculum now has 25 lessons (17 teaches F, 19 teaches
-   A7 — per the AMENDMENT-15 re-sequence), so all ten progressions are fully within the taught set.
+   A7 — per the AMENDMENT-15 re-sequence), so all 11 progressions are fully within the taught set.
    equal the last-taught chord's lesson; `tools/verify-song-progressions.js` enforces this and
    re-derives the prereq map from the lesson manifest, so it cannot drift.
    **AMENDMENT-14 (2026-08-14) — HOSTILE-REVIEW CORRECTIONS. Read this before touching the

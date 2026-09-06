@@ -37,7 +37,27 @@ export const PERSONA = {
 };
 
 export const PRACTICE_TERM = /guitar|chord|strum|string|fret|practice|lesson|finger|tune|tuning|metronome|teacher|pick|buzz|tone|tempo|barre|drill|scale|fretboard|chord chart|play|playing/i;
-export const CHORD_NAME = /\b([A-G])(#|b)?(maj|min|m|dim|aug|sus|add|7|9|11|13)?\b/i;
+// Chord detection. Two rules, and they exist for different reasons:
+//
+//   1. A and B need an accidental or a quality suffix ("Am", "A7", "Bb").
+//      A bare case-insensitive "a" would otherwise match the English article
+//      and drag every off-topic message ("can you write a poem") past
+//      isOnTopic(). C-G have no such collision, so their suffix is optional.
+//   2. Qualities may be compound: "m7", "maj7", "sus4" — not just "m" or "7".
+//
+// Resolved at the 2026-09-06 world/app merge, where the two branches disagreed.
+// The 06-prototypes/step6 form enforced rule 1 but not rule 2 (it rejects
+// "Am7"); the 07-app form enforced rule 2 but not rule 1 (it accepts "a").
+// This form enforces both. Covered by chatEngine.test.mjs.
+// The trailing guard is a lookahead, not \b: a name can legally end in "#"
+// ("A#"), and \b will not anchor between "#" and end-of-string.
+const CHORD_QUALITY = "(?:(?:maj|min|m|dim|aug|sus|add)\\d{0,2}|\\d{1,2})";
+const CHORD_END = "(?![A-Za-z0-9#])";
+export const CHORD_NAME = new RegExp(
+  `\\b[C-G](?:#|b)?${CHORD_QUALITY}?${CHORD_END}` +
+    `|\\b[AB](?:(?:#|b)${CHORD_QUALITY}?|${CHORD_QUALITY})${CHORD_END}`,
+  "i"
+);
 export const OFFTOPIC_SUBJECT = /stock|invest|investing|price|market|football|soccer|sport|sports|rent|landlord|weather|climate|politics|election|news|recipe|movie|film|tv|show|game|video game|friend|friends|work|job|boss|doctor|health|crypto|bitcoin|money|bank|loan|tax|stock price/i;
 export const PROGRESS_Q = /how (am|are|is) (i|we|my|things)|my progress|am i improving|how('?s| is) it going/i;
 export const COMMAND_VERB = /\b(write|code|script|program|build|create|compose|translate|summarize|calculate|compose|draw|generate|design a|make me a)\b/i;

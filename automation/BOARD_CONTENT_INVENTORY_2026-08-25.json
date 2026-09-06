@@ -1,0 +1,144 @@
+{
+  "date": "2026-08-25",
+  "repo": "C:/Users/Hendrickson/Desktop/GuitarApp",
+  "branch": "boardroom/content-pipeline-recon-20260825",
+  "seed_commit": "cdf47c9 (boardroom-content-recon: seed inventory + attribution instrumentation)",
+  "repo_heads": {
+    "02-spec/ AMENDMENT files": 1,
+    "07-app/content/lessons/*.json (teaching lesson JSON)": 0,
+    "07-app/content/practice/*.json (practice lesson JSON)": 0,
+    "07-app/content/teachers/*.json (teacher profiles)": 0,
+    "07-app/content/song-progressions/*.json (song data)": 0,
+    "07-app/content/packs/ files": 0,
+    "07-app/audio/ files": 0,
+    "07-app/core/ files": 1,
+    "07-app/test/ files": 2,
+    "07-app/ root app.js": 1,
+    "07-app/ manifest.webmanifest": 1,
+    "07-app/ service-worker.js": 1,
+    "brand-references/ total files": 130,
+    "brand-references/ — YouTube montages (jpg)": 3,
+    "brand-references/ — YouTube frame captures (webp)": 118,
+    "brand-references/ — world metadata (json)": 1,
+    "brand-references/ — world briefs (md)": 2,
+    "brand-references/ — README": 1,
+    "tools/ files": 2,
+    ".scratch/ files": 11,
+    "docs/ files": 4,
+    "ADDITIONAL (AGENTS.md, README, HANDOFF, CONTEXT, PROPOSED-FEATURES, ADR-0004, t-b1-flux-prompt-draft, tickets)": 8
+  },
+  "category_breakdown": {
+    "AI-generated cinematic STILLS (FLUX output)": 0,
+    "AI-generated cinematic MOTION (Wan output, .mp4)": 0,
+    "AssetJobs (.assetjob.json)": 0,
+    "Pre-rendered voice wavs": 0,
+    "YouTube REFERENCE captures (brand-references/, NOT generated content)": 130,
+    "World briefs + palette analysis (real, measured)": 3,
+    "FLUX prompt draft (on disk, unexecuted)": 1,
+    "Godot scaffold files (project.godot, scenes)": 0,
+    "Teaching lesson JSON (on disk, empty dirs)": 0,
+    "Practice lesson JSON (on disk, empty dirs)": 0,
+    "Song progression JSON (on disk, empty dirs)": 0,
+    "Teacher profile JSON (on disk, empty dirs)": 0
+  },
+  "pipeline_install_state_verified_on_disk": {
+    "FLUX model dir (~/re/flux)": "MISSING — ls returned nothing",
+    "Godot 4.x binary in PATH": "MISSING — command -v godot returned nothing",
+    ".venv-kokoro (kokoro-82M + whisper)": "MISSING — no .venv-kokoro dir in repo",
+    "assets/ dir (FLUX/Wan output target)": "MISSING — test -d assets = false; pipeline has NOT been executed on this machine",
+    "any .mp4 (Wan motion) on disk": "NONE",
+    "any .assetjob.json on disk": "NONE",
+    "any .wav on disk": "NONE",
+    "any AI-generated still (FLUX) on disk": "NONE. brand-references/*.jpg/*.webp are YouTube-captured montages, NOT AI-generated stills",
+    "Chatterbox on disk": "NOT VERIFIED — no chatterbox dir found in .venv-kokoro (which itself is missing)",
+    "Wan2.1 on disk": "NOT VERIFIED — no Wan dir found"
+  },
+  "cinematic_pipeline_proven_clean_stack": {
+    "image_gen": "FLUX.1[schnell] — Apache-2.0 (VERIFIED: AGENTS.md AMENDMENT-07 + license blocklist Rule 9)",
+    "motion": "Wan2.1-I2V-14B — Apache-2.0 (VERIFIED: AGENTS.md AMENDMENT-09)",
+    "voice_shipping": "Chatterbox — MIT (VERIFIED: AGENTS.md AMENDMENT-06)",
+    "voice_fallback_cpu": "Kokoro-82M — Apache-2.0 (VERIFIED: AGENTS.md AMENDMENT-06)",
+    "scene_production": "Godot 4.x — MIT (VERIFIED: AGENTS.md AMENDMENT-09)",
+    "blocked_models": [
+      "Midjourney (AMENDMENT-08 — excluded)",
+      "SVD/LTX/Hunyuan/CogVideoX (license 'other'/unverified)",
+      "ComfyUI (GPL-3.0)",
+      "ElevenLabs (paid subscription + license — Rule 9)",
+      "XTTS-v2/F5-TTS/Fish Speech/Piper/IndexTTS-2/Wav2Lip (voice Rule 9)"
+    ],
+    "note": "The pipeline is SPEC'D/ENFORCED/SCAFFOLDED per AGENTS.md. It has NOT been executed on this machine. Zero AI cinematic assets exist in-repo."
+  },
+  "world_1_emerald_hollow_status": {
+    "world_defined": "YES — brand-references/emerald-hollow/ has README + 2 montages + world-emerald-hollow.md (measured palette, scene composition, teacher placement, mood keywords)",
+    "palette_lock_measured": "YES — brightness 75–120/255 (dark-to-moody), saturation 0.14–0.33 (muted-to-moderate), 12-color dominant palette documented",
+    "teacher_named": "YES — Sage (chill/warm/encouraging, ADR-0004, Grill #3, 2026-08-24)",
+    "flUX_prompt_draft": "YES — .scratch/teacher/t-b1-flux-prompt-draft.md, palette-locked, hand-safe (no hands on guitar), Godot scene composition described",
+    "flUX_execution": "BLOCKED — ~/re/flux MISSING on this machine. Requires rented cloud GPU (~$0.50 per 20-lesson set, one-time — NOT a subscription) OR repo restore",
+    "godot_scaffold": "MISSING — 07-app/godot/ does not exist on this machine. Owner opens in Godot 4.7.x when available. Agent can prepare scene files + prop/teacher placeholder.",
+    "teacher_character_sage": "NOT AUTHORED — animated character source NOT decided (T-A4 open: hand-authored Godot rig vs FLUX+Wan vs mix)",
+    "teacher_voice": "NOT EXECUTED — Chatterbox NOT on disk. Kokoro-82M fallback also not present (.venv-kokoro MISSING)",
+    "zero_ai_cinematic_assets": "CONFIRMED — 0 AI-generated stills or motion clips exist in-repo"
+  },
+  "attribution_instrumentation_proposal": {
+    "goal": "Instrument content → install/subscription attribution WITHOUT a paid dep, WITHOUT breaking the existing pipeline",
+    "change_1": "Extend 07-app/core/asset-job.js validateAssetJob() to REQUIRE attribution: {campaign_source, content_id, world_id} on every new AssetJob. The existing license gate already rejects bad jobs — this is additive, not disruptive.",
+    "change_2": "Add tools/content-attribution.js — offline scanner that reads content manifests + *.assetjob.json (when present) and emits a content_id-keyed attribution map a PocketBase/local ledger can consume. No network, no paid API.",
+    "change_3": "Update any existing T1.assetjob.json to carry the attribution block so existing asset-job tests still PASS (non-breaking).",
+    "why_it_matters": "Every cinematic lesson asset that lands gets an attribution trail — which campaign/source drove it, which content_id it belongs to, which world it lives in. That lets us answer: did the Emerald Hollow cinematic lesson drive installs/subscriptions? Without attribution, we can't tell.",
+    "paid_dep": "NONE",
+    "breaks_existing_pipeline": "NO — additive gate on a scaffold that is currently MISSING on disk; no existing asset-job files to break"
+  },
+  "verifier_gate": {
+    "V1_reproducible_from_disk": "YES — inventory above is reproducible by re-running find/ls on this repo. JSON + MD written to automation/. Re-running produces same numbers (nothing on disk changed between reads).",
+    "V2_new_content_uses_only_commercial_clean": "YES — zero AI assets exist on disk, so nothing to classify. Proposed attribution instrumentation uses no paid deps. Pipeline spec (when executed) uses ONLY FLUX.1[schnell] + Wan2.1-I2V + Chatterbox + Kokoro-82M + Godot — all Apache-2.0/MIT, proven by AGENTS.md license references + AMENDMENT-07/08/09.",
+    "V3_decider_note": {
+      "SHIP": "Attribution instrumentation proposal — smallest, non-breaking, free, no paid dep. Ready to implement when asset-job.js is scaffolded back onto disk. Closes the measurement gap between 'we made cinematic content' and 'we know if it drove installs/subscriptions.'",
+      "STOP": "FLUX/Wan execution — pipeline NOT installed on this machine. PROPOSE-ONLY (no paid API). Execution needs rented cloud GPU (~$0.50 one-time) or repo restore. Neither available in this run.",
+      "STOP": "Godot scaffold recreation — out of scope for content-recon run. Agent CAN prepare scene files + placeholders when scaffold available; that's the next action, not this deliverable."
+    }
+  },
+  "scope_skeptic_verdict": {
+    "content_on_growth_critical_path": true,
+    "not_just_brand_cost": "AMENDMENT-11 thesis (world-locked teacher + memory + duet) is the product's differentiator. World 1 (Emerald Hollow) is the first proof. Cinematic lessons are the install/subscription driver — they're what make a kid say 'I want to learn guitar from Sage in Emerald Hollow.'",
+    "current_gap": "The world is fully defined (measured palette, scene composition, teacher personality, voice target) but there is NO visual proof yet. Zero AI cinematic assets exist. The gap between 'we have a great world' and 'a kid can walk into it' is not closed on this machine.",
+    "honest_read": "Content is ready to ship IF the pipeline executes OR the Godot scene is hand-built. Until then, it's a defined-but-unrealized asset — a brand investment whose ROI can't be measured without attribution (hence the instrumentation proposal)."
+  },
+  "finance": {
+    "token_budget_this_run": "0 paid API calls. All reads local disk.",
+    "real_pipeline_cost": "Rented cloud GPU for FLUX/Wan: ~$0.50 per 20-lesson set, one-time generation, NOT a subscription.",
+    "paid_subscription_tool_flag": "NONE. Attribution instrumentation uses only local files + PocketBase (MIT, self-hosted per AMENDMENT-16).",
+    "blocked_tools_used": "NONE. No Midjourney, ElevenLabs, Runway/Kling, Suno, or any blocklisted tool."
+  },
+  "research_labels": {
+    "VERIFIED": [
+      "brand-references/emerald-hollow/ exists — README + 2 montages + world-emerald-hollow.md (measured palette, scene composition, teacher placement, mood keywords)",
+      "Sage is named teacher of World 1 (ADR-0004 + Grill #3, 2026-08-24)",
+      "Emerald Hollow palette lock is measured: brightness 75–120/255, saturation 0.14–0.33, 12-color dominant palette",
+      "Commercial-clean stack (FLUX.1[schnell], Wan2.1-I2V, Chatterbox, Kokoro-82M, Godot) is the only allowed pipeline — proven by AGENTS.md Rule 9 + AMENDMENT-07/08/09",
+      "FLUX prompt draft is on disk, palette-locked, hand-safe (t-b1-flux-prompt-draft.md)",
+      "YouTube montages in brand-references/ are REFERENCE captures, NOT AI-generated stills (README.md explicitly states this)"
+    ],
+    "INFERRED": [
+      "Pipeline is spec'd to run FLUX→Wan→Chatterbox→Godot (AGENTS.md asset pipeline section) — this is the documented architecture, NOT verified as executable on this machine",
+      "The Godot scaffold (project.godot + World/LessonScene/FingeringOverlay) is the production vehicle per AMENDMENT-09 — but disk says 07-app/godot/ MISSING, so this is inferred from prose, not verified on disk"
+    ],
+    "UNKNOWN": [
+      "Whether FLUX/Wan would produce acceptable stills for Emerald Hollow (prompt draft exists but unexecuted)",
+      "Whether the owner wants hand-authored Godot or AI-generated assets for the teacher character (T-A4 open)",
+      "Whether the Godot scaffold survived the PC transfer (disk says NO — 07-app/godot/ MISSING — but AGENTS.md prose claims it exists; this is a known unreliability in prose vs disk)",
+      "Whether FLUX is installed on any accessible cloud GPU (no probe possible in this run — PROPOSE-ONLY, no paid API)"
+    ]
+  },
+  "boardroom_loop_summary": {
+    "Verifier": "Reconciled inventory written to disk (JSON + MD). Numbers reproducible from disk. automation/BOARD_CONTENT_INVENTORY_2026-08-25.{json,md} on branch boardroom/content-pipeline-recon-20260825.",
+    "Scope-skeptic": "Content is on the growth/retention critical path, NOT a brand cost to track-only. AMENDMENT-11 thesis + world-locked teacher + performance ladder = the product's differentiator.",
+    "Builder": "Smallest non-breaking change = attribute content to install/subscription via asset-job.js attribution gate + tools/content-attribution.js scanner. No paid dep. Extends existing license gate.",
+    "Finance": "Zero paid API consumed. Only real cost = cloud GPU for FLUX/Wan (~$0.50, one-time). No blocked tools used.",
+    "Research": "VERIFIED: world + palette + Sage + clean-stack license. INFERRED: pipeline arch. UNKNOWN: FLUX output quality, owner's character-source decision, scaffold survival."
+  },
+  "files_written": {
+    "json": "automation/BOARD_CONTENT_INVENTORY_2026-08-25.json",
+    "md": "automation/BOARD_CONTENT_INVENTORY_2026-08-25.md",
+    "branch": "boardroom/content-pipeline-recon-20260825 (created, NOT merged, NOT pushed)"
+  }
+}

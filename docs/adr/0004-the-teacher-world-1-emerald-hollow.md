@@ -1,6 +1,10 @@
 # docs/adr/0004-the-teacher-world-1-emerald-hollow.md
 
-**Status:** ratified (2026-09-02 by owner Heidi; Grill #4 direction accepted)
+**Status:** RATIFIED (2026-08-29 by owner Heidi; the Grill #4 direction is also recorded as
+accepted by the owner on 2026-09-02) — was proposed Grill #4 2026-08-23. Ratified with the
+world-building-prompt routing change (see AMENDMENT-17). World 1 = Emerald Hollow (animated,
+palette locked), teacher = Sage, performance ladder (L1 porch ~5-6 / L2 village ~10-12 /
+L3 capstone L25 full band), Path B duet v1 / Path A roadmap — all locked as written.
 **Supersedes:** nothing (new ADR)
 **Related:** ADR-0001 (always-on encrypted sync), ADR-0002 (practice delivery),
 ADR-0003 (mystery mode), AMENDMENT-06 (avatar/voice unlock),
@@ -49,6 +53,8 @@ light, early-morning damp atmosphere. Branded internally as **Emerald Hollow**.
 
 ### First teacher = Sage
 
+- **Name: Sage.** The chill, warm, encouraging instructor of Emerald Hollow (World 1). Named 2026-08-24
+  (Grill #3, Mystery Mode grill — Sage is the teacher across lessons, performances, AND mystery mode).
 - **Personality:** Chill, warm, encouraging — inherits the Grill #3 teacher-voice rule
   ("warm and encouraging, never clinical"). Praise the past win, soften the turn, invite the
   next step.
@@ -126,9 +132,14 @@ light, early-morning damp atmosphere. Branded internally as **Emerald Hollow**.
   to World 2+. We need to make sure the architecture supports adding worlds/teachers without
   rewriting World 1.
 - **Animated production is a build.** High-quality animated character + animated world in Godot
-  is real work. The asset pipeline (FLUX→Wan→Chatterbox→Godot) is spec'd but NOT RUN as of
-  2026-08-23 — no AI cinematic assets exist in-repo. The first proof will need either manual
-  animation assets or the pipeline executed (cloud GPU for FLUX/Wan).
+  is real work. **Updated 2026-09-06 (world/app merge):** the pipeline HAS been run for the
+  World 1 cold open — `07-app/godot/assets/worlds/emerald-hollow/` holds three Theora clips
+  (`B00_walkin`, `B01_meetsage`, `B02_twoshot`), four stills, and five Chatterbox voice takes,
+  and the Godot project plays them via the `W1-coldopen` manifest entry. The earlier
+  "NOT YET RUN — no AI cinematic assets exist in-repo as of 2026-08-29" note is superseded.
+  Still ungenerated: per-lesson cinematics (`assets/lessons/L01-open-c.mp4`), which is why
+  `lesson_manifest.json` carries a `_todo_blocked` marker on `L01-open-c`. Producing those
+  needs the RunPod pod restarted (cloud GPU for FLUX/Wan) or hand-authored assets.
 - **Chatterbox built-in voice only for World 1.** If the owner later wants a specific cloned
   voice, that's a new decision + the voice license blocklist still applies (no ElevenLabs for
   a paid app).
@@ -138,10 +149,12 @@ light, early-morning damp atmosphere. Branded internally as **Emerald Hollow**.
 - **ADR-0001 (encrypted sync)** is a dependency — performance progress saves to student memory
   (encrypted cross-device). Until ADR-0001 is built, performances can still work locally but
   the "memory follows you across devices" piece is absent.
-- **AMENDMENT-09 (Godot story-world)** is the production vehicle. The Godot scaffold
-  (`project.godot` + World/LessonScene/FingeringOverlay scenes, per AMENDMENT-09) is NOT
-  present on this machine as of 2026-08-23 — the full `07-app/godot/` tree did not survive
-  the PC transfer. Owner opens in Godot 4.7.x when the scaffold is available.
+- **AMENDMENT-09 (Godot story-world)** is the production vehicle. The Godot scaffold IS
+  present and wired on this machine (verified 2026-08-29): `07-app/godot/project.godot` points
+  at `World.tscn`; real scripts+scenes live under `lesson/` (FingeringOverlay, LessonScene) and
+  `world/` (World) — the top-level `FingeringOverlay/`/`LessonScene/` folders are empty decoys.
+  The earlier "did not survive the PC transfer" note (2026-08-23) was wrong. Owner opens in
+  Godot 4.7.x.
 
 ---
 
@@ -151,10 +164,13 @@ light, early-morning damp atmosphere. Branded internally as **Emerald Hollow**.
    Level 2 stays open inside the ratified ~10–12 range.
 2. **Who is in the Level 3 band, exactly?** Bass + drums + teacher on second guitar is the
    owner's picture. Confirm: is the band pre-built per song, or assembled by the app?
-3. **Animated character source:** Hand-authored Godot character rig? AI-generated stills
+3. **Student picks the song at Level 3** — from the song-progression catalog (11 songs, 11
+   shapes)? Or from a smaller "you know these chords" subset? Constraint: the song's chords
+   must all be taught by that point (AMENDMENT-13 prereq gate).
+4. **Animated character source:** Hand-authored Godot character rig? AI-generated stills
    (FLUX) + motion (Wan)? Or a mix? Not decided — depends on what "high quality animated"
    means in production and what the pipeline produces when run.
-4. **Path A revisit trigger — refine the three prerequisites.** Currently: (a) student memory
+5. **Path A revisit trigger — refine the three prerequisites.** Currently: (a) student memory
    live + encrypted cross-device, (b) listening engine reliably classifies clean chord changes
    in real time, (c) adaptive accompaniment prototype exists. Owner may want to sharpen these.
 

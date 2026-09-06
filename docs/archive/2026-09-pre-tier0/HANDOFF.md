@@ -1,4 +1,8 @@
+<<<<<<<< HEAD:docs/archive/2026-09-pre-tier0/HANDOFF.md
 # HANDOFF — GuitarApp (current pointer re-synced 2026-09-02 — AMENDMENT-17 World 1 teacher + performance ladder ratified)
+========
+# HANDOFF — GuitarApp (current state, re-synced 2026-08-29 — AMENDMENT-18 Fun-Delivers-Learning + six build items + de-risk slice RATIFIED; AMENDMENT-17 World 1 teacher RATIFIED; PocketBase backend + fidelity gate GREEN)
+>>>>>>>> h5-05content-backfill:_RETIRED/handoffs/HANDOFF.md
 
 Single source-of-truth pointer file (per owner preference). The current TRUTH is:
 `02-spec/FEATURES-LOCKED-v1-2026-08-07.md` + `PLAN-from-locked-spec-2026-08-07.md`,
@@ -29,7 +33,7 @@ Working tree managed via git; commit as you go.
 - **Live PWA: `07-app/`** — installable on iOS Safari + Android Chrome. Runs the proven engines
   via Web Audio + mic + Web Speech. Engine layer stays SDK-agnostic for a later native rewrite.
   Detail in `07-app/HANDOFF-07app.md`.
-- **Spec + 16 amendments** (`02-spec/`, AMENDMENT-01..16), appendix chain ending at **AMENDMENT-16**
+- **Spec + 17 amendments** (`02-spec/`, AMENDMENT-01..17), appendix chain ending at **AMENDMENT-17** (World 1 teacher + performance ladder, RATIFIED 2026-08-29)
   (curriculum re-sequence + ordering gate; AMENDMENT-11 = world-locked teacher + longitudinal student
   memory + teacher–student duet, the product thesis, with redlines).
 - **20 authored lessons** in `05-content/guitar-lesson-*.json` (authoring source) → shipped as
