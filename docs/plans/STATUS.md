@@ -210,6 +210,44 @@ Other facts for whoever starts Tier 2:
 - `app-refactored.js` is still unresolved (see Tier 0 handoff).
 - GitHub Pages deploy is still deferred — app runs locally only.
 
+## Tier W — Emerald Hollow — **IN PROGRESS**
+
+Plan: [`TIER-W-emerald-hollow.md`](TIER-W-emerald-hollow.md). Started 2026-09-06
+at the owner's direction.
+
+| Task | Status | Notes |
+|------|--------|-------|
+| W0.0 Push all branches to GitHub | DONE (2026-09-06) | the three local branches had never been pushed; 16 commits existed on one disk only |
+| W0.1 Lift the Emerald Hollow freeze | **TODO — owner sign-off required** | see the conflict noted below |
+| W1.1/W1.2 Run the world in Godot | TODO | needs Godot 4.7.x installed (O.1); not installed on this machine as of 2026-09-06 |
+| W2 Merge the world branch into main | DONE (2026-09-06) | commit `67305e2`, 825 files, +86,877 lines |
+| W3 Wire the world to a real lesson | TODO | |
+| W4 World/app integration decision | **TODO — owner decision** | Godot-wraps-all vs world-as-front-door vs keep-separate |
+| W5 Ship the web app publicly | TODO | blocked on owner steps O.2 (default branch) + O.3 (Pages source) |
+| W6 Close out Tier 1 gaps | TODO | blocked on O.5 (no `ANTHROPIC_API_KEY` anywhere) |
+
+**W2 merge notes.** `h5-05content-backfill` turned out to be a superset of both
+`boardroom/growth-2026-08-30` and `boardroom/content-pipeline-recon-20260826`,
+so one merge brought in all three. 38 files conflicted. App code resolved to
+main (newer); the world, its assets and its docs came from h5. Four resolutions
+were load-bearing and are documented in the merge commit message — read it
+before assuming anything about who won a given file. In particular: **h5 still
+carried the superseded Maggie Cole teacher on `openai-tts`**; main's Sage
+(Chatterbox, per ADR-0004) was kept. Lesson `chords` blocks were byte-identical
+on both sides, so no fingering data was touched.
+
+`CHORD_NAME` in `chatEngine.js` was fixed rather than side-picked — both
+branches were defective in different ways — and `07-app/core/chatEngine.test.mjs`
+(32 assertions) was added to cover it. That test file is new coverage, not a
+port; it is the one place W2 went past a pure merge.
+
+**Unresolved contradiction after W2:** `README.md`'s "What is explicitly frozen"
+list still names *Godot world shell* and *Emerald Hollow art production*, but
+the world is now merged into main and the owner has directed work on it. Until
+W0.1 is signed off, that list and this tier disagree, and a correctly-behaving
+subagent will refuse Tier W tasks. Resolve W0.1 before dispatching any agent
+against this tier.
+
 ## Tier 2 — Business — **BLOCKED (Tier 1)**
 
 | Task | Status | Notes |
