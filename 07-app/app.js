@@ -8,7 +8,7 @@ import * as T from './core/tuner-engine.js';
 import * as B from './core/band-engine.js';
 import * as V from './core/voice-command.js';
 import { reply as chatReply } from './core/chatEngine.js';
-import { buildTomorrowPlan } from './core/adaptivePlan.js';
+import { buildTomorrowPlan, planNext } from './core/adaptivePlan.js';
 import { readout as progressReadout } from './core/streaks.js';
 import { isDogfood, setDogfood } from './lib/dogfood.js';
 import { measureOneMinute } from './../06-prototypes/practice-engine/one-minute-changes.mjs';
@@ -199,7 +199,14 @@ function renderLesson(params) {
   controls.appendChild(el('button', { class: 'btn primary', text: 'Next ▶', onclick: () => {
     const total = view ? view.scenes.length : manifest.scenes.length;
     if (sceneIdx.i < total - 1) { sceneIdx.i++; repaint(); }
-    else { navigate('progress'); }
+    else {
+      // Lesson complete — log the session and determine what's next
+      const sid = app.store.startSession(lesson.lesson.id);
+      app.store.finalizeSession(sid, { completed: true, durationSec: Math.round(manifest.totalDurationMs / 1000) });
+      save();
+      const next = planNext(app.store);
+      navigate(next.nextRoute || 'progress');
+    }
   } }));
   controls.appendChild(el('button', { class: 'btn small', text: '🔊 Replay', onclick: () => { const s = view ? view.scenes[sceneIdx.i] : manifest.scenes[sceneIdx.i]; if (view) speak(s.speech.persona_line + ' ' + s.caption, { voice: view.voice }); } }));
   controls.appendChild(el('span', { class: 'counter', 'data-pos': '' }));

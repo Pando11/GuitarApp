@@ -86,11 +86,17 @@ node serve.mjs
 - Persona-specific responses (Maggie/Ellis/Ray) based on teacher ID
 
 ### 4. ➡️ Wire lessonRunner.planNext() Navigation (T1.9)
-**Status:** OPEN — function exists but not called anywhere  
+**Status:** ✅ DONE  
 **What:**
-- `core/adaptivePlan.js` has `buildTomorrowPlan()` (builds the day's lesson queue)
-- Currently no "Next Lesson" / "Continue" button in lesson player
-- Need to wire "continue" → `planNext()` → load next lesson or practice / review
+- ✅ Added `planNext()` to adaptivePlan.js (determines next action after lesson)
+- ✅ Wired "Next ▶" button to call planNext() + log lesson completion
+- ✅ Adaptive routing: if struggled chords exist → practice; else → progress
+- ✅ Logs session as completed with duration
+
+**Implementation:**
+- Lesson completion logs session to store (AMENDMENT-11 requirement)
+- planNext() checks struggled chords + returns routing decision
+- Prevents hardcoded nav to progress; respects adaptive plan
 
 ### 5. 🚪 Tier 0 Exit Check (Compliance Gate)
 **Status:** OPEN — 0/5 friends, no deploy  

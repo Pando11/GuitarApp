@@ -26,3 +26,34 @@ export function buildTomorrowPlan(store) {
   plan.push({ type: 'lesson', lessonId: nextLessonId(store), reason: 'advance the path' });
   return { openedWithDrill: !!openingDrill, openingDrill, plan, struggledCount: struggled.length };
 }
+
+export function planNext(store) {
+  // Determine what should happen after lesson completion
+  const struggled = store.getStruggledChords();
+
+  // If there are struggled chords, suggest a practice drill
+  if (struggled.length >= 2) {
+    return {
+      type: 'chord-change-drill',
+      chords: [struggled[0], struggled[1]],
+      reason: 'practice your weakest change before moving on',
+      nextRoute: 'practice'
+    };
+  }
+  if (struggled.length) {
+    return {
+      type: 'chord-drill',
+      chord: struggled[0],
+      reason: 'drill your weakest chord',
+      nextRoute: 'practice'
+    };
+  }
+
+  // Otherwise, show progress and suggest next lesson
+  return {
+    type: 'lesson',
+    lessonId: nextLessonId(store),
+    reason: 'ready for the next lesson',
+    nextRoute: 'progress'
+  };
+}
