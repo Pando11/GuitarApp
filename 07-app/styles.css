@@ -65,6 +65,15 @@ input[type=range] { width: 100%; }
 .msg.teacher { background: var(--panel2); align-self: flex-start; }
 .chat-bar { display: flex; gap: 8px; }
 .chat-bar input { flex: 1; background: var(--panel); border: 1px solid #223; border-radius: 10px; padding: 12px; color: var(--ink); }
+.coach-surface { background: var(--panel2); border-radius: var(--radius); padding: 12px; margin-top: 12px; display: flex; flex-direction: column; }
+.coach-header { font-weight: 600; color: var(--accent); margin-bottom: 8px; font-size: 13px; }
+.coach-log { background: var(--panel); border-radius: 8px; padding: 10px; margin-bottom: 8px; max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+.coach-msg { padding: 8px 10px; border-radius: 8px; font-size: 14px; max-width: 90%; }
+.coach-msg.user { align-self: flex-end; background: var(--accent); color: #04111f; }
+.coach-msg.teacher { align-self: flex-start; background: var(--panel); color: var(--ink); }
+.coach-input-row { display: flex; gap: 6px; }
+.coach-input { flex: 1; background: var(--panel); border: 1px solid #223; border-radius: 8px; padding: 8px 10px; color: var(--ink); font-size: 14px; }
+.coach-send-btn { background: var(--accent); color: #04111f; border: none; border-radius: 8px; padding: 8px 12px; font-weight: 600; cursor: pointer; font-size: 13px; }
 .upgrade, .paywall { text-align: center; background: var(--panel); border-radius: var(--radius); padding: 24px; margin-top: 20px; }
 .price { color: var(--accent2); font-size: 18px; font-weight: 700; margin: 8px 0; }
 

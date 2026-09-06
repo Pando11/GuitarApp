@@ -14,6 +14,7 @@ import { isDogfood, setDogfood } from './lib/dogfood.js';
 import { measureOneMinute } from './../06-prototypes/practice-engine/one-minute-changes.mjs';
 import { createFluencyStore } from './../06-prototypes/practice-engine/fluency-store.mjs';
 import { pairKey } from './../06-prototypes/practice-engine/pair-key.mjs';
+import { createCoachSurface, closeCoachSurface } from './core/coachSurface.js';
 
 const app = new AppState();
 let CATALOG = { lessons: [], packs: [], teachers: [] };
@@ -217,6 +218,22 @@ function renderLesson(params) {
     }, () => { recordStatus.textContent = 'Speech recognition not available on this device.'; });
   }});
   if (isPremium()) controls.appendChild(voiceBtn);
+
+  // Coach surface for asking questions
+  let coachSurface = null;
+  const coachBtn = el('button', { class: 'btn', text: '💬 Ask teacher', onclick: () => {
+    if (!coachSurface) {
+      const coachContainer = el('div');
+      screen.appendChild(coachContainer);
+      coachSurface = createCoachSurface(app.store, teacher.id, coachContainer);
+      coachBtn.textContent = '✕ Close';
+    } else {
+      closeCoachSurface(coachSurface);
+      coachSurface = null;
+      coachBtn.textContent = '💬 Ask teacher';
+    }
+  }});
+  if (isPremium()) controls.appendChild(coachBtn);
 
   screen.appendChild(stage); stage.appendChild(caption); stage.appendChild(fretboard); stage.appendChild(recordStatus);
   screen.appendChild(controls);

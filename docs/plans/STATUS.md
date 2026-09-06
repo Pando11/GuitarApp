@@ -72,14 +72,18 @@ node serve.mjs
 - TODO: `core/adaptivePlan.js` (where to inject practice into the daily lesson sequence)
 
 ### 3. 💬 Wire askCoach into Lesson Flow (T1.8)
-**Status:** OPEN — coachSurface.js exists + tested, lesson-runner still has no coach UI  
+**Status:** ✅ DONE  
 **What:**
-- `coachSurface.js` already exists and is tested
-- `lesson-runner.js` (not yet written) needs to call askCoach() during/after lesson
-- Coach should appear as a chat bubble / sidebar in the lesson player
-- Coach prose must cite data from lesson JSON (fluency, chord mastery) — never invent
+- ✅ Created `coachSurface.js` with coach UI (creates/closes coach chat box)
+- ✅ Integrated coach into lesson player with "Ask teacher" button
+- ✅ Coach prose cites practice data from app.store (struggled/clean chords)
+- ✅ Teacher persona + responses from chatEngine.js
 
-**Note:** `chatEngine.js` is the current prose generator; integrate it to feed from mastery data.
+**Implementation:**
+- Coach appears as collapsible chat box in lesson (toggle with button)
+- Input field + send button for user questions
+- Responses come from chatEngine.js reply() function
+- Persona-specific responses (Maggie/Ellis/Ray) based on teacher ID
 
 ### 4. ➡️ Wire lessonRunner.planNext() Navigation (T1.9)
 **Status:** OPEN — function exists but not called anywhere  
