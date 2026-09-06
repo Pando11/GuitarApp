@@ -4,6 +4,15 @@ export const PORT = Number(process.env.PORT) || 8787;
 
 export const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
 
+// Optional. Some Anthropic API keys are org-level rather than scoped to one
+// workspace; when the org has more than one workspace, such a key is
+// rejected with a 400 asking for an `anthropic-workspace-id` header (real
+// error, hit while verifying W6.1 — see docs/plans/TIER-W-emerald-hollow.md).
+// Setting this in server/.env resolves it without further code changes; the
+// value comes from the Anthropic Console (`wrkspc_...`), which is an owner
+// action — no code here can discover or guess it.
+export const ANTHROPIC_WORKSPACE_ID = process.env.ANTHROPIC_WORKSPACE_ID || '';
+
 export const RATE_LIMIT_PER_MIN = Number(process.env.COACH_RATE_LIMIT_PER_MIN) || 10;
 export const RATE_LIMIT_WINDOW_MS = 60_000;
 

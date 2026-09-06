@@ -91,7 +91,7 @@ available yet; Tier 0's code is done, see above)
 
 | Task | Status | Notes |
 |------|--------|-------|
-| T1.1 Coaching service | DONE | `server/`, no live-key smoke test yet (no `ANTHROPIC_API_KEY` set anywhere) |
+| T1.1 Coaching service | DONE | `server/`, real `ANTHROPIC_API_KEY` present in `server/.env` (gitignored, untracked, verified 2026-09-06) but no live-key smoke test run yet — still verified only against a mocked SDK client |
 | T1.2 Adaptive planning | DONE | fixed a confidence-scale bug (0-1 vs 0-100) caught during integration with T1.1 |
 | T1.3 Copy variants L01–L05 | DONE | |
 | T1.4 Client integration | DONE | coach-client/adaptive-plan seams built; only the learner-profile→lesson-copy path is actually wired into the shell (see gaps below) |
@@ -138,11 +138,13 @@ test:fidelity` 84/84 (was 48; +36 from this work); `drillRunner.test.mjs`
 all 8 `drills/*.test.mjs` green.
 
 **Not yet done, blocking a full end-to-end Tier 1 demo:**
-- The coaching service has never made a real model call — no
-  `ANTHROPIC_API_KEY` exists in this environment. Someone needs to supply one
-  (in `server/.env`, gitignored) before `coach_served` telemetry or the
-  prompt-cache-hit check can be verified for real, not just against a mocked
-  SDK client.
+- The coaching service has never made a real model call. A real
+  `ANTHROPIC_API_KEY` is already present in `server/.env` (gitignored,
+  untracked, verified 2026-09-06) — the missing piece was the call never
+  having been made, not the key being absent. `coach_served` telemetry and
+  the prompt-cache-hit check still need to be verified against a real call,
+  not just a mocked SDK client. See Wave 6 in `TIER-W-emerald-hollow.md`
+  (unblocked, no longer waiting on O.5).
 - `chatEngine.js`'s `askCoach` is now reachable from the practice screen via
   `coachSurface.js`/`drillRunner.js`'s "Ask your coach" control (T1.6), but is
   still not wired into the main lesson-runner flow (`lesson-runner.js`) —
@@ -200,10 +202,14 @@ that would make T1.1, T1.2, and T1.5 all become real simultaneously. It
 isn't in either tier's task list as written.
 
 Other facts for whoever starts Tier 2:
-- No `ANTHROPIC_API_KEY` has ever been set in this environment — the
-  coaching service has never made one real model call. `coach_served`
-  telemetry, the guardrail, and the cache-hit behavior are all verified
-  only against a mocked SDK client.
+- **Correction (2026-09-06):** this bullet originally said no
+  `ANTHROPIC_API_KEY` had ever been set in this environment — that was false
+  as of this date. A real key is present in `server/.env` (gitignored,
+  untracked, verified 2026-09-06). The coaching service still has never made
+  one real model call — `coach_served` telemetry, the guardrail, and the
+  cache-hit behavior are all verified only against a mocked SDK client — but
+  that is now unblocked, not waiting on a missing key. See Wave 6 in
+  `TIER-W-emerald-hollow.md`.
 - `adaptivePlan.js`'s confidence scale is 0-100 (fixed during Tier 1 — it
   was originally coded as 0-1, contradicting `CONTEXT.md`). Any new code
   reading `mastery[].confidence` should assume 0-100.
@@ -224,7 +230,7 @@ at the owner's direction.
 | W3 Wire the world to a real lesson | TODO | |
 | W4 World/app integration decision | **TODO — owner decision** | Godot-wraps-all vs world-as-front-door vs keep-separate |
 | W5 Ship the web app publicly | TODO | blocked on owner steps O.2 (default branch) + O.3 (Pages source) |
-| W6 Close out Tier 1 gaps | TODO | blocked on O.5 (no `ANTHROPIC_API_KEY` anywhere) |
+| W6 Close out Tier 1 gaps | 2/3 DONE, 1 BLOCKED (2026-09-06) | W6.2/W6.3 done and verified; W6.1 blocked on a new owner step — see notes below |
 
 **W2 merge notes.** `h5-05content-backfill` turned out to be a superset of both
 `boardroom/growth-2026-08-30` and `boardroom/content-pipeline-recon-20260826`,
@@ -250,6 +256,56 @@ refused every Tier W task. The owner signed off and both lists were amended.
 Mystery Mode, song-from-hum, voice commands, jam session, style packs, and
 teachers T2/T3 all remain frozen — the first two are adjacent enough to world
 work to be mistaken for fair game.
+
+**W6 close-out notes (2026-09-06).** Three agents dispatched in parallel per
+`TIER-W-emerald-hollow.md`'s Wave 6 table (OWNS: `server/**` /
+`07-app/core/lesson-runner.js` / `07-app/app.js`+`07-app/index.html`). Verified
+independently by the lead, not just from self-reports: `git diff --stat`
+confirmed each agent wrote only its OWNS files; the full baseline suite is
+still green — `npm run test:all` 28/28 + 19/19, `npm run test:fidelity` 84/84,
+`node 07-app/verify-sw-cache.mjs` 7/7, `node 07-app/core/chatEngine.test.mjs`
+32/32; `server`'s own mocked suite 33/33 (unaffected).
+
+- **W6.2 (`lesson-runner.js`) — DONE.** `askCoach` is now reachable from
+  inside a lesson via a new "Ask your coach" button, mirroring the practice
+  screen's existing `askCoachAbout` contract exactly. Rule 5 holds — the
+  envelope only ever carries `lessonId`/`learnerProfile` plus real (or empty)
+  `mastery`/`justHappened`/`recentHistory`, never invented text. Confirmed by
+  reading the diff directly.
+- **W6.3 (`app.js`/`index.html`) — DONE.** Finishing a lesson now calls
+  `lessonRunner.planNext()` and offers a gated "Continue to next lesson"
+  action; the reason text shown is always `plan.reason`
+  (`planNextUnit`'s own stored-number-derived string), never invented, and
+  the target lesson is checked against `LESSON_UNLOCK_COUNT` before the
+  button is shown. Confirmed by reading the diff directly.
+- **W6.1 (`server/**`) — BLOCKED, new owner action required.** The key in
+  `server/.env` is real but **org-level, not workspace-scoped** — every real
+  call (`messages.create` and `messages.countTokens`) returns a reproducible
+  `400 invalid_request_error`: *"This API key is not scoped to a workspace,
+  so this request must include the anthropic-workspace-id header..."* — the
+  lead reproduced this independently, it is not just the subagent's claim.
+  Code is ready (`config.js`/`modelClient.js` now read
+  `ANTHROPIC_WORKSPACE_ID` and pass it as the `anthropic-workspace-id`
+  header; `server/test/real-call.smoke.mjs` is the live verification script,
+  named so it's excluded from `npm test`'s glob and never runs or costs
+  money except via `npm run test:live`) — it just has nothing to
+  authenticate with yet. **New owner step:** get a workspace-scoped key, or
+  the workspace ID (`wrkspc_...`) itself, from the Anthropic Console, and set
+  `ANTHROPIC_WORKSPACE_ID` in `server/.env`. Then re-run
+  `cd server && npm run test:live` for the real `coach_served`/cache-hit
+  verification this task still needs.
+- **Separate, pre-existing gap surfaced by W6.2 (not fixed — outside every
+  agent's OWNS list this wave):** `coachSurface.js`'s `buildCoachEnvelope()`
+  has no `anonId` parameter, and nothing in the app supplies one
+  (`grep -rn anonId 07-app` shows no caller). The server's schema requires
+  `anonId` for rate limiting, so **every** coach request from the client —
+  practice screen (T1.6) and lesson screen (W6.2) alike — is rejected with
+  `schema_validation` and silently falls back to `chatEngine.js`'s local
+  template. This means even once W6.1's workspace-ID blocker is cleared, no
+  real model response will reach a student until `anonId` (`telemetry.js`
+  already has one) is threaded into `buildCoachEnvelope()`. Not in any Wave 6
+  task's OWNS list — needs its own task before Wave 6 can be called fully
+  closed.
 
 ## Tier 2 — Business — **BLOCKED (Tier 1)**
 

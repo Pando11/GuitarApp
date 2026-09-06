@@ -58,6 +58,32 @@ const second = await callCoach(envelope, { client });
 console.log(second.usage.cache_read_input_tokens); // should be > 0
 ```
 
+### Live verification script (W6.1)
+
+`test/real-call.smoke.mjs` runs the recipe above for real, plus a real
+end-to-end round trip through `07-app/core/chatEngine.js`'s `askCoach()` (the
+only place that fires `coach_served` telemetry) against the real HTTP server
+started in-process. It is **not** picked up by `npm test` (that only globs
+`test/*.test.js`), so it never runs in CI and never costs money unless
+invoked explicitly:
+
+```bash
+cd server
+npm run test:live
+```
+
+Requires a real, workspace-scoped `ANTHROPIC_API_KEY` in `.env`. If the key
+is org-level rather than workspace-scoped and the org has more than one
+workspace, every request — including this script's — fails with a real
+`400 invalid_request_error`:
+
+> This API key is not scoped to a workspace, so this request must include
+> the anthropic-workspace-id header with the ID of the workspace to use.
+
+Set `ANTHROPIC_WORKSPACE_ID` in `.env` (see `.env.example`) to resolve this;
+the value comes from the Anthropic Console and is an owner action — no code
+in this service can discover or guess it.
+
 ## Try it with curl
 
 ```bash

@@ -10,6 +10,7 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import {
   ANTHROPIC_API_KEY,
+  ANTHROPIC_WORKSPACE_ID,
   MODEL_ID,
   MODEL_MAX_TOKENS,
   MODEL_THINKING,
@@ -117,7 +118,12 @@ export function buildUserMessage(envelope) {
 let _defaultClient = null;
 function getDefaultClient() {
   if (!_defaultClient) {
-    _defaultClient = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
+    const opts = { apiKey: ANTHROPIC_API_KEY };
+    // See config.js — only set when the key is org-level, not workspace-scoped.
+    if (ANTHROPIC_WORKSPACE_ID) {
+      opts.defaultHeaders = { 'anthropic-workspace-id': ANTHROPIC_WORKSPACE_ID };
+    }
+    _defaultClient = new Anthropic(opts);
   }
   return _defaultClient;
 }

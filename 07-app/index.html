@@ -50,6 +50,11 @@
         <button class="secondary" id="lesson-done" type="button">Mark lesson complete</button>
       </div>
       <article id="lesson-content"></article>
+      <section class="step" id="lesson-next" aria-live="polite" hidden>
+        <h3 id="lesson-next-heading">Nice work.</h3>
+        <p class="meta" id="lesson-next-reason"></p>
+        <button class="primary" id="lesson-next-btn" type="button">Continue</button>
+      </section>
     </section>
     <section id="practice-view" class="lesson-view" data-practice-view hidden aria-labelledby="practice-title">
       <div class="lesson-top">
@@ -259,6 +264,7 @@
       var performanceRail=document.getElementById("performance-rail");
       var LESSON_UNLOCK_COUNT=5; // Wave 1 first slice
       var currentLessonState=null; // {id, index, completed}
+      var nextLessonPlan=null; // {plan, index} from lessonRunner.planNext(), for the Continue button
 
       function telemetry(){return (window.GuitarApp && window.GuitarApp.Telemetry) || null;}
       function logEvent(name, opts){
@@ -280,6 +286,7 @@
 
       function openLesson(index){
         if(!lessonRunner){status.textContent="Lessons are still loading.";return;}
+        hideNextLessonOffer();
         var model=lessonRunner.openLesson(index, currentLearnerProfile());
         document.getElementById("lesson-time").textContent=(model.estimatedMinutes||10)+" minutes";
         document.getElementById("home-view").hidden=true;
@@ -289,6 +296,62 @@
         currentLessonState={id:model.lessonId||("lesson-"+index), index:index, completed:false};
         logEvent("lesson_start", {lessonId:currentLessonState.id});
         window.scrollTo(0,0);
+      }
+
+      // T1.6/W6.3 — lessonRunner.planNext() is built and tested (T1.4) but was
+      // never called from the app shell. On lesson completion, ask it what to
+      // do next (Rule 5: it only ever cites planNextUnit's own reason string,
+      // built from stored numbers — this shell never invents a diagnosis) and
+      // offer that as a "Continue" action instead of leaving the student to
+      // find their own way back to the catalog.
+      function hideNextLessonOffer(){
+        nextLessonPlan=null;
+        var section=document.getElementById("lesson-next");
+        if(section)section.hidden=true;
+      }
+
+      function renderNextLessonOffer(result){
+        var section=document.getElementById("lesson-next");
+        var heading=document.getElementById("lesson-next-heading");
+        var reasonEl=document.getElementById("lesson-next-reason");
+        var btn=document.getElementById("lesson-next-btn");
+        if(!section||!heading||!reasonEl||!btn||!result||!result.plan)return;
+        var plan=result.plan;
+        var canOpen=result.index!=null && result.index<LESSON_UNLOCK_COUNT;
+        reasonEl.textContent=plan.reason||"";
+        if(canOpen && (plan.action==="advance"||plan.action==="chain"||plan.action==="placement-skip")){
+          nextLessonPlan=result;
+          heading.textContent="Nice work. Ready for the next lesson?";
+          btn.textContent="Continue to next lesson";
+          btn.hidden=false;
+        }else if(canOpen && plan.action==="drill"){
+          nextLessonPlan=result;
+          heading.textContent="Almost there.";
+          btn.textContent="Practice this first";
+          btn.hidden=false;
+        }else{
+          nextLessonPlan=null;
+          heading.textContent=(result.index!=null && !canOpen)?"Nice work.":"You're all caught up.";
+          if(result.index!=null && !canOpen)reasonEl.textContent=(plan.reason?plan.reason+" ":"")+"That lesson isn't unlocked yet.";
+          btn.hidden=true;
+        }
+        section.hidden=false;
+      }
+
+      function offerNextLesson(){
+        if(!lessonRunner||!currentLessonState)return;
+        var openedIndex=currentLessonState.index;
+        var progress={learnerProfile: currentLearnerProfile()};
+        lessonRunner.planNext(openedIndex, progress).then(function(result){
+          // The student may have navigated away (or into a different lesson)
+          // while planNext() (which lazy-imports adaptivePlan.js) was
+          // resolving — don't resurrect the offer for a lesson that's no
+          // longer open.
+          if(!currentLessonState||currentLessonState.index!==openedIndex)return;
+          renderNextLessonOffer(result);
+        }).catch(function(e){
+          console.warn("[app] planNext failed (non-fatal):", e&&e.message);
+        });
       }
 
 
@@ -325,6 +388,7 @@
         var feedbackFab=document.getElementById("feedback-fab");
         if(feedbackFab)feedbackFab.hidden=true;
         closeFeedbackPanel();
+        hideNextLessonOffer();
         if(currentLessonState && !currentLessonState.completed){
           logEvent("lesson_abandon", {lessonId:currentLessonState.id});
         }
@@ -337,10 +401,21 @@
         if(!currentLessonState)return;
         currentLessonState.completed=true;
         logEvent("lesson_complete", {lessonId:currentLessonState.id});
+        offerNextLesson();
       }
 
       document.getElementById("start-l01").addEventListener("click",function(){openLesson(0);});
       document.getElementById("back-home").addEventListener("click",home);
+
+      var lessonNextBtn=document.getElementById("lesson-next-btn");
+      if(lessonNextBtn)lessonNextBtn.addEventListener("click",function(){
+        if(!nextLessonPlan||nextLessonPlan.index==null)return;
+        var targetIndex=nextLessonPlan.index;
+        var action=nextLessonPlan.plan&&nextLessonPlan.plan.action;
+        logEvent("lesson_next_lesson_selected",{lessonId:currentLessonState?currentLessonState.id:undefined,payload:{targetIndex:targetIndex,action:action}});
+        hideNextLessonOffer();
+        openLesson(targetIndex);
+      });
 
       window.addEventListener("guitarapp:self-report",function(event){
         var note=document.getElementById("report-note");

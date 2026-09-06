@@ -315,6 +315,13 @@
     return node.innerHTML;
   }
 
+  // --- W6.2: 'Ask your coach' entry point, reachable from inside a lesson
+  // (not only from the practice/drill screen — see drillRunner.js's
+  // askCoachAbout, which this mirrors). Generic, data-derived encouragement
+  // only — never a musical diagnosis (Rule 5) — same fallback voice already
+  // used on the practice screen (see index.html's askCoach()).
+  const DEFAULT_COACH_FALLBACK = "Keep practicing — steady progress beats a rush.";
+
   function escAttr(value) {
     return esc(value).replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
@@ -421,6 +428,12 @@
       wrapClip
         ? `<div class="lesson-audio">${audioElementHTML(wrapClip.path, `Play lesson wrap-up: ${model.title}`)}</div>`
         : "",
+      // W6.2: coaching entry point for this lesson (wired up by openLesson,
+      // below, immediately after this HTML is inserted into the DOM).
+      `<section class="step lesson-coach" id="lesson-coach" aria-live="polite">`,
+      `<button class="secondary" id="lesson-ask-coach" type="button">Ask your coach</button>`,
+      `<p class="meta" id="lesson-coach-text"></p>`,
+      `</section>`,
     ].join("");
   }
 
@@ -460,6 +473,86 @@
       );
     }
 
+    // askCoachAbout(opts) -> Promise<{text, source}>
+    //
+    // Mirrors drillRunner.js's askCoachAbout({...}) -> coachSurface.js's
+    // buildCoachEnvelope()/getCoachMessage() contract exactly (coachSurface.js
+    // and chatEngine.js are untouched by this file). Loaded via dynamic
+    // import() rather than a static import so this file can stay a plain
+    // classic <script> (same convention planNext(), above^, already uses for
+    // adaptivePlan.js) — resolved relative to lesson-runner.js's own URL by
+    // the platform, same directory as coachSurface.js.
+    //
+    // Rule 5: this only ever passes through values the caller already has on
+    // hand — a learner profile, the open lesson's lessonId, and whatever real
+    // mastery/justHappened/recentHistory numbers a caller with a
+    // practiceStore connection chooses to supply. lesson-runner.js itself has
+    // no practiceStore of its own, so those default to empty/null (never
+    // invented) exactly like buildCoachEnvelope's own documented degrade path.
+    //
+    // opts: { index (defaults to the currently open lesson), learnerProfile
+    //   (defaults to options.learnerProfile), mastery, justHappened,
+    //   recentHistory, localTemplate }
+    async function askCoachAbout(opts) {
+      const o = opts || {};
+      const idx = Number.isInteger(o.index) ? o.index : openIndex.value;
+      let lessonId = null;
+      if (Number.isInteger(idx) && idx >= 0 && idx < lessons.length) {
+        const profileForModel = o.learnerProfile !== undefined ? o.learnerProfile : options.learnerProfile;
+        const model = normalizeLesson(lessons[idx], idx, profileForModel);
+        lessonId = model.lessonId || null;
+      }
+
+      const localTemplate = o.localTemplate || DEFAULT_COACH_FALLBACK;
+
+      let coachSurface;
+      try {
+        coachSurface = await import("./coachSurface.js");
+      } catch (e) {
+        // coachSurface.js unreachable (e.g. a non-module environment) —
+        // never throw, never guess a message; just hand back the caller's
+        // own fallback text, the same fail-safe posture coachSurface.js
+        // itself documents for malformed/missing input.
+        return { text: localTemplate, source: "unavailable" };
+      }
+
+      const learnerProfile = o.learnerProfile !== undefined ? o.learnerProfile : options.learnerProfile;
+      const envelope = coachSurface.buildCoachEnvelope({
+        learnerProfile,
+        lessonId,
+        mastery: Array.isArray(o.mastery) ? o.mastery : [],
+        justHappened: o.justHappened || null,
+        recentHistory: Array.isArray(o.recentHistory) ? o.recentHistory : [],
+      });
+
+      return coachSurface.getCoachMessage(envelope, localTemplate);
+    }
+
+    // Wires the "Ask your coach" button rendered into the lesson HTML (see
+    // renderLessonHTML, above) to askCoachAbout(). Called after every DOM
+    // insertion of the lesson HTML (the initial render and the later
+    // audio-manifest re-render both replace the button element, so both call
+    // this again) rather than once, so a stale/missing listener never
+    // silently ships.
+    function wireCoachButton(index, profile) {
+      if (typeof document === "undefined") return;
+      const btn = document.getElementById("lesson-ask-coach");
+      const textEl = document.getElementById("lesson-coach-text");
+      if (!btn) return;
+      btn.onclick = async function () {
+        btn.disabled = true;
+        if (textEl) textEl.textContent = "Thinking…";
+        try {
+          const result = await askCoachAbout({ index: index, learnerProfile: profile });
+          if (textEl) textEl.textContent = (result && result.text) || DEFAULT_COACH_FALLBACK;
+        } catch (e) {
+          if (textEl) textEl.textContent = "Your coach is unavailable right now.";
+        } finally {
+          btn.disabled = false;
+        }
+      };
+    }
+
     function openLesson(index, learnerProfile) {
       if (!Number.isInteger(index) || index < 0 || index >= lessons.length) {
         throw new Error(`Lesson index out of range: ${index} (total: ${lessons.length})`);
@@ -485,6 +578,7 @@
       if (typeof options.render === "function") {
         options.render({ model, html });
       }
+      wireCoachButton(index, profile);
 
       openIndex.value = index;
 
@@ -498,6 +592,10 @@
           if (openIndex.value !== index || typeof options.render !== "function") return;
           const updatedHtml = renderLessonHTML(model, data);
           options.render({ model, html: updatedHtml });
+          // The re-render above replaced #lesson-ask-coach with a fresh,
+          // unwired element (options.render does root.innerHTML = ...) — wire
+          // it again so the coaching entry point survives the manifest swap.
+          wireCoachButton(index, profile);
         });
       }
 
@@ -568,7 +666,7 @@
       return { plan, index: index >= 0 ? index : null };
     }
 
-    return { openLesson, currentLesson, normalizeLesson, validateLesson, planNext };
+    return { openLesson, currentLesson, normalizeLesson, validateLesson, planNext, askCoachAbout };
   }
 
   // Kick the manifest fetch off as early as possible so it has resolved by
