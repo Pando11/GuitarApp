@@ -340,7 +340,17 @@
               return r.json();
             });
           })
-        ).then(function (drills) { return { index: index, drills: drills }; });
+        ).then(function (drills) {
+          const result = { index: index, drills: drills };
+          // Mirror loadLessons()'s convention: expose the loaded catalog on
+          // global.__APP__.CATALOG so other scripts (drillRunner.js's wiring
+          // in index.html) can read it without re-fetching.
+          if (global.__APP__ && global.__APP__.CATALOG) {
+            global.__APP__.CATALOG.practiceIndex = index;
+            global.__APP__.CATALOG.practiceDrills = drills;
+          }
+          return result;
+        });
       });
   }
 
@@ -647,6 +657,9 @@
     registerServiceWorker();
     loadTeacherCatalog();
     loadPackCatalog();
+    loadPractice().catch(function (error) {
+      console.warn("[app] practice catalog unavailable (non-fatal):", error && error.message);
+    });
     try { initEncryptedSync(); } catch { /* non-fatal */ }
     try {
       if (typeof document !== "undefined") {

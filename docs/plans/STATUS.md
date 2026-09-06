@@ -96,6 +96,46 @@ available yet; Tier 0's code is done, see above)
 | T1.3 Copy variants L01–L05 | DONE | |
 | T1.4 Client integration | DONE | coach-client/adaptive-plan seams built; only the learner-profile→lesson-copy path is actually wired into the shell (see gaps below) |
 | T1.5 Reason to renew | DONE | weekly practice plan card, degrades to honest "no-data" state today (no drill screen exists to feed it real data yet) |
+| T1.6 Practice drill screen | DONE (2026-09-06) | ported the 06-prototypes/practice-engine prototype into 07-app/core/ and wired a real Practice screen — see below |
+
+**T1.6 — Practice drill screen (built 2026-09-06):** closes the "no drill
+screen" gap named in both the Tier 0→1 and Tier 1→2 handoffs below. Ported
+from `06-prototypes/practice-engine/`: `fluencyStore.js`, `oneMinuteChanges.js`,
+`pairKey.js`, `listenerReal.js` (+ `listenerTwin.js` browser mirror),
+`listenerSim.js`, `practiceLoop.js`, `reviewScheduler.js`, and all 8
+implemented drills under `07-app/core/drills/` (anchor, count-out-loud,
+metronome-ladder, muted-strum, spider, tempo-loop, wait-to-play,
+weak-pair-review — `Chord-Perfect`/`Air Changes` still have no prototype, the
+runner omits them from the menu rather than crashing). New
+`practiceFluencyBridge.js` composes the fluency store for `practiceStore.js`,
+which now has `recordDrillResult(...)`/`getWeakPairs(k)`. New
+`coachSurface.js` wraps `chatEngine.js`'s `askCoach` behind a Rule-5-safe
+envelope builder. New `07-app/core/drillRunner.js` wires it all into a real
+`#practice-view` in `index.html`, firing `telemetry.log('drill_result', ...)`
+on completion — the call site that unblocks `adaptivePlan.js`, `weeklyPlan.js`,
+and the coaching service's `justHappened` field.
+
+**Locked decision: listening engine is `listener-real.mjs` → `listenerReal.js`
+(pair-constrained autocorrelation), not `listening-engine.js`.** ADR-0002 §3
+names `listener-real.mjs`/`listener-twin.js` explicitly as the
+practice-delivery architecture; `listening-engine.js` is a different
+full-chord/fret-based design used only by the two frozen files
+(`band-engine.js`, `song-from-hum.js`), which this work did not touch. Do not
+re-litigate this — any future practice-drill audio work builds on
+`listenerReal.js`.
+
+**Taught-chords gate (owner-required):** `drillRunner.js`'s
+`selectPracticePair(practiceIndex, practiceStore)` filters every candidate
+practice pair (including `getWeakPairs()` hits) to `pair.introducedAt <=
+practiceStore.completedLessonCount()`, using the `introducedAt` field already
+present in `07-app/content/practice/index.json`. A student is never offered a
+chord pair before its teaching lesson is completed. Covered by
+`drillRunner.test.mjs`'s required acceptance case.
+
+Verified: `npm run test:all` 28/28 smoke + 19/19 Playwright; `npm run
+test:fidelity` 84/84 (was 48; +36 from this work); `drillRunner.test.mjs`
+33/33; `practiceFluencyBridge.test.mjs` 16/16; `coachSurface.test.mjs` 20/20;
+all 8 `drills/*.test.mjs` green.
 
 **Not yet done, blocking a full end-to-end Tier 1 demo:**
 - The coaching service has never made a real model call — no
@@ -103,17 +143,20 @@ available yet; Tier 0's code is done, see above)
   (in `server/.env`, gitignored) before `coach_served` telemetry or the
   prompt-cache-hit check can be verified for real, not just against a mocked
   SDK client.
-- `chatEngine.js`'s `askCoach`/`replyWithCoach` (the actual AI coaching path)
-  are built and tested but **not called from anywhere in the shell** —
-  there's no chat/coach UI surface in `index.html`/`app.js` at all. Until one
-  exists, the coaching service can be fully correct and still never produce
-  a single real coaching moment for a student.
+- `chatEngine.js`'s `askCoach` is now reachable from the practice screen via
+  `coachSurface.js`/`drillRunner.js`'s "Ask your coach" control (T1.6), but is
+  still not wired into the main lesson-runner flow (`lesson-runner.js`) —
+  only the practice screen can trigger it today.
 - `lessonRunner.planNext()` (adaptive next-lesson selection) is built but
-  also **not called from anywhere** — there's no "continue"/next-lesson
+  still **not called from anywhere** — there's no "continue"/next-lesson
   navigation logic in the shell to attach it to; lessons are opened by
   explicit index from catalog clicks only, unchanged from Tier 0.
-- Only the copy-variant selection (kid/adult-beginner/returning phrasing on
-  lessons 01-05) is genuinely reachable by a real user right now.
+- No manual browser click-through of the Practice screen has been done yet
+  (only automated smoke/Playwright/unit tests) — worth a real click-through
+  before calling T1.6 fully verified end-to-end.
+- Copy-variant selection (kid/adult-beginner/returning phrasing on lessons
+  01-05) and the new Practice screen are the two things genuinely reachable
+  by a real user right now.
 
 ## Handoff to Tier 2 (written 2026-09-05, after Tier 1 build)
 
@@ -124,7 +167,13 @@ read in this session), the same caution applies: **code-complete is not
 the same as validated.** Nothing in Tier 1 has been exercised by a real
 student yet.
 
-**The one gap that touches almost everything built in Tier 1:** there is
+**Update (2026-09-06, T1.6):** the gap described below — "no drill/practice
+screen anywhere in the app" — is now closed. See T1.6 above for what shipped.
+The rest of this section is left as written for history; re-read T1.6 for
+current state before assuming any of the bullets below still hold.
+
+**The one gap that touches almost everything built in Tier 1 (historical —
+now closed by T1.6):** there is
 still no drill/practice-taking screen anywhere in the app. This was flagged
 in the Tier 0→1 handoff above and remains true after all of Tier 1:
 - The coaching service's `justHappened` field will always be null in real

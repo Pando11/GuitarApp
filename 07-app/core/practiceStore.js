@@ -7,6 +7,13 @@
 // the weak-pair review moat fragments. All aggregation now keys by canonChord().
 
 import { canonChord, displayChord } from './chord-canon.js';
+import { createPracticeFluencyBridge } from './practiceFluencyBridge.js';
+
+// Default storage key for the per-pair fluency bridge. The bridge itself does
+// no I/O (see practiceFluencyBridge.js header) — this key is only carried
+// through toJSON()/fromJSON() so a future caller can namespace persistence if
+// multiple stores/students ever share one localStorage origin.
+const DEFAULT_FLUENCY_STORAGE_KEY = 'guitarapp.practiceFluency';
 
 const STRUGGLE_WINDOW = 5;
 function parseKey(k) { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d); }
@@ -32,6 +39,34 @@ export class PracticeStore {
     this.helpRequests = Array.isArray(i.helpRequests) ? i.helpRequests.map(r => ({ ...r })) : [];
     this._nextId = i._nextId || 1;
     this.currentTeacherId = i.currentTeacherId || 'T1';
+    // Per-pair fluency (Wave 2 task E): a bridge instance composing
+    // fluencyStore.js + practiceLoop.js + reviewScheduler.js (see
+    // practiceFluencyBridge.js). We reach it only through its public API —
+    // recordDrillResult/getWeakPairs/toJSON/fromJSON — never into the
+    // modules it composes directly, per the Wave 1/2 contract.
+    //
+    // ASSUMPTION (flag for lead review): knownPairs defaults to [] here.
+    // The prototype/content catalog (07-app/content/practice/index.json)
+    // enumerates the real chord-pair curriculum, but importing JSON content
+    // from this low-level store felt like scope creep for this task and
+    // risks coupling store construction to content shape/availability.
+    // Instead, a caller (e.g. app.js) that already loads that catalog can
+    // pass known pairs in via `initial.practiceFluency.knownPairs`; an empty
+    // default just means getWeakPairs() has nothing to rank until pairs are
+    // known or a drill result names a pairKey.
+    const pf = i.practiceFluency || {};
+    if (pf.fluency || pf.knownPairs || pf.storageKey) {
+      this.practiceFluencyBridge = createPracticeFluencyBridge.fromJSON({
+        knownPairs: pf.knownPairs || [],
+        storageKey: pf.storageKey || DEFAULT_FLUENCY_STORAGE_KEY,
+        fluency: pf.fluency,
+      });
+    } else {
+      this.practiceFluencyBridge = createPracticeFluencyBridge({
+        knownPairs: [],
+        storageKey: DEFAULT_FLUENCY_STORAGE_KEY,
+      });
+    }
   }
   startSession(lessonId, ts = Date.now()) {
     const id = 's' + (this._nextId++);
@@ -141,8 +176,40 @@ export class PracticeStore {
     }
     return false;
   }
+  // ---------- Wave 2 task E: per-pair fluency (delegates to practiceFluencyBridge.js) ----------
+  // Records a drill result both into the fluency bridge (for getWeakPairs
+  // ranking) and into `sessions`, in the same shape/spirit `logAttempt`
+  // already uses today, so existing session-shaped consumers (getSkillMap
+  // etc., which only look at `chordName`/`verdict`) are unaffected.
+  recordDrillResult(result = {}) {
+    const { pairKey, ratePerMin, cleanChanges, drillId, passed, score } = result;
+    const bridgeResult = this.practiceFluencyBridge.recordDrillResult({ pairKey, ratePerMin, cleanChanges });
+    let s = this.sessions[this.sessions.length - 1];
+    if (!s || s.completed) {
+      const id = 's' + (this._nextId++);
+      s = { id, lessonId: null, ts: Date.now(), durationSec: 0, completed: false, attempts: [] };
+      this.sessions.push(s);
+    }
+    s.attempts.push({
+      chordName: null,
+      frets: null,
+      verdict: passed === false ? 'fail' : 'pass',
+      centsOff: null,
+      ts: Date.now(),
+      pairKey: pairKey || null,
+      ratePerMin: typeof ratePerMin === 'number' ? ratePerMin : null,
+      cleanChanges: typeof cleanChanges === 'number' ? cleanChanges : null,
+      drillId: drillId || null,
+      passed: passed !== undefined ? !!passed : null,
+      score: typeof score === 'number' ? score : null,
+    });
+    return bridgeResult;
+  }
+  getWeakPairs(k = 3) {
+    return this.practiceFluencyBridge.getWeakPairs(k);
+  }
   toJSON() {
-    return { sessions: this.sessions, lessonCompletion: this.lessonCompletion, mute: this.mute, messageLog: this.messageLog, helpRequests: this.helpRequests, _nextId: this._nextId, currentTeacherId: this.currentTeacherId };
+    return { sessions: this.sessions, lessonCompletion: this.lessonCompletion, mute: this.mute, messageLog: this.messageLog, helpRequests: this.helpRequests, _nextId: this._nextId, currentTeacherId: this.currentTeacherId, practiceFluency: this.practiceFluencyBridge.toJSON() };
   }
   static fromJSON(o) { return new PracticeStore(o); }
 }

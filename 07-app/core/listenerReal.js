@@ -1,0 +1,349 @@
+// listenerReal.js — REAL on-device constrained mic listener.
+// PORTED 1:1 from 06-prototypes/practice-engine/listener-real.mjs.
+// do not change behavior, fidelity.mjs diffs it.
+//
+// Replaces the deterministic simulation (listener-sim.mjs) with a working
+// pitch-detection path. Per AMENDMENT-05 it is CONSTRAINED: it only ever
+// matches the incoming audio against the KNOWN target chord pair {A, B} at a
+// KNOWN tempo. It never does open-ended transcription. Audio NEVER leaves the
+// device and below-confidence strums are reported as confident:false
+// ("play that again") rather than a false red X (Rule 6).
+//
+// LICENSE: this module is original MIT-licensed code. The pitch core is a
+// "CREPE-class autocorrelation + spectral chord matching" engine — the exact
+// approach the project stack (AGENTS.md) specifies, and fully compatible with
+// the approved pitch libs (basic-pitch Apache-2.0 / CREPE MIT / librosa ISC).
+// It is dependency-free so it runs identically in Node (tests) and the browser.
+// A production deployment may swap in the real basic-pitch / CREPE model via the
+// `pitchDetector` injection hook (see listener-real.md) WITHOUT changing the
+// strum-event contract — the engine math (countChanges / measureOneMinute) is
+// untouched and consumes the same event shape.
+//
+// STRUM EVENT SHAPE (must match oneMinuteChanges.js exactly):
+//   { chord: <token> | null, confident: bool, t: ms }
+// `chord` is one of the two known tokens (or `null` when the listener could not
+// confidently hear the target chord).
+
+// ---------------------------------------------------------------------------
+// Chord pitch-class templates.
+// Each chord is described by the pitch classes (semitone mod 12, C=0) of its
+// spelling. This is enough for constrained matching — we only need to know
+// which semitone classes a strum covers, not absolute octaves.
+//   C=0  C#=1 D=2  D#=3 E=4  F=5  F#=6 G=7  G#=8 A=9  A#=10 B=11
+// ---------------------------------------------------------------------------
+export const CHORD_NOTES = {
+  // Major / minor triads used by the curriculum spine.
+  C: [0, 4, 7],      // C E G
+  easyC: [0, 4, 7],  // Lauren's 2-finger C spells the SAME chord -> same pcs
+  easyc: [0, 4, 7],
+  G: [7, 11, 2],     // G B D
+  D: [2, 6, 9],      // D F# A
+  A: [9, 1, 4],      // A C# E
+  E: [4, 8, 11],     // E G# B
+  Am: [9, 0, 4],     // A C E
+  Em: [4, 7, 11],    // E G B
+  Dm: [2, 5, 9],     // D F A
+};
+
+// Resolve a chord token to its pitch-class set. Tolerates case + stray "easy"
+// prefix so it stays in sync with chord-canon.js semantics without importing it.
+// NOTE: CHORD_NOTES keys are capitalized (e.g. "Em", "Am"); map a lowercase index
+// so the lowercased lookup actually matches.
+const CHORD_NOTES_LC = Object.fromEntries(
+  Object.entries(CHORD_NOTES).map(([k, v]) => [k.toLowerCase(), v])
+);
+export function chordPitchClasses(token) {
+  if (!token) return null;
+  const key = String(token).trim().toLowerCase();
+  if (CHORD_NOTES_LC[key]) return CHORD_NOTES_LC[key];
+  // Fallback: strip a leading "easy" and try again.
+  const stripped = key.replace(/^easy/, '');
+  if (CHORD_NOTES_LC[stripped]) return CHORD_NOTES_LC[stripped];
+  return null;
+}
+
+// Map a frequency (Hz) to a pitch class (0..11), nearest semitone.
+// A4 = 440 Hz -> pitch class 9 (A).
+export function freqToPitchClass(freq) {
+  if (!freq || freq <= 0) return null;
+  const midi = 69 + 12 * Math.log2(freq / 440); // MIDI note number
+  return ((Math.round(midi) % 12) + 12) % 12;
+}
+
+// ---------------------------------------------------------------------------
+// FFT (iterative radix-2 Cooley-Tukey, in-place). Length must be power of 2.
+// ---------------------------------------------------------------------------
+function fft(re, im) {
+  const n = re.length;
+  // Bit-reversal permutation.
+  for (let i = 1, j = 0; i < n; i++) {
+    let bit = n >> 1;
+    for (; j & bit; bit >>= 1) j ^= bit;
+    j ^= bit;
+    if (i < j) {
+      const tr = re[i]; re[i] = re[j]; re[j] = tr;
+      const ti = im[i]; im[i] = im[j]; im[j] = ti;
+    }
+  }
+  // Danielson-Lanczos butterflies.
+  for (let len = 2; len <= n; len <<= 1) {
+    const ang = (-2 * Math.PI) / len;
+    const wr = Math.cos(ang), wi = Math.sin(ang);
+    const half = len >> 1;
+    for (let i = 0; i < n; i += len) {
+      let cr = 1, ci = 0;
+      for (let k = 0; k < half; k++) {
+        const a = i + k, b = i + k + half;
+        const tr = re[b] * cr - im[b] * ci;
+        const ti = re[b] * ci + im[b] * cr;
+        re[b] = re[a] - tr; im[b] = im[a] - ti;
+        re[a] += tr; im[a] += ti;
+        const ncr = cr * wr - ci * wi;
+        ci = cr * wi + ci * wr;
+        cr = ncr;
+      }
+    }
+  }
+}
+
+// Apply a Hann window to a copy of the frame.
+function hannWindow(frame) {
+  const n = frame.length;
+  const out = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    const w = 0.5 * (1 - Math.cos((2 * Math.PI * i) / (n - 1)));
+    out[i] = frame[i] * w;
+  }
+  return out;
+}
+
+// ---------------------------------------------------------------------------
+// Built-in CREPE-class pitch detector.
+// Given one audio frame (Float32Array), returns the detected spectral peaks as
+// [{ freq, pc, mag }], strongest first. Both the fundamental and the chord
+// partials appear as peaks, so accumulating peaks across a strum window
+// recovers the full chord.
+//
+// `opts`:
+//   sampleRate  (default 44100)
+//   minFreq     ignore peaks below this (default 60 Hz)
+//   maxFreq     ignore peaks above this (default 2000 Hz)
+//   relPeak     keep peaks above relPeak * frameMax (default 0.04)
+//   maxPeaks    return at most this many peaks (default 8)
+// ---------------------------------------------------------------------------
+export function detectPitchClasses(frame, opts = {}) {
+  const sampleRate = opts.sampleRate || 44100;
+  const minFreq = opts.minFreq ?? 60;
+  const maxFreq = opts.maxFreq ?? 2000;
+  const relPeak = opts.relPeak ?? 0.04;
+  const maxPeaks = opts.maxPeaks ?? 8;
+
+  const n = frame.length;
+  // Pad/truncate to next power of two for the FFT.
+  let size = 1;
+  while (size < n) size <<= 1;
+  const re = new Float32Array(size);
+  const im = new Float32Array(size);
+  const win = hannWindow(frame.length === size ? frame : frame.subarray(0, Math.min(n, size)));
+  re.set(win);
+
+  fft(re, im);
+
+  const half = size >> 1;
+  const mag = new Float32Array(half + 1);
+  for (let i = 0; i <= half; i++) mag[i] = Math.hypot(re[i], im[i]);
+
+  let maxMag = 0;
+  for (let i = 1; i <= half; i++) if (mag[i] > maxMag) maxMag = mag[i];
+  const thresh = relPeak * maxMag;
+
+  const peaks = [];
+  for (let i = 1; i < half; i++) {
+    const m = mag[i];
+    if (m <= thresh) continue;
+    if (m < mag[i - 1] || m < mag[i + 1]) continue; // local maximum only
+    // Parabolic interpolation for a sub-bin frequency estimate.
+    const alpha = mag[i - 1], beta = mag[i], gamma = mag[i + 1];
+    const denom = alpha - 2 * beta + gamma;
+    const p = denom !== 0 ? (0.5 * (alpha - gamma)) / denom : 0;
+    const peakBin = i + Math.max(-0.5, Math.min(0.5, p));
+    const freq = (peakBin * sampleRate) / size;
+    if (freq < minFreq || freq > maxFreq) continue;
+    const pc = freqToPitchClass(freq);
+    if (pc === null) continue;
+    peaks.push({ freq, pc, mag: m });
+  }
+
+  // Strongest first, capped.
+  peaks.sort((a, b) => b.mag - a.mag);
+  return peaks.slice(0, maxPeaks);
+}
+
+// ---------------------------------------------------------------------------
+// Constrained classifier.
+// `acc` is a Map<pc, energy> accumulated over a strum window.
+// `pairPcs` = { tokenA, pcsA:[...], tokenB, pcsB:[...] }.
+// Returns { chord, confident }. Confident only when the window clearly matches
+// one of the two known chords; otherwise { chord: null, confident: false }.
+// ---------------------------------------------------------------------------
+export function classifyStrum(acc, pairPcs, opts = {}) {
+  const minCoverage = opts.minCoverage ?? 2;     // need >=2 of the chord's notes
+  const minDominance = opts.minDominance ?? 0.5; // target must own >=50% of energy
+
+  let total = 0;
+  for (const v of acc.values()) total += v;
+  if (total <= 0) return { chord: null, confident: false };
+
+  const scoreA = sumPcs(acc, pairPcs.pcsA);
+  const scoreB = sumPcs(acc, pairPcs.pcsB);
+  const covA = coverage(acc, pairPcs.pcsA);
+  const covB = coverage(acc, pairPcs.pcsB);
+
+  if (scoreA <= 0 && scoreB <= 0) return { chord: null, confident: false };
+
+  const useA = scoreA >= scoreB;
+  const chosenScore = useA ? scoreA : scoreB;
+  const chosenCov = useA ? covA : covB;
+  const chosenToken = useA ? pairPcs.tokenA : pairPcs.tokenB;
+
+  const dominant = total > 0 ? chosenScore / total : 0;
+  const confident = chosenCov >= minCoverage && dominant >= minDominance;
+  return { chord: confident ? chosenToken : null, confident };
+}
+
+function sumPcs(acc, pcs) {
+  let s = 0;
+  for (const pc of pcs) s += acc.get(pc) || 0;
+  return s;
+}
+function coverage(acc, pcs) {
+  let c = 0;
+  for (const pc of pcs) if ((acc.get(pc) || 0) > 0) c++;
+  return c;
+}
+
+// ---------------------------------------------------------------------------
+// Listener factory (streaming API for the browser / production).
+//
+//   const listener = createListenerReal({
+//     pair: ['Em', 'easyC'],   // KNOWN target pair (constrained)
+//     tempoPerMin: 60,         // KNOWN tempo (strum cadence)
+//     sampleRate: 44100,
+//     frameSize: 4096,
+//     confidenceThreshold: 0.5, // -> minDominance
+//     // Optional production hook: delegate to the real basic-pitch / CREPE.
+//     pitchDetector: (frame, o) => detectPitchClasses(frame, o),
+//   });
+//
+// The browser wires the mic as the audio-frame SOURCE: getUserMedia ->
+// AudioContext -> AudioWorklet/ScriptProcessor calls listener.pushFrame(frame,
+// tMs). Tests inject a synthesized Float32Array via listener.pushBuffer(...).
+// Both paths feed the same engine; the only difference is where frames come
+// from. getEvents() returns engine-compatible strum events.
+// ---------------------------------------------------------------------------
+export function createListenerReal({
+  pair,
+  tempoPerMin = 60,
+  sampleRate = 44100,
+  frameSize = 4096,
+  hopSize = null,
+  confidenceThreshold = 0.5,
+  pitchDetector = detectPitchClasses,
+  minCoverage = 2,
+} = {}) {
+  if (!Array.isArray(pair) || pair.length !== 2) {
+    throw new Error('createListenerReal: pair must be [tokenA, tokenB]');
+  }
+  const pcsA = chordPitchClasses(pair[0]);
+  const pcsB = chordPitchClasses(pair[1]);
+  if (!pcsA || !pcsB) {
+    throw new Error(`createListenerReal: unknown chord token in pair ${pair}`);
+  }
+  const pairPcs = { tokenA: pair[0], pcsA, tokenB: pair[1], pcsB };
+
+  const hop = hopSize != null ? hopSize : frameSize;
+  const strumIntervalMs = 60000 / tempoPerMin;
+
+  const events = [];
+  let currentWindowIndex = null;
+  let windowStartMs = 0;
+  let acc = new Map(); // pc -> energy for the current strum window
+
+  function finalizeWindow() {
+    const result = classifyStrum(acc, pairPcs, {
+      minCoverage,
+      minDominance: confidenceThreshold,
+    });
+    events.push({ chord: result.chord, confident: result.confident, t: Math.round(windowStartMs) });
+    acc = new Map();
+  }
+
+  function pushFrame(samples, tMs) {
+    const peaks = pitchDetector(samples, { sampleRate });
+    const idx = Math.floor(tMs / strumIntervalMs);
+    if (currentWindowIndex === null) {
+      currentWindowIndex = idx;
+      windowStartMs = idx * strumIntervalMs;
+    } else if (idx !== currentWindowIndex) {
+      finalizeWindow();
+      currentWindowIndex = idx;
+      windowStartMs = idx * strumIntervalMs;
+    }
+    for (const pk of peaks) {
+      acc.set(pk.pc, (acc.get(pk.pc) || 0) + pk.mag);
+    }
+  }
+
+  function pushBuffer(buffer, tStartMs = 0) {
+    const len = buffer.length;
+    let i = 0;
+    while (i + frameSize <= len) {
+      const frame = buffer.subarray(i, i + frameSize);
+      const tMs = tStartMs + (i / sampleRate) * 1000;
+      pushFrame(frame, tMs);
+      i += hop;
+    }
+    if (currentWindowIndex !== null) finalizeWindow();
+  }
+
+  function reset() {
+    events.length = 0;
+    currentWindowIndex = null;
+    acc = new Map();
+  }
+
+  return {
+    pair,
+    pushFrame,
+    pushBuffer,
+    getEvents: () => events.slice(),
+    reset,
+    // Confidence gating is a feature (Rule 6): expose the matcher for unit tests.
+    _classify: (accMap) => classifyStrum(accMap, pairPcs, { minCoverage, minDominance: confidenceThreshold }),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Convenience: analyze a whole synthesized/injected buffer in one call.
+// Used by the headless tests and by any caller that already has a Float32Array.
+// ---------------------------------------------------------------------------
+export function analyzeAudio({
+  buffer,
+  pair,
+  sampleRate = 44100,
+  tempoPerMin = 60,
+  frameSize = 4096,
+  confidenceThreshold = 0.5,
+  pitchDetector = detectPitchClasses,
+}) {
+  const listener = createListenerReal({
+    pair,
+    tempoPerMin,
+    sampleRate,
+    frameSize,
+    confidenceThreshold,
+    pitchDetector,
+  });
+  listener.pushBuffer(buffer, 0);
+  return listener.getEvents();
+}

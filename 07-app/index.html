@@ -37,7 +37,7 @@
           <button class="secondary" id="onboarding-skip" type="button">Skip</button>
         </span>
       </section>
-      <div class="hero"><div class="eyebrow">Your first evening at the tavern</div><h1>Pull up a chair.</h1><p>Sage is waiting on the porch. Start with ten calm minutes: meet your guitar, tune it, and make your first sound.</p><button class="primary" id="start-l01" type="button">Begin Lesson 1</button></div>
+      <div class="hero"><div class="eyebrow">Your first evening at the tavern</div><h1>Pull up a chair.</h1><p>Sage is waiting on the porch. Start with ten calm minutes: meet your guitar, tune it, and make your first sound.</p><button class="primary" id="start-l01" type="button">Begin Lesson 1</button> <button class="secondary" id="start-practice" type="button">Practice</button></div>
       <section class="step" id="performance-rail" aria-live="polite">Loading your performance ladder...</section>
       <section class="step" id="weekly-plan-card" aria-live="polite">Loading your weekly practice plan...</section>
       <div class="catalog-head"><div><div class="eyebrow">The path ahead</div><h2>25 lessons, one song at a time</h2></div><div class="status" id="catalog-status" role="status">Loading your lessons...</div></div>
@@ -50,6 +50,22 @@
         <button class="secondary" id="lesson-done" type="button">Mark lesson complete</button>
       </div>
       <article id="lesson-content"></article>
+    </section>
+    <section id="practice-view" class="lesson-view" data-practice-view hidden aria-labelledby="practice-title">
+      <div class="lesson-top">
+        <button class="secondary" id="practice-back-home" type="button">Back to the path</button>
+        <span class="meta" id="practice-mic-status"></span>
+      </div>
+      <article id="practice-content">
+        <h1 id="practice-title">Practice</h1>
+        <p class="meta" id="practice-pair-line"></p>
+        <div class="grid" id="practice-drill-grid" aria-live="polite"></div>
+        <section class="step" id="practice-result" aria-live="polite" hidden></section>
+        <section class="step" id="practice-coach" aria-live="polite" hidden>
+          <button class="secondary" id="practice-ask-coach" type="button">Ask your coach</button>
+          <p class="meta" id="practice-coach-text"></p>
+        </section>
+      </article>
     </section>
   </main>
   <div class="report-note" id="report-note" role="status" hidden></div>
@@ -470,6 +486,183 @@
 
       loadLessonWithRetry();
     })();
+  </script>
+  <script type="module">
+    // Wave 3 task F — practice/drill screen wiring. drillRunner.js is an ES
+    // module (it imports adaptivePlan.js, the drills/*.js modules,
+    // pairKey.js, coachSurface.js) so it is loaded here as type="module"
+    // rather than a classic <script>, same as the other ES-module shell
+    // wiring above; it still attaches its factory to
+    // window.GuitarApp.DrillRunner, mirroring lesson-runner.js's
+    // createLessonRunner({...}) convention.
+    import "./core/drillRunner.js";
+    import { PracticeStore } from "./core/practiceStore.js";
+
+    function esc(value) {
+      var node = document.createElement("span");
+      node.textContent = String(value == null ? "" : value);
+      return node.innerHTML;
+    }
+
+    function telemetry() { return (window.GuitarApp && window.GuitarApp.Telemetry) || null; }
+    function logEvent(name, opts) {
+      var t = telemetry();
+      if (!t) return;
+      try { t.log(name, opts || {}); } catch (e) { /* telemetry must never break the practice flow */ }
+    }
+
+    var STORE_KEY = "guitarapp.practiceStore.v1";
+    function loadStore() {
+      try {
+        var raw = localStorage.getItem(STORE_KEY);
+        if (raw) return PracticeStore.fromJSON(JSON.parse(raw));
+      } catch (e) { /* non-fatal, fall through to a fresh store */ }
+      return new PracticeStore({ currentTeacherId: "T1" });
+    }
+    function saveStore(store) {
+      try { localStorage.setItem(STORE_KEY, JSON.stringify(store.toJSON())); } catch (e) { /* non-fatal */ }
+    }
+
+    var practiceStore = loadStore();
+    var drillRunner = null;
+    var currentRunResult = null;
+
+    function currentLearnerProfile() {
+      return (window.GuitarApp && typeof window.GuitarApp.getLearnerProfile === "function")
+        ? window.GuitarApp.getLearnerProfile()
+        : undefined;
+    }
+
+    function ensureDrillRunner() {
+      if (drillRunner) return drillRunner;
+      var practiceIndex = (window.__APP__ && window.__APP__.CATALOG && window.__APP__.CATALOG.practiceIndex) || null;
+      drillRunner = window.GuitarApp.DrillRunner.createDrillRunner({
+        practiceIndex: practiceIndex,
+        practiceStore: practiceStore,
+        telemetry: telemetry(),
+        win: window,
+      });
+      return drillRunner;
+    }
+
+    function renderDrillMenu() {
+      var grid = document.getElementById("practice-drill-grid");
+      var pairLine = document.getElementById("practice-pair-line");
+      if (!grid) return;
+      grid.textContent = "";
+      var runner = ensureDrillRunner();
+      var pair = runner.pickPair();
+      if (pairLine) {
+        pairLine.textContent = pair
+          ? ("Practicing: " + pair.a + " ↔ " + pair.b)
+          : "Complete Lesson 1 to unlock your first practice pair.";
+      }
+      var menu = runner.pickMenu();
+      menu.forEach(function (name) {
+        var button = document.createElement("button");
+        button.type = "button";
+        button.className = "lesson-card";
+        var h3 = document.createElement("h3");
+        h3.textContent = name;
+        button.appendChild(h3);
+        button.disabled = !pair;
+        button.addEventListener("click", function () { runOneDrill(name); });
+        grid.appendChild(button);
+      });
+    }
+
+    function renderResult(envelope) {
+      var box = document.getElementById("practice-result");
+      var coachBox = document.getElementById("practice-coach");
+      if (!box) return;
+      box.hidden = false;
+      box.textContent = "";
+      var h3 = document.createElement("h3");
+      h3.textContent = envelope.result.passed ? "Nice work" : "Keep at it";
+      box.appendChild(h3);
+      var p = document.createElement("p");
+      p.className = "meta";
+      p.textContent = envelope.result.summary || "";
+      box.appendChild(p);
+      if (coachBox) coachBox.hidden = false;
+    }
+
+    async function runOneDrill(menuName) {
+      var runner = ensureDrillRunner();
+      var lessonId = null;
+      try {
+        var result = await runner.runSelectedDrill({
+          menuName: menuName,
+          drillParams: {},
+          lessonId: lessonId,
+          requestMic: async function () {
+            if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== "function") return false;
+            try {
+              var stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+              stream.getTracks().forEach(function (track) { track.stop(); });
+              return true;
+            } catch (e) { return false; }
+          },
+        });
+        if (!result.ok) {
+          console.warn("[practice] drill not available:", result.error);
+          return;
+        }
+        currentRunResult = result;
+        saveStore(practiceStore);
+        renderResult(result);
+      } catch (e) {
+        console.warn("[practice] drill run failed (non-fatal):", e && e.message);
+      }
+    }
+
+    async function askCoach() {
+      var textEl = document.getElementById("practice-coach-text");
+      if (!textEl) return;
+      var runner = ensureDrillRunner();
+      var justHappened = currentRunResult ? {
+        drillId: currentRunResult.drillId,
+        passed: currentRunResult.result.passed,
+        score: currentRunResult.result.score,
+        ratePerMin: currentRunResult.result.ratePerMin,
+      } : null;
+      try {
+        var message = await runner.askCoachAbout({
+          learnerProfile: currentLearnerProfile(),
+          lessonId: null,
+          recentHistory: [],
+          justHappened: justHappened,
+          localTemplate: "Keep practicing — steady progress beats a rush.",
+        });
+        textEl.textContent = esc(message.text);
+      } catch (e) {
+        textEl.textContent = "Your coach is unavailable right now.";
+      }
+    }
+
+    var startPracticeBtn = document.getElementById("start-practice");
+    var practiceBackBtn = document.getElementById("practice-back-home");
+    var askCoachBtn = document.getElementById("practice-ask-coach");
+
+    if (startPracticeBtn) {
+      startPracticeBtn.addEventListener("click", function () {
+        document.getElementById("home-view").hidden = true;
+        document.getElementById("practice-view").hidden = false;
+        logEvent("practice_view_open");
+        renderDrillMenu();
+        window.scrollTo(0, 0);
+      });
+    }
+    if (practiceBackBtn) {
+      practiceBackBtn.addEventListener("click", function () {
+        document.getElementById("practice-view").hidden = true;
+        document.getElementById("home-view").hidden = false;
+        window.scrollTo(0, 0);
+      });
+    }
+    if (askCoachBtn) {
+      askCoachBtn.addEventListener("click", askCoach);
+    }
   </script>
 </body>
 </html>

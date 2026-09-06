@@ -175,5 +175,130 @@ for (const p of phrases) eq('voice.parseCommand ' + p, O.voice.parseCommand(p).i
   eq('messages.factBody', O.messages.factBody(sO), MS.factBody(sT));
   eq('streaks.readout-streak', O.streaks.readout(sO).currentStreak, SK.readout(sT).currentStreak); }
 
+// ---- Wave 1 task A: fluencyStore / oneMinuteChanges / pairKey / listenerReal ----
+// These prototype files are already ESM (export function/export const), so both
+// sides are loaded with dynamic import() -- NOT require() (require() above is
+// only for the older CommonJS 06-prototypes/stepN originals).
+const PE = path.join(REPO_ROOT, '06-prototypes', 'practice-engine');
+const OPK = await import(fileUrl(PE + '/pair-key.mjs'));
+const PPK = await import(fileUrl(SRC + '/pairKey.js'));
+const OMC = await import(fileUrl(PE + '/one-minute-changes.mjs'));
+const PMC = await import(fileUrl(SRC + '/oneMinuteChanges.js'));
+const OFS = await import(fileUrl(PE + '/fluency-store.mjs'));
+const PFS = await import(fileUrl(SRC + '/fluencyStore.js'));
+const OLR = await import(fileUrl(PE + '/listener-real.mjs'));
+const PLR = await import(fileUrl(SRC + '/listenerReal.js'));
+
+// ---- pairKey: normalization (C<->Em == Em<->C, and easyC collapses onto C) ----
+eq('pairKey.normalize-order-C-Em', OPK.pairKey('C', 'Em'), PPK.pairKey('C', 'Em'));
+eq('pairKey.normalize-order-Em-C-matches', OPK.pairKey('Em', 'C'), OPK.pairKey('C', 'Em'));
+eq('pairKey.port-normalize-order-Em-C-matches', PPK.pairKey('Em', 'C'), PPK.pairKey('C', 'Em'));
+eq('pairKey.easyC-collapses-onto-C', OPK.pairKey('easyC', 'Em'), OPK.pairKey('C', 'Em'));
+eq('pairKey.port-easyC-collapses-onto-C', PPK.pairKey('easyC', 'Em'), PPK.pairKey('C', 'Em'));
+eq('pairKey.orig-vs-port', OPK.pairKey('Em', 'C'), PPK.pairKey('Em', 'C'));
+
+// ---- oneMinuteChanges: 30/min and 60/min measureOneMinute cases ----
+{
+  const mkEvents = (chords) => chords.map((c, i) => ({ chord: c, confident: true, t: i * 1000 }));
+  // 30 clean alternating changes in 60s -> ratePerMin 30
+  const events30 = mkEvents(Array.from({ length: 31 }, (_, i) => (i % 2 === 0 ? 'Em' : 'C')));
+  const oR30 = OMC.measureOneMinute(['Em', 'C'], events30, 1.0);
+  const pR30 = PMC.measureOneMinute(['Em', 'C'], events30, 1.0);
+  eq('oneMinuteChanges.30-per-min.ratePerMin', oR30.ratePerMin, pR30.ratePerMin);
+  eq('oneMinuteChanges.30-per-min.advance', oR30.advance, pR30.advance);
+  eq('oneMinuteChanges.30-per-min.goal', oR30.goal, pR30.goal);
+  // 60 clean alternating changes in 60s -> ratePerMin 60 (goal met)
+  const events60 = mkEvents(Array.from({ length: 61 }, (_, i) => (i % 2 === 0 ? 'Em' : 'C')));
+  const oR60 = OMC.measureOneMinute(['Em', 'C'], events60, 1.0);
+  const pR60 = PMC.measureOneMinute(['Em', 'C'], events60, 1.0);
+  eq('oneMinuteChanges.60-per-min.ratePerMin', oR60.ratePerMin, pR60.ratePerMin);
+  eq('oneMinuteChanges.60-per-min.goal', oR60.goal, pR60.goal);
+}
+
+// ---- listenerReal: classifyStrum confident vs not-confident ----
+{
+  const pairPcs = { tokenA: 'Em', pcsA: OLR.chordPitchClasses('Em'), tokenB: 'C', pcsB: OLR.chordPitchClasses('C') };
+  const pairPcsP = { tokenA: 'Em', pcsA: PLR.chordPitchClasses('Em'), tokenB: 'C', pcsB: PLR.chordPitchClasses('C') };
+  // Confident case: strong, unambiguous energy on Em's pitch classes only.
+  const confidentAcc = new Map([[4, 10], [7, 10], [11, 10]]); // E, G, B
+  const oConfident = OLR.classifyStrum(confidentAcc, pairPcs);
+  const pConfident = PLR.classifyStrum(confidentAcc, pairPcsP);
+  eq('listenerReal.classifyStrum-confident.chord', oConfident.chord, pConfident.chord);
+  eq('listenerReal.classifyStrum-confident.confident', oConfident.confident, pConfident.confident);
+  ok('listenerReal.classifyStrum-confident.is-true', pConfident.confident === true);
+  // Not-confident case: empty/ambiguous energy -> no target dominance.
+  const noisyAcc = new Map([[1, 5], [6, 5]]); // neither chord's pitch classes
+  const oNoisy = OLR.classifyStrum(noisyAcc, pairPcs);
+  const pNoisy = PLR.classifyStrum(noisyAcc, pairPcsP);
+  eq('listenerReal.classifyStrum-not-confident.chord', oNoisy.chord, pNoisy.chord);
+  eq('listenerReal.classifyStrum-not-confident.confident', oNoisy.confident, pNoisy.confident);
+  ok('listenerReal.classifyStrum-not-confident.is-false', pNoisy.confident === false);
+}
+
+// ---- fluencyStore: record + spacing-effect decay (tau=3 days) ----
+{
+  const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+  let clockO = 1000000, clockP = 1000000;
+  const oStore = OFS.createFluencyStore({ knownPairs: [['Em', 'C']], now: () => clockO });
+  const pStore = PFS.createFluencyStore({ knownPairs: [['Em', 'C']], now: () => clockP });
+  oStore.record(['Em', 'C'], { ratePerMin: 60 }, clockO);
+  pStore.record(['Em', 'C'], { ratePerMin: 60 }, clockP);
+  clockO += 3 * ONE_DAY_MS; clockP += 3 * ONE_DAY_MS;
+  const oDecayed = oStore.selectWeakest(1, clockO);
+  const pDecayed = pStore.selectWeakest(1, clockP);
+  eq('fluencyStore.decay-after-3-days.fluency', oDecayed[0].fluency, pDecayed[0].fluency);
+  eq('fluencyStore.decay-after-3-days.pair', oDecayed[0].pair, pDecayed[0].pair);
+  ok('fluencyStore.decay-below-initial', pDecayed[0].fluency < 1 && pDecayed[0].fluency > 0);
+}
+
+// ---- Wave 2 task D: practiceLoop / reviewScheduler ----
+const OPL = await import(fileUrl(PE + '/practice-loop.mjs'));
+const PPL = await import(fileUrl(SRC + '/practiceLoop.js'));
+const ORS = await import(fileUrl(PE + '/review-scheduler.mjs'));
+const PRS = await import(fileUrl(SRC + '/reviewScheduler.js'));
+
+// ---- practiceLoop: measureLessonPair + buildReviewSession ----
+{
+  const simulateFn = (X, old) => {
+    // 40 clean alternating changes across 60s -> ratePerMin 40.
+    const chords = Array.from({ length: 41 }, (_, i) => (i % 2 === 0 ? X : old));
+    return chords.map((c, i) => ({ chord: c, confident: true, t: i * 1500 }));
+  };
+  const oLoop = OPL.createPracticeLoop({ knownPairs: [], K: 3, now: () => 1000000 });
+  const pLoop = PPL.createPracticeLoop({ knownPairs: [], K: 3, now: () => 1000000 });
+  const oM = oLoop.measureLessonPair('C', ['Em', 'A'], simulateFn);
+  const pM = pLoop.measureLessonPair('C', ['Em', 'A'], simulateFn);
+  eq('practiceLoop.measureLessonPair.weakest-pair', oM.weakest.pair, pM.weakest.pair);
+  eq('practiceLoop.measureLessonPair.weakest-ratePerMin', oM.weakest.ratePerMin, pM.weakest.ratePerMin);
+  const oR = oLoop.buildReviewSession();
+  const pR = pLoop.buildReviewSession();
+  eq('practiceLoop.buildReviewSession.pairs', oR.pairs, pR.pairs);
+  eq('practiceLoop.buildReviewSession.fluencies', oR.fluencies, pR.fluencies);
+}
+
+// ---- reviewScheduler: pairNeedsReview + computeReviewState ----
+{
+  const nowMs = 10_000_000;
+  const snapshot = [
+    { pair: 'C::Em', fluency: 0.9, samples: 5, lastPracticed: nowMs - 1000 },
+    { pair: 'A::D', fluency: 0.2, samples: 3, lastPracticed: nowMs - 1000 },
+    { pair: 'G::C', fluency: 0.8, samples: 0, lastPracticed: null },
+  ];
+  for (const p of snapshot) {
+    const oN = ORS.pairNeedsReview(p, nowMs);
+    const pN = PRS.pairNeedsReview(p, nowMs);
+    eq('reviewScheduler.pairNeedsReview.' + p.pair + '.review', oN.review, pN.review);
+    eq('reviewScheduler.pairNeedsReview.' + p.pair + '.reason', oN.reason, pN.reason);
+  }
+  const oState = ORS.computeReviewState(snapshot, nowMs);
+  const pState = PRS.computeReviewState(snapshot, nowMs);
+  eq('reviewScheduler.computeReviewState.needsReview', oState.needsReview, pState.needsReview);
+  eq('reviewScheduler.computeReviewState.topK', oState.topK, pState.topK);
+  eq('reviewScheduler.computeReviewState.level', oState.level, pState.level);
+  eq('reviewScheduler.computeReviewState.message', oState.message, pState.message);
+  eq('reviewScheduler.computeStreak', ORS.computeStreak(snapshot, nowMs), PRS.computeStreak(snapshot, nowMs));
+  eq('reviewScheduler.comebackNudge', ORS.comebackNudge(5, 1), PRS.comebackNudge(5, 1));
+}
+
 console.log('\nFIDELITY GATE: ' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
