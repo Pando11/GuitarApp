@@ -457,6 +457,7 @@
             lessonRunner=window.GuitarApp.LessonRunner.createLessonRunner({
               lessons: lessons,
               learnerProfile: currentLearnerProfile(),
+              audioManifest: result.audioManifest || {},
               render: function(payload){
                 var root=document.getElementById("lesson-content");
                 if(!validateHTML(payload.html))throw new Error('Invalid HTML');

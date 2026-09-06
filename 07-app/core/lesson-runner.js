@@ -429,6 +429,7 @@
    * @param {Object} opts - Configuration options
    * @param {Array} opts.lessons - Array of raw lesson data objects
    * @param {Function} opts.render - Callback when lesson is opened
+   * @param {Object} opts.audioManifest - Audio manifest data (optional; loaded separately if not provided)
    * @param {boolean} opts.strict - If true, throw on validation errors (default: true)
    * @returns {Object} Runner with methods to open and fetch lessons
    */
@@ -437,6 +438,8 @@
     const lessons = asArray(options.lessons);
     const openIndex = { value: null };
     const strict = options.strict !== false; // Default to strict mode
+    // Use passed audioManifest, or fall back to manifestState.data if loaded
+    const passedAudioManifest = options.audioManifest;
 
     // Validate all lessons on initialization
     const validationResults = lessons.map((lesson, i) => ({
@@ -475,7 +478,9 @@
 
       const profile = learnerProfile !== undefined ? learnerProfile : options.learnerProfile;
       const model = normalizeLesson(raw, index, profile);
-      const html = renderLessonHTML(model, manifestState.data);
+      // Prefer passed audioManifest; fall back to manifestState.data if available
+      const audioData = passedAudioManifest || manifestState.data;
+      const html = renderLessonHTML(model, audioData);
 
       if (typeof options.render === "function") {
         options.render({ model, html });
@@ -487,7 +492,8 @@
       // resolves so audio elements appear without forcing a synchronous
       // fetch on every lesson open. A missing/failed manifest resolves to
       // {} and simply renders no audio elements - the lesson stays usable.
-      if (!manifestState.data) {
+      // Skip this if we already have audio data (either passed or loaded).
+      if (!audioData) {
         loadAudioManifest().then((data) => {
           if (openIndex.value !== index || typeof options.render !== "function") return;
           const updatedHtml = renderLessonHTML(model, data);

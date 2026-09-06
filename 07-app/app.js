@@ -320,7 +320,17 @@
               };
             });
           }
-          return { manifest: manifest, lessons: lessons };
+          // Fetch audio manifest alongside lessons
+          return fetch("./audio/manifest.json")
+            .then(function (r) {
+              return (r && r.ok) ? r.json() : {};
+            })
+            .catch(function () {
+              return {};
+            })
+            .then(function (audioManifest) {
+              return { manifest: manifest, lessons: lessons, audioManifest: audioManifest };
+            });
         });
       });
   }
