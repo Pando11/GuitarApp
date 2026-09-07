@@ -1,17 +1,23 @@
-; Engine configuration file for GuitarApp world (Godot 4.x)
-; Format: Godot 4 project settings. Target engine: godotengine/godot 4.7.1-stable (MIT).
-; This project is the GAME-LIKE STORY-WORLD shell (AMENDMENT-09). The teacher is ONE
-; character in the world; lessons trigger as scenes. Art direction is per-lesson
-; (styleAnchor), NOT a global world rule.
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
 
 config_version=5
+
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 [application]
 
 config/name="GuitarApp World"
 config/description="Game-like story-world shell for the GuitarApp lesson app (AMENDMENT-09)."
 run/main_scene="res://world/World.tscn"
-config/features=PackedStringArray("4.3", "GL Compatibility")
+config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
 
 [display]
@@ -19,10 +25,11 @@ config/icon="res://icon.svg"
 window/size/viewport_width=720
 window/size/viewport_height=1280
 window/handheld/orientation="portrait"
-
-[input]
-
-; reserved: lesson_select, lesson_confirm, lesson_exit (bound in code, not here)
+; Without a stretch mode the 720x1280 viewport is not scaled to the OS window, so
+; content draws at native pixel size and spills off-screen on a desktop monitor.
+; canvas_items + keep scales the whole portrait viewport and letterboxes it.
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
 
 [renderer]
 

@@ -9,9 +9,18 @@ extends Node2D
 #                 keyed by the STEM of the clip filename, so each clip can have its own line.
 #   fingering:    [ ... ]  (verified chord-theory data; optional)
 
-const VIDEO_NODE = "VideoStreamPlayer"
+# The video sits inside a CanvasLayer -> AspectRatioContainer so a 16:9 clip
+# letterboxes inside the 720x1280 portrait viewport instead of drawing at native
+# size and spilling off the window. The CanvasLayer is load-bearing: Controls
+# parented straight to a Node2D compute to zero size, which scales an expanding
+# VideoStreamPlayer down to nothing.
+const VIDEO_NODE = "UI/Screen/VideoStreamPlayer"
 const AUDIO_NODE = "AudioStreamPlayer"
 const FINGER_OVERLAY = "FingeringOverlay"
+
+# Emitted once the last clip in the sequence has played, so the world can put
+# something on screen instead of leaving the student staring at a dead frame.
+signal lesson_finished(lesson_id: String)
 
 var _lesson: Dictionary = {}
 var _clips: Array = []
@@ -46,6 +55,9 @@ func setup(lesson: Dictionary) -> void:
 func _play_current() -> void:
 	if _clip_index >= _clips.size():
 		print("Lesson '%s' finished." % _lesson.get("id", "?"))
+		# Leave the last frame on screen rather than clearing to black, then tell
+		# the world we are done so it can show the entry screen again.
+		lesson_finished.emit(String(_lesson.get("id", "")))
 		return
 	var clip_path: String = _clips[_clip_index]
 	var vp := get_node_or_null(VIDEO_NODE)

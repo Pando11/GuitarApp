@@ -6,10 +6,32 @@
 [node name="LessonScene" type="Node2D"]
 script = ExtResource("1_lesson")
 
-[node name="VideoStreamPlayer" type="VideoStreamPlayer" parent="."]
+; Controls parented directly to a Node2D do not resolve their anchors against the
+; viewport - they compute to zero size, which scales an expanding
+; VideoStreamPlayer to nothing. A CanvasLayer gives the Control tree the viewport
+; rect, so the video fills the screen the way the anchors say it should.
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="Backdrop" type="ColorRect" parent="UI"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_right = 0.0
+offset_bottom = 0.0
+color = Color(0.078, 0.078, 0.078, 1)
+
+[node name="Screen" type="AspectRatioContainer" parent="UI"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 0.0
+offset_bottom = 0.0
+ratio = 1.7777778
+stretch_mode = 2
+
+[node name="VideoStreamPlayer" type="VideoStreamPlayer" parent="UI/Screen"]
+layout_mode = 2
+expand = true
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
 
