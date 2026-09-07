@@ -225,9 +225,10 @@ at the owner's direction.
 |------|--------|-------|
 | W0.0 Push all branches to GitHub | DONE (2026-09-06) | the three local branches had never been pushed; 16 commits existed on one disk only |
 | W0.1 Lift the Emerald Hollow freeze | DONE (2026-09-06) | owner signed off; lifted in both `README.md` and `CLAUDE.md`. Only the Godot world shell + Emerald Hollow art were unfrozen — everything else on that list still stands |
-| W1.1/W1.2 Run the world in Godot | TODO | needs Godot 4.7.x installed (O.1); not installed on this machine as of 2026-09-06 |
+| W1.1/W1.2 Run the world in Godot | DONE (2026-09-07) | O.1 satisfied — Godot 4.7.2 at `C:\Users\Hendrickson\godot\`. The cold open plays: B00 walk-in → B01 meet-Sage → B02 two-shot, ~15s total, with Sage's voice over clips 2 and 3. Needed the W3.1 render fix below before anything was visible |
 | W2 Merge the world branch into main | DONE (2026-09-06) | commit `67305e2`, 825 files, +86,877 lines |
-| W3 Wire the world to a real lesson | TODO | |
+| W3.1 Godot project hygiene | DONE (2026-09-07) | `fdb4774`. Project converted 4.3→4.7; added the missing stretch mode; fixed the cold open rendering off-screen (see below). `.godot/` editor cache untracked |
+| W3.2 Real lesson entry from the world | TODO | `World.gd::_ready()` still hard-codes `enter_lesson("W1-coldopen")` behind a `# DEMO HOOK` comment, and `_build_world_entry()` only `print()`s the lesson doors. A `lesson_finished` signal now exists on LessonScene but **nothing consumes it** — after ~15s the last frame just holds. This is the next real piece of world work |
 | W4 World/app integration decision | **TODO — owner decision** | Godot-wraps-all vs world-as-front-door vs keep-separate |
 | W5 Ship the web app publicly | TODO | blocked on owner steps O.2 (default branch) + O.3 (Pages source) |
 | W6 Close out Tier 1 gaps | 2/3 DONE, 1 BLOCKED (2026-09-06) | W6.2/W6.3 done and verified; W6.1 blocked on a new owner step — see notes below |
@@ -246,6 +247,29 @@ on both sides, so no fingering data was touched.
 branches were defective in different ways — and `07-app/core/chatEngine.test.mjs`
 (32 assertions) was added to cover it. That test file is new coverage, not a
 port; it is the one place W2 went past a pure merge.
+
+**W3.1 — why the world looked blank (2026-09-07).** The project ran correctly
+from the first launch — manifest parsed, both voice lines fired, clean
+stdout/stderr — but nothing was visible. Two layout faults, neither of which
+raises an error:
+
+1. **No stretch mode.** The 720x1280 portrait viewport was never scaled to the
+   OS window, so on a desktop monitor content drew at native pixel size. The
+   clips are **1280x720 landscape, 5.03s each** and landed mostly off-screen.
+2. **Controls parented to a `Node2D` do not resolve anchors against the
+   viewport** — they compute to zero size. `VideoStreamPlayer` sat directly
+   under the Node2D root with full-rect anchors that did nothing; it rendered
+   only because `expand` defaults to false (native size, ignores the rect).
+   The Control tree now lives under a **CanvasLayer**, where anchors work.
+
+Remember this shape: **a blank Godot window with no errors is usually a layout
+fault, not a missing asset.** Screenshot a live run before touching assets. The
+`.ogv` files were fine the whole time.
+
+Also note the content mismatch this exposed: **the cinematics are 16:9 landscape
+but the app is a portrait phone app.** They are letterboxed for now, which is
+correct for a cutscene, but any future world art should decide orientation
+deliberately rather than inheriting it from the generator.
 
 **Freeze resolved 2026-09-06 (was blocking every task in this tier).** The
 "explicitly frozen" lists in `README.md` and `CLAUDE.md` both named the Godot
