@@ -138,13 +138,13 @@ test:fidelity` 84/84 (was 48; +36 from this work); `drillRunner.test.mjs`
 all 8 `drills/*.test.mjs` green.
 
 **Not yet done, blocking a full end-to-end Tier 1 demo:**
-- The coaching service has never made a real model call. A real
-  `ANTHROPIC_API_KEY` is already present in `server/.env` (gitignored,
-  untracked, verified 2026-09-06) — the missing piece was the call never
-  having been made, not the key being absent. `coach_served` telemetry and
-  the prompt-cache-hit check still need to be verified against a real call,
-  not just a mocked SDK client. See Wave 6 in `TIER-W-emerald-hollow.md`
-  (unblocked, no longer waiting on O.5).
+- **Resolved 2026-09-07 — see Wave 6 in the Tier W section below for the
+  full story.** The coaching service now makes real model calls
+  (`claude-haiku-4-5-20251001`) and `coach_served` telemetry fires
+  end-to-end with a genuine response reaching the student, not a template
+  fallback. One accepted tradeoff: no prompt-cache hit with Haiku (its
+  cacheable-prefix floor is much higher than Opus's; not worth chasing with
+  filler content given Haiku's low per-token cost).
 - `chatEngine.js`'s `askCoach` is now reachable from the practice screen via
   `coachSurface.js`/`drillRunner.js`'s "Ask your coach" control (T1.6), but is
   still not wired into the main lesson-runner flow (`lesson-runner.js`) —
@@ -202,14 +202,15 @@ that would make T1.1, T1.2, and T1.5 all become real simultaneously. It
 isn't in either tier's task list as written.
 
 Other facts for whoever starts Tier 2:
-- **Correction (2026-09-06):** this bullet originally said no
-  `ANTHROPIC_API_KEY` had ever been set in this environment — that was false
-  as of this date. A real key is present in `server/.env` (gitignored,
-  untracked, verified 2026-09-06). The coaching service still has never made
-  one real model call — `coach_served` telemetry, the guardrail, and the
-  cache-hit behavior are all verified only against a mocked SDK client — but
-  that is now unblocked, not waiting on a missing key. See Wave 6 in
-  `TIER-W-emerald-hollow.md`.
+- **Correction (2026-09-07):** this bullet originally said no
+  `ANTHROPIC_API_KEY` had ever been set, and (as of 2026-09-06) that the
+  coaching service had still never made a real model call. Both are now
+  false: a real, workspace-scoped key is present in `server/.env`
+  (gitignored, untracked), and as of 2026-09-07 the service makes real
+  `claude-haiku-4-5-20251001` calls with `coach_served` telemetry firing
+  end-to-end. See Wave 6 in the Tier W section below for the full story
+  (model swap, a real latency-budget fix, and an accepted no-cache-hit
+  tradeoff with Haiku).
 - `adaptivePlan.js`'s confidence scale is 0-100 (fixed during Tier 1 — it
   was originally coded as 0-1, contradicting `CONTEXT.md`). Any new code
   reading `mastery[].confidence` should assume 0-100.
@@ -231,7 +232,7 @@ at the owner's direction.
 | W3.2 Real lesson entry from the world | TODO | `World.gd::_ready()` still hard-codes `enter_lesson("W1-coldopen")` behind a `# DEMO HOOK` comment, and `_build_world_entry()` only `print()`s the lesson doors. A `lesson_finished` signal now exists on LessonScene but **nothing consumes it** — after ~15s the last frame just holds. This is the next real piece of world work |
 | W4 World/app integration decision | **TODO — owner decision** | Godot-wraps-all vs world-as-front-door vs keep-separate |
 | W5 Ship the web app publicly | TODO | blocked on owner steps O.2 (default branch) + O.3 (Pages source) |
-| W6 Close out Tier 1 gaps | 2/3 DONE, 1 BLOCKED (2026-09-06) | W6.2/W6.3 done and verified; W6.1 blocked on a new owner step — see notes below |
+| W6 Close out Tier 1 gaps | 3/3 DONE (2026-09-07) | Real coaching now reaches a student end-to-end for the first time — see notes below |
 
 **W2 merge notes.** `h5-05content-backfill` turned out to be a superset of both
 `boardroom/growth-2026-08-30` and `boardroom/content-pipeline-recon-20260826`,
@@ -302,22 +303,61 @@ still green — `npm run test:all` 28/28 + 19/19, `npm run test:fidelity` 84/84,
   (`planNextUnit`'s own stored-number-derived string), never invented, and
   the target lesson is checked against `LESSON_UNLOCK_COUNT` before the
   button is shown. Confirmed by reading the diff directly.
-- **W6.1 (`server/**`) — BLOCKED, new owner action required.** The key in
-  `server/.env` is real but **org-level, not workspace-scoped** — every real
-  call (`messages.create` and `messages.countTokens`) returns a reproducible
-  `400 invalid_request_error`: *"This API key is not scoped to a workspace,
-  so this request must include the anthropic-workspace-id header..."* — the
-  lead reproduced this independently, it is not just the subagent's claim.
-  Code is ready (`config.js`/`modelClient.js` now read
-  `ANTHROPIC_WORKSPACE_ID` and pass it as the `anthropic-workspace-id`
-  header; `server/test/real-call.smoke.mjs` is the live verification script,
-  named so it's excluded from `npm test`'s glob and never runs or costs
-  money except via `npm run test:live`) — it just has nothing to
-  authenticate with yet. **New owner step:** get a workspace-scoped key, or
-  the workspace ID (`wrkspc_...`) itself, from the Anthropic Console, and set
-  `ANTHROPIC_WORKSPACE_ID` in `server/.env`. Then re-run
-  `cd server && npm run test:live` for the real `coach_served`/cache-hit
-  verification this task still needs.
+- **W6.1 (`server/**`) — DONE (2026-09-07). Real coaching reaches a student
+  end-to-end for the first time.** Original blocker: the key in `server/.env`
+  was real but org-level, not workspace-scoped — every real call 400'd
+  asking for an `anthropic-workspace-id` header. Owner supplied a second,
+  workspace-scoped key (from `guitar app claude api key.txt`), which cleared
+  that error immediately — confirmed via `npm run test:live`.
+  That surfaced two more real, verified problems, not owner actions:
+  1. **Latency vs. budget.** The spec'd model (`claude-opus-5`, adaptive
+     thinking) took 4.1-4.8s per real call, but the server's own
+     `MODEL_TIMEOUT_MS` (2300ms — "the student never waits on a network for
+     coaching") discarded every real response before it arrived, always
+     falling back to template. **Owner decision: swap to `claude-haiku-4-5-
+     20251001`** — this is short templated fact-citing prose, not a reasoning
+     task, Rule 5 is enforced in code (`guardrail.js`) independent of model
+     choice, and Haiku is far cheaper besides. Real Haiku latency measured
+     ~2.0-2.4s, now fitting the existing budget. Haiku also rejects
+     `thinking: {type: 'adaptive'}` outright (400 "adaptive thinking is not
+     supported on this model") — `modelClient.js`'s `callCoach()` now only
+     sends `thinking`/`output_config` when `config.js` actually configures
+     them (both `null` for Haiku); `modelClient.test.mjs` updated to assert
+     against the `config.js` constants instead of a hardcoded
+     `'claude-opus-5'` literal, so it won't need hand-editing on the next
+     model swap either.
+  2. **`coach_served` telemetry silently missing even on success.**
+     `chatEngine.js`'s `logCoachServed()` fired `import('./telemetry.js').
+     then(...)` without awaiting it, so `askCoach()` could resolve and
+     return to its caller *before* the telemetry write landed — a real race,
+     not a mocked-test artifact; found because the live smoke test checked
+     `telemetry.getQueue()` right after `await askCoach(...)` and saw it
+     empty despite a genuine model response. Fixed by awaiting it properly.
+     New regression coverage in `chatEngine.test.mjs` (32→36) proves
+     `coach_served` is already in the queue immediately after `askCoach()`
+     resolves, both on the model-success and template-fallback paths.
+  3. **Cache floor also fixed independently, then a Haiku tradeoff surfaced.**
+     `modelClient.js`'s `buildSystemPrompt()` never used `T1.json`'s
+     `persona.catchphrase`/`persona_lines` even though they were already
+     loaded — real, owner-approved voice content, not filler. Wiring them in
+     (plus restating the camera/copyright non-negotiables as explicit model
+     rules) grew the prompt from ~250 to ~450 tokens, which cleared Opus's
+     cacheable-prefix floor (`cache_read_input_tokens=609` confirmed on a
+     second call, while still on Opus). **After the Haiku swap, no cache hit
+     is observed** — Haiku's minimum cacheable-prefix length is much higher
+     than Opus's, and this prompt doesn't reach it. Padding further with
+     genuinely-uninformative filler just to hit that number was judged not
+     worth it (owner + lead agreed): Haiku's per-token cost is already low
+     enough that the dollar value of caching here is small. Accepted as a
+     tradeoff, not left as an open bug.
+  **Final verified state** (`cd server && npm run test:live`, real API,
+  real HTTP round trip): first real model call succeeds; `coach_served`
+  fires with `source: "model"`, latency ~2.0s; end-to-end `askCoach()`
+  serves a genuine model response, not template fallback. Cache-hit line
+  fails by design per the tradeoff above. Full baseline re-verified after
+  every change: `test:all` 28/28+19/19, `test:fidelity` 84/84,
+  `verify-sw-cache` 7/7, `chatEngine.test.mjs` 36/36, `coachSurface.test.mjs`
+  26/26, server mocked suite 33/33.
 - **`anonId` gap — FIXED (2026-09-07).** `coachSurface.js`'s
   `buildCoachEnvelope()` now accepts `anonId` and passes it through verbatim
   when it's a non-empty string ≤128 chars (server/src/schema.js's
