@@ -41,6 +41,7 @@ function loadPersona() {
       name: json.name || 'Sage',
       teachingStyle: json.teaching_style || '',
       tone: (json.persona && json.persona.tone) || '',
+      catchphrase: (json.persona && json.persona.catchphrase) || '',
       lines: json.persona_lines || {},
     };
   } catch {
@@ -48,6 +49,7 @@ function loadPersona() {
       name: 'Sage',
       teachingStyle: 'A calm, warm, encouraging guitar teacher who builds confidence from real practice facts.',
       tone: 'calm, warm, encouraging',
+      catchphrase: '',
       lines: {},
     };
   }
@@ -59,11 +61,28 @@ const PERSONA = loadPersona();
  * Build the ONE stable system prompt block. Must be byte-identical across
  * requests — never interpolate student data here. Cached at module load so
  * every call returns the exact same string.
+ *
+ * Includes T1.json's persona.catchphrase and persona_lines (intro/chord/
+ * exercise/wrap) as real, owner-approved voice reference examples — these
+ * were loaded into PERSONA from the start but never actually used here.
+ * Beyond making Sage's voice more consistent, this also clears Claude's
+ * 512-token minimum cacheable-prefix floor: without them the prompt was
+ * ~250 tokens and cache_creation_input_tokens was 0 on every call (verified
+ * 2026-09-07 against the real API — see docs/plans/STATUS.md's Wave 6
+ * notes), so no cache was ever written regardless of code correctness.
  */
 export function buildSystemPrompt() {
+  const lines = PERSONA.lines || {};
   return [
     `You are ${PERSONA.name}, a guitar teacher. ${PERSONA.teachingStyle}`,
     `Voice: ${PERSONA.tone}.`,
+    PERSONA.catchphrase ? `Catchphrase: "${PERSONA.catchphrase}"` : '',
+    '',
+    'Reference lines showing your voice in different moments (do not repeat these verbatim — they show tone and pacing, not the words to use):',
+    lines.intro ? `- Starting a session: "${lines.intro}"` : '',
+    lines.chord ? `- Introducing a chord shape: "${lines.chord}"` : '',
+    lines.exercise ? `- During a drill: "${lines.exercise}"` : '',
+    lines.wrap ? `- Wrapping up: "${lines.wrap}"` : '',
     '',
     'You will be given a compact summary of one student\'s stored practice facts: their profile, the current lesson, their per-chord mastery, and possibly a drill they just completed. Write a short coaching message reacting to those facts.',
     '',
@@ -71,7 +90,10 @@ export function buildSystemPrompt() {
     '- Cite only chords and numbers given to you in the user message. Never invent a chord name, confidence number, score, or rate that was not provided.',
     '- Write 2-3 sentences, second person, warm register.',
     '- Respond with prose only — no JSON, no markdown, no lists, no headers.',
-  ].join('\n');
+    '- Never suggest camera use, hand tracking, or any visual analysis of the student.',
+    '- Never mention or reference specific copyrighted songs.',
+    '- The facts you are given are the complete picture — do not imply you know more about the student than what is stated.',
+  ].filter((line) => line !== '').join('\n');
 }
 
 const MASTERY_LABEL_TEXT = {
@@ -151,25 +173,30 @@ export async function callCoach(envelope, { client = getDefaultClient(), timeout
     }, timeoutMs);
   });
 
-  const requestPromise = client.messages.create(
-    {
-      model: MODEL_ID,
-      max_tokens: MODEL_MAX_TOKENS,
-      thinking: MODEL_THINKING,
-      output_config: MODEL_OUTPUT_CONFIG,
-      system: [
-        {
-          type: 'text',
-          text: buildSystemPrompt(),
-          cache_control: { type: 'ephemeral' },
-        },
-      ],
-      messages: [
-        { role: 'user', content: buildUserMessage(envelope) },
-      ],
-    },
-    { signal: controller.signal },
-  );
+  const request = {
+    model: MODEL_ID,
+    max_tokens: MODEL_MAX_TOKENS,
+    system: [
+      {
+        type: 'text',
+        text: buildSystemPrompt(),
+        cache_control: { type: 'ephemeral' },
+      },
+    ],
+    messages: [
+      { role: 'user', content: buildUserMessage(envelope) },
+    ],
+  };
+  // thinking/output_config are Opus-only extended-thinking controls — not
+  // every model supports them (e.g. Haiku 4.5 rejects thinking:{type:
+  // 'adaptive'} with a 400 "adaptive thinking is not supported on this
+  // model", hit while switching models on 2026-09-07). Only sent when the
+  // configured model actually wants them (see config.js MODEL_THINKING/
+  // MODEL_OUTPUT_CONFIG).
+  if (MODEL_THINKING) request.thinking = MODEL_THINKING;
+  if (MODEL_OUTPUT_CONFIG) request.output_config = MODEL_OUTPUT_CONFIG;
+
+  const requestPromise = client.messages.create(request, { signal: controller.signal });
 
   try {
     const response = await Promise.race([requestPromise, timeoutPromise]);

@@ -6,7 +6,8 @@
 //
 // RUN: node 07-app/core/chatEngine.test.mjs
 
-import { CHORD_NAME, isOnTopic } from "./chatEngine.js";
+import { CHORD_NAME, isOnTopic, askCoach } from "./chatEngine.js";
+import * as telemetry from "./telemetry.js";
 
 let passed = 0;
 let failed = 0;
@@ -67,6 +68,52 @@ const offTopic = [
 for (const text of offTopic) {
   check(`off-topic: "${text}"`, isOnTopic(text) === false);
 }
+
+// --- askCoach -> coach_served telemetry is landed by the time askCoach ------
+// resolves, not just "eventually" ---------------------------------------------
+//
+// Regression coverage added 2026-09-07: logCoachServed() used to fire an
+// unawaited import('./telemetry.js').then(...) chain, so askCoach() could
+// resolve before the coach_served event actually reached the queue. Found
+// while live-verifying W6.1 — server/test/real-call.smoke.mjs called
+// telemetry.getQueue() right after `await askCoach(...)` and saw it empty
+// even though the model call had genuinely succeeded.
+console.log("\nchatEngine — askCoach coach_served telemetry timing");
+
+telemetry._resetTelemetry();
+const modelResult = await askCoach(
+  { learnerProfile: {}, lessonId: "L01", mastery: [] },
+  "local fallback text",
+  {
+    fetchImpl: async () => ({
+      ok: true,
+      json: async () => ({ prose: "A real model line.", source: "model" }),
+    }),
+  },
+);
+check("askCoach (model success) returns source: model", modelResult.source === "model");
+const queueAfterModel = telemetry.getQueue();
+check(
+  "coach_served is already in the queue immediately after awaiting askCoach (model path)",
+  queueAfterModel.length === 1 && queueAfterModel[0].event === "coach_served" && queueAfterModel[0].payload.source === "model",
+  `queue: ${JSON.stringify(queueAfterModel)}`,
+);
+
+telemetry._resetTelemetry();
+const fallbackResult = await askCoach(
+  { learnerProfile: {}, lessonId: "L01", mastery: [] },
+  "local fallback text",
+  { fetchImpl: async () => { throw new Error("network down"); } },
+);
+check("askCoach (service unreachable) falls back to the local template", fallbackResult.text === "local fallback text" && fallbackResult.source === "template");
+const queueAfterFallback = telemetry.getQueue();
+check(
+  "coach_served is already in the queue immediately after awaiting askCoach (fallback path)",
+  queueAfterFallback.length === 1 && queueAfterFallback[0].event === "coach_served" && queueAfterFallback[0].payload.source === "template",
+  `queue: ${JSON.stringify(queueAfterFallback)}`,
+);
+
+telemetry._resetTelemetry();
 
 console.log(`\nCHAT ENGINE GATE: ${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

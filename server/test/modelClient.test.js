@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { buildSystemPrompt, buildUserMessage, callCoach, TimeoutError } from '../src/modelClient.js';
+import { MODEL_ID, MODEL_THINKING, MODEL_OUTPUT_CONFIG } from '../src/config.js';
 
 function envelope(overrides = {}) {
   return {
@@ -33,10 +34,14 @@ test('callCoach passes the exact required params to the mocked SDK', async () =>
 
   await callCoach(envelope(), { client: fakeClient });
 
-  assert.equal(capturedRequest.model, 'claude-opus-5');
+  assert.equal(capturedRequest.model, MODEL_ID);
   assert.equal(capturedRequest.max_tokens, 512);
-  assert.deepEqual(capturedRequest.thinking, { type: 'adaptive' });
-  assert.deepEqual(capturedRequest.output_config, { effort: 'low' });
+  // thinking/output_config are only sent when config.js actually configures
+  // them (not every model supports them — see modelClient.js's callCoach).
+  if (MODEL_THINKING) assert.deepEqual(capturedRequest.thinking, MODEL_THINKING);
+  else assert.equal('thinking' in capturedRequest, false);
+  if (MODEL_OUTPUT_CONFIG) assert.deepEqual(capturedRequest.output_config, MODEL_OUTPUT_CONFIG);
+  else assert.equal('output_config' in capturedRequest, false);
   assert.equal(capturedRequest.system[0].cache_control.type, 'ephemeral');
 });
 

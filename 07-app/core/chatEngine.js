@@ -144,15 +144,19 @@ const DEFAULT_COACH_TIMEOUT_MS = 2500;
 
 // Lazily resolved so this module has no hard dependency on telemetry.js at
 // import time (keeps existing tests, which never call askCoach/replyWithCoach,
-// completely unaffected).
-function logCoachServed(source, latencyMs) {
+// completely unaffected). Awaited by askCoach() below (fixed 2026-09-07 — this
+// used to fire the import().then() without awaiting it, so askCoach() could
+// resolve and return to its caller before the telemetry write had actually
+// landed; a caller checking telemetry.getQueue() right after `await
+// askCoach(...)` could see an empty queue even on a real, successful model
+// response). Still never throws into the coaching flow.
+async function logCoachServed(source, latencyMs) {
   try {
-    import('./telemetry.js').then((telemetry) => {
-      if (telemetry && typeof telemetry.log === 'function') {
-        telemetry.log('coach_served', { payload: { source, latencyMs } });
-      }
-    }).catch(() => { /* non-fatal: telemetry must never break coaching */ });
-  } catch (e) { /* non-fatal */ }
+    const telemetry = await import('./telemetry.js');
+    if (telemetry && typeof telemetry.log === 'function') {
+      telemetry.log('coach_served', { payload: { source, latencyMs } });
+    }
+  } catch (e) { /* non-fatal: telemetry must never break coaching */ }
 }
 
 // Calls the coaching service with a facts envelope. Resolves to
@@ -205,18 +209,18 @@ export async function askCoach(envelope, localTemplate, options = {}) {
   const fallbackText = typeof localTemplate === 'function' ? localTemplate() : localTemplate;
 
   if (result && result.source === 'model') {
-    logCoachServed('model', latencyMs);
+    await logCoachServed('model', latencyMs);
     return { text: result.prose, source: 'model', latencyMs };
   }
   if (result && result.source === 'template') {
     // The service itself fell back internally — still a fallback for
     // telemetry purposes, but we prefer ITS template prose (it has the same
     // facts envelope) over the local one when available.
-    logCoachServed('template', latencyMs);
+    await logCoachServed('template', latencyMs);
     return { text: result.prose, source: 'template', latencyMs };
   }
   // Service unreachable/errored/non-200 — use the local template.
-  logCoachServed('template', latencyMs);
+  await logCoachServed('template', latencyMs);
   return { text: fallbackText, source: 'template', latencyMs };
 }
 
