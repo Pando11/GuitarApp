@@ -286,7 +286,7 @@ export function createDrillRunner({ practiceIndex, practiceStore, telemetry, win
     return { ok: true, drillId, pair, result, usedMic: useMic };
   }
 
-  async function askCoachAbout({ learnerProfile, lessonId, recentHistory, justHappened, localTemplate } = {}) {
+  async function askCoachAbout({ learnerProfile, lessonId, recentHistory, justHappened, localTemplate, anonId } = {}) {
     let mastery = [];
     try {
       mastery = (practiceStore && typeof practiceStore.getSkillMap === 'function')
@@ -295,7 +295,14 @@ export function createDrillRunner({ practiceIndex, practiceStore, telemetry, win
     } catch (e) {
       mastery = [];
     }
-    const envelope = buildCoachEnvelope({ learnerProfile, lessonId, mastery, justHappened, recentHistory });
+    // anonId: prefer an explicit override (tests), otherwise the stable
+    // per-device id telemetry.js already mints — never generated here (see
+    // coachSurface.js's buildCoachEnvelope for the "never invent" contract).
+    let resolvedAnonId = typeof anonId === 'string' ? anonId : undefined;
+    if (resolvedAnonId === undefined && telemetry && typeof telemetry.getAnonId === 'function') {
+      try { resolvedAnonId = telemetry.getAnonId(); } catch (e) { resolvedAnonId = undefined; }
+    }
+    const envelope = buildCoachEnvelope({ anonId: resolvedAnonId, learnerProfile, lessonId, mastery, justHappened, recentHistory });
     return getCoachMessage(envelope, localTemplate);
   }
 

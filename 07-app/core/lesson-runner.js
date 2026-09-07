@@ -517,7 +517,18 @@
       }
 
       const learnerProfile = o.learnerProfile !== undefined ? o.learnerProfile : options.learnerProfile;
+
+      // anonId: prefer an explicit override (tests), otherwise the stable
+      // per-device id options.telemetry (telemetry.js) already mints — never
+      // generated here (see coachSurface.js's buildCoachEnvelope for the
+      // "never invent" contract).
+      let anonId = typeof o.anonId === "string" ? o.anonId : undefined;
+      if (anonId === undefined && options.telemetry && typeof options.telemetry.getAnonId === "function") {
+        try { anonId = options.telemetry.getAnonId(); } catch (e) { anonId = undefined; }
+      }
+
       const envelope = coachSurface.buildCoachEnvelope({
+        anonId,
         learnerProfile,
         lessonId,
         mastery: Array.isArray(o.mastery) ? o.mastery : [],

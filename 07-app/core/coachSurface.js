@@ -10,13 +10,20 @@
 //     justHappened: {drillId, passed, score, ratePerMin} | null,
 //     recentHistory: [{lessonId, completedAt, confidenceDelta}] }
 //
-// This module's own buildCoachEnvelope() signature only accepts
-// {learnerProfile, lessonId, mastery, justHappened, recentHistory} (per the
-// build plan's Wave 1 task C contract) — it has no anonId/stepId input to
-// pass through, so it never fabricates those; the server treats a missing
-// anonId as a validation error and the caller (askCoach -> coachClient)
-// degrades to the local template in that case, which is the desired
-// fail-safe behavior.
+// buildCoachEnvelope() accepts {anonId, learnerProfile, lessonId, mastery,
+// justHappened, recentHistory}. anonId is picked through verbatim when it's
+// a non-empty string within server/src/schema.js's MAX_ANON_ID_LEN (128
+// chars) — never generated here; callers source it from telemetry.js's
+// getAnonId() (the same stable per-device id already used for event
+// logging). When the caller passes no anonId (or an invalid one), it's
+// simply omitted — same fail-safe posture as every other field — and the
+// server's schema rejects the request as missing `anonId`, so askCoach
+// degrades to the local template, same as before this was wired up.
+//
+// Fixed 2026-09-07: previously this signature had no anonId parameter at
+// all, so every request from any caller (practice screen, lesson screen)
+// was rejected by the server and silently fell back to template prose. See
+// docs/plans/STATUS.md's Wave 6 close-out notes.
 //
 // mastery is on a 0-100 confidence scale (see adaptivePlan.js's
 // CONFIDENCE_FLOOR=60) — never rescaled to 0-1 here.
@@ -93,11 +100,23 @@ function pickRecentHistory(raw) {
   return out;
 }
 
+// server/src/schema.js's MAX_ANON_ID_LEN — duplicated here (not imported)
+// because the server is deployed independently from this static client
+// bundle and shares no code across that boundary (see server/README.md).
+const MAX_ANON_ID_LEN = 128;
+
+function pickAnonId(raw) {
+  return (typeof raw === 'string' && raw.length > 0 && raw.length <= MAX_ANON_ID_LEN) ? raw : undefined;
+}
+
 // buildCoachEnvelope — pure, never throws. Assembles exactly the facts
 // envelope shape server/src/schema.js validates, passing through only
 // fields literally present on the input. Never invents a field.
-export function buildCoachEnvelope({ learnerProfile, lessonId, mastery, justHappened, recentHistory } = {}) {
+export function buildCoachEnvelope({ anonId, learnerProfile, lessonId, mastery, justHappened, recentHistory } = {}) {
   const envelope = {};
+
+  const id = pickAnonId(anonId);
+  if (id) envelope.anonId = id;
 
   const lp = pickLearnerProfile(learnerProfile);
   if (lp) envelope.learnerProfile = lp;

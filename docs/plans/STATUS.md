@@ -294,18 +294,28 @@ still green — `npm run test:all` 28/28 + 19/19, `npm run test:fidelity` 84/84,
   `ANTHROPIC_WORKSPACE_ID` in `server/.env`. Then re-run
   `cd server && npm run test:live` for the real `coach_served`/cache-hit
   verification this task still needs.
-- **Separate, pre-existing gap surfaced by W6.2 (not fixed — outside every
-  agent's OWNS list this wave):** `coachSurface.js`'s `buildCoachEnvelope()`
-  has no `anonId` parameter, and nothing in the app supplies one
-  (`grep -rn anonId 07-app` shows no caller). The server's schema requires
-  `anonId` for rate limiting, so **every** coach request from the client —
-  practice screen (T1.6) and lesson screen (W6.2) alike — is rejected with
-  `schema_validation` and silently falls back to `chatEngine.js`'s local
-  template. This means even once W6.1's workspace-ID blocker is cleared, no
-  real model response will reach a student until `anonId` (`telemetry.js`
-  already has one) is threaded into `buildCoachEnvelope()`. Not in any Wave 6
-  task's OWNS list — needs its own task before Wave 6 can be called fully
-  closed.
+- **`anonId` gap — FIXED (2026-09-07).** `coachSurface.js`'s
+  `buildCoachEnvelope()` now accepts `anonId` and passes it through verbatim
+  when it's a non-empty string ≤128 chars (server/src/schema.js's
+  `MAX_ANON_ID_LEN`, duplicated in a comment there since the server shares no
+  code with this client bundle) — never generated, same "never invent"
+  posture as every other field. Both call sites now derive it from
+  `telemetry.js`'s `getAnonId()` (the same stable per-device id already used
+  for event logging), with an explicit override still possible for tests:
+  `drillRunner.js`'s `askCoachAbout` reads it off the `telemetry` object
+  already passed into `createDrillRunner({...})`; `lesson-runner.js`'s
+  `askCoachAbout` reads it off a new `options.telemetry`, wired up by
+  `index.html` passing `telemetry: telemetry()` into
+  `createLessonRunner({...})`. Verified: a hand-built envelope through this
+  path now passes `server/src/schema.js`'s `validateFactsEnvelope()` with
+  `ok: true, errors: []` (previously `schema_validation` on `anonId`).
+  `coachSurface.test.mjs` extended with 5 new assertions (26/26 total,
+  up from 21) covering pass-through, omission on invalid/missing input, and
+  the 128-char boundary. Full baseline suite re-verified unaffected:
+  `test:all` 28/28+19/19, `test:fidelity` 84/84, `verify-sw-cache` 7/7,
+  `chatEngine.test.mjs` 32/32, server mocked suite 33/33. **This closes the
+  last gap blocking a real coaching round-trip once W6.1's workspace-ID
+  issue is separately resolved by the owner.**
 
 ## Tier 2 — Business — **BLOCKED (Tier 1)**
 

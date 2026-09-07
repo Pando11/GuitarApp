@@ -24,6 +24,7 @@ console.log('\n=== coachSurface.js Wave 1 task C self-test ===');
 // 1. buildCoachEnvelope with a full valid input produces the correct shape.
 // ---------------------------------------------------------------------------
 const fullInput = {
+  anonId: 'anon-test-0123456789',
   learnerProfile: { ageBand: '18-34', experience: 'returning-player', goal: 'Play campfire songs', minutesPerDay: 15 },
   lessonId: 'lesson-3',
   mastery: [
@@ -37,13 +38,24 @@ const fullInput = {
 };
 
 const fullEnvelope = buildCoachEnvelope(fullInput);
+check('full envelope has anonId', fullEnvelope.anonId === fullInput.anonId);
 check('full envelope has learnerProfile', JSON.stringify(fullEnvelope.learnerProfile) === JSON.stringify(fullInput.learnerProfile));
 check('full envelope has lessonId', fullEnvelope.lessonId === 'lesson-3');
 check('full envelope has mastery array of correct shape', JSON.stringify(fullEnvelope.mastery) === JSON.stringify(fullInput.mastery));
 check('full envelope mastery confidence stays on 0-100 scale', fullEnvelope.mastery.every((m) => m.confidence >= 0 && m.confidence <= 100));
 check('full envelope has justHappened', JSON.stringify(fullEnvelope.justHappened) === JSON.stringify(fullInput.justHappened));
 check('full envelope has recentHistory', JSON.stringify(fullEnvelope.recentHistory) === JSON.stringify(fullInput.recentHistory));
-check('full envelope never invents a stray top-level field', Object.keys(fullEnvelope).sort().join(',') === ['learnerProfile', 'lessonId', 'mastery', 'justHappened', 'recentHistory'].sort().join(','));
+check('full envelope never invents a stray top-level field', Object.keys(fullEnvelope).sort().join(',') === ['anonId', 'learnerProfile', 'lessonId', 'mastery', 'justHappened', 'recentHistory'].sort().join(','));
+
+// ---------------------------------------------------------------------------
+// 1b. buildCoachEnvelope never invents/mutates anonId — invalid input is
+// dropped, never coerced or generated.
+// ---------------------------------------------------------------------------
+check('anonId=undefined is omitted, not invented', !('anonId' in buildCoachEnvelope({ learnerProfile: fullInput.learnerProfile })));
+check('anonId="" (empty string) is omitted', !('anonId' in buildCoachEnvelope({ anonId: '' })));
+check('anonId=123 (non-string) is omitted', !('anonId' in buildCoachEnvelope({ anonId: 123 })));
+check('anonId longer than 128 chars is omitted', !('anonId' in buildCoachEnvelope({ anonId: 'x'.repeat(129) })));
+check('anonId exactly 128 chars is kept', buildCoachEnvelope({ anonId: 'x'.repeat(128) }).anonId === 'x'.repeat(128));
 
 // ---------------------------------------------------------------------------
 // 2. buildCoachEnvelope with a malformed/missing mastery array does NOT
