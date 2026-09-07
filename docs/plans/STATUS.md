@@ -231,7 +231,7 @@ at the owner's direction.
 | W3.1 Godot project hygiene | DONE (2026-09-07) | `fdb4774`. Project converted 4.3→4.7; added the missing stretch mode; fixed the cold open rendering off-screen (see below). `.godot/` editor cache untracked |
 | W3.2 Real lesson entry from the world | DONE (2026-09-07), pending owner F5 confirm | Cold open now hands off to a real on-screen entry screen instead of holding a dead frame; L01 is enterable via a still-image fallback. See notes below |
 | W4 World/app integration decision | **DECIDED (2026-09-07, Option C)** | Keep both separate for now; ship web app first; world is local development focus |
-| W5 Ship the web app publicly | IN PROGRESS (2026-09-07) | W5.1 workflow deployed, W5.2 cleanup complete (~23MB duplicate assets removed), awaiting W5.3 (five real users) |
+| W5 Ship the web app publicly | IN PROGRESS (2026-09-07) | W5.1 workflow deploying (environment protection rule fixed), W5.2 cleanup complete (~23MB duplicate assets removed), awaiting W5.3 (five real users) |
 | W6 Close out Tier 1 gaps | 3/3 DONE (2026-09-07) | Real coaching now reaches a student end-to-end for the first time — see notes below |
 
 **W2 merge notes.** `h5-05content-backfill` turned out to be a superset of both
