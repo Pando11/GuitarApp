@@ -1,8 +1,37 @@
-[gd_scene load_steps=2 format=3 uid="uid://bworldguitaraapp0"]
+[gd_scene load_steps=3 format=3 uid="uid://bworldguitaraapp0"]
 
 [ext_resource type="Script" path="res://world/World.gd" id="1_world"]
+[ext_resource type="Texture2D" uid="uid://ctnu7iiklerbc" path="res://assets/worlds/emerald-hollow/stills/sage_porch.palette.png" id="2_porch"]
 
 [node name="World" type="Node2D"]
 script = ExtResource("1_world")
 
 [node name="Camera2D" type="Camera2D" parent="."]
+
+; The entry/lesson-picker screen. Hidden while a lesson/cutscene is playing;
+; World.gd shows it after _ready() and whenever LessonScene emits lesson_finished.
+; CanvasLayer is load-bearing here for the same reason it is in LessonScene.tscn:
+; Controls parented directly to a Node2D compute to zero size against the viewport.
+[node name="EntryUI" type="CanvasLayer" parent="."]
+visible = false
+
+[node name="Backdrop" type="TextureRect" parent="EntryUI"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 0.0
+offset_bottom = 0.0
+texture = ExtResource("2_porch")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LessonList" type="VBoxContainer" parent="EntryUI"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = 40.0
+offset_right = -40.0
+offset_bottom = -40.0
+theme_override_constants/separation = 24
+alignment = 1

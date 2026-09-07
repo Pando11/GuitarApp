@@ -6,6 +6,8 @@ extends Node2D
 
 const LessonScene = preload("res://lesson/LessonScene.tscn")
 const MANIFEST_PATH = "res://data/lesson_manifest.json"
+const ENTRY_UI = "EntryUI"
+const LESSON_LIST = "EntryUI/LessonList"
 
 var lessons: Array = []
 var current_scene: Node = null
@@ -14,8 +16,8 @@ func _ready() -> void:
 	# In a real build this is wired to the Supabase curriculum feed. Scaffold loads local JSON.
 	_load_manifest()
 	_build_world_entry()
-	# DEMO HOOK: auto-enter the World-1 cold open so F5 shows the video + @Sage voice.
-	# Remove this line once a real lesson menu/UI calls enter_lesson().
+	# Opening narrative beat: walk in, meet Sage. enter_lesson() below wires up
+	# lesson_finished so the entry screen (built above) appears once it ends.
 	enter_lesson("W1-coldopen")
 
 func _load_manifest() -> void:
@@ -32,10 +34,30 @@ func _load_manifest() -> void:
 	lessons = parsed
 
 func _build_world_entry() -> void:
-	# Placeholder world: a list of lesson "doors". Real art = Flux still + Wan2.2 motion.
+	# Real world entry: one Button per lesson "door", listed in EntryUI/LessonList.
+	# Real art = Flux still (backdrop) + Wan2.2 motion (the lesson clips themselves).
+	var list := get_node_or_null(LESSON_LIST)
+	if list == null:
+		push_warning("Missing %s node; cannot build lesson doors." % LESSON_LIST)
+		return
 	for entry in lessons:
-		if entry is Dictionary:
-			print("World door: %s (%s)" % [entry.get("title", "?"), entry.get("id", "?")])
+		if not (entry is Dictionary):
+			continue
+		if entry.has("clips"):
+			# Sequenced world cutscenes (the cold open, etc.) are narrative beats
+			# that play automatically, not doors the student re-enters from a menu.
+			continue
+		var lesson_id: String = entry.get("id", "")
+		if lesson_id == "":
+			continue
+		var door := Button.new()
+		door.text = entry.get("title", "?")
+		door.pressed.connect(_on_lesson_door_pressed.bind(lesson_id))
+		list.add_child(door)
+
+func _on_lesson_door_pressed(lesson_id: String) -> void:
+	_hide_entry_ui()
+	enter_lesson(lesson_id)
 
 # Called by UI when the student picks a lesson. Triggers the lesson scene.
 func enter_lesson(lesson_id: String) -> void:
@@ -50,7 +72,27 @@ func enter_lesson(lesson_id: String) -> void:
 		current_scene.queue_free()
 	current_scene = LessonScene.instantiate()
 	add_child(current_scene)
+	if not current_scene.lesson_finished.is_connected(_on_lesson_finished):
+		current_scene.lesson_finished.connect(_on_lesson_finished)
 	# Defer setup so the lesson scene has entered the tree (VideoStreamPlayer.play()
 	# requires the node to be inside the tree). add_child() during _ready() defers the
 	# child's enter_tree to the next frame, so call setup on the next idle tick.
 	current_scene.call_deferred("setup", data)
+
+# Any lesson/cutscene (cold open included) reports back here when its clip
+# sequence finishes, so the student sees the entry screen instead of a dead frame.
+func _on_lesson_finished(_lesson_id: String) -> void:
+	if current_scene != null:
+		current_scene.queue_free()
+		current_scene = null
+	_show_entry_ui()
+
+func _show_entry_ui() -> void:
+	var ui := get_node_or_null(ENTRY_UI)
+	if ui != null:
+		ui.visible = true
+
+func _hide_entry_ui() -> void:
+	var ui := get_node_or_null(ENTRY_UI)
+	if ui != null:
+		ui.visible = false

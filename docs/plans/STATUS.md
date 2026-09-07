@@ -229,8 +229,8 @@ at the owner's direction.
 | W1.1/W1.2 Run the world in Godot | DONE (2026-09-07) | O.1 satisfied — Godot 4.7.2 at `C:\Users\Hendrickson\godot\`. The cold open plays: B00 walk-in → B01 meet-Sage → B02 two-shot, ~15s total, with Sage's voice over clips 2 and 3. Needed the W3.1 render fix below before anything was visible |
 | W2 Merge the world branch into main | DONE (2026-09-06) | commit `67305e2`, 825 files, +86,877 lines |
 | W3.1 Godot project hygiene | DONE (2026-09-07) | `fdb4774`. Project converted 4.3→4.7; added the missing stretch mode; fixed the cold open rendering off-screen (see below). `.godot/` editor cache untracked |
-| W3.2 Real lesson entry from the world | TODO | `World.gd::_ready()` still hard-codes `enter_lesson("W1-coldopen")` behind a `# DEMO HOOK` comment, and `_build_world_entry()` only `print()`s the lesson doors. A `lesson_finished` signal now exists on LessonScene but **nothing consumes it** — after ~15s the last frame just holds. This is the next real piece of world work |
-| W4 World/app integration decision | **TODO — owner decision** | Godot-wraps-all vs world-as-front-door vs keep-separate |
+| W3.2 Real lesson entry from the world | DONE (2026-09-07), pending owner F5 confirm | Cold open now hands off to a real on-screen entry screen instead of holding a dead frame; L01 is enterable via a still-image fallback. See notes below |
+| W4 World/app integration decision | **DECIDED (2026-09-07, Option C)** | Keep both separate for now; ship web app first; world is local development focus |
 | W5 Ship the web app publicly | TODO | blocked on owner steps O.2 (default branch) + O.3 (Pages source) |
 | W6 Close out Tier 1 gaps | 3/3 DONE (2026-09-07) | Real coaching now reaches a student end-to-end for the first time — see notes below |
 
@@ -271,6 +271,59 @@ Also note the content mismatch this exposed: **the cinematics are 16:9 landscape
 but the app is a portrait phone app.** They are letterboxed for now, which is
 correct for a cutscene, but any future world art should decide orientation
 deliberately rather than inheriting it from the generator.
+
+**W3.2 — real lesson entry from the world (2026-09-07).** Two agents dispatched
+in parallel, OWNS lists disjoint: `07-app/godot/world/World.gd` +
+`World.tscn` (entry screen) / `07-app/godot/lesson/LessonScene.gd` +
+`LessonScene.tscn` + `07-app/godot/data/lesson_manifest.json` (L01 still-image
+fallback). `git diff --stat` confirmed each agent wrote only its OWNS files.
+
+- `World.gd::_ready()` still auto-plays the `W1-coldopen` cutscene (that is
+  the real opening beat now, not a demo shortcut — the `# DEMO HOOK` comment
+  is gone), but `enter_lesson()` now connects to the `LessonScene.lesson_finished`
+  signal that already existed on disk from W3.1. When it fires — cutscene end
+  OR the new still-lesson back button below — `World.gd` frees the lesson
+  scene and shows a new `EntryUI` `CanvasLayer` (sage_porch backdrop + one
+  `Button` per lesson-manifest entry that isn't a sequenced cutscene, i.e.
+  everything without a `clips` key). Clicking a door calls `enter_lesson(id)`.
+- `L01-open-c` still has no generated video/voice (`assets/lessons/` is
+  empty; the `_todo_blocked` marker is untouched — **not fabricated**).
+  `lesson_manifest.json` now gives it a `still` field instead;
+  `LessonScene.setup()` checks it before touching the clip-loading path at
+  all, shows the still with the existing fingering overlay on top, and shows
+  a new "Back to Emerald Hollow" button that emits the same `lesson_finished`
+  signal the video path uses — so `World.gd` doesn't need to know which way
+  a lesson ended.
+- **Real bug caught during lead verification, not by either subagent:** both
+  agents' code independently referenced `sage_porch.png` for the backdrop.
+  Running Godot (`Godot_v4.7.2-stable_win64_console.exe --path
+  07-app/godot`) threw `ERROR: Failed loading resource` /
+  `Parse Error: [ext_resource] referenced non-existent resource` — `file`
+  on that path shows it is actually **JPEG data saved with a `.png`
+  extension** (`valid=false` in its `.import`, and all 4 of its sibling
+  stills have the exact same defect — this is a systemic artifact of
+  whatever generated them, not particular to this task). The project's own
+  `assets/worlds/emerald-hollow/stills/manifest.json` names the fix
+  directly: `sage_porch.png` is listed there as `raw_file` (pre-quantization
+  generator output); `sage_porch.palette.png` is the real, valid,
+  already-successfully-imported PNG (`file` in that manifest). Both
+  references (`World.tscn`'s `ext_resource`, `lesson_manifest.json`'s
+  `still` field) were repointed to the `.palette.png` version and its real
+  uid (`uid://ctnu7iiklerbc`). Re-running Godot after the fix: zero
+  load/parse errors, cold open completes (`Lesson 'W1-coldopen' finished.`
+  printed) with no runtime error after. **If any future world work reaches
+  for `coldopen_walk.png`, `sage_charsheet.png`, or `twoshot.png` directly
+  (not their `.palette.png` siblings), it will hit this same defect —
+  always use the `.palette.png` file per that manifest.**
+- **Not yet verified: the on-screen button click itself.** The lead cannot
+  drive Godot's GUI from this environment — verification so far is a full
+  code/node-path trace by both subagents (re-checked independently) plus a
+  clean, error-free console run of the actual cold-open-to-lesson_finished
+  path. **Owner should press F5 once** to confirm the entry screen actually
+  renders with a clickable "Your First Chord: Open C" door, and that
+  clicking it shows the porch backdrop with the fingering overlay. `npm run
+  test:all` re-confirmed unaffected (28/28+19/19) — these are Godot-only
+  file changes.
 
 **Freeze resolved 2026-09-06 (was blocking every task in this tier).** The
 "explicitly frozen" lists in `README.md` and `CLAUDE.md` both named the Godot

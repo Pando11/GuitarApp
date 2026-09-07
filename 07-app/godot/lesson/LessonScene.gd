@@ -15,8 +15,10 @@ extends Node2D
 # parented straight to a Node2D compute to zero size, which scales an expanding
 # VideoStreamPlayer down to nothing.
 const VIDEO_NODE = "UI/Screen/VideoStreamPlayer"
+const STILL_NODE = "UI/Screen/StillImage"
 const AUDIO_NODE = "AudioStreamPlayer"
 const FINGER_OVERLAY = "FingeringOverlay"
+const BACK_BUTTON = "UI/BackButton"
 
 # Emitted once the last clip in the sequence has played, so the world can put
 # something on screen instead of leaving the student staring at a dead frame.
@@ -34,10 +36,27 @@ func _ready() -> void:
 	if vp != null:
 		if not vp.finished.is_connected(_on_VideoStreamPlayer_finished):
 			vp.finished.connect(_on_VideoStreamPlayer_finished)
+	# Still-backed lessons have no clip-finished event, so give the student an
+	# explicit way back that raises the same lesson_finished signal.
+	var back_btn := get_node_or_null(BACK_BUTTON)
+	if back_btn != null:
+		if not back_btn.pressed.is_connected(_on_BackButton_pressed):
+			back_btn.pressed.connect(_on_BackButton_pressed)
 
 
 func setup(lesson: Dictionary) -> void:
 	_lesson = lesson
+	_apply_fingering(lesson.get("fingering", []))
+
+	# A "still" entry means the lesson's video/voice assets are not generated
+	# yet (see _todo_blocked in lesson_manifest.json). Show the fallback
+	# backdrop with the chord overlay on top instead of trying to load a clip
+	# that does not exist on disk.
+	var still_path: String = lesson.get("still", "")
+	if still_path != "":
+		_show_still(still_path)
+		return
+
 	_clips = lesson.get("clips", [])
 	_voice_map = lesson.get("voice_assets", {})
 	if _clips.is_empty():
@@ -45,11 +64,36 @@ func setup(lesson: Dictionary) -> void:
 		var single = lesson.get("video_asset", "")
 		if single != "":
 			_clips = [single]
-	_apply_fingering(lesson.get("fingering", []))
 	if _clips.is_empty():
 		push_warning("Lesson '%s' has no clips to play." % lesson.get("id", "?"))
 		return
 	_play_current()
+
+
+func _show_still(still_path: String) -> void:
+	var still_node := get_node_or_null(STILL_NODE)
+	if still_node == null:
+		push_error("Missing %s node" % STILL_NODE)
+		return
+	var tex: Texture2D = load(still_path)
+	if tex == null:
+		push_error("Could not load still: %s" % still_path)
+		return
+	still_node.texture = tex
+	still_node.visible = true
+
+	# Make sure no leftover video frame from a previous lesson is showing.
+	var vp := get_node_or_null(VIDEO_NODE)
+	if vp != null:
+		vp.visible = false
+
+	var back_btn := get_node_or_null(BACK_BUTTON)
+	if back_btn != null:
+		back_btn.visible = true
+
+
+func _on_BackButton_pressed() -> void:
+	lesson_finished.emit(String(_lesson.get("id", "")))
 
 
 func _play_current() -> void:

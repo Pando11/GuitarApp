@@ -33,6 +33,34 @@ stretch_mode = 2
 layout_mode = 2
 expand = true
 
+; Still-image fallback for lessons whose video/voice clips have not been
+; generated yet (see _todo_blocked in lesson_manifest.json). Same container
+; as VideoStreamPlayer so it letterboxes identically; hidden unless a lesson
+; provides a "still" path in setup().
+[node name="StillImage" type="TextureRect" parent="UI/Screen"]
+visible = false
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 6
+
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
 
 [node name="FingeringOverlay" parent="." instance=ExtResource("2_overlay")]
+
+; Only shown for a still-backed lesson (no clip-finished event to advance on).
+; Parented directly to the UI CanvasLayer (not to Node2D) so its anchors
+; resolve against the viewport per the Controls-on-Node2D gotcha.
+[node name="BackButton" type="Button" parent="UI"]
+visible = false
+anchors_preset = 7
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = -160.0
+offset_right = 160.0
+offset_top = -100.0
+offset_bottom = -40.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "Back to Emerald Hollow"
