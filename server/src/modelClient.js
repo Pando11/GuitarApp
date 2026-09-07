@@ -65,11 +65,14 @@ const PERSONA = loadPersona();
  * Includes T1.json's persona.catchphrase and persona_lines (intro/chord/
  * exercise/wrap) as real, owner-approved voice reference examples — these
  * were loaded into PERSONA from the start but never actually used here.
- * Beyond making Sage's voice more consistent, this also clears Claude's
- * 512-token minimum cacheable-prefix floor: without them the prompt was
- * ~250 tokens and cache_creation_input_tokens was 0 on every call (verified
- * 2026-09-07 against the real API — see docs/plans/STATUS.md's Wave 6
- * notes), so no cache was ever written regardless of code correctness.
+ * Makes Sage's voice more consistent and grows the system block enough to
+ * clear Opus's cacheable-prefix floor — but NOT Haiku's, which is higher
+ * (confirmed via `npm run test:live` against the real API, 2026-09-07:
+ * cache_creation_input_tokens is 0 on every call on `claude-haiku-4-5-
+ * 20251001`, total request ~497 input tokens). See STATUS.md's Wave 6 W6.1
+ * notes: the no-cache-hit outcome on Haiku is an accepted tradeoff, not an
+ * open bug — Haiku's per-token cost is low enough that padding the prompt
+ * further just to hit its floor was judged not worth it.
  */
 export function buildSystemPrompt() {
   const lines = PERSONA.lines || {};
