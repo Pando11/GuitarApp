@@ -45,12 +45,28 @@ check('full envelope has mastery array of correct shape', JSON.stringify(fullEnv
 check('full envelope mastery confidence stays on 0-100 scale', fullEnvelope.mastery.every((m) => m.confidence >= 0 && m.confidence <= 100));
 check('full envelope has justHappened', JSON.stringify(fullEnvelope.justHappened) === JSON.stringify(fullInput.justHappened));
 check('full envelope has recentHistory', JSON.stringify(fullEnvelope.recentHistory) === JSON.stringify(fullInput.recentHistory));
-check('full envelope never invents a stray top-level field', Object.keys(fullEnvelope).sort().join(',') === ['anonId', 'learnerProfile', 'lessonId', 'mastery', 'justHappened', 'recentHistory'].sort().join(','));
+check('full envelope never invents a stray top-level field', Object.keys(fullEnvelope).sort().join(',') === ['anonId', 'learnerProfile', 'lessonId', 'lessonChords', 'mastery', 'justHappened', 'recentHistory'].sort().join(','));
 
 // ---------------------------------------------------------------------------
 // 1b. buildCoachEnvelope never invents/mutates anonId — invalid input is
 // dropped, never coerced or generated.
 // ---------------------------------------------------------------------------
+// lessonChords — the lesson's own verified chord shapes, so guardrail.js can
+// tell naming the lesson's subject apart from inventing a fact, and so Sage
+// quotes the real fingering instead of guessing one (2026-09-08).
+check('a lesson chord shape passes through intact', JSON.stringify(buildCoachEnvelope({ lessonChords: [{ chord: 'Em', frets: [0, 2, 2, 0, 0, 0], fingers: [0, 2, 3, 0, 0, 0] }] }).lessonChords) === JSON.stringify([{ chord: 'Em', frets: [0, 2, 2, 0, 0, 0], fingers: [0, 2, 3, 0, 0, 0] }]));
+check('a chord named without a diagram still passes through', JSON.stringify(buildCoachEnvelope({ lessonChords: [{ chord: 'Em' }] }).lessonChords) === JSON.stringify([{ chord: 'Em' }]));
+check('lessonChords absent yields an empty array, never undefined', JSON.stringify(buildCoachEnvelope({}).lessonChords) === '[]');
+check('lessonChords non-array yields an empty array', JSON.stringify(buildCoachEnvelope({ lessonChords: 'Em' }).lessonChords) === '[]');
+check('a bare string entry is dropped, not guessed at', JSON.stringify(buildCoachEnvelope({ lessonChords: ['Em'] }).lessonChords) === '[]');
+check('an entry with no chord name is dropped', JSON.stringify(buildCoachEnvelope({ lessonChords: [{ frets: [0, 2, 2, 0, 0, 0] }] }).lessonChords) === '[]');
+check('an over-long chord name is dropped', JSON.stringify(buildCoachEnvelope({ lessonChords: [{ chord: 'x'.repeat(13) }] }).lessonChords) === '[]');
+check('a wrong-length frets array is dropped but the name is kept', JSON.stringify(buildCoachEnvelope({ lessonChords: [{ chord: 'Em', frets: [0, 2] }] }).lessonChords) === JSON.stringify([{ chord: 'Em' }]));
+check('a non-integer fret is dropped but the name is kept', JSON.stringify(buildCoachEnvelope({ lessonChords: [{ chord: 'Em', frets: [0, 'two', 2, 0, 0, 0] }] }).lessonChords) === JSON.stringify([{ chord: 'Em' }]));
+check('a muted string (null) is preserved, not treated as malformed', JSON.stringify(buildCoachEnvelope({ lessonChords: [{ chord: 'C', frets: [null, 3, 2, 0, 1, 0] }] }).lessonChords[0].frets) === JSON.stringify([null, 3, 2, 0, 1, 0]));
+check('lessonChords de-duplicates by name', buildCoachEnvelope({ lessonChords: [{ chord: 'Em' }, { chord: 'Em' }, { chord: 'C' }] }).lessonChords.length === 2);
+check('lessonChords caps at 24 entries', buildCoachEnvelope({ lessonChords: Array.from({ length: 40 }, (_, i) => ({ chord: 'c' + i })) }).lessonChords.length === 24);
+
 check('anonId=undefined is omitted, not invented', !('anonId' in buildCoachEnvelope({ learnerProfile: fullInput.learnerProfile })));
 check('anonId="" (empty string) is omitted', !('anonId' in buildCoachEnvelope({ anonId: '' })));
 check('anonId=123 (non-string) is omitted', !('anonId' in buildCoachEnvelope({ anonId: 123 })));

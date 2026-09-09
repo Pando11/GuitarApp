@@ -139,8 +139,34 @@ export function loadLessons() { return getLessons(); }
 // tests are unaffected.
 // ---------------------------------------------------------------------------
 
-const DEFAULT_COACH_URL = 'http://127.0.0.1:8787/coach';
-const DEFAULT_COACH_TIMEOUT_MS = 2500;
+// Where the coaching service lives. The loopback address is only correct on
+// the machine running the server, so a deployed copy of the app could never
+// reach a coach and every student got template prose. A deployment sets
+// globalThis.GUITARAPP_COACH_URL (a one-line <script> in index.html, or the
+// build that writes it) and this picks it up; local development keeps
+// working with no configuration at all. options.url still wins over both,
+// which is how the tests inject a stub.
+const FALLBACK_COACH_URL = 'http://127.0.0.1:8787/coach';
+
+export function defaultCoachUrl() {
+  const configured = (typeof globalThis !== 'undefined') ? globalThis.GUITARAPP_COACH_URL : null;
+  return (typeof configured === 'string' && configured) ? configured : FALLBACK_COACH_URL;
+}
+
+// Raised 2500 -> 7000 on 2026-09-08, together with the server's own
+// MODEL_TIMEOUT_MS (server/src/config.js), which went 2300 -> 6000 for the
+// same measured reason: a real Haiku nudge call takes 1.9-2.4s, so the old
+// pair of budgets cut off nearly every real response and served the template
+// instead. Stays above the server's budget so the service always gets to
+// answer or fall back on its own terms rather than being cut off from here.
+const DEFAULT_COACH_TIMEOUT_MS = 7000;
+// An envelope carrying a student's typed question waits longer than an
+// unprompted nudge does: the answer is several sentences rather than one, and
+// the student is sitting there watching for it. Mirrors the server's own
+// two-budget split (server/src/config.js MODEL_TIMEOUT_QUESTION_MS) and stays
+// above it so the service always gets to answer or fall back on its own terms
+// rather than being cut off mid-call by this side.
+const DEFAULT_COACH_QUESTION_TIMEOUT_MS = 14_000;
 
 // Lazily resolved so this module has no hard dependency on telemetry.js at
 // import time (keeps existing tests, which never call askCoach/replyWithCoach,
@@ -165,8 +191,11 @@ async function logCoachServed(source, latencyMs) {
 // caller (askCoach) treats `null` as "use the local template fallback".
 // Never throws.
 export async function coachClient(envelope, options = {}) {
-  const url = options.url || DEFAULT_COACH_URL;
-  const timeoutMs = typeof options.timeoutMs === 'number' ? options.timeoutMs : DEFAULT_COACH_TIMEOUT_MS;
+  const url = options.url || defaultCoachUrl();
+  const defaultTimeoutMs = (envelope && typeof envelope.question === 'string' && envelope.question.length)
+    ? DEFAULT_COACH_QUESTION_TIMEOUT_MS
+    : DEFAULT_COACH_TIMEOUT_MS;
+  const timeoutMs = typeof options.timeoutMs === 'number' ? options.timeoutMs : defaultTimeoutMs;
   const fetchImpl = options.fetchImpl || (typeof fetch === 'function' ? fetch : null);
   if (!fetchImpl) return null;
 

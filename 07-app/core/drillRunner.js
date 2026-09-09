@@ -208,13 +208,31 @@ function createMicPermissionFlow(win) {
 // never invents a musical claim — every number traces back to counts
 // PracticeStore itself already tracked.
 // ---------------------------------------------------------------------------
+// PracticeStore's own state vocabulary (practiceStore.js stateFor) is
+// untried/struggling/learning/clean. The coaching service validates against a
+// different, narrower one — mastered/needs_work/not_started (server/src/
+// schema.js MASTERY_LABELS) — and rejects the whole envelope on anything else.
+// Passing the store's word through verbatim, as this used to, meant every
+// coach request from a student with any practice history at all was 400'd and
+// silently answered from the local template (found 2026-09-08).
+//
+// This is a relabelling of the same fact, not a new claim: the counts behind
+// each state are unchanged and the confidence number is still pure arithmetic.
+const STATE_TO_SERVICE_LABEL = {
+  clean: 'mastered',
+  learning: 'needs_work',
+  struggling: 'needs_work',
+  untried: 'not_started',
+};
+
 export function masteryFromSkillMap(skillMap) {
   if (!skillMap || typeof skillMap !== 'object') return [];
   return Object.keys(skillMap).map((chord) => {
     const c = skillMap[chord] || {};
     const total = (c.clean || 0) + (c.fail || 0) + (c.unsure || 0);
     const confidence = total > 0 ? Math.round((c.clean || 0) / total * 100) : 0;
-    return { chord, label: c.state || 'untried', confidence };
+    const state = c.state || 'untried';
+    return { chord, label: STATE_TO_SERVICE_LABEL[state] || 'not_started', confidence, state };
   });
 }
 

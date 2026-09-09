@@ -49,14 +49,19 @@ A tiny Node service. It is the **only** thing in the system holding an API key.
   ```
 - Response: `{ prose: string }` — 2–3 sentences, second person, warm.
 - **SDK:** `@anthropic-ai/sdk` (this is a JS project; do not use raw `fetch`).
-- **Model:** `claude-opus-5`. Use `thinking: {type: "adaptive"}` and
-  `output_config: {effort: "low"}` — this is short-form prose generation, not a
-  reasoning task, and low effort is the right cost point. Set
-  `max_tokens: 512`.
-  *(If the owner later wants a cheaper tier, `claude-sonnet-5` at $2/$10 per MTok
-  is the swap; that is the owner's call, not the agent's. Cost at Opus with a
-  ~700-token cached prefix and ~120 output tokens is roughly $0.004 per coaching
-  moment, so a 10-minute lesson with 4 moments costs about 1.6 cents.)*
+- **Model:** `claude-haiku-4-5-20251001`. Set `max_tokens: 512`. Do NOT send
+  `thinking` or `output_config` — those are Opus-only extended-thinking
+  controls and Haiku 4.5 returns a 400 on them.
+  *(This spec originally called for `claude-opus-5` with
+  `thinking: {type: "adaptive"}`. The owner swapped it to Haiku 4.5 on
+  2026-09-07 and reaffirmed it on 2026-09-08. Two reasons, both measured:
+  the real Opus call took 4.1-4.4s against a latency budget no coaching
+  moment could absorb, and this task is 2-3 sentences of fact-citing prose,
+  not a reasoning task. Rule 5 is enforced in code by `guardrail.js`
+  independent of model choice, so the smaller model costs no safety. The
+  live value lives in `server/src/config.js` MODEL_ID — that file is the
+  source of truth; this line is here so nobody swaps it back by reading the
+  plan.)*
 - **Prompt caching:** the system prompt (voice rules, Rule 5 constraints, the
   Sage persona from `07-app/content/teachers/T1.json`) is stable — put it in
   `system` with `cache_control: {type: "ephemeral"}` and keep the volatile facts

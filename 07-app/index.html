@@ -24,6 +24,41 @@
     .feedback-options button{padding:10px 8px;font-size:.85rem}
     #feedback-text{width:100%;background:var(--forest);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px;font:inherit;resize:vertical}
     .feedback-panel-actions{display:flex;justify-content:flex-end;margin-top:10px}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+    .chat-log{max-height:340px;overflow-y:auto;margin:10px 0}
+    .chat-log:empty{display:none}
+    .chat-turn{margin:0 0 12px}
+    .chat-who{display:block;font-size:.72rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+    .chat-turn-sage .chat-who{color:var(--moss)}
+    .chat-text{margin:2px 0 0;max-width:60ch}
+    .chat-turn-student .chat-text{color:var(--muted)}
+    .chat-form{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+    .chat-input{flex:1 1 220px;min-width:0;background:var(--forest);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:12px 16px;font:inherit}
+    .chat-input:focus-visible{outline:3px solid var(--warm);outline-offset:2px}
+    .chat-input:disabled{opacity:.6}
+    .tuner-readout{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:14px 0 8px}
+    .tuner-note{font-family:Georgia,serif;font-size:clamp(2rem,7vw,3.2rem);line-height:1}
+    .tuner-meter{position:relative;height:14px;border:1px solid var(--line);border-radius:999px;background:var(--forest);margin:0 0 16px;overflow:hidden}
+    .tuner-centre{position:absolute;left:50%;top:0;bottom:0;width:2px;background:var(--line)}
+    .tuner-needle{position:absolute;top:-3px;left:50%;width:6px;height:20px;border-radius:3px;background:var(--muted);transform:translateX(-50%);transition:left .12s linear,background .12s linear}
+    .tuner-meter[data-state="inTune"] .tuner-needle{background:var(--moss)}
+    .tuner-meter[data-state="close"] .tuner-needle{background:var(--warm)}
+    .tuner-meter[data-state="off"] .tuner-needle{background:#c96a5a}
+    .chord-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0}
+    .chord-select{background:var(--forest);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:12px 16px;font:inherit}
+    .chord-select:focus-visible{outline:3px solid var(--warm);outline-offset:2px}
+    .chord-verdict{margin:8px 0 4px;max-width:60ch}
+    .chord-verdict[data-verdict="pass"]{color:var(--moss)}
+    .chord-verdict[data-verdict="fail"]{color:var(--warm)}
+    .world-coldopen{display:flex;flex-direction:column;align-items:center;gap:12px;margin:12px 0}
+    .world-clip{width:100%;max-width:960px;border-radius:16px;background:#0b110d;aspect-ratio:16/9}
+    .world-caption{max-width:52ch;text-align:center;font-family:Georgia,serif;font-size:1.15rem;min-height:1.6em;margin:0}
+    .world-backdrop{width:100%;max-width:960px;border-radius:18px;display:block;margin-bottom:8px}
+    .world-door{text-align:left;color:inherit;background:rgba(34,48,39,.86);border:1px solid var(--line);border-radius:16px;padding:18px;min-height:135px;display:flex;flex-direction:column;gap:6px;cursor:pointer}
+    .world-door[disabled]{opacity:.55;cursor:default}
+    .world-door:not([disabled]):hover{border-color:var(--moss);transform:translateY(-2px)}
+    .world-door:focus-visible{outline:3px solid var(--warm);outline-offset:3px}
+    .world-door-title{font-family:Georgia,serif;font-size:1.15rem;line-height:1.15}
   </style>
 </head>
 <body>
@@ -37,7 +72,7 @@
           <button class="secondary" id="onboarding-skip" type="button">Skip</button>
         </span>
       </section>
-      <div class="hero"><div class="eyebrow">Your first evening at the tavern</div><h1>Pull up a chair.</h1><p>Sage is waiting on the porch. Start with ten calm minutes: meet your guitar, tune it, and make your first sound.</p><button class="primary" id="start-l01" type="button">Begin Lesson 1</button> <button class="secondary" id="start-practice" type="button">Practice</button></div>
+      <div class="hero"><div class="eyebrow">Your first evening at the tavern</div><h1>Pull up a chair.</h1><p>Sage is waiting on the porch. Start with ten calm minutes: meet your guitar, tune it, and make your first sound.</p><button class="primary" id="start-world" type="button">Enter Emerald Hollow</button> <button class="secondary" id="start-l01" type="button">Begin Lesson 1</button> <button class="secondary" id="start-practice" type="button">Practice</button> <button class="secondary" id="start-listen" type="button">Tune &amp; listen</button></div>
       <section class="step" id="performance-rail" aria-live="polite">Loading your performance ladder...</section>
       <section class="step" id="weekly-plan-card" aria-live="polite">Loading your weekly practice plan...</section>
       <div class="catalog-head"><div><div class="eyebrow">The path ahead</div><h2>25 lessons, one song at a time</h2></div><div class="status" id="catalog-status" role="status">Loading your lessons...</div></div>
@@ -55,6 +90,65 @@
         <p class="meta" id="lesson-next-reason"></p>
         <button class="primary" id="lesson-next-btn" type="button">Continue</button>
       </section>
+    </section>
+    <section id="world-view" class="lesson-view" data-world-view hidden aria-labelledby="world-title">
+      <div class="lesson-top">
+        <button class="secondary" id="world-back-home" type="button">Leave Emerald Hollow</button>
+      </div>
+      <div id="world-coldopen" class="world-coldopen" hidden>
+        <video id="world-clip" class="world-clip" playsinline preload="auto"></video>
+        <!-- Sage's recorded lines. The clips themselves are silent, so his
+             voice plays alongside them from here. -->
+        <audio id="world-voice" preload="auto"></audio>
+        <p class="world-caption" id="world-caption" aria-live="polite"></p>
+        <button class="secondary" id="world-skip-coldopen" type="button">Skip to the porch</button>
+      </div>
+      <div id="world-porch" class="world-porch" hidden>
+        <img class="world-backdrop" src="./assets/worlds/emerald-hollow/stills/sage_porch.png" alt="Sage waiting on the porch in Emerald Hollow">
+        <h1 id="world-title">Emerald Hollow</h1>
+        <p>Sage is on the porch. Every door on this path is a lesson.</p>
+        <div class="grid" id="world-doors" aria-live="polite"></div>
+        <button class="secondary" id="world-replay-coldopen" type="button">Watch the arrival again</button>
+      </div>
+    </section>
+    <section id="listen-view" class="lesson-view" data-listen-view hidden aria-labelledby="listen-title">
+      <div class="lesson-top">
+        <button class="secondary" id="listen-back-home" type="button">Back to the path</button>
+        <span class="meta" id="listen-mic-status" aria-live="polite"></span>
+      </div>
+      <article>
+        <h1 id="listen-title">Tune &amp; listen</h1>
+        <p class="meta">Your guitar's sound is read on this device and never leaves it.</p>
+
+        <section class="step" id="tuner-panel">
+          <span class="lesson-number">Tuner</span>
+          <h3>Get in tune first</h3>
+          <p>Play one open string at a time. Standard tuning, low to high: E A D G B e.</p>
+          <div class="tuner-readout">
+            <strong class="tuner-note" id="tuner-note">—</strong>
+            <span class="meta" id="tuner-detail"></span>
+          </div>
+          <div class="tuner-meter" id="tuner-meter" data-state="idle" role="img" aria-label="Tuning meter">
+            <span class="tuner-centre"></span>
+            <span class="tuner-needle" id="tuner-needle"></span>
+          </div>
+          <button class="primary" id="tuner-toggle" type="button">Start tuning</button>
+        </section>
+
+        <section class="step" id="chord-panel">
+          <span class="lesson-number">Chord check</span>
+          <h3>Does that chord actually ring?</h3>
+          <p>Pick a shape, press Listen, then strum once and let it ring.</p>
+          <div class="chord-controls">
+            <label class="sr-only" for="chord-select">Chord to check</label>
+            <select id="chord-select" class="chord-select"></select>
+            <button class="primary" id="chord-listen" type="button">Listen</button>
+          </div>
+          <p class="meta" id="chord-empty-note" hidden>Chord shapes load with your lessons — give it a moment.</p>
+          <p class="chord-verdict" id="chord-verdict" aria-live="polite"></p>
+          <p class="meta" id="chord-heard"></p>
+        </section>
+      </article>
     </section>
     <section id="practice-view" class="lesson-view" data-practice-view hidden aria-labelledby="practice-title">
       <div class="lesson-top">
@@ -90,6 +184,17 @@
     </div>
     <p class="meta" id="feedback-thanks" hidden>Thanks — that's logged.</p>
   </section>
+  <!-- Where the coaching service lives. Left as the loopback default here,
+       which is correct for running the app on the same machine as the server
+       (server/: npm start). A deployed copy MUST set this to the public URL
+       of the coach service, because a phone cannot reach 127.0.0.1 and the
+       app silently serves canned template prose when the coach is
+       unreachable — it looks like it works, it just is not Sage. Set it
+       before the first <script> that can call the coach. Read by
+       core/chatEngine.js's defaultCoachUrl(). -->
+  <script>
+    globalThis.GUITARAPP_COACH_URL = globalThis.GUITARAPP_COACH_URL || "http://127.0.0.1:8787/coach";
+  </script>
   <script src="./core/backupButtons.js"></script>
   <script src="./core/lesson-runner.js"></script>
   <script src="./core/wave1-flow.js"></script>
@@ -104,6 +209,20 @@
         }
       );
     }
+  </script>
+  <script type="module">
+    // The Listen screen (tuner + chord check). Its engines — tuner-engine.js
+    // and listening-engine.js — were complete but had no surface in the app
+    // until this was wired up.
+    import { mountListenView } from "./core/listenView.js";
+    mountListenView();
+
+    // Emerald Hollow. The world was built in Godot and never reached a
+    // student (ADR-0005 shipped app and world separately); this renders the
+    // same cold open and porch in the app that owns the lessons, so a door
+    // opens the real thing.
+    import { mountWorldView } from "./core/worldView.js";
+    mountWorldView();
   </script>
   <script type="module">
     import * as pb from "./core/pocketbaseSync.js";
@@ -177,13 +296,14 @@
   </script>
   <script type="module">
     // T1.5 — renders the weekly practice plan card on the home view.
-    // There is no persisted general PracticeStore wired into the shell yet
-    // (T1.4 handoff), so we construct a fresh, empty one each load; that
-    // means getOrGenerateWeeklyPlan realistically always takes the
-    // 'no-data' path today. Rendering must never break the rest of the
-    // home view (lesson grid, performance rail) if anything here throws.
+    // Reads the shared, persisted store (core/practiceProgress.js) so the plan
+    // reflects real progress. This used to build a fresh empty PracticeStore
+    // every load and throw it away, which meant getOrGenerateWeeklyPlan could
+    // only ever take its 'no-data' path no matter how much the student had
+    // done. Rendering must never break the rest of the home view (lesson grid,
+    // performance rail) if anything here throws.
     import { getOrGenerateWeeklyPlan } from "./core/weeklyPlan.js";
-    import { PracticeStore } from "./core/practiceStore.js";
+    import { getStore } from "./core/practiceProgress.js";
     import { getProfile } from "./core/learnerProfile.js";
 
     function dayLineText(day) {
@@ -201,8 +321,7 @@
       var card = document.getElementById("weekly-plan-card");
       if (!card) return;
       try {
-        var store = new PracticeStore({ currentTeacherId: "T1" });
-        var plan = getOrGenerateWeeklyPlan(store, getProfile());
+        var plan = getOrGenerateWeeklyPlan(getStore(), getProfile());
         card.textContent = "";
 
         var eyebrow = document.createElement("span");
@@ -252,6 +371,10 @@
     }
 
     renderWeeklyPlanCard();
+    // Exposed so the lesson screen can redraw the card after a completion
+    // changes the underlying store (see recordLessonProgress).
+    window.GuitarApp = window.GuitarApp || {};
+    window.GuitarApp.renderWeeklyPlanCard = renderWeeklyPlanCard;
   </script>
   <script src="./app.js"></script>
   <script>
@@ -284,6 +407,41 @@
           : undefined;
       }
 
+      // ---- World bridge ---------------------------------------------------
+      // Emerald Hollow (core/worldView.js) renders the doors but owns no lesson
+      // state: it asks the shell what exists and hands a click back here. This
+      // is the join that ADR-0005 left unbuilt — the world and the lessons were
+      // two separate front-ends, so a door could never open a real lesson.
+      var cameFromWorld=false;
+
+      function worldDoors(){
+        return lessons.map(function(raw,index){
+          var info=raw.lesson||{};
+          var id=info.id||("lesson-"+index);
+          var progress=window.GuitarApp&&window.GuitarApp.PracticeProgress;
+          var completed=false;
+          try{completed=!!(progress&&progress.getStore().lessonCompleted(id));}catch(e){completed=false;}
+          return {
+            index:index,
+            id:id,
+            label:lessonNumber(index),
+            title:info.title||"",
+            unlocked:index<LESSON_UNLOCK_COUNT,
+            completed:completed
+          };
+        });
+      }
+
+      function enterLessonFromWorld(index){
+        var world=window.GuitarApp&&window.GuitarApp.WorldView;
+        if(world&&typeof world.suspendWorldView==="function")world.suspendWorldView();
+        cameFromWorld=true;
+        openLesson(index);
+      }
+
+      window.GuitarApp=window.GuitarApp||{};
+      window.GuitarApp.WorldBridge={listDoors:worldDoors, enterLesson:enterLessonFromWorld};
+
       function openLesson(index){
         if(!lessonRunner){status.textContent="Lessons are still loading.";return;}
         hideNextLessonOffer();
@@ -293,7 +451,9 @@
         document.getElementById("lesson-view").hidden=false;
         var feedbackFab=document.getElementById("feedback-fab");
         if(feedbackFab)feedbackFab.hidden=false;
-        currentLessonState={id:model.lessonId||("lesson-"+index), index:index, completed:false};
+        var backBtn=document.getElementById("back-home");
+        if(backBtn)backBtn.textContent=cameFromWorld?"Back to Emerald Hollow":"Back to the path";
+        currentLessonState={id:model.lessonId||("lesson-"+index), index:index, completed:false, openedAt:Date.now()};
         logEvent("lesson_start", {lessonId:currentLessonState.id});
         window.scrollTo(0,0);
       }
@@ -375,7 +535,9 @@
           meta.className="meta";
           meta.textContent=(info.estimated_minutes||"")+" min"+(unlocked?" - Ready":" - On your path");
           button.appendChild(meta);
-          if(unlocked)button.addEventListener("click",function(){openLesson(index);});
+          // Entering from the catalog rather than through a door: this lesson
+          // exits back to the catalog, not to the porch.
+          if(unlocked)button.addEventListener("click",function(){cameFromWorld=false;openLesson(index);});
           grid.appendChild(button);
         });
         status.textContent=lessons.length+" lessons in Emerald Hollow";
@@ -384,7 +546,24 @@
 
       function home(){
         document.getElementById("lesson-view").hidden=true;
+        // A student who walked in through a door in Emerald Hollow goes back
+        // to the porch, not to the catalog — leaving the world by finishing a
+        // lesson inside it would be a strange way out of a place you walked
+        // into. The world's own "Leave Emerald Hollow" is the way out.
+        var world=window.GuitarApp&&window.GuitarApp.WorldView;
+        if(cameFromWorld&&world&&typeof world.openWorldView==="function"){
+          cameFromWorld=false;
+          finishLessonView();
+          world.openWorldView();
+          return;
+        }
         document.getElementById("home-view").hidden=false;
+        finishLessonView();
+      }
+
+      // The bookkeeping every exit from the lesson view shares, whichever
+      // screen the student lands on next.
+      function finishLessonView(){
         var feedbackFab=document.getElementById("feedback-fab");
         if(feedbackFab)feedbackFab.hidden=true;
         closeFeedbackPanel();
@@ -401,10 +580,38 @@
         if(!currentLessonState)return;
         currentLessonState.completed=true;
         logEvent("lesson_complete", {lessonId:currentLessonState.id});
+        recordLessonProgress(currentLessonState);
         offerNextLesson();
+        renderWeeklyPlanIfAvailable();
+        // Emerald Hollow's doors show which lessons have been walked; tell it
+        // this one has, so the porch is right when the student steps back out.
+        window.dispatchEvent(new CustomEvent("guitarapp:lesson-completed",{detail:{lessonId:currentLessonState.id}}));
       }
 
-      document.getElementById("start-l01").addEventListener("click",function(){openLesson(0);});
+      // Write the completion into the shared practice store, not just into
+      // telemetry. This is the step that was missing: telemetry is write-only
+      // analytics, so finishing a lesson changed nothing the app could read
+      // back, and the practice screen's pair gate (which counts completed
+      // lessons) stayed at zero forever — every drill permanently disabled.
+      function recordLessonProgress(state){
+        var progress=window.GuitarApp&&window.GuitarApp.PracticeProgress;
+        if(!progress||typeof progress.recordLessonComplete!=="function")return;
+        var elapsedSec=state.openedAt?Math.round((Date.now()-state.openedAt)/1000):0;
+        try{progress.recordLessonComplete(state.id, elapsedSec);}
+        catch(e){console.warn("[app] could not record lesson completion:", e&&e.message);}
+      }
+
+      // The weekly plan is drawn once at load from the same store; redraw it
+      // after a completion so the home view isn't stale when the student
+      // navigates back to it.
+      function renderWeeklyPlanIfAvailable(){
+        var render=window.GuitarApp&&window.GuitarApp.renderWeeklyPlanCard;
+        if(typeof render==="function"){
+          try{render();}catch(e){/* the card guards its own rendering */}
+        }
+      }
+
+      document.getElementById("start-l01").addEventListener("click",function(){cameFromWorld=false;openLesson(0);});
       document.getElementById("back-home").addEventListener("click",home);
 
       var lessonNextBtn=document.getElementById("lesson-next-btn");
@@ -545,7 +752,30 @@
               lessons: lessons,
               learnerProfile: currentLearnerProfile(),
               audioManifest: result.audioManifest || {},
-              telemetry: telemetry(),
+              // Looked up per call, never captured. This runner is built the
+              // moment the lesson catalog fetch resolves, and with the service
+              // worker answering that fetch from cache it can resolve before
+              // the deferred module that installs window.GuitarApp.Telemetry
+              // has run. Passing telemetry() directly froze a null on those
+              // loads, so askCoachAbout shipped an envelope with no anonId,
+              // the service 400'd it, and the student got template prose with
+              // nothing in the console to say why.
+              telemetry: {
+                getAnonId: function(){
+                  var t=telemetry();
+                  return (t && typeof t.getAnonId==="function") ? t.getAnonId() : undefined;
+                }
+              },
+              // Lets Sage answer a lesson question against the student's real
+              // recorded chord numbers, the same ones the practice screen
+              // sends. Resolved per call so it picks up drills run since the
+              // lesson was opened.
+              getMastery: function(){
+                var progress=window.GuitarApp&&window.GuitarApp.PracticeProgress;
+                return (progress&&typeof progress.currentMastery==="function")
+                  ? progress.currentMastery()
+                  : [];
+              },
               render: function(payload){
                 var root=document.getElementById("lesson-content");
                 if(!validateHTML(payload.html))throw new Error('Invalid HTML');
@@ -556,6 +786,10 @@
               }
             });
             renderCatalog();
+            // The Listen screen builds its chord list out of the lessons'
+            // verified `chords` blocks, and is mounted before this fetch
+            // resolves. Tell it the shapes are available now.
+            window.dispatchEvent(new CustomEvent("guitarapp:lessons-loaded",{detail:{count:lessons.length}}));
             if(attempt>1){
               status.textContent=lessons.length+" lessons loaded (retry succeeded)";
             }
@@ -585,7 +819,7 @@
     // window.GuitarApp.DrillRunner, mirroring lesson-runner.js's
     // createLessonRunner({...}) convention.
     import "./core/drillRunner.js";
-    import { PracticeStore } from "./core/practiceStore.js";
+    import * as practiceProgress from "./core/practiceProgress.js";
 
     function esc(value) {
       var node = document.createElement("span");
@@ -600,19 +834,11 @@
       try { t.log(name, opts || {}); } catch (e) { /* telemetry must never break the practice flow */ }
     }
 
-    var STORE_KEY = "guitarapp.practiceStore.v1";
-    function loadStore() {
-      try {
-        var raw = localStorage.getItem(STORE_KEY);
-        if (raw) return PracticeStore.fromJSON(JSON.parse(raw));
-      } catch (e) { /* non-fatal, fall through to a fresh store */ }
-      return new PracticeStore({ currentTeacherId: "T1" });
-    }
-    function saveStore(store) {
-      try { localStorage.setItem(STORE_KEY, JSON.stringify(store.toJSON())); } catch (e) { /* non-fatal */ }
-    }
-
-    var practiceStore = loadStore();
+    // One shared store (core/practiceProgress.js) rather than a private copy:
+    // the lesson screen writes lesson completions into it, and this screen's
+    // pair gating reads them. They were separate instances before, so nothing
+    // a student did in a lesson could ever unlock a drill here.
+    var practiceStore = practiceProgress.getStore();
     var drillRunner = null;
     var currentRunResult = null;
 
@@ -622,16 +848,41 @@
         : undefined;
     }
 
+    function currentPracticeIndex() {
+      return (window.__APP__ && window.__APP__.CATALOG && window.__APP__.CATALOG.practiceIndex) || null;
+    }
+
     function ensureDrillRunner() {
-      if (drillRunner) return drillRunner;
-      var practiceIndex = (window.__APP__ && window.__APP__.CATALOG && window.__APP__.CATALOG.practiceIndex) || null;
-      drillRunner = window.GuitarApp.DrillRunner.createDrillRunner({
+      var practiceIndex = currentPracticeIndex();
+      // Only cache a runner that actually has the catalog. app.js fetches
+      // content/practice/index.json asynchronously at boot, so a student who
+      // reaches this screen quickly would otherwise pin a runner with a null
+      // index for the rest of the session — every pair permanently ineligible.
+      if (drillRunner && drillRunner.__hadIndex) return drillRunner;
+      var runner = window.GuitarApp.DrillRunner.createDrillRunner({
         practiceIndex: practiceIndex,
         practiceStore: practiceStore,
         telemetry: telemetry(),
         win: window,
       });
+      runner.__hadIndex = !!practiceIndex;
+      drillRunner = runner;
       return drillRunner;
+    }
+
+    // How many completed lessons the student still needs before any chord pair
+    // becomes eligible. Read off the catalog's own introducedAt values rather
+    // than assumed — the earliest pair in content/practice/index.json is gated
+    // at lesson 4, so the old "Complete Lesson 1" line was simply wrong.
+    function lessonsUntilFirstPair() {
+      var index = currentPracticeIndex();
+      var pairs = (index && Array.isArray(index.pairs)) ? index.pairs : [];
+      var gates = pairs
+        .map(function (p) { return p && typeof p.introducedAt === "number" ? p.introducedAt : null; })
+        .filter(function (n) { return n !== null; });
+      if (!gates.length) return null;
+      var earliest = Math.min.apply(null, gates);
+      return Math.max(0, earliest - practiceProgress.completedLessonCount());
     }
 
     function renderDrillMenu() {
@@ -642,9 +893,16 @@
       var runner = ensureDrillRunner();
       var pair = runner.pickPair();
       if (pairLine) {
-        pairLine.textContent = pair
-          ? ("Practicing: " + pair.a + " ↔ " + pair.b)
-          : "Complete Lesson 1 to unlock your first practice pair.";
+        if (pair) {
+          pairLine.textContent = "Practicing: " + pair.a + " ↔ " + pair.b;
+        } else {
+          var remaining = lessonsUntilFirstPair();
+          pairLine.textContent = remaining === null
+            ? "Your practice drills are still loading."
+            : (remaining === 1
+              ? "One more finished lesson unlocks your first practice pair."
+              : "Finish " + remaining + " more lessons to unlock your first practice pair.");
+        }
       }
       var menu = runner.pickMenu();
       menu.forEach(function (name) {
@@ -698,7 +956,7 @@
           return;
         }
         currentRunResult = result;
-        saveStore(practiceStore);
+        practiceProgress.save();
         renderResult(result);
       } catch (e) {
         console.warn("[practice] drill run failed (non-fatal):", e && e.message);

@@ -58,6 +58,16 @@ self.addEventListener("fetch", (event) => {
   // Network-first for app shell + content; cache-fallback for audio (proof-only wavs)
   const url = new URL(event.request.url);
 
+  if (url.pathname.endsWith(".mp4") || url.pathname.endsWith(".ogv") || url.pathname.endsWith(".webm")) {
+    // Video is left entirely to the browser: don't intercept, don't cache.
+    // A <video> element fetches with Range headers and gets 206 Partial
+    // Content back, which cache.put() rejects outright ("Partial response is
+    // unsupported"), and a cached partial would be worse than none. The
+    // Emerald Hollow cold open is ~11MB across three clips, which also has no
+    // business sitting in the offline shell cache.
+    return;
+  }
+
   if (url.pathname.endsWith(".wav") || url.pathname.endsWith(".mp3") || url.pathname.endsWith(".m4a")) {
     // Audio is cached on first play (lazy), never precached on install — a full
     // lesson's audio can be 10s of MB and would blow the install-time budget.

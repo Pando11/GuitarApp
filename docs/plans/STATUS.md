@@ -34,22 +34,55 @@ can do:
   locally for now, deploy when ready.
 - [ ] Once deployed, confirm on a real phone: a lesson plays audio on
   cellular in under 5 seconds.
-- [ ] **Get five people who are not you to open it.**
+- [x] ~~**Get five people who are not you to open it.**~~ **WAIVED by the
+  owner, 2026-09-08.** Five outside testers are not available, and the gate
+  was blocking work that does not depend on it. The gate is retired, not
+  passed: nothing below should be read as "five people liked it." What it
+  was protecting against — shipping on the author's own judgement of what a
+  beginner needs — is now unguarded, so treat every claim about how the
+  first lessons feel to a newcomer as untested until someone outside tries
+  them. Re-open this the day a tester is available.
 - [ ] Confirm the feedback button produces a readable row (requires a live
   PocketBase instance reachable from the deployed URL — currently only
   `pocketbase-dev` local dev config exists; the owner needs to stand up
   PocketBase somewhere the deployed app can reach, and point
   `telemetry.js`'s `baseUrl` at it).
 
-Five real users have opened it: **0 / 5**
+Five real users have opened it: **0 / 5 — gate waived by the owner
+2026-09-08, see above. No longer blocks any tier.**
+
+## Coaching actually reaches the student — 2026-09-08
+
+Sage served canned template prose on **every** call before today, in both the
+lesson chat and the practice nudge. Three separate causes, all now fixed and
+verified against the live API: the latency budget was under the measured cost
+of a real call (2300 ms vs 1.9-2.4 s); the guardrail rejected any answer
+naming the chord the open lesson teaches, because a beginner has no recorded
+mastery for it; and the coach URL was hardcoded to loopback, so no deployed
+copy could ever reach the service.
+
+New envelope field `lessonChords` carries the lesson's own verified chord
+shapes (name, frets, fingers). It exists because with only the chord name to
+work from, the model answered "third fret of the D string" for Em, which is
+the second fret — the guardrail cannot catch a spelled-out number, so the fix
+was to stop making the model guess what the lesson already knows.
+
+Live check, eight beginner questions on lesson 3: 7 of 8 served a real model
+answer, 1 fell back to template. Previously 0 of 8. Server tests 49 -> 73.
+Full write-up: `WHAT-CHANGED-2026-09-08.md`.
+
+Still open, and the one that will look like success while failing: a deploy
+**must** set `globalThis.GUITARAPP_COACH_URL` to the public coach URL. Left
+unset, the app runs and answers — with canned text.
 
 ## Handoff to Tier 1 (written 2026-09-05, after Tier 0 build)
 
-Tier 0's code is done and green, but its own Exit Check hasn't been met yet
-(0/5 friends, no deploy) — per `TIER-1-make-ai-real.md`'s own header, **do
-not start Tier 1 until Tier 0 is marked SHIPPED above**, not just
-build-complete. This section is here so whoever starts Tier 1 doesn't have
-to re-derive state from commit history.
+Tier 0's code is done and green. Its Exit Check originally gated every later
+tier on five outside testers; the owner waived that gate on 2026-09-08 (see
+above), so `TIER-1-make-ai-real.md`'s "do not start Tier 1 until Tier 0 is
+SHIPPED" header no longer holds work back. Deploy is still open and still
+worth doing. This section is here so whoever starts Tier 1 doesn't have to
+re-derive state from commit history.
 
 Facts learned while building Tier 0 that Tier 1's tasks should account for:
 
@@ -81,9 +114,9 @@ Facts learned while building Tier 0 that Tier 1's tasks should account for:
   agent's search results.
 - **Host decision:** GitHub Pages (see open decision #5). Deploy itself is
   deliberately deferred — the app is being run locally for now. Whoever
-  picks this back up should deploy before running the five-friend test, not
-  before Tier 1 — Tier 1 doesn't require a public URL, only Tier 0's exit
-  check does.
+  picks this back up can deploy whenever it is useful — with the five-friend
+  gate waived (2026-09-08) nothing is waiting on it, but a public URL is
+  still what makes the coach reachable from a phone.
 
 ## Tier 1 — Make the AI real — **IN PROGRESS** (started before Tier 0's exit
 check was fully met — owner's explicit call, since 5 friends aren't
@@ -433,6 +466,33 @@ still green — `npm run test:all` 28/28 + 19/19, `npm run test:fidelity` 84/84,
   `chatEngine.test.mjs` 32/32, server mocked suite 33/33. **This closes the
   last gap blocking a real coaching round-trip once W6.1's workspace-ID
   issue is separately resolved by the owner.**
+
+### Wave 7 — the four things the owner reported broken (2026-09-08) — **DONE**
+
+Owner report: buttons dead, the lesson not happening in the world, students
+unable to ask the teacher, listening tab not working. All four were real; none
+of them threw an error, which is why they read as "nothing happens".
+
+| Task | Status | Notes |
+|------|--------|-------|
+| W7.1 Lesson completion is recorded | DONE | `markLessonComplete` only logged telemetry — write-only analytics — so `completedLessonCount()` was stuck at 0 forever and `selectPracticePair` gated every drill out. New `core/practiceProgress.js` owns one shared, persisted `PracticeStore`; the lesson screen, the practice screen and the weekly-plan card all use it instead of the three separate instances they each built. All 8 drills unlock after 4 lessons, verified in a browser. |
+| W7.2 Practice pair copy | DONE | Said "Complete Lesson 1"; the earliest pair in `content/practice/index.json` is gated at 4. Now counted off the catalog. `ensureDrillRunner` also no longer caches a runner built before the practice index has loaded. |
+| W7.3 Students can ask questions | DONE | There was an "Ask your coach" button and nowhere to type. Added a chat transcript + input to the lesson (`lesson-runner.js`), carried a `question` field end-to-end through `coachSurface.js` → `server/src/schema.js` → the model prompt, and gave a typed question its own longer latency budget on both sides. |
+| W7.4 Coach service reachable from the browser | DONE | Four separate faults, each of which alone forced template prose: no CORS on the service (every real browser call died at the preflight, curl worked, so it looked fine); `learnerProfile` fields all required, so a student who skipped the deliberately-skippable onboarding was 400'd; `lessonId` required, so the practice screen could never call it; and `masteryFromSkillMap` emitting PracticeStore's state words (`clean`/`struggling`) against the service's `mastered`/`needs_work` enum. |
+| W7.5 Guardrail false positives | DONE | It rejected "the A string" as an invented chord, and "0.71" as an invented number when the envelope carried 0.7166…. Now: a note letter qualified by the word "string" is exempt (a bare chord claim still is not), chords and numbers in the student's own question are allowed, and a number is checked numerically against one unit in its last decimal place rather than by exact string match. |
+| W7.6 Listen screen | DONE | `tuner-engine.js` and `listening-engine.js` were complete and imported by nothing. New `core/listenView.js` mounts a tuner and a chord check on the real mic. Chord shapes come from the lessons' own verified `chords` blocks. Verified against synthetic tones fed to Chromium as a fake mic: the tuner names the right string and reads the offset. |
+| W7.7 Emerald Hollow in the app | DONE | See ADR-0005's "Revisited" — Option C reversed at the owner's request. `core/worldView.js` plays the cold open (with Sage's voice over the silent clips) and shows the porch with a door per lesson; a door opens the app's real lesson and returns there. World assets restored from W5.2's deletion (~13MB); the service worker now skips video rather than trying to cache 206 responses. |
+
+Suites after Wave 7: `test:all` 28/28 + 19/19, server 49/49 (up from 33 —
+new cases cover the question field, the optional profile/lessonId, string
+references and rounded numbers), `drillRunner` 35/35, `coachSurface` 26/26,
+`chatEngine` 36/36.
+
+**Still open:** `chatEngine.js` points at `http://127.0.0.1:8787/coach`, so
+coaching only works with the service running locally. A deployed build needs
+that URL pointed at a hosted instance, and `COACH_ALLOWED_ORIGINS` set to the
+deployed origin. The service also does not read its own `.env` (no dotenv
+dependency) — start it with `node --env-file=.env src/index.js`.
 
 ## Tier 2 — Business — **BLOCKED (Tier 1)**
 

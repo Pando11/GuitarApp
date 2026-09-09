@@ -34,6 +34,15 @@ export function getFallbackProse(envelope) {
   const mastery = envelope && Array.isArray(envelope.mastery) ? envelope.mastery : [];
   const justHappened = envelope && envelope.justHappened;
 
+  // A student who typed a question is owed an answer, and this path has no
+  // way to produce one — every branch below is generic encouragement built
+  // from stored numbers. Saying so is the only honest option: inventing an
+  // answer would break Rule 5, and handing back unrelated encouragement
+  // reads as if the question was ignored.
+  if (envelope && typeof envelope.question === 'string' && envelope.question.length) {
+    return "I couldn't reach my answer for that one just now — ask me again in a moment. In the meantime, keep working the step you're on and take it slowly.";
+  }
+
   if (justHappened && typeof justHappened.drillId === 'string') {
     if (justHappened.passed) {
       return `Nice work on ${justHappened.drillId} — that's a clean pass. Keep that same relaxed hand on the next run.`;

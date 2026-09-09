@@ -1,7 +1,8 @@
 # ADR-0005 — World-App Integration Strategy
 
-**Status:** Decided (2026-09-07)  
-**Decision:** Option C — Keep separate; ship web app first
+**Status:** Superseded (2026-09-08) — see "Revisited" at the bottom  
+**Original decision:** Option C — Keep separate; ship web app first  
+**Current decision:** Option B, done in the DOM — the world is the app's front door
 
 ---
 
@@ -57,3 +58,44 @@ Revisit this decision when:
 3. → Wave 5.2: Remove duplicate assets
 4. → Wave 5.3: Get 5 test users on the live URL
 5. → Then Tier 2 (accounts, payments) once Tier 0 is shipped
+
+---
+
+## Revisited — 2026-09-08
+
+**The owner asked for the lesson to happen inside the world.** That is the
+demand signal this ADR said to wait for, arriving from the owner rather than
+from retention data, and it supersedes Option C.
+
+### What changed
+
+Option B, built in the DOM rather than through a Godot web export.
+
+- `07-app/core/worldView.js` renders Emerald Hollow in the app: the same
+  cold-open clips in the same order as `World.gd`, then the porch backdrop with
+  one door per lesson, exactly as `World.gd::_build_world_entry` does.
+- A door calls `window.GuitarApp.WorldBridge.enterLesson(index)`, which opens
+  the app's **real** lesson — the lesson content, Sage's chat, the audio. A
+  lesson entered through a door returns to the porch, not to the catalog.
+- The world assets deleted in W5.2 are restored under `07-app/assets/worlds/`
+  (~13MB: three MP4 clips, the stills, Sage's voice lines). The service worker
+  now skips video entirely rather than caching it.
+
+### Why not the Godot web export
+
+Both routes need the same JavaScript bridge, because the lesson screen, the
+coaching chat and the tuner are DOM and stay DOM — a WebAssembly canvas cannot
+render them. So the export buys the world's presentation only, and charges:
+
+- a 1.3GB export-template download to build it at all
+- roughly 30MB of WebAssembly for every visitor, against ~13MB of media
+- Ogg Theora clips that do not play in Safari on iPhone
+
+The three cold-open clips and four stills are ordinary web media. Rendering
+them in the DOM gives the same world, on every phone, at a third of the weight.
+
+### What this does not change
+
+The Godot project stays where it is and remains the authoring source for the
+world — scenes, art direction, and the cold-open sequencing are still designed
+there. Option A (Godot wraps everything) is still not on the table.

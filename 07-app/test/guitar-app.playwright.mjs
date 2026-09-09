@@ -68,6 +68,7 @@ async function startServer() {
         '.svg': 'image/svg+xml',
         '.png': 'image/png',
         '.webmanifest': 'application/manifest+json',
+        '.mp4': 'video/mp4',
       };
       const contentType = contentTypes[ext] || 'application/octet-stream';
       try {
@@ -223,6 +224,89 @@ async function runTests() {
       return cards.every(card => card.getAttribute('type') === 'button');
     });
     logTest('All lesson cards are button elements', allCardsClickable);
+
+    // TEST 11: Emerald Hollow — the world holds the lesson (Wave 7).
+    // The world used to live only in the Godot project, so a lesson could
+    // never be entered from it. These assert the join, not the artwork.
+    console.log('\n=== EMERALD HOLLOW ===');
+    await page.click('#start-world');
+    await page.waitForTimeout(600);
+    logTest('World view opens', await page.locator('#world-view').isVisible());
+
+    await page.click('#world-skip-coldopen');
+    await page.waitForTimeout(400);
+    const doorCount = await page.locator('#world-doors .world-door:not([disabled])').count();
+    logTest('Porch shows a door per unlocked lesson', doorCount === 5, `doors: ${doorCount}`);
+
+    await page.click('#world-doors .world-door:not([disabled])');
+    await page.waitForTimeout(800);
+    const lessonFromDoor = await page.evaluate(() => ({
+      lessonOpen: document.getElementById('lesson-view')?.hidden === false,
+      worldHidden: document.getElementById('world-view')?.hidden === true,
+      title: (document.querySelector('#lesson-content h1')?.textContent || '').length,
+    }));
+    logTest('A door opens the real lesson', lessonFromDoor.lessonOpen && lessonFromDoor.title > 0);
+    logTest('Entering a lesson leaves the world', lessonFromDoor.worldHidden);
+    logTest('The exit points back to the world',
+      (await page.locator('#back-home').textContent()).includes('Emerald Hollow'));
+
+    await page.click('#back-home');
+    await page.waitForTimeout(600);
+    logTest('Leaving a lesson returns to the porch', await page.evaluate(() =>
+      document.getElementById('world-view')?.hidden === false &&
+      document.getElementById('world-porch')?.hidden === false));
+
+    await page.click('#world-back-home');
+    await page.waitForTimeout(300);
+    logTest('The world can be left for the catalog', await page.locator('#home-view').isVisible());
+
+    // TEST 12: the student can type a question to Sage (Wave 7).
+    // Only the surface is asserted here — an answer needs the coaching
+    // service running, which this suite deliberately does not require.
+    console.log('\n=== ASK SAGE ===');
+    await page.click('#start-l01');
+    await page.waitForTimeout(600);
+    logTest('The lesson has somewhere to type a question', await page.evaluate(() =>
+      !!document.getElementById('lesson-chat-input') && !!document.getElementById('lesson-chat-form')));
+
+    await page.fill('#lesson-chat-input', 'Why does my chord buzz?');
+    await page.click('#lesson-chat-send');
+    await page.waitForTimeout(400);
+    logTest('Asking puts the question in the transcript', await page.evaluate(() =>
+      (document.querySelector('#lesson-chat-log .chat-turn-student .chat-text')?.textContent || '')
+        .includes('Why does my chord buzz?')));
+    logTest('Sage answers in the transcript', await page.evaluate(() =>
+      document.querySelectorAll('#lesson-chat-log .chat-turn-sage').length === 1));
+
+    // TEST 13: finishing a lesson is recorded, not just logged (Wave 7).
+    console.log('\n=== PROGRESS IS RECORDED ===');
+    const beforeComplete = await page.evaluate(() => window.GuitarApp?.PracticeProgress?.completedLessonCount?.());
+    await page.click('#lesson-done');
+    await page.waitForTimeout(500);
+    const afterComplete = await page.evaluate(() => window.GuitarApp?.PracticeProgress?.completedLessonCount?.());
+    logTest('Completing a lesson increments the practice store',
+      afterComplete === beforeComplete + 1, `${beforeComplete} -> ${afterComplete}`);
+    logTest('The completion survives a store round-trip', await page.evaluate(() => {
+      const raw = localStorage.getItem('guitarapp.practiceStore.v1');
+      return !!raw && Object.keys(JSON.parse(raw).lessonCompletion || {}).length > 0;
+    }));
+    await page.click('#back-home');
+    await page.waitForTimeout(300);
+
+    // TEST 14: the Listen screen exists and is wired (Wave 7).
+    // Mic behaviour is not asserted: this suite runs without a fake audio
+    // device, so opening the mic here would prompt or fail by design.
+    console.log('\n=== TUNE & LISTEN ===');
+    await page.click('#start-listen');
+    await page.waitForTimeout(500);
+    logTest('Listen view opens', await page.locator('#listen-view').isVisible());
+    logTest('The tuner is ready to start', await page.evaluate(() =>
+      document.getElementById('tuner-toggle')?.textContent === 'Start tuning'));
+    const chordOptions = await page.locator('#chord-select option').count();
+    logTest('Chord check offers the lessons\' verified shapes', chordOptions >= 10, `chords: ${chordOptions}`);
+    await page.click('#listen-back-home');
+    await page.waitForTimeout(300);
+    logTest('Listen view closes back to the catalog', await page.locator('#home-view').isVisible());
 
   } catch (error) {
     console.error('Test error:', error);

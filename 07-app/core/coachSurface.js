@@ -10,6 +10,45 @@
 //     justHappened: {drillId, passed, score, ratePerMin} | null,
 //     recentHistory: [{lessonId, completedAt, confidenceDelta}] }
 //
+// The verified chord shapes the open lesson teaches, taken off that lesson's
+// own `chords` block. Facts about the page, not about the student, and the
+// reason server-side guardrail.js will let Sage name Em to a beginner who has
+// no recorded number for it yet — and the reason Sage states the real
+// fingering instead of guessing one. Same fail-safe posture as everything
+// else here: anything malformed is dropped, and bad input yields [] rather
+// than throwing.
+function pickFretArray(raw) {
+  if (!Array.isArray(raw) || raw.length !== 6) return null;
+  const out = [];
+  for (const v of raw) {
+    if (v === null) { out.push(null); continue; }
+    if (typeof v !== 'number' || !Number.isInteger(v) || v < 0 || v > 24) return null;
+    out.push(v);
+  }
+  return out;
+}
+
+function pickLessonChords(raw) {
+  if (!Array.isArray(raw)) return [];
+  const out = [];
+  const seen = [];
+  for (const entry of raw) {
+    if (!entry || typeof entry !== 'object') continue;
+    const name = typeof entry.chord === 'string' ? entry.chord.trim() : '';
+    if (!name || name.length > 12) continue;
+    if (seen.indexOf(name) !== -1) continue;
+    seen.push(name);
+    const shape = { chord: name };
+    const frets = pickFretArray(entry.frets);
+    if (frets) shape.frets = frets;
+    const fingers = pickFretArray(entry.fingers);
+    if (fingers) shape.fingers = fingers;
+    out.push(shape);
+    if (out.length >= 24) break;
+  }
+  return out;
+}
+
 // buildCoachEnvelope() accepts {anonId, learnerProfile, lessonId, mastery,
 // justHappened, recentHistory}. anonId is picked through verbatim when it's
 // a non-empty string within server/src/schema.js's MAX_ANON_ID_LEN (128
@@ -109,10 +148,25 @@ function pickAnonId(raw) {
   return (typeof raw === 'string' && raw.length > 0 && raw.length <= MAX_ANON_ID_LEN) ? raw : undefined;
 }
 
+// server/src/schema.js's MAX_QUESTION_LEN — duplicated here for the same
+// reason MAX_ANON_ID_LEN is (no shared code across the client/server
+// boundary). Trimmed and length-checked but never rewritten: the student's
+// own words are what the server quotes to the model, so altering them here
+// would change the question being answered. Over-length input is dropped
+// rather than truncated, which degrades to the ordinary no-question call —
+// the same fail-safe posture as every other field on this envelope.
+const MAX_QUESTION_LEN = 300;
+
+function pickQuestion(raw) {
+  if (typeof raw !== 'string') return undefined;
+  const trimmed = raw.trim();
+  return (trimmed.length > 0 && trimmed.length <= MAX_QUESTION_LEN) ? trimmed : undefined;
+}
+
 // buildCoachEnvelope — pure, never throws. Assembles exactly the facts
 // envelope shape server/src/schema.js validates, passing through only
 // fields literally present on the input. Never invents a field.
-export function buildCoachEnvelope({ anonId, learnerProfile, lessonId, mastery, justHappened, recentHistory } = {}) {
+export function buildCoachEnvelope({ anonId, learnerProfile, lessonId, lessonChords, mastery, justHappened, recentHistory, question } = {}) {
   const envelope = {};
 
   const id = pickAnonId(anonId);
@@ -122,6 +176,11 @@ export function buildCoachEnvelope({ anonId, learnerProfile, lessonId, mastery, 
   if (lp) envelope.learnerProfile = lp;
 
   if (typeof lessonId === 'string') envelope.lessonId = lessonId;
+
+  const q = pickQuestion(question);
+  if (q) envelope.question = q;
+
+  envelope.lessonChords = pickLessonChords(lessonChords);
 
   envelope.mastery = pickMastery(mastery);
 

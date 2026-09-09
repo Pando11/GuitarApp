@@ -89,14 +89,27 @@ export function buildSystemPrompt() {
     '',
     'You will be given a compact summary of one student\'s stored practice facts: their profile, the current lesson, their per-chord mastery, and possibly a drill they just completed. Write a short coaching message reacting to those facts.',
     '',
+    'Sometimes the student has also typed a question, which appears at the end of the user message under "Student asked". When it is there, answering it is the whole job: reply to what they actually asked, in your own voice, and only bring in the practice facts above where they genuinely bear on the answer. When there is no such question, write unprompted encouragement about the facts, as described above.',
+    '',
     'RULES (do not break these):',
-    '- Cite only chords and numbers given to you in the user message. Never invent a chord name, confidence number, score, or rate that was not provided.',
-    '- Write 2-3 sentences, second person, warm register.',
+    '- Cite only chords and numbers given to you in the user message. Never invent a chord name, confidence number, score, or rate that was not provided. A chord the student named in their own question counts as given to you.',
+    '- Write 2-3 sentences, second person, warm register. A question that genuinely needs more may take up to five, but never more.',
+    '- If the question is not about guitar, or you do not have the facts to answer it, say so plainly in one sentence and point them back at the lesson. Never guess.',
     '- Respond with prose only — no JSON, no markdown, no lists, no headers.',
     '- Never suggest camera use, hand tracking, or any visual analysis of the student.',
     '- Never mention or reference specific copyrighted songs.',
     '- The facts you are given are the complete picture — do not imply you know more about the student than what is stated.',
   ].filter((line) => line !== '').join('\n');
+}
+
+// Drill scores arrive as raw floats (0.7166666666666667). Handing the model
+// all seventeen digits invites it to shorten them in its reply, which the
+// guardrail then has to recognize as the same number; showing two decimal
+// places up front means there is nothing left to round. Integers are left
+// exactly as they are.
+function readable(n) {
+  if (typeof n !== 'number' || !Number.isFinite(n)) return String(n);
+  return Number.isInteger(n) ? String(n) : String(Number(n.toFixed(2)));
 }
 
 const MASTERY_LABEL_TEXT = {
@@ -111,12 +124,69 @@ const MASTERY_LABEL_TEXT = {
  * recentHistory are OMITTED entirely when absent/empty — never sent as
  * literal "null" text.
  */
+// Renders a lesson chord's verified shape as a line the model can read back.
+// Strings are named rather than numbered because that is how a teacher says
+// it out loud, and because "string 5" invites the model to guess which end
+// the count starts from. Returns '' when the lesson names a chord without
+// diagramming it, so the name still reaches the prompt on its own.
+const STRING_NAMES = ['low E', 'A', 'D', 'G', 'B', 'high e'];
+
+function describeShape(shape) {
+  const frets = Array.isArray(shape.frets) ? shape.frets : null;
+  if (!frets) return '';
+  const fingers = Array.isArray(shape.fingers) ? shape.fingers : [];
+  const parts = [];
+  for (let i = 0; i < frets.length; i += 1) {
+    const name = STRING_NAMES[i] || `string ${i + 1}`;
+    const fret = frets[i];
+    if (fret === null) { parts.push(`${name} muted`); continue; }
+    if (fret === 0) { parts.push(`${name} open`); continue; }
+    const finger = fingers[i];
+    const withFinger = (typeof finger === 'number' && finger > 0) ? ` with finger ${finger}` : '';
+    parts.push(`${name} fret ${fret}${withFinger}`);
+  }
+  return `: ${parts.join(', ')}`;
+}
+
 export function buildUserMessage(envelope) {
   const lines = [];
   const profile = envelope.learnerProfile || {};
 
-  lines.push(`Student: ${profile.ageBand}, ${profile.experience}, goal: ${profile.goal}, ${profile.minutesPerDay} min/day.`);
-  lines.push(`Lesson: ${envelope.lessonId}${envelope.stepId ? `, step ${envelope.stepId}` : ''}.`);
+  // Each profile field is optional (see schema.js — onboarding is skippable,
+  // so a real student can arrive with none of them). Build the line from what
+  // is actually known and say plainly when nothing is: writing "undefined"
+  // into the prompt would have the model treat a missing fact as a stated one.
+  const profileBits = [];
+  if (profile.ageBand) profileBits.push(profile.ageBand);
+  if (profile.experience) profileBits.push(profile.experience);
+  if (profile.goal) profileBits.push(`goal: ${profile.goal}`);
+  if (typeof profile.minutesPerDay === 'number') profileBits.push(`${profile.minutesPerDay} min/day`);
+  lines.push(profileBits.length
+    ? `Student: ${profileBits.join(', ')}.`
+    : 'Student: nothing on file yet — they have not filled in a profile.');
+
+  // lessonId is optional: the practice screen has no lesson to name. Say
+  // where they are instead of printing "null" at the model.
+  lines.push(envelope.lessonId
+    ? `Lesson: ${envelope.lessonId}${envelope.stepId ? `, step ${envelope.stepId}` : ''}.`
+    : 'Context: free practice, not inside a lesson.');
+
+  // The chords this lesson teaches, with their verified fingerings. Stated
+  // separately from mastery because it is a fact about the page, not about
+  // the student: a beginner may have no recorded number for a chord the
+  // lesson is entirely about. Two things depend on it — the model may name
+  // these chords without guardrail.js rejecting the answer, and it does not
+  // have to invent a fingering. Asked how to make Em sound clean with only
+  // the name to work from, it said "third fret of the D string" on
+  // 2026-09-08; the lesson says second. Sending the real numbers is the fix.
+  const lessonChords = Array.isArray(envelope.lessonChords) ? envelope.lessonChords : [];
+  if (lessonChords.length) {
+    lines.push('Chords this lesson teaches (safe to name, and these fingerings are the verified ones — use them, never guess a fret):');
+    for (const shape of lessonChords) {
+      if (!shape || typeof shape.chord !== 'string') continue;
+      lines.push(`  ${shape.chord}${describeShape(shape)}`);
+    }
+  }
 
   const mastery = Array.isArray(envelope.mastery) ? envelope.mastery : [];
   if (mastery.length) {
@@ -126,7 +196,7 @@ export function buildUserMessage(envelope) {
 
   if (envelope.justHappened) {
     const jh = envelope.justHappened;
-    lines.push(`Just did drill ${jh.drillId}: ${jh.passed ? 'passed' : 'not passed'}, score ${jh.score}, rate ${jh.ratePerMin}/min.`);
+    lines.push(`Just did drill ${jh.drillId}: ${jh.passed ? 'passed' : 'not passed'}, score ${readable(jh.score)}, rate ${readable(jh.ratePerMin)}/min.`);
   }
 
   const recentHistory = Array.isArray(envelope.recentHistory) ? envelope.recentHistory : [];
@@ -135,6 +205,14 @@ export function buildUserMessage(envelope) {
       .slice(-3)
       .map((h) => `${h.lessonId} (${h.confidenceDelta >= 0 ? '+' : ''}${h.confidenceDelta})`);
     lines.push(`Recent lessons: ${parts.join(', ')}.`);
+  }
+
+  // Last, and clearly delimited: the student's own words. Kept at the end so
+  // the stored facts always read as the established context and the question
+  // as the thing being answered. Quoted rather than merged into the prose
+  // above so the model can tell where the student's text starts and stops.
+  if (typeof envelope.question === 'string' && envelope.question.length) {
+    lines.push(`Student asked: "${envelope.question}"`);
   }
 
   return lines.join('\n');

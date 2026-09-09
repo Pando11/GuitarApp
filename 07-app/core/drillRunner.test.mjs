@@ -169,7 +169,9 @@ check('runnerForDrillId(garbage) is null, not a throw', runnerForDrillId('nonsen
   const em = mastery.find((m) => m.chord === 'Em');
   const c = mastery.find((m) => m.chord === 'C');
   check('mastery confidence is derived from clean/total (Em: 3/4 = 75)', em && em.confidence === 75);
-  check('mastery label mirrors store state verbatim (Em: clean)', em && em.label === 'clean');
+  check('mastery label is mapped to the service vocabulary (clean -> mastered)', em && em.label === 'mastered');
+  check('the store\'s own state word is still carried alongside (Em: clean)', em && em.state === 'clean');
+  check('untried maps to not_started, the service\'s word for it', c && c.label === 'not_started');
   check('untried chord gets 0 confidence, not a guess', c && c.confidence === 0);
   check('masteryFromSkillMap(null) degrades to []', Array.isArray(masteryFromSkillMap(null)) && masteryFromSkillMap(null).length === 0);
 }

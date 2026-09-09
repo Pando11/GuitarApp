@@ -8,7 +8,7 @@
 import { validateFactsEnvelope } from './schema.js';
 import { checkInventedFacts } from './guardrail.js';
 import { getFallbackProse } from './templateFallback.js';
-import { MAX_BODY_BYTES, MODEL_TIMEOUT_MS } from './config.js';
+import { MAX_BODY_BYTES, MODEL_TIMEOUT_MS, MODEL_TIMEOUT_QUESTION_MS } from './config.js';
 import { logger as defaultLogger } from './logger.js';
 
 function sendJson(res, status, body) {
@@ -57,7 +57,13 @@ function readBody(req) {
  * @param {object} [deps.logger]
  * @param {number} [deps.modelTimeoutMs]
  */
-export function createCoachHandler({ rateLimiter, callCoach, logger = defaultLogger, modelTimeoutMs = MODEL_TIMEOUT_MS }) {
+export function createCoachHandler({
+  rateLimiter,
+  callCoach,
+  logger = defaultLogger,
+  modelTimeoutMs = MODEL_TIMEOUT_MS,
+  questionTimeoutMs = MODEL_TIMEOUT_QUESTION_MS,
+}) {
   return async function handleCoach(req, res) {
     let rawBody;
     try {
@@ -85,9 +91,14 @@ export function createCoachHandler({ rateLimiter, callCoach, logger = defaultLog
       return sendJson(res, 429, { error: 'rate_limited', retryAfterMs: 60_000 });
     }
 
+    // Two budgets, picked per request: see config.js. A student waiting on an
+    // answer they typed tolerates a longer wait than an unprompted nudge does,
+    // and gets a far worse fallback when the call is cut short.
+    const timeoutMs = envelope.question ? questionTimeoutMs : modelTimeoutMs;
+
     let modelProse = null;
     try {
-      const result = await callCoach(envelope, { timeoutMs: modelTimeoutMs });
+      const result = await callCoach(envelope, { timeoutMs });
       modelProse = result.prose;
     } catch (err) {
       logger.warn('coach model call failed, falling back to template', { reason: err && err.name });

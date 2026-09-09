@@ -428,11 +428,22 @@
       wrapClip
         ? `<div class="lesson-audio">${audioElementHTML(wrapClip.path, `Play lesson wrap-up: ${model.title}`)}</div>`
         : "",
-      // W6.2: coaching entry point for this lesson (wired up by openLesson,
-      // below, immediately after this HTML is inserted into the DOM).
-      `<section class="step lesson-coach" id="lesson-coach" aria-live="polite">`,
-      `<button class="secondary" id="lesson-ask-coach" type="button">Ask your coach</button>`,
-      `<p class="meta" id="lesson-coach-text"></p>`,
+      // Coaching entry point for this lesson (wired up by openLesson, below,
+      // immediately after this HTML is inserted into the DOM). Two ways in:
+      // type a question, or ask for an unprompted read on how it's going.
+      // The transcript is filled by script, never by this string — student
+      // text and model prose both go in through textContent.
+      `<section class="step lesson-coach" id="lesson-coach">`,
+      `<span class="lesson-number">Ask Sage</span>`,
+      `<h3>Stuck on something? Ask.</h3>`,
+      `<div class="chat-log" id="lesson-chat-log" role="log" aria-live="polite" aria-label="Your conversation with Sage"></div>`,
+      `<form class="chat-form" id="lesson-chat-form">`,
+      `<label class="sr-only" for="lesson-chat-input">Your question for Sage</label>`,
+      `<input class="chat-input" id="lesson-chat-input" type="text" maxlength="300" autocomplete="off" placeholder="Why does my chord buzz?">`,
+      `<button class="primary" id="lesson-chat-send" type="submit">Ask</button>`,
+      `</form>`,
+      `<button class="secondary" id="lesson-ask-coach" type="button">Just tell me how I'm doing</button>`,
+      `<p class="meta" id="lesson-coach-text" aria-live="polite"></p>`,
       `</section>`,
     ].join("");
   }
@@ -493,14 +504,33 @@
     // opts: { index (defaults to the currently open lesson), learnerProfile
     //   (defaults to options.learnerProfile), mastery, justHappened,
     //   recentHistory, localTemplate }
+    // opts.question: free text the student typed. Passed straight through to
+    // buildCoachEnvelope, which trims and length-checks it; never parsed or
+    // reworded here.
     async function askCoachAbout(opts) {
       const o = opts || {};
       const idx = Number.isInteger(o.index) ? o.index : openIndex.value;
       let lessonId = null;
+      // The chord shapes this lesson actually teaches, read off the lesson's
+      // own verified `chords` block (its keys are the chord names; `_schema`
+      // is the documentation entry, not a chord). Sent so the coaching
+      // service will let Sage name the chord the student is looking at even
+      // before they have practiced it, and so Sage quotes the lesson's real
+      // fingering rather than inventing one — see server/src/guardrail.js
+      // and server/src/modelClient.js.
+      let lessonChords = [];
       if (Number.isInteger(idx) && idx >= 0 && idx < lessons.length) {
         const profileForModel = o.learnerProfile !== undefined ? o.learnerProfile : options.learnerProfile;
         const model = normalizeLesson(lessons[idx], idx, profileForModel);
         lessonId = model.lessonId || null;
+        const raw = lessons[idx] && lessons[idx].chords;
+        if (raw && typeof raw === "object") {
+          lessonChords = Object.keys(raw)
+            .filter(function(k){ return k !== "_schema" && raw[k] && typeof raw[k] === "object"; })
+            .map(function(k){
+              return { chord: k, frets: raw[k].frets, fingers: raw[k].fingers };
+            });
+        }
       }
 
       const localTemplate = o.localTemplate || DEFAULT_COACH_FALLBACK;
@@ -527,13 +557,30 @@
         try { anonId = options.telemetry.getAnonId(); } catch (e) { anonId = undefined; }
       }
 
+      // Mastery: the caller's own list wins; otherwise ask the shell for the
+      // stored one. This file keeps no practiceStore of its own (see the note
+      // above), so without options.getMastery it sends [] and the coach can
+      // only answer in generalities — which is what shipped before this was
+      // wired up. Never invented here either way: an empty list stays empty.
+      let mastery = Array.isArray(o.mastery) ? o.mastery : null;
+      if (mastery === null && typeof options.getMastery === "function") {
+        try {
+          const supplied = await options.getMastery();
+          mastery = Array.isArray(supplied) ? supplied : [];
+        } catch (e) {
+          mastery = [];
+        }
+      }
+
       const envelope = coachSurface.buildCoachEnvelope({
         anonId,
         learnerProfile,
         lessonId,
-        mastery: Array.isArray(o.mastery) ? o.mastery : [],
+        lessonChords,
+        mastery: Array.isArray(mastery) ? mastery : [],
         justHappened: o.justHappened || null,
         recentHistory: Array.isArray(o.recentHistory) ? o.recentHistory : [],
+        question: typeof o.question === "string" ? o.question : undefined,
       });
 
       return coachSurface.getCoachMessage(envelope, localTemplate);
@@ -545,23 +592,102 @@
     // audio-manifest re-render both replace the button element, so both call
     // this again) rather than once, so a stale/missing listener never
     // silently ships.
+    // The transcript for the lesson currently on screen. Held here rather than
+    // read back out of the DOM because renderLessonHTML runs twice per open
+    // (once immediately, once when the audio manifest resolves) and the second
+    // pass replaces the whole subtree — anything living only in the DOM would
+    // vanish mid-conversation. Reset by openLesson when the lesson changes.
+    const transcript = { index: null, turns: [] };
+
+    function resetTranscript(index) {
+      transcript.index = index;
+      transcript.turns = [];
+    }
+
+    function paintTranscript() {
+      if (typeof document === "undefined") return;
+      const log = document.getElementById("lesson-chat-log");
+      if (!log) return;
+      log.textContent = "";
+      for (const turn of transcript.turns) {
+        const row = document.createElement("div");
+        row.className = "chat-turn chat-turn-" + turn.who;
+        const who = document.createElement("span");
+        who.className = "chat-who";
+        who.textContent = turn.who === "student" ? "You" : "Sage";
+        const body = document.createElement("p");
+        body.className = "chat-text";
+        // textContent, never innerHTML: `turn.text` is student input on one
+        // side and model output on the other, and neither is trusted markup.
+        body.textContent = turn.text;
+        row.appendChild(who);
+        row.appendChild(body);
+        log.appendChild(row);
+      }
+      log.scrollTop = log.scrollHeight;
+    }
+
+    // Wires the coaching UI rendered into the lesson HTML (see
+    // renderLessonHTML, above) — the question form and the "how am I doing"
+    // button both land in askCoachAbout(). Called after every DOM insertion of
+    // the lesson HTML (the initial render and the later audio-manifest
+    // re-render both replace these elements, so both call this again) rather
+    // than once, so a stale/missing listener never silently ships.
     function wireCoachButton(index, profile) {
       if (typeof document === "undefined") return;
+
+      if (transcript.index !== index) resetTranscript(index);
+      paintTranscript();
+
       const btn = document.getElementById("lesson-ask-coach");
       const textEl = document.getElementById("lesson-coach-text");
-      if (!btn) return;
-      btn.onclick = async function () {
-        btn.disabled = true;
-        if (textEl) textEl.textContent = "Thinking…";
-        try {
-          const result = await askCoachAbout({ index: index, learnerProfile: profile });
-          if (textEl) textEl.textContent = (result && result.text) || DEFAULT_COACH_FALLBACK;
-        } catch (e) {
-          if (textEl) textEl.textContent = "Your coach is unavailable right now.";
-        } finally {
-          btn.disabled = false;
-        }
-      };
+      const form = document.getElementById("lesson-chat-form");
+      const input = document.getElementById("lesson-chat-input");
+      const sendBtn = document.getElementById("lesson-chat-send");
+
+      if (btn) {
+        btn.onclick = async function () {
+          btn.disabled = true;
+          if (textEl) textEl.textContent = "Thinking…";
+          try {
+            const result = await askCoachAbout({ index: index, learnerProfile: profile });
+            if (textEl) textEl.textContent = (result && result.text) || DEFAULT_COACH_FALLBACK;
+          } catch (e) {
+            if (textEl) textEl.textContent = "Your coach is unavailable right now.";
+          } finally {
+            btn.disabled = false;
+          }
+        };
+      }
+
+      if (form && input) {
+        form.onsubmit = async function (event) {
+          event.preventDefault();
+          const question = input.value.trim();
+          if (!question) return;
+
+          transcript.turns.push({ who: "student", text: question });
+          transcript.turns.push({ who: "sage", text: "Thinking…" });
+          const pending = transcript.turns[transcript.turns.length - 1];
+          input.value = "";
+          paintTranscript();
+
+          input.disabled = true;
+          if (sendBtn) sendBtn.disabled = true;
+          try {
+            const result = await askCoachAbout({ index: index, learnerProfile: profile, question: question });
+            pending.text = (result && result.text) || DEFAULT_COACH_FALLBACK;
+          } catch (e) {
+            pending.text = "Your coach is unavailable right now.";
+          } finally {
+            input.disabled = false;
+            if (sendBtn) sendBtn.disabled = false;
+            paintTranscript();
+            // Focus back in the box so a follow-up question needs no clicking.
+            if (typeof input.focus === "function") input.focus();
+          }
+        };
+      }
     }
 
     function openLesson(index, learnerProfile) {
