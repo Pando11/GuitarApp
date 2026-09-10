@@ -4,6 +4,28 @@
 # the 07-app folder at app.netlify.com), then set the publish directory below —
 # Netlify auto-detects this file at the repo root once the site exists. No build
 # step, no env vars, no npm install needed.
+#
+# Coach service URL: 07-app/index.html ships with
+# globalThis.GUITARAPP_COACH_URL defaulted to the loopback address
+# (http://127.0.0.1:8787/coach), which a deployed site can never reach. As of
+# 2026-09-09 the coach service (server/) has no public host yet — see
+# server/README.md. Once it does, point this deployment at it with Netlify's
+# own config, without editing this repo's source: Site configuration ->
+# Build & deploy -> Post processing -> Snippet injection -> "Before
+# </body>" (or "Before </head>"), and inject
+#   <script>globalThis.GUITARAPP_COACH_URL = "https://<the coach service's public URL>/coach";</script>
+# placed so it runs before core/lesson-runner.js and core/wave1-flow.js load
+# (snippet injection runs before the page's own scripts, so this is
+# automatic). This repo intentionally does not automate that substitution
+# the way .github/workflows/deploy-pages.yml does for GitHub Pages, because
+# Netlify snippet injection is a per-site dashboard setting, not something a
+# file in this repo can set on the owner's behalf.
+#
+# Until that's done, this is not a silent failure: 07-app/index.html's own
+# script detects "coach URL is still the loopback default, and this isn't
+# localhost" and shows an on-screen banner plus a console.error, on any
+# host — Netlify included, with no Netlify-specific config needed for that
+# protection. See the comment beside GUITARAPP_COACH_URL in index.html.
 
 [build]
   base = "07-app"

@@ -3,6 +3,21 @@ name: Deploy 07-app to GitHub Pages
 # One-time owner action: in the repo Settings -> Pages, set "Source" to
 # "GitHub Actions". No other setup needed — this workflow publishes 07-app/
 # as a static site on every push to main.
+#
+# Optional owner action, once the coach service (server/) has a public host
+# (see server/README.md — no host is chosen yet as of 2026-09-09): in the
+# repo Settings -> Secrets and variables -> Actions -> Variables tab, add a
+# repository variable named COACH_URL set to that service's public URL
+# (e.g. https://guitarapp-coach.example.com/coach). It's a plain variable,
+# not a secret, because it is not sensitive — it is the same URL the
+# deployed app's own client-side JS calls; the ANTHROPIC_API_KEY it protects
+# never leaves server/. The "Configure coach URL for this deployment" step
+# below substitutes it into the deployed copy of 07-app/index.html only —
+# the checked-in source keeps the loopback default, which stays correct for
+# local development. Until COACH_URL is set, the deployment intentionally
+# ships unconfigured: 07-app/index.html's own script then shows an on-screen
+# banner and logs a console error rather than silently answering with
+# canned template text (see the comment there for why).
 
 on:
   push:
@@ -30,6 +45,38 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      # Substitutes the real coach URL into the deployed copy only, when the
+      # owner has set the COACH_URL repository variable (see the comment at
+      # the top of this file). Fails the whole deploy — loudly, in the
+      # Actions log — rather than shipping a silent guess if the exact
+      # config line it expects in 07-app/index.html has drifted, so this
+      # workflow and that file can never quietly disagree with each other.
+      # When COACH_URL is not set, this step does nothing: the deployed app
+      # ships with the loopback default, which 07-app/index.html's own
+      # unconfigured-coach banner turns into a visible warning instead of a
+      # silent one.
+      - name: Configure coach URL for this deployment
+        env:
+          COACH_URL: ${{ vars.COACH_URL }}
+        run: |
+          if [ -z "$COACH_URL" ]; then
+            echo "::warning::COACH_URL repository variable is not set. This deployment will show the in-app 'Sage is running on scripted fallback text' banner, and Ask Sage will answer with canned template text instead of a real model. Set Settings -> Secrets and variables -> Actions -> Variables -> COACH_URL to the coach service's public URL, then re-run this workflow (or push again)."
+          else
+            node -e '
+              const fs = require("fs");
+              const filePath = "07-app/index.html";
+              const needle = "globalThis.GUITARAPP_COACH_URL = globalThis.GUITARAPP_COACH_URL || \"http://127.0.0.1:8787/coach\";";
+              const html = fs.readFileSync(filePath, "utf8");
+              if (!html.includes(needle)) {
+                console.error("Expected coach-URL config line not found in " + filePath + " — refusing to guess a substitution. Update this workflow to match the current line.");
+                process.exit(1);
+              }
+              const replacement = "globalThis.GUITARAPP_COACH_URL = " + JSON.stringify(process.env.COACH_URL) + ";";
+              fs.writeFileSync(filePath, html.split(needle).join(replacement));
+              console.log("Configured GUITARAPP_COACH_URL for this deployment: " + process.env.COACH_URL);
+            '
+          fi
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

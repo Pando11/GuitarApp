@@ -15,7 +15,7 @@
  * The real SW passed verify-sw-cache.mjs (4/0 ✅) per HANDOFF.md 2026-08-16. That truth is intact; the file is not.
  */
 
-const CACHE = "guitarapp-v5";  // ← BUMP THIS on every content change
+const CACHE = "guitarapp-v6";  // ← BUMP THIS on every content change
 
 const PRECACHE_URLS = [
   "./",
@@ -23,23 +23,47 @@ const PRECACHE_URLS = [
   "./manifest.webmanifest",
   "./app.js",
   "./core/backupButtons.js",
+  "./core/lesson-runner.js",
   "./icons/icon.svg",
   "./core/chatEngine.js",
   "./core/chord-theory-check.js",
   "./core/asset-job.js",
   "./core/entitlementStore.js",
   "./content/lessons/manifest.json",
+  "./audio/manifest.json",
 ];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE).then(async (cache) => {
       await cache.addAll(PRECACHE_URLS);
+
+      // All 25 lesson JSONs (their listing was already dynamic before this
+      // change — index.html's inline script calls window.GuitarApp.LessonRunner
+      // .createLessonRunner(), which lives in core/lesson-runner.js above, so a
+      // lesson could not have opened offline even with its JSON cached).
       const response = await fetch("./content/lessons/manifest.json");
       if (!response.ok) throw new Error("Lesson manifest could not be cached");
       const manifest = await response.json();
       const files = Array.isArray(manifest.files) ? manifest.files : [];
       await cache.addAll(files.map((file) => `./content/lessons/${file}`));
+
+      // Lesson 1's voice clips only, precached — everything else is lazy
+      // (see the fetch handler below). A lesson without Sage's voice reads as
+      // broken to a beginner, but the full catalog is 201 files across 25
+      // lessons, tens of MB; precaching all of it would turn a small,
+      // fast app-shell install into one a weak connection may never finish.
+      // Lesson 1 is the one lesson every new student is guaranteed to open
+      // first, often on that same weak connection, before the on-demand
+      // cache (below) has had a chance to warm from a real play. Lessons
+      // 2-25 are fetched on first play and cached from then on.
+      const audioResponse = await fetch("./audio/manifest.json");
+      if (audioResponse.ok) {
+        const audioManifest = await audioResponse.json();
+        const l01 = audioManifest && typeof audioManifest === "object" ? audioManifest.l01 : null;
+        const l01Clips = l01 && typeof l01 === "object" ? Object.values(l01).filter((p) => typeof p === "string") : [];
+        await cache.addAll(l01Clips.map((path) => `./audio/${path}`));
+      }
     })
   );
   self.skipWaiting();
@@ -69,8 +93,9 @@ self.addEventListener("fetch", (event) => {
   }
 
   if (url.pathname.endsWith(".wav") || url.pathname.endsWith(".mp3") || url.pathname.endsWith(".m4a")) {
-    // Audio is cached on first play (lazy), never precached on install — a full
-    // lesson's audio can be 10s of MB and would blow the install-time budget.
+    // Audio is cache-first. Lesson 1's clips are already in the cache from
+    // install (see above); everything else is cached lazily on first play —
+    // the full 201-file, tens-of-MB catalog would blow the install-time budget.
     event.respondWith(cacheFirst(event.request));
   } else {
     event.respondWith(networkFirst(event.request));

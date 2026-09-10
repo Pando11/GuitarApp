@@ -13,6 +13,7 @@ import {
   getAnonId,
   getSessionId,
   assertNoForbiddenKeys,
+  defaultTelemetryUrl,
   _resetTelemetry,
   _resetSessionId,
 } from './telemetry.js';
@@ -170,6 +171,42 @@ const allClean = getQueue().every((e) => {
   }
 });
 check('every queued event payload is free of PROFILE_SCHEMA keys', allClean);
+
+// ---------------------------------------------------------------------------
+// 7. defaultTelemetryUrl() resolution: globalThis.GUITARAPP_TELEMETRY_URL
+// wins when set (a deployed app), otherwise the loopback fallback keeps local
+// dev working with no configuration. Same shape as chatEngine.js's
+// defaultCoachUrl(). Mirrors that this is a deliberate fix, not incidental —
+// see telemetry.js for the "same bug the coach URL had" writeup.
+// ---------------------------------------------------------------------------
+const savedTelemetryUrl = globalThis.GUITARAPP_TELEMETRY_URL;
+delete globalThis.GUITARAPP_TELEMETRY_URL;
+check('defaultTelemetryUrl() falls back to loopback when unset', defaultTelemetryUrl() === 'http://127.0.0.1:8090');
+
+globalThis.GUITARAPP_TELEMETRY_URL = 'https://pb.example.com';
+check('defaultTelemetryUrl() honors globalThis.GUITARAPP_TELEMETRY_URL when set', defaultTelemetryUrl() === 'https://pb.example.com');
+
+globalThis.GUITARAPP_TELEMETRY_URL = '';
+check('defaultTelemetryUrl() falls back on an empty-string override', defaultTelemetryUrl() === 'http://127.0.0.1:8090');
+
+globalThis.GUITARAPP_TELEMETRY_URL = 'https://deployed-pb.example.com';
+let capturedUrl = null;
+const capturingFetch = async (url) => { capturedUrl = url; return { ok: true, status: 200, text: async () => '{}' }; };
+log('app_open');
+const deployedFlush = await flush({ forceFetch: true, fetchImpl: capturingFetch });
+check('flush() with no baseUrl override uses the configured deployment URL', capturedUrl === 'https://deployed-pb.example.com/api/collections/events/records');
+check('deployed-URL flush() reports ok:true', deployedFlush.ok === true);
+
+// options.baseUrl still wins over globalThis, exactly like coachClient's
+// options.url wins over defaultCoachUrl() — how tests/callers inject a stub.
+let capturedUrl2 = null;
+const capturingFetch2 = async (url) => { capturedUrl2 = url; return { ok: true, status: 200, text: async () => '{}' }; };
+log('app_open');
+await flush({ forceFetch: true, fetchImpl: capturingFetch2, baseUrl: 'http://127.0.0.1:9999' });
+check('flush() options.baseUrl overrides globalThis.GUITARAPP_TELEMETRY_URL', capturedUrl2 === 'http://127.0.0.1:9999/api/collections/events/records');
+
+if (savedTelemetryUrl === undefined) delete globalThis.GUITARAPP_TELEMETRY_URL;
+else globalThis.GUITARAPP_TELEMETRY_URL = savedTelemetryUrl;
 
 console.log(`\n=== ${passed} passed, ${failed} failed ===\n`);
 process.exit(failed === 0 ? 0 : 1);

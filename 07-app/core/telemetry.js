@@ -175,10 +175,26 @@ function _resolveFetch(options) {
   return null;
 }
 
+// Where the events PocketBase lives. The loopback address is only correct on
+// the machine running PocketBase, so a deployed copy of the app could never
+// reach it and every feedback row / event log from that device went nowhere
+// (the same bug chatEngine.js's coach URL had — see defaultCoachUrl() there).
+// A deployment sets globalThis.GUITARAPP_TELEMETRY_URL (a one-line <script>
+// in index.html, or the build that writes it) and this picks it up; local
+// development keeps working with no configuration at all. options.baseUrl
+// still wins over both, which is how the tests (and flush() callers) inject
+// a stub or override.
+const FALLBACK_TELEMETRY_URL = 'http://127.0.0.1:8090';
+
+export function defaultTelemetryUrl() {
+  const configured = (typeof globalThis !== 'undefined') ? globalThis.GUITARAPP_TELEMETRY_URL : null;
+  return (typeof configured === 'string' && configured) ? configured : FALLBACK_TELEMETRY_URL;
+}
+
 // Attempts to deliver `events` (an array of event objects) to PocketBase.
 // Returns true on apparent success, false on failure — never throws.
 async function _send(events, options) {
-  const baseUrl = (options && options.baseUrl) || 'http://127.0.0.1:8090';
+  const baseUrl = (options && options.baseUrl) || defaultTelemetryUrl();
   const collection = (options && options.collection) || 'events';
   const url = `${baseUrl}/api/collections/${collection}/records`;
   const body = JSON.stringify({ events });

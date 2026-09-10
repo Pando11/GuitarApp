@@ -191,9 +191,90 @@
        app silently serves canned template prose when the coach is
        unreachable — it looks like it works, it just is not Sage. Set it
        before the first <script> that can call the coach. Read by
-       core/chatEngine.js's defaultCoachUrl(). -->
+       core/chatEngine.js's defaultCoachUrl().
+
+       How the real value gets here: .github/workflows/deploy-pages.yml
+       substitutes the line below for the deployed copy only (never this
+       source file) when a repo variable named COACH_URL is set, and fails
+       the deploy loudly if that substitution can't find this exact line. As
+       of 2026-09-09 no COACH_URL is set yet (server/ has no public host —
+       see server/README.md), so GitHub Pages deploys still ship the
+       loopback fallback below on purpose: unset is the safe, loud state,
+       not a silent one. See the banner logic just below for what makes that
+       state visible instead of indistinguishable from a working Sage. -->
   <script>
     globalThis.GUITARAPP_COACH_URL = globalThis.GUITARAPP_COACH_URL || "http://127.0.0.1:8787/coach";
+  </script>
+  <!-- Same shape, same reason, for the events PocketBase (core/telemetry.js).
+       telemetry.js hardcoded http://127.0.0.1:8090 the same way the coach URL
+       used to, so a deployed copy's feedback rows and event log went nowhere
+       silently. telemetry.js's own defaultTelemetryUrl() already falls back
+       to that loopback address when globalThis.GUITARAPP_TELEMETRY_URL is
+       unset, so this line only needs to exist as the documented, fillable
+       override point — same pattern as GUITARAPP_COACH_URL above. There is
+       no telemetry host yet either (see server/README.md and the coach-URL
+       comment above), so this still resolves to the loopback default; that
+       is correct for local dev and just means deployed telemetry is a no-op
+       until a host exists, same as it already was before this line existed.
+       Unlike the coach URL, a missing telemetry endpoint doesn't hand a
+       beginner a wrong answer that looks right — it just drops analytics —
+       so this does not get its own on-screen banner. -->
+  <script>
+    globalThis.GUITARAPP_TELEMETRY_URL = globalThis.GUITARAPP_TELEMETRY_URL || "http://127.0.0.1:8090";
+  </script>
+  <!-- The trap this guards against: with no coach URL configured, the app
+       still loads, still opens lessons, and Ask Sage still answers — with
+       local canned template prose (chatEngine.js falls back silently by
+       design, so nothing throws). That is a failure that looks exactly like
+       success. This block can't fix connectivity, but it can refuse to let
+       that state pass as unremarkable: a console.error for anyone who opens
+       devtools, and a fixed, impossible-to-miss on-screen banner for anyone
+       who doesn't. It fires only when both are true: (a) GUITARAPP_COACH_URL
+       is still the loopback fallback from above (nothing upstream — the
+       deploy substitution above, or a manual override — set a real one),
+       and (b) the page is not running on loopback/file itself, i.e. this
+       looks like a real deployment rather than local development, where the
+       loopback default is correct and expected. Local dev (npm start +
+       serve-local.js, or the test suites, all on localhost/127.0.0.1) never
+       sees this banner. -->
+  <script>
+    (function () {
+      var FALLBACK_COACH_URL = "http://127.0.0.1:8787/coach";
+      var host = (typeof location !== "undefined" && location.hostname) || "";
+      var protocol = (typeof location !== "undefined" && location.protocol) || "";
+      var isLocalLikeHost = protocol === "file:" || host === "" ||
+        host === "localhost" || host === "127.0.0.1" || host === "[::1]" || host === "::1";
+      var isUnconfigured = globalThis.GUITARAPP_COACH_URL === FALLBACK_COACH_URL;
+
+      if (!isUnconfigured || isLocalLikeHost) return;
+
+      var message = "Sage's coach service isn't configured for this deployment (" +
+        host + "). Lessons will still open and Ask Sage will still reply, but with " +
+        "scripted fallback text, not a real model answer. Set globalThis.GUITARAPP_COACH_URL " +
+        "(see the comment above this script, and .github/workflows/deploy-pages.yml) to the " +
+        "coach service's public URL to fix this.";
+      if (typeof console !== "undefined" && console.error) console.error("[GuitarApp] " + message);
+
+      function paintBanner() {
+        if (typeof document === "undefined" || !document.body) return;
+        if (document.getElementById("coach-unconfigured-banner")) return;
+        var el = document.createElement("div");
+        el.id = "coach-unconfigured-banner";
+        el.setAttribute("role", "alert");
+        el.style.cssText = "position:fixed;top:0;left:0;right:0;z-index:9999;" +
+          "background:#c96a5a;color:#241109;padding:10px 14px;" +
+          "font:600 14px/1.4 system-ui,-apple-system,Segoe UI,sans-serif;" +
+          "text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.35)";
+        el.textContent = "Sage is running on scripted fallback text on this deployment — " +
+          "the real coach service isn't reachable or configured yet.";
+        document.body.insertBefore(el, document.body.firstChild);
+      }
+      if (typeof document !== "undefined" && document.readyState !== "loading") {
+        paintBanner();
+      } else if (typeof document !== "undefined") {
+        document.addEventListener("DOMContentLoaded", paintBanner);
+      }
+    })();
   </script>
   <script src="./core/backupButtons.js"></script>
   <script src="./core/lesson-runner.js"></script>

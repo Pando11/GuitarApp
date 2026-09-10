@@ -21,9 +21,12 @@ Legend: `TODO` · `IN PROGRESS` · `BLOCKED (reason)` · `DONE`
 
 `npm run test:all` is fully green: 28/28 smoke + 19/19 Playwright.
 
-**Known gap:** `drill_result` telemetry event is defined but never fired — no
-drill/practice screen is reachable from the current shell. Not blocking the
-five-friend test (no lessons currently render a drill), but worth tracking.
+**Correction (2026-09-09):** the line below is stale and was left uncorrected
+too long. `drill_result` *is* fired — `07-app/core/drillRunner.js` fires it
+around line 292 — and the Practice screen has been reachable since T1.6
+(2026-09-06). Kept here, struck through, only so nobody re-derives the old
+gap from history: ~~`drill_result` telemetry event is defined but never
+fired — no drill/practice screen is reachable from the current shell.~~
 
 **Exit check:** code is done; the remaining items are things only the owner
 can do:
@@ -488,11 +491,42 @@ new cases cover the question field, the optional profile/lessonId, string
 references and rounded numbers), `drillRunner` 35/35, `coachSurface` 26/26,
 `chatEngine` 36/36.
 
-**Still open:** `chatEngine.js` points at `http://127.0.0.1:8787/coach`, so
-coaching only works with the service running locally. A deployed build needs
-that URL pointed at a hosted instance, and `COACH_ALLOWED_ORIGINS` set to the
-deployed origin. The service also does not read its own `.env` (no dotenv
-dependency) — start it with `node --env-file=.env src/index.js`.
+**Still open (partly closed 2026-09-09, see Wave 8 below):** `chatEngine.js`
+points at `http://127.0.0.1:8787/coach`, so coaching only works with the
+service running locally. A deployed build needs that URL pointed at a hosted
+instance, and `COACH_ALLOWED_ORIGINS` set to the deployed origin. The service
+also does not read its own `.env` (no dotenv dependency) — start it with
+`node --env-file=.env src/index.js`.
+
+## Wave 8 — six parallel agents to finish the first set of lessons — 2026-09-09
+
+Dispatched per `HANDOFF-NEXT.md` (now superseded by this section), one wave,
+six agents, disjoint `OWNS` lists, verified independently by the lead via
+`git status`/`git diff --stat` after each report. Full baseline unaffected
+throughout: `cd server && npm test` 73/73, `npm run test:app-smoke` 28/28,
+`npm run test:playwright` 35/35, every `07-app/core/*.test.mjs` 0 failed.
+
+| Agent | Task | Status | Notes |
+|---|---|---|---|
+| 1 | Deploy reachability | DONE | `07-app/index.html` now shows an on-screen banner + `console.error` when a real deployment ships with the coach URL still unset (verified silent on local dev/tests). `.github/workflows/deploy-pages.yml` gained a step that substitutes a `COACH_URL` repo variable into the deployed copy, failing the deploy loudly if the expected config line has drifted. `deploy/netlify.toml` documents the Netlify-side equivalent via dashboard snippet injection. Also added the mirrored `GUITARAPP_TELEMETRY_URL` config line alongside the coach one (see Agent 3). Found the branch/workflow mismatch closed out below. |
+| 2 | Coach service host | DONE (recommendation only, no host chosen) | `server/README.md` now has a "Deployment" section comparing Render (free tier has a cold-start trap that would silently re-trigger the exact canned-text failure this whole effort exists to prevent — only safe on its $7 paid tier), Railway (~$5/mo, no cold-start issue, simplest), and Fly.io (~$2-5/mo, more CLI setup). Recommendation if the owner wants one pick: Railway. `server/.env` confirmed still correctly gitignored regardless of host. `ANTHROPIC_WORKSPACE_ID` blank is fine unless a multi-workspace 400 actually shows up. **Open owner decision — see below.** |
+| 3 | Second hardcoded localhost | DONE | `07-app/core/telemetry.js` now resolves its PocketBase URL via `defaultTelemetryUrl()` reading `globalThis.GUITARAPP_TELEMETRY_URL`, mirroring `chatEngine.js`'s `defaultCoachUrl()` shape exactly. `telemetry.test.mjs` 37→43 passing. **Unresolved, flagged not guessed:** `07-app/app.js:466` uses port **8091** for a PocketBase admin/encrypted-sync path, while everywhere else in the app uses 8090. Agent 3 traced 8091 back to a one-off second PocketBase instance used in old encrypted-sync proof scripts under `.scratch/`, not a documented convention — plausible typo, plausible deliberate second instance for the (currently frozen) encrypted-sync feature. Nobody has confirmed which. `app.js` was not touched. |
+| 4 | Offline caching, lessons 1-5 | DONE | The real gap wasn't the lesson JSON (already dynamically cached) — it was `core/lesson-runner.js` itself, which nothing precached, so a lesson could not render offline even with its data present. Now precached, along with `audio/manifest.json`. Lesson 1's 9 voice clips are precached; lessons 2-25 stay lazy/cache-first (full 201-clip catalog is 90MB+, would defeat the purpose). `CACHE` bumped `v5`→`v6`. Confirmed `dfa6533` should have bumped `CACHE` and didn't (lesson-runner.js content changes + new core files landed without a bump) — this wave's bump covers both. |
+| 5 | Dead code removal | DONE | Deleted `07-app/app-refactored.js` (769 lines) and `07-app/EXAMPLES-COPY-PASTE.js` (622 lines) after confirming zero references anywhere in the repo (app, Godot world, `automation/`, `scripts/`, service worker). `app-refactored.js`'s one real feature — the event-emitter/`appState` pattern — turned out to already be merged into current `app.js`; everything else in it was actually *behind* `app.js` (missing the audio-manifest fetch, missing practice-catalog mirroring `drillRunner.js` depends on). Nothing of value was lost; both are recoverable via git history if ever needed. |
+| 6 | Beginner playtest, lessons 1-5 | DONE (verification only, nothing changed) | See findings below — **this is the one that matters most** and the first real check on lessons since the five-friend gate was waived. |
+
+**Agent 6's findings, worst-first (all require an owner/content call, not a subagent fix):**
+
+1. **No chord diagram is ever shown to the student, anywhere.** `07-app/core/renderer.js`'s `chordSVG()` generator (correct, unit-tested against `fidelity.mjs`) is never imported by `index.html` or `lesson-runner.js`. Lessons 3-5 teach Em and easyC in prose only — no picture to check a fingering against. Given that a live model once misstated a fret (see the 2026-09-08 section above), having zero visual cross-check is judged the single biggest risk for a first-time student. **Not fixed — needs a build task, not a hotfix.**
+2. **Good news:** every fingering actually stated in lesson text is correct — Em (`frets:[0,2,2,0,0,0]`) and easyC (`frets:[null,3,2,0,null,0]`) both hand-verified against real chord theory. The specific "third fret" Em bug from the 2026-09-08 writeup is not present in the current build.
+3. **Possible placeholder audio, unconfirmed.** Every lesson's "intro" clip (10 files across lessons 1-5) measures exactly 5.000s via ffprobe regardless of paragraph length, while adjacent same-lesson clips scale normally with text length. Flagged for an actual listen (`07-app/audio/l03-voice/l03-01-ex1_intro.m4a` named as the example) — not confirmed broken, no audio playback available in the verification environment.
+4. **Minor guardrail flake:** one legitimate answer was rejected (`invented_token:E`) on the very first question asked right after opening a lesson; identical questions immediately after all passed. Fails safe to canned text, not a wrong-answer risk, but worth a look at a possible request-ordering race.
+5. **Local dev trap:** `cd server && npm start` alone silently serves template prose because `server/src/index.js` reads `process.env` directly with no dotenv — the documented start command doesn't load `server/.env`. Must use `node --env-file=.env src/index.js` instead. Same "looks like success, isn't" failure class Agent 1 fixed for the deployed case, but it also bites locally, on the exact command the README recommends.
+6. **Not a bug:** `LESSON_UNLOCK_COUNT=5` in `index.html` means lessons 1-5 are all unlocked from first load regardless of completion, so completion-gated unlock isn't actually exercised within this range. Progress recording itself works correctly (verified via `localStorage`).
+
+Ask-Sage tally (8 real beginner questions on lesson 3, run twice + one via `test:live`): 7/8 real model answers, all read as correct and appropriately hedged (including one correct refusal to invent a diagnosis — "Am I holding it right?"); 1/8 guardrail fallback (see finding 4). World path (Emerald Hollow → door → lesson → back) verified working end to end. `npm run test:live`: real model calls succeeded every time; the only FAIL line is the pre-accepted no-cache-hit-on-Haiku one.
+
+**Lead follow-up (2026-09-09), not part of any agent's OWNS list:** Agent 1 found `deploy-pages.yml` triggers on `branches: [main]` but the local repo's active branch was `master` (tracking `github/main` under a mismatched name — exactly the setup that makes a plain `git push` ambiguous or fail). Local branch renamed `master` → `main` to match GitHub's actual default branch and the workflow trigger; upstream tracking to `github/main` preserved. **`github/master` still exists as a separate, stale remote branch (old commit `8743b1e`) — left untouched, owner call on whether to delete it.**
 
 ## Tier 2 — Business — **BLOCKED (Tier 1)**
 
@@ -518,6 +552,20 @@ dependency) — start it with `node --env-file=.env src/index.js`.
 4. **Under-13 policy:** support with parental consent, or exclude from paid. — *undecided*
 5. **Static host** for Tier 0: **decided — GitHub Pages.** Deploy itself is
    deferred; app runs locally for now.
+6. **Coach service host** (2026-09-09): not yet decided. Agent 2's
+   recommendation is Railway (~$5/mo, no cold-start correctness trap) over
+   Render (free tier's cold start can silently exceed the coach's own
+   timeout and serve canned text) or Fly.io (more CLI setup). Once chosen,
+   set the `COACH_URL` repo variable (Settings → Secrets and variables →
+   Actions → Variables) so `deploy-pages.yml` can wire it into the deployed
+   app.
+7. **Stale `github/master` remote branch** (2026-09-09): local branch was
+   renamed `master` → `main` to match GitHub's default and the deploy
+   workflow. `github/master` (old commit `8743b1e`) still exists on GitHub —
+   delete it, or leave it — undecided.
+8. **8090 vs 8091 PocketBase port** in `07-app/app.js:466` (2026-09-09):
+   unclear whether the second port is a deliberate second instance for
+   encrypted sync (frozen feature) or a typo. Not fixed — flagged only.
 
 ## Measured numbers (fill these in as they become real)
 

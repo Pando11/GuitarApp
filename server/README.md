@@ -156,3 +156,65 @@ Non-200 responses:
   process (it is not static content) — see `docs/plans/STATUS.md`'s Tier 1
   handoff notes; this wasn't solved by Tier 0's GitHub Pages static deploy
   and remains an open decision for whoever wires up T1.4/deployment.
+
+## Deployment — open decision for the owner (2026-09-09)
+
+Today this process only runs on the owner's desktop (`npm start`, port
+8787). GitHub Pages serves the static app only — it cannot run this
+process, and nothing in this repo should try to make it. Until a host is
+picked, the deployed app has no coach to call (see Agent 1's task on
+`07-app/index.html` for how that failure is surfaced instead of silently
+serving canned text).
+
+This is a one-person decision, not a code decision — no host has been
+signed up for and none should be until the owner picks one. The code needs
+no changes to run on any of the three below: it's a plain `node:http`
+process with one dependency, it already reads `PORT` from the environment
+(`src/config.js:3`), and `npm start` is already the correct start command.
+
+**Three options, cheapest owner-effort first:**
+
+| Option | Cost/month | Owner setup | Notes |
+|---|---|---|---|
+| **Render** (web service) | Free (spins down after ~15 min idle, cold start ~30-50s on the next request) or **$7/mo** (Starter, always-on) | Connect the GitHub repo in Render's dashboard, set root directory to `server`, build command `npm install`, start command `npm start`. Paste env vars into Render's dashboard (never into a file that gets committed). Render assigns an HTTPS URL. | Free tier's cold start (~30-50s) is longer than `MODEL_TIMEOUT_MS` (6s) and `MODEL_TIMEOUT_QUESTION_MS` (12s) in `src/config.js` — the *first* request after idle would time out and silently fall back to template prose, which is exactly the failure mode this whole handoff is trying to eliminate. Only acceptable on the paid always-on tier, or if the owner accepts that a cold first-request always shows canned text. |
+| **Railway** | ~$5/mo (usage-based Hobby plan; no free tier as of recent pricing) | Connect the GitHub repo, set root directory to `server`. Railway auto-detects Node from `package.json` and runs `npm install` / `npm start`. Env vars go in Railway's dashboard or via `railway variables set KEY=value` from the CLI — never into a committed file. Railway assigns an HTTPS URL. | No meaningful cold-start problem at this tier — closest to "just works" of the three. Simplest dashboard-only setup if the owner doesn't want a CLI. |
+| **Fly.io** | Roughly $2-5/mo for the smallest always-on VM (usage-based, no flat free tier) | Install `flyctl`, run `fly launch` from `server/` (it detects Node and writes `fly.toml` — review before deploying), then `fly secrets set ANTHROPIC_API_KEY=... ANTHROPIC_WORKSPACE_ID=...`. Secrets are injected as env vars at runtime and never touch git. `fly deploy` after that. | More CLI-driven than the other two; rewards the owner if they want a always-on box with no idle spin-down and want to avoid a web dashboard holding the key. |
+
+**How the key gets there without landing in git, for all three:** the key
+is pasted once into that host's dashboard (or passed to a CLI command that
+sends it straight to the host's API) as an environment variable — never
+written into a file the repo tracks. `server/.env` is already listed in
+the root `.gitignore` (`.gitignore:2` and the general `.env` rule at
+`.gitignore:3`) and confirmed untracked (`git check-ignore -v server/.env`
+resolves) — it must stay that way regardless of which host is picked.
+`.env` (or the host's env var equivalent) is also where
+`COACH_ALLOWED_ORIGINS` needs to be set once the app has a real deployed
+origin (see `src/config.js:23-36`) — the default allow-list only covers
+local dev ports, so the coach will reject every cross-origin call from a
+GitHub Pages URL until that variable is set to match it exactly.
+
+**`ANTHROPIC_WORKSPACE_ID` is currently blank** (`server/.env.example:13`).
+This is independent of which host is chosen — it's an Anthropic Console
+setting, not a hosting one. It only matters if the real `ANTHROPIC_API_KEY`
+turns out to be org-level rather than workspace-scoped and the org has more
+than one workspace; if so, every request (on any host) fails with the
+`400 invalid_request_error` documented above under "Live verification
+script." The owner won't know which case applies until a live call is made
+with the real key on the new host — if it 400s with that specific message,
+set `ANTHROPIC_WORKSPACE_ID` in that host's env vars (value from the
+Anthropic Console) and redeploy. No action needed up front.
+
+**Not recommended:** a self-managed VPS (e.g. a $4-6/mo droplet). It's the
+cheapest raw compute but pushes TLS certificates, a reverse proxy, process
+supervision (systemd), and OS security updates onto the owner — all three
+options above handle that. Worth reconsidering only if the owner is already
+running other services on a VPS and this would just be one more process on
+a box they maintain anyway.
+
+**Recommendation, if a single pick is wanted:** Railway. It has the
+simplest setup of the three, no cold-start correctness trap (unlike
+Render's free tier), and no CLI/config-file authoring step (unlike Fly.io's
+`fly launch`). Render's paid tier is a reasonable second choice if the
+owner already has a Render account for something else. This is a
+suggestion, not a decision made on the owner's behalf — nothing has been
+signed up for.
