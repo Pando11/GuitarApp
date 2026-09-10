@@ -1,24 +1,23 @@
-# Handoff — wire up the chord diagrams
+# Handoff — chord diagrams wired, four owner decisions still open
 
 **Written 2026-09-10. Repo: `C:\Users\Hendrickson\Desktop\GuitarApp`, branch
-`main`, clean at `7b4cd1e`, pushed and matching `github/main`.**
+`main`.**
 
-Read this file first, then `docs/plans/STATUS.md` (the "Wave 8" section
-near the bottom is the most recent work). Do not re-derive state from commit
+Read this file first, then `docs/plans/STATUS.md` (the "Wave 9" section near
+the bottom is the most recent work). Do not re-derive state from commit
 history.
 
-## Where things stand
+## What changed since the last handoff
 
-Wave 8 (six parallel agents, 2026-09-09/10) shipped: a loud on-screen
-banner + failed CI step if a deployment ever ships with the coach URL
-unset; a coach-hosting recommendation (Railway, still undecided); the
-second hardcoded-localhost bug in `telemetry.js` fixed the same way the
-coach URL was; offline caching for lessons 1-5 (the real gap was
-`core/lesson-runner.js` never being precached, not the lesson JSON); ~1400
-lines of dead code deleted (`app-refactored.js`, `EXAMPLES-COPY-PASTE.js`);
-and a full manual beginner playtest of lessons 1-5. The local branch was
-also renamed `master` → `main` to match GitHub's actual default branch and
-the deploy workflow's `branches: [main]` trigger — everything agrees now.
+The top-priority finding from the last beginner playtest — no chord diagram
+ever rendered anywhere in the app — is fixed. `07-app/core/lesson-runner.js`
+now wires `07-app/core/renderer.js`'s `chordSVG()` into the lesson view: a
+gallery of every chord the lesson teaches, plus an inline diagram next to any
+step whose instructions are about a specific chord. Verified in a real
+browser (Lesson 3, Em) and against the full test baseline. Details, including
+why it was wired via dynamic `import()` rather than a static one, are in
+`docs/plans/STATUS.md`'s Wave 9 section — read that before touching
+`lesson-runner.js`'s chord-diagram code again.
 
 Test baseline, all currently green. Any regression here is a stop-the-line:
 
@@ -33,41 +32,32 @@ Sage runs on Haiku 4.5 (`claude-haiku-4-5-20251001`), owner's decision. Do
 not change the model. Prompt caching never hits on it — known, accepted,
 don't spend a session on it.
 
-## The one thing that matters most: no chord diagram ever renders
-
-The beginner playtest found this, and it's the biggest single risk in the
-app right now: `07-app/core/renderer.js` has a correct, unit-tested
-`chordSVG()`/`CHORD_SVG_DOTS()` generator that builds a fretboard picture
-straight from a lesson's own `chords` block — and it is imported **nowhere**
-in `07-app/index.html` or `07-app/core/lesson-runner.js`. Lessons 3-5 teach
-Em and easyC in prose only. A beginner has no picture to check a stated
-fingering against, which matters more than usual here because a live model
-already got a fret wrong once (see `WHAT-CHANGED-2026-09-08.md`). Wiring
-`renderer.js`'s output into the lesson view is the highest-leverage next
-build. The fingerings currently stated in lesson text are all correct
-(hand-verified against real chord theory for Em and easyC) — this is about
-adding the missing visual cross-check, not fixing wrong data.
-
 ## Open owner decisions
 
-1. **Coach service host.** Not chosen yet. `server/README.md` has the
-   comparison: Railway (~$5/mo, no cold-start trap) recommended over Render
-   (free tier's cold start can silently exceed the coach's timeout and
-   serve canned text — only safe on its paid tier) or Fly.io (more CLI
-   setup). Once picked, set the `COACH_URL` repo variable in GitHub Actions
-   settings so the deploy workflow can wire it in.
-2. **`github/master`** — a stale remote branch (old commit `8743b1e`) left
-   over from before the `main` rename. Delete it or leave it.
-3. **8090 vs 8091 PocketBase port** (`07-app/app.js:466` uses 8091 for an
-   admin/encrypted-sync path; everywhere else uses 8090). Traced to old
-   encrypted-sync proof scripts, not a documented convention — could be a
-   typo or a deliberate second instance for the frozen encrypted-sync
-   feature. Unresolved; don't guess, ask or investigate further.
-4. **Possible placeholder audio.** Every lesson's "intro" clip across
+1. **Coach service host.** Not chosen yet. **Railway is ruled out** — the
+   owner has used it before and found it unreliable. Remaining candidates
+   (`server/README.md` has the original three-way comparison, now missing
+   Railway): Google Cloud Run with `min-instances=1` (~$5-10/mo, eliminates
+   the cold-start trap entirely, more setup than Railway — Dockerfile +
+   gcloud config), Render's paid tier (~$7/mo, its free tier has the
+   cold-start trap that can silently serve canned text — paid tier removes
+   it), or Fly.io (~$2-5/mo, cheapest, more CLI setup/maintenance). Once
+   picked, set the `COACH_URL` repo variable in GitHub Actions settings so
+   the deploy workflow can wire it in.
+2. **Possible placeholder audio.** Every lesson's "intro" clip across
    lessons 1-5 (10 files) measures exactly 5.000s via ffprobe regardless of
    how long its paragraph is, while adjacent clips in the same lessons scale
-   normally with text length. Not confirmed broken — needs an actual listen.
-   Try `07-app/audio/l03-voice/l03-01-ex1_intro.m4a` first.
+   normally with text length. Not confirmed broken — the owner is listening
+   and will report back. Try `07-app/audio/l03-voice/l03-01-ex1_intro.m4a`
+   first.
+
+**Resolved since the last handoff (2026-09-10):**
+- `github/master` stale remote branch — owner said delete; deleted via
+  `git push github --delete master` and pruned locally. No longer exists.
+- 8090 vs 8091 PocketBase port in `07-app/app.js:466` — investigated (see
+  `docs/plans/STATUS.md` "Open owner decisions" item 8 for the full trail);
+  concluded it was a leftover dev-proof artifact, not intent. Fixed to 8090
+  to match `pocketbaseSync.js`'s own default and the quick-start docs.
 
 ## Smaller bugs found, not yet fixed
 
@@ -82,7 +72,7 @@ adding the missing visual cross-check, not fixing wrong data.
   banner fix, except this one bites on the exact command the README
   recommends. Fix the command, add dotenv, or both.
 
-## Three things that cost time in the last parallel-agent run — don't
+## Three things that cost time in a past parallel-agent run — don't
 ## rediscover them
 
 1. **Six agents editing the same status file collides badly.** Never let a
@@ -93,7 +83,8 @@ adding the missing visual cross-check, not fixing wrong data.
 3. **`cd server && npm run test:live` makes real paid API calls and is not
    parallel-safe.** Only one agent per wave should run it.
 
-If the chord-diagram work is the only task this session, it's one coherent
-piece of work touching `lesson-runner.js`/`renderer.js`/`index.html` — a
-single agent (or just doing it directly) is more appropriate than spawning
-a parallel wave for it.
+None of the four open owner decisions above are safe for a subagent to make
+alone — each is either genuinely the owner's call (host, branch, audio
+listen) or explicitly flagged "don't guess" (the port). If the next session's
+only task is one of the smaller bugs, it's small enough for a single agent
+(or doing it directly) rather than a parallel wave.

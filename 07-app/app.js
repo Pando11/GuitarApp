@@ -463,7 +463,7 @@
     const search = (typeof location !== 'undefined' && location && location.search) ? String(location.search) : '';
     const params = new URLSearchParams(search);
 
-    const baseUrl = params.get('pbBaseUrl') || 'http://127.0.0.1:8091';
+    const baseUrl = params.get('pbBaseUrl') || 'http://127.0.0.1:8090';
     const adminEmail = params.get('pbAdminEmail') || params.get('PB_ADMIN_EMAIL');
     const adminPass = params.get('pbAdminPass') || params.get('PB_ADMIN_PASS');
     const collection = params.get('pbCollection') || 'student_memory';

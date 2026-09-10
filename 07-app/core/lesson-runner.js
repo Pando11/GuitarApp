@@ -388,7 +388,61 @@
     return `<audio controls preload="none" src="${escAttr(src)}" aria-label="${escAttr(label)}">Your browser does not support audio playback.</audio>`;
   }
 
-  function renderLessonHTML(model, manifestData) {
+  // --- Chord diagrams (renderer.js wiring) -----------------------------
+  // renderer.js's chordSVG()/CHORD_SVG_DOTS() has been correct and unit-tested
+  // since Step 0, but nothing ever imported it into the lesson view — the
+  // beginner playtest (2026-09-10) flagged this as the single biggest risk in
+  // the app: no visual cross-check for a stated fingering. It's an ES module
+  // and this file is a classic script, so it's loaded the same way
+  // coachSurface.js/adaptivePlan.js are, below: dynamic import(), kicked off
+  // eagerly (mirrors loadAudioManifest) so it's normally already resolved by
+  // the time a lesson opens; if not, openLesson re-renders once it lands.
+  const RENDERER_MODULE_URL = "./renderer.js";
+  const rendererState = { data: null, promise: null };
+
+  function loadRendererModule() {
+    if (rendererState.promise) return rendererState.promise;
+    rendererState.promise = import(RENDERER_MODULE_URL)
+      .then((mod) => { rendererState.data = mod; return mod; })
+      .catch(() => { rendererState.data = null; return null; });
+    return rendererState.promise;
+  }
+
+  function chordDiagramHTML(chord, chordSvgFn, extraClass) {
+    if (typeof chordSvgFn !== "function") return "";
+    if (!chord || typeof chord !== "object" || !Array.isArray(chord.frets)) return "";
+    let svg = "";
+    try { svg = chordSvgFn(chord); } catch (e) { return ""; }
+    if (typeof svg !== "string" || !svg) return "";
+    // No separate caption: chordSVG already draws the chord's name inside the
+    // diagram itself whenever chord.name is set (true for every lesson today).
+    return `<figure class="chord-diagram${extraClass ? " " + extraClass : ""}">${svg}</figure>`;
+  }
+
+  // All chords this lesson teaches, shown together up front so a beginner has
+  // something to check a stated fingering against before reading the steps.
+  function chordGalleryHTML(model, chordSvgFn) {
+    if (typeof chordSvgFn !== "function") return "";
+    const keys = Object.keys(model.chords || {}).filter((k) => k !== "_schema");
+    const cards = keys
+      .map((k) => chordDiagramHTML(model.chords[k], chordSvgFn))
+      .filter(Boolean)
+      .join("");
+    if (!cards) return "";
+    return `<div class="chord-gallery" role="group" aria-label="Chord diagrams for this lesson">${cards}</div>`;
+  }
+
+  // The chord a given step's own instructions are about, so its diagram can
+  // sit right next to that step's coaching text (mirrors the ref lookup
+  // renderer.js's own buildManifest uses for exercise scenes).
+  function stepChordHTML(step, model, chordSvgFn) {
+    const params = step && step.params;
+    const ref = (params && (params.chord || params.chord_name)) || null;
+    if (typeof ref !== "string") return "";
+    return chordDiagramHTML(model.chords && model.chords[ref], chordSvgFn, "step-chord-diagram");
+  }
+
+  function renderLessonHTML(model, manifestData, chordSvgFn) {
     const lid = lessonManifestId(model.lessonNumber);
     const lessonClips = manifestData && typeof manifestData === "object" ? manifestData[lid] : null;
     const introClip = findNamedClip(lessonClips, lid, "00-intro");
@@ -404,6 +458,7 @@
         : "",
       `<h3>By the end</h3>`,
       `<ul class="objectives">${model.objectives.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>`,
+      chordGalleryHTML(model, chordSvgFn),
       `</div>`,
       `<div class="steps">${model.steps
         .map((step, i) => {
@@ -420,9 +475,10 @@
                 `Play coaching audio for step: ${step.name}`
               )}</div>`
             : "";
+          const stepChord = stepChordHTML(step, model, chordSvgFn);
           return `<section class="step"><span class="lesson-number">Step ${i + 1}</span><h3>${esc(step.name)}</h3><p>${esc(
             step.coaching || step.purpose
-          )}</p>${introAudio}${mainAudio}</section>`;
+          )}</p>${stepChord}${introAudio}${mainAudio}</section>`;
         })
         .join("")}</div>`,
       wrapClip
@@ -710,7 +766,9 @@
       const model = normalizeLesson(raw, index, profile);
       // Prefer passed audioManifest; fall back to manifestState.data if available
       const audioData = passedAudioManifest || manifestState.data;
-      const html = renderLessonHTML(model, audioData);
+      const rendererModule = rendererState.data;
+      const chordSvgFn = rendererModule ? rendererModule.chordSVG : null;
+      const html = renderLessonHTML(model, audioData, chordSvgFn);
 
       if (typeof options.render === "function") {
         options.render({ model, html });
@@ -727,11 +785,25 @@
       if (!audioData) {
         loadAudioManifest().then((data) => {
           if (openIndex.value !== index || typeof options.render !== "function") return;
-          const updatedHtml = renderLessonHTML(model, data);
+          const updatedHtml = renderLessonHTML(model, data, rendererState.data ? rendererState.data.chordSVG : null);
           options.render({ model, html: updatedHtml });
           // The re-render above replaced #lesson-ask-coach with a fresh,
           // unwired element (options.render does root.innerHTML = ...) — wire
           // it again so the coaching entry point survives the manifest swap.
+          wireCoachButton(index, profile);
+        });
+      }
+
+      // renderer.js (chord diagrams) may still be in flight the very first
+      // time a lesson is opened this session — loadRendererModule() is kicked
+      // off eagerly below (mirrors loadAudioManifest), so this normally
+      // resolves near-instantly, but re-render once it lands so lesson 1
+      // isn't the one lesson that opens too early to get diagrams.
+      if (!rendererModule) {
+        loadRendererModule().then((mod) => {
+          if (openIndex.value !== index || typeof options.render !== "function" || !mod) return;
+          const updatedHtml = renderLessonHTML(model, passedAudioManifest || manifestState.data, mod.chordSVG);
+          options.render({ model, html: updatedHtml });
           wireCoachButton(index, profile);
         });
       }
@@ -811,6 +883,8 @@
   if (typeof fetch === "function") {
     loadAudioManifest();
   }
+  // Same idea for the chord-diagram renderer module — see loadRendererModule.
+  loadRendererModule();
 
   global.GuitarApp = global.GuitarApp || {};
   global.GuitarApp.LessonRunner = {
@@ -819,6 +893,7 @@
     validateLesson,
     renderLessonHTML,
     loadAudioManifest,
+    loadRendererModule,
     mapProfileToVariant,
     resolveAvatarCopy,
   };

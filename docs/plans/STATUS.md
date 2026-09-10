@@ -528,6 +528,42 @@ Ask-Sage tally (8 real beginner questions on lesson 3, run twice + one via `test
 
 **Lead follow-up (2026-09-09), not part of any agent's OWNS list:** Agent 1 found `deploy-pages.yml` triggers on `branches: [main]` but the local repo's active branch was `master` (tracking `github/main` under a mismatched name — exactly the setup that makes a plain `git push` ambiguous or fail). Local branch renamed `master` → `main` to match GitHub's actual default branch and the workflow trigger; upstream tracking to `github/main` preserved. **`github/master` still exists as a separate, stale remote branch (old commit `8743b1e`) — left untouched, owner call on whether to delete it.**
 
+## Wave 9 — chord diagrams wired up — 2026-09-10
+
+Closes Wave 8 finding #1 (the top-priority item in `HANDOFF-NEXT.md`): no
+chord diagram was ever rendered anywhere in the app, despite
+`07-app/core/renderer.js`'s `chordSVG()` being correct and unit-tested
+(`fidelity.mjs`) since Step 0.
+
+`07-app/core/lesson-runner.js` now loads `renderer.js` via dynamic `import()`
+(same pattern already used there for `coachSurface.js`/`adaptivePlan.js` —
+`renderer.js` is an ES module, `lesson-runner.js` is a classic script), kicked
+off eagerly at file load so it's normally already resolved by the time a
+lesson opens; `openLesson` re-renders once it lands otherwise, mirroring the
+existing audio-manifest pattern. `renderLessonHTML` now renders: (1) a
+`chord-gallery` of every chord in the lesson's `chords` block, right after the
+objectives list, and (2) a small diagram inline in any step whose
+`params.chord`/`params.chord_name` names one of those chords — so the picture
+sits next to the fingering instructions it backs up, not just in a gallery a
+beginner has to scroll back to. CSS added to `07-app/index.html` only
+(`.chord-gallery`, `.chord-diagram`). No caption text added — `chordSVG`
+already draws the chord's name inside the diagram whenever `chord.name` is
+set, true for every chord in every lesson today.
+
+Verified in a real Chromium session (not just the test suites): opened Lesson
+3, confirmed 3 `<svg>` chord diagrams render (1 gallery + 2 step-inline, both
+referencing Em), fingering matches the JSON (`frets:[0,2,2,0,0,0]`,
+fingers 2/3 on the A/D strings, opens elsewhere). Full baseline unaffected:
+`cd server && npm test` 73/73, `npm run test:app-smoke` 28/28,
+`npm run test:playwright` 35/35.
+
+**Remaining Wave 8 findings, still open — see "Open owner decisions" below
+and the smaller-bugs list in `HANDOFF-NEXT.md`:** coach service host
+(Railway ruled out 2026-09-10 — owner used it before, found it unreliable),
+possible placeholder audio (owner listening, not yet reported back),
+guardrail flake, local-dev dotenv trap. `github/master` and the 8090/8091
+port are resolved — see items 7-8 below.
+
 ## Tier 2 — Business — **BLOCKED (Tier 1)**
 
 | Task | Status | Notes |
@@ -552,20 +588,37 @@ Ask-Sage tally (8 real beginner questions on lesson 3, run twice + one via `test
 4. **Under-13 policy:** support with parental consent, or exclude from paid. — *undecided*
 5. **Static host** for Tier 0: **decided — GitHub Pages.** Deploy itself is
    deferred; app runs locally for now.
-6. **Coach service host** (2026-09-09): not yet decided. Agent 2's
-   recommendation is Railway (~$5/mo, no cold-start correctness trap) over
-   Render (free tier's cold start can silently exceed the coach's own
-   timeout and serve canned text) or Fly.io (more CLI setup). Once chosen,
-   set the `COACH_URL` repo variable (Settings → Secrets and variables →
-   Actions → Variables) so `deploy-pages.yml` can wire it into the deployed
-   app.
-7. **Stale `github/master` remote branch** (2026-09-09): local branch was
-   renamed `master` → `main` to match GitHub's default and the deploy
-   workflow. `github/master` (old commit `8743b1e`) still exists on GitHub —
-   delete it, or leave it — undecided.
-8. **8090 vs 8091 PocketBase port** in `07-app/app.js:466` (2026-09-09):
-   unclear whether the second port is a deliberate second instance for
-   encrypted sync (frozen feature) or a typo. Not fixed — flagged only.
+6. **Coach service host** (2026-09-09, still undecided 2026-09-10): Agent 2's
+   original recommendation was Railway, but the owner has used Railway before
+   and found it unreliable — **Railway is out.** Remaining candidates:
+   Google Cloud Run with `min-instances=1` (~$5-10/mo, eliminates the
+   cold-start trap entirely, more setup than Railway — needs a Dockerfile +
+   gcloud config), Render's paid tier (~$7/mo, same platform whose free tier
+   has the cold-start trap — paid tier removes it), or Fly.io (~$2-5/mo,
+   cheapest, more CLI setup/maintenance). Once chosen, set the `COACH_URL`
+   repo variable (Settings → Secrets and variables → Actions → Variables) so
+   `deploy-pages.yml` can wire it into the deployed app.
+7. **Stale `github/master` remote branch** — **RESOLVED (2026-09-10, owner
+   decision: delete).** Deleted via `git push github --delete master` and
+   pruned locally. `github/master` no longer exists.
+8. **8090 vs 8091 PocketBase port** in `07-app/app.js:466` — **RESOLVED
+   (2026-09-10).** Investigated: `pocketbaseSync.js` (the library
+   `initEncryptedSync()` actually calls) defaults to 8090 in two places;
+   `app.js:466`'s own hardcoded default was the odd one out at 8091.
+   `git log -S"8091" -- 07-app/app.js` traces it to one commit
+   (`5475c55`, oddly labeled as an audio-pipeline commit) that added the
+   whole `initEncryptedSync` block at once, no comment on the port choice.
+   Two earlier proof docs (`.scratch/.../proof-wave2/w2-e5-sync-proof.md`,
+   `proof-wave3/WAVE3-A-encrypted-sync-proof.md`) both ran their own
+   standalone dev PocketBase instance on 8091 while testing encrypted sync —
+   separate from the "regular" instance the quick-start guide has you run on
+   8090 — most likely to avoid a port clash with an already-running 8090
+   instance on the same dev machine. No ADR or doc anywhere calls for two
+   separate PocketBase instances by design, so this reads as a leftover dev
+   artifact, not intent. Owner agreed with that read; `app.js:466` now
+   defaults to 8090, matching `pocketbaseSync.js` and the quick-start docs.
+   (The feature stays frozen and gated behind admin credentials in the URL
+   either way, so nothing depended on 8091.)
 
 ## Measured numbers (fill these in as they become real)
 

@@ -172,13 +172,17 @@ no changes to run on any of the three below: it's a plain `node:http`
 process with one dependency, it already reads `PORT` from the environment
 (`src/config.js:3`), and `npm start` is already the correct start command.
 
+**Railway is off the table** — the owner has used it before elsewhere and
+found it unreliable, independent of anything about this project. Ruled out
+2026-09-10; not re-litigated below.
+
 **Three options, cheapest owner-effort first:**
 
 | Option | Cost/month | Owner setup | Notes |
 |---|---|---|---|
 | **Render** (web service) | Free (spins down after ~15 min idle, cold start ~30-50s on the next request) or **$7/mo** (Starter, always-on) | Connect the GitHub repo in Render's dashboard, set root directory to `server`, build command `npm install`, start command `npm start`. Paste env vars into Render's dashboard (never into a file that gets committed). Render assigns an HTTPS URL. | Free tier's cold start (~30-50s) is longer than `MODEL_TIMEOUT_MS` (6s) and `MODEL_TIMEOUT_QUESTION_MS` (12s) in `src/config.js` — the *first* request after idle would time out and silently fall back to template prose, which is exactly the failure mode this whole handoff is trying to eliminate. Only acceptable on the paid always-on tier, or if the owner accepts that a cold first-request always shows canned text. |
-| **Railway** | ~$5/mo (usage-based Hobby plan; no free tier as of recent pricing) | Connect the GitHub repo, set root directory to `server`. Railway auto-detects Node from `package.json` and runs `npm install` / `npm start`. Env vars go in Railway's dashboard or via `railway variables set KEY=value` from the CLI — never into a committed file. Railway assigns an HTTPS URL. | No meaningful cold-start problem at this tier — closest to "just works" of the three. Simplest dashboard-only setup if the owner doesn't want a CLI. |
-| **Fly.io** | Roughly $2-5/mo for the smallest always-on VM (usage-based, no flat free tier) | Install `flyctl`, run `fly launch` from `server/` (it detects Node and writes `fly.toml` — review before deploying), then `fly secrets set ANTHROPIC_API_KEY=... ANTHROPIC_WORKSPACE_ID=...`. Secrets are injected as env vars at runtime and never touch git. `fly deploy` after that. | More CLI-driven than the other two; rewards the owner if they want a always-on box with no idle spin-down and want to avoid a web dashboard holding the key. |
+| **Google Cloud Run** | ~$5-10/mo with `min-instances=1` (or scale-to-zero for less, at the cost of the same cold-start trap as Render's free tier) | Write a small `Dockerfile` for `server/` (plain Node process, no framework-specific build step needed), `gcloud run deploy` from the `server` directory, set env vars with `--set-env-vars` or `--set-secrets` (the latter reads from Secret Manager — never a committed file). Cloud Run assigns an HTTPS URL. | Pinning `min-instances=1` removes the cold-start trap entirely rather than just shrinking it. More setup than a dashboard-only host (a Dockerfile + gcloud CLI), but a well-established, reliable platform. |
+| **Fly.io** | Roughly $2-5/mo for the smallest always-on VM (usage-based, no flat free tier) | Install `flyctl`, run `fly launch` from `server/` (it detects Node and writes `fly.toml` — review before deploying), then `fly secrets set ANTHROPIC_API_KEY=... ANTHROPIC_WORKSPACE_ID=...`. Secrets are injected as env vars at runtime and never touch git. `fly deploy` after that. | More CLI-driven than Render; rewards the owner if they want an always-on box with no idle spin-down and want to avoid a web dashboard holding the key. Cheapest of the three. |
 
 **How the key gets there without landing in git, for all three:** the key
 is pasted once into that host's dashboard (or passed to a CLI command that
@@ -211,10 +215,11 @@ options above handle that. Worth reconsidering only if the owner is already
 running other services on a VPS and this would just be one more process on
 a box they maintain anyway.
 
-**Recommendation, if a single pick is wanted:** Railway. It has the
-simplest setup of the three, no cold-start correctness trap (unlike
-Render's free tier), and no CLI/config-file authoring step (unlike Fly.io's
-`fly launch`). Render's paid tier is a reasonable second choice if the
-owner already has a Render account for something else. This is a
-suggestion, not a decision made on the owner's behalf — nothing has been
-signed up for.
+**Recommendation, if a single pick is wanted:** Google Cloud Run with
+`min-instances=1`. It has no cold-start correctness trap (fixed outright,
+not just shrunk like Render's paid tier avoids it by staying always-on) and
+is a well-established, reliable platform — worth the extra Dockerfile/gcloud
+setup step over a dashboard-only host. Fly.io is the cheapest option if the
+owner would rather optimize for cost and doesn't mind the CLI-driven setup.
+This is a suggestion, not a decision made on the owner's behalf — nothing
+has been signed up for.
