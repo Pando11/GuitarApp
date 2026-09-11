@@ -1,12 +1,19 @@
-// jamSession.test.mjs — V2-JAM on-device self-test (PART A buildable + PART B BLOCKED).
+// jamSession.test.mjs — V2-JAM self-test: PART A (on-device grading/facts)
+// plus PART B (the real generateResponse() fetch call to the coach
+// service's /jam-session/generate route, mocked here — no real network
+// calls in this test).
 //
 // Run:  node 07-app/core/jamSession.test.mjs
 //
 // PART A (on-device grading + facts emit) MUST PASS with exit 0.
-// PART B (generative response) is intentionally BLOCKED this session (no GPU/RunPod);
-// the test asserts it correctly reports BLOCKED rather than faking audio.
+// PART B (generative response) is UNBLOCKED (TIER-1B Wave 3): generateResponse()
+// now makes a real fetch call in production. Here it is exercised against a
+// mocked fetchImpl (options.fetchImpl) covering: a real success payload/response
+// round trip, a network error, a non-200 status, and a malformed 200 body —
+// each of the failure cases must throw a typed error, never a silent fake
+// success.
 
-import { gradeStudentPhrase, emitFacts, generateResponse } from './jamSession.js';
+import { gradeStudentPhrase, emitFacts, generateResponse, defaultJamSessionUrl } from './jamSession.js';
 
 let passed = 0;
 let failed = 0;
@@ -64,23 +71,129 @@ check('normalization: lowercase+alias matches', g3.matched.length === 3 && g3.mi
 const g4 = gradeStudentPhrase(['C'], []);
 check('empty known: accuracy 0, no crash', g4.accuracy === 0 && Array.isArray(g4.matched));
 
-// === PART B: generative response is correctly BLOCKED =====================
-console.log('\n=== jamSession PART B (generative) — expected BLOCKED ===');
-let blockedErr = null;
-try {
-  await generateResponse(f);
-} catch (e) {
-  blockedErr = e;
+// === PART B: generateResponse() — real fetch envelope, mocked network ======
+console.log('\n=== jamSession PART B (generateResponse — mocked fetch) ===');
+
+// defaultJamSessionUrl(): derives the /jam-session/generate route the same
+// way chatEngine.js's defaultCoachUrl() derives /coach — from
+// globalThis.GUITARAPP_COACH_URL when set, else the local loopback fallback.
+check(
+  'defaultJamSessionUrl(): loopback fallback when GUITARAPP_COACH_URL is unset',
+  defaultJamSessionUrl() === 'http://127.0.0.1:8787/jam-session/generate',
+);
+globalThis.GUITARAPP_COACH_URL = 'https://coach.example.com/coach';
+check(
+  'defaultJamSessionUrl(): derives sibling route from a configured GUITARAPP_COACH_URL',
+  defaultJamSessionUrl() === 'https://coach.example.com/jam-session/generate',
+);
+delete globalThis.GUITARAPP_COACH_URL;
+
+// --- Success path: a real payload is sent, a real {audioUrl} comes back ---
+{
+  let sentUrl = null;
+  let sentInit = null;
+  const fetchImpl = async (url, init) => {
+    sentUrl = url;
+    sentInit = init;
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({ audioUrl: 'https://v3b.fal.media/files/b/example/response.wav' }),
+    };
+  };
+  const result = await generateResponse(f, { fetchImpl });
+  check('success: resolves with a real audioUrl string', typeof result.audioUrl === 'string' && result.audioUrl.length > 0);
+  check('success: audioUrl matches the mocked server response', result.audioUrl === 'https://v3b.fal.media/files/b/example/response.wav');
+  check('success: POSTed to the default jam-session URL', sentUrl === 'http://127.0.0.1:8787/jam-session/generate');
+  check('success: request method is POST', !!sentInit && sentInit.method === 'POST');
+  check('success: request body is the real emitFacts() payload, not invented data', (() => {
+    if (!sentInit || typeof sentInit.body !== 'string') return false;
+    const body = JSON.parse(sentInit.body);
+    return JSON.stringify(body.chordsMatched) === JSON.stringify(f.chordsMatched)
+      && JSON.stringify(body.chordsMissed) === JSON.stringify(f.chordsMissed)
+      && body.accuracy === f.accuracy;
+  })());
+  check('success: no audio/blob field ever sent to the network', (() => {
+    if (!sentInit || typeof sentInit.body !== 'string') return false;
+    const body = JSON.parse(sentInit.body);
+    return !('audio' in body) && !('audioUrl' in body) && !('blob' in body);
+  })());
 }
-check('generateResponse throws (BLOCKED — no GPU/RunPod this session)', blockedErr !== null);
-check(
-  'BLOCKED marker carries status === "BLOCKED"',
-  !!blockedErr && !!blockedErr.blocked && blockedErr.blocked.status === 'BLOCKED',
-);
-check(
-  'BLOCKED reason cites ACE-Step / YuE / RunPod',
-  !!blockedErr && !!blockedErr.blocked && /ACE-Step|YuE|RunPod/i.test(blockedErr.blocked.reason),
-);
+
+// --- Failure: network error (fetch itself throws) -------------------------
+{
+  const fetchImpl = async () => { throw new Error('getaddrinfo ENOTFOUND coach.example.com'); };
+  let err = null;
+  try { await generateResponse(f, { fetchImpl }); } catch (e) { err = e; }
+  check('network error: generateResponse throws', err !== null);
+  check('network error: typed as GEN_NETWORK_ERROR', !!err && err.code === 'GEN_NETWORK_ERROR');
+}
+
+// --- Failure: non-200 response (e.g. 503 musicgen_not_configured) ---------
+{
+  const fetchImpl = async () => ({
+    ok: false,
+    status: 503,
+    text: async () => JSON.stringify({ error: 'musicgen_not_configured' }),
+  });
+  let err = null;
+  try { await generateResponse(f, { fetchImpl }); } catch (e) { err = e; }
+  check('non-200: generateResponse throws', err !== null);
+  check('non-200: typed as GEN_SERVER_ERROR', !!err && err.code === 'GEN_SERVER_ERROR');
+  check('non-200: carries the real HTTP status', !!err && err.status === 503);
+}
+
+// --- Failure: non-200, a 502 musicgen_upstream_failed ----------------------
+{
+  const fetchImpl = async () => ({
+    ok: false,
+    status: 502,
+    text: async () => JSON.stringify({ error: 'musicgen_upstream_failed' }),
+  });
+  let err = null;
+  try { await generateResponse(f, { fetchImpl }); } catch (e) { err = e; }
+  check('502 upstream failure: generateResponse throws', err !== null);
+  check('502 upstream failure: typed as GEN_SERVER_ERROR', !!err && err.code === 'GEN_SERVER_ERROR');
+}
+
+// --- Failure: malformed response — 200 but body isn't valid JSON ----------
+{
+  const fetchImpl = async () => ({
+    ok: true,
+    status: 200,
+    json: async () => { throw new SyntaxError('Unexpected token in JSON'); },
+  });
+  let err = null;
+  try { await generateResponse(f, { fetchImpl }); } catch (e) { err = e; }
+  check('malformed JSON: generateResponse throws', err !== null);
+  check('malformed JSON: typed as GEN_MALFORMED_RESPONSE', !!err && err.code === 'GEN_MALFORMED_RESPONSE');
+}
+
+// --- Failure: malformed response — 200, valid JSON, but no audioUrl -------
+{
+  const fetchImpl = async () => ({
+    ok: true,
+    status: 200,
+    json: async () => ({ notAudioUrl: 'nope' }),
+  });
+  let err = null;
+  try { await generateResponse(f, { fetchImpl }); } catch (e) { err = e; }
+  check('missing audioUrl: generateResponse throws', err !== null);
+  check('missing audioUrl: typed as GEN_MALFORMED_RESPONSE', !!err && err.code === 'GEN_MALFORMED_RESPONSE');
+  check('missing audioUrl: never silently returns a fake/empty audioUrl', !(err && 'audioUrl' in err));
+}
+
+// --- Failure: malformed response — 200, audioUrl present but empty string -
+{
+  const fetchImpl = async () => ({
+    ok: true,
+    status: 200,
+    json: async () => ({ audioUrl: '' }),
+  });
+  let err = null;
+  try { await generateResponse(f, { fetchImpl }); } catch (e) { err = e; }
+  check('empty audioUrl: generateResponse throws rather than returning ""', err !== null && err.code === 'GEN_MALFORMED_RESPONSE');
+}
 
 console.log(`\nRESULT: ${passed} passed, ${failed} failed`);
 if (failed === 0) {
