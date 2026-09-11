@@ -564,7 +564,7 @@ possible placeholder audio (owner listening, not yet reported back),
 guardrail flake, local-dev dotenv trap. `github/master` and the 8090/8091
 port are resolved — see items 7-8 below.
 
-## Tier 1B — Close the gaps — **IN PROGRESS**
+## Tier 1B — Close the gaps — **BUILD COMPLETE**
 
 Plan: [`TIER-1B-close-the-gaps.md`](TIER-1B-close-the-gaps.md). Written
 2026-09-10 from an owner grilling session following that day's redline.
@@ -586,7 +586,16 @@ this tier is gated on finding other testers.
 | 2C Celebration wiring | DONE (2026-09-10) | `07-app/core/celebrationView.js`, real streak/session numbers, never a celebration of zeroes. Not yet mounted (Wave 4). Independently re-verified |
 | 3A Jam session server route + unfreeze | DONE (2026-09-10) | fal.ai ACE-Step chosen (RunPod never needed); Apache-2.0 confirmed against upstream LICENSE; `POST /jam-session/generate`; 22 new tests (98/98 total); live round-trip independently re-verified twice (real audio URL, `HTTP 200 audio/wav`). Verifier caught a real 45s-vs-~50s poll-timeout bug, fixed (now 120s) |
 | 3B Jam session client + UI | DONE (2026-09-10) | `generateResponse()` unstubbed, real fetch to `/jam-session/generate`; new `jamSessionView.js` reuses `listening-engine.js`'s `verifyChord()` (no new DSP); 34 tests; independently re-verified including its own live round trip and an explicit no-audio-leaves-device trace |
-| 4 Hub wiring + full verification | TODO | unblocked — all of Waves 2 and 3 done |
+| 4 Hub wiring + full verification | DONE (2026-09-10) | All four view modules mounted for real (practice remix in `renderDrillMenu()`, style explorer + jam session via new `mountLessonPanels()` in `lesson-runner.js`, celebration in `renderWeeklyPlanCard()`). Service-worker `CACHE` bumped v6→v7. Independently re-verified at both 390×844 and 1440×900 with a second, separately-written Playwright script — real DOM confirmed, 0 console errors. Full baseline green: server 98/98, app-smoke 28/28, playwright 35/35. Two real bugs found live and fixed here, below |
+| — jam-session client/server timeout mismatch | DONE (2026-09-10) | Wave 4's live test hit an intermittent abort: `jamSession.js`'s client timeout (45s) was shorter than the server's own poll budget (120s, raised during 3A's verification). Client raised to 130s |
+| — guardrail rejecting "string buzz" answers | DONE (2026-09-10) | Two distinct real causes, both reproduced live and fixed with the actual captured model prose as regression tests: a sentence-initial "A" (English article) surviving the string-reference exemption, and "the A fret 2" pairing a letter with "fret" instead of "string." 0/8 rejections on live re-test, twice. 102/102 server tests (98 true baseline + 4 new — corrected from the builder's own miscounted "100→102" claim by the independent verifier). Independently re-verified with its own fresh live re-test |
+
+**Still open, owner-only (nothing here blocks using the app locally today):**
+- Actually do the Render signup for the coach service — `server/README.md` has the numbered steps. Until this happens, a deployed copy still serves template prose; local dev works now (`cd server && npm start`).
+- Listen through the 61 regenerated audio clips for real — md5/duration checks prove they're distinct real speech, not that they sound right.
+- 4 genuinely-missing `ex4_intro` audio files (lessons 06/09/17/19 — text exists, audio was never generated at all, a different bug from the one fixed this tier) — not yet scheduled.
+- Deploy the web app itself (GitHub Pages, still deferred from Tier 0) and set the `COACH_URL` repo variable once Render is live.
+- RunPod's GPU pod (`xgcitppkl4lcm9`, EU-RO-1) was never touched or needed this tier — still sitting stopped/exited from before, owner call on whether to keep it around.
 
 ## Tier 2 — Business — **BLOCKED (Tier 1)**
 
