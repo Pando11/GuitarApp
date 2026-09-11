@@ -83,3 +83,28 @@ task independently re-verified rather than self-reported.
 to the regenerated audio, the 4 missing audio files, and the actual GitHub
 Pages deploy. See `docs/plans/STATUS.md`'s Tier 1B section for the full
 list.
+
+## 2026-09-11 — Wave 5: Sage speaks
+
+Owner asked a sharp follow-up after the redline session above: when a
+student asks Sage a real question, is the answer spoken or just text?
+It was text only. Added a tap-to-play voice control for live coaching
+answers, on both the lesson chat and practice screen, via fal.ai's hosted
+Kokoro TTS (same account already proven for jam session's ACE-Step) —
+verified live before building anything: ~2s synthesis, same `af_heart`
+voice already used for the app's pre-recorded narration, ~1 cent/answer.
+
+Independent verification caught a real bug before commit: the speak
+control mounted next to boilerplate fallback text too, not just genuine
+model answers, because the gate only checked whether there was *any*
+answer text, never whether it came from the real model. Reproduced live
+twice, fixed to check `source === 'model'`. Also found and fixed, while
+investigating: the service worker threw an unhandled rejection on every
+real `/coach`/`/coach/speak` POST in production (tried to cache a
+response type the Cache API rejects) — didn't break anything a student
+would see, but was firing on every single live coaching request.
+
+**Why:** the owner's question surfaced a real, user-facing gap in what
+"Sage" actually does versus what the pre-recorded narration implies. Both
+follow-on bugs were caught by the same independent-verification discipline
+used throughout Tier 1B, before either shipped.
