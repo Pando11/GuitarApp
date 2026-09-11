@@ -19,6 +19,7 @@ Background on why the plan is shaped this way: `REDLINE-2026-09-05.md`.
 - **Do not create new status, handoff, phase, or summary markdown documents.**
   This project has a documented over-documentation problem: ~45 such files
   against 11 code commits. Record progress by editing `docs/plans/STATUS.md`.
+- **Add an entry to `docs/plans/LOG.md`** at the end of a session instead of creating a new handoff/status/summary file — see that file's own header for the format.
 - **File ownership is enforced.** When running subagents in parallel, no two may
   write the same file in the same wave. See the orchestration contract.
 - **Frozen scope** until Tier 2 ships: Mystery Mode, song-from-hum, voice

@@ -7,7 +7,7 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { checkInventedFacts } from '../src/guardrail.js';
+import { checkInventedFacts, extractKnownTokens } from '../src/guardrail.js';
 
 function envelope(overrides = {}) {
   return {
@@ -203,4 +203,79 @@ test('a different lesson number is still rejected', () => {
   const result = checkInventedFacts('You nailed this back in lesson 9.', env);
   assert.equal(result.ok, false);
   assert.match(result.reason, /^invented_token:9$/);
+});
+
+// --- guardrail flake: "invented_token:E" on a legitimate first question,
+// passes on identical retry (docs/plans/TIER-1B-close-the-gaps.md task 1C;
+// originally logged in HANDOFF-NEXT.md / STATUS.md Wave 8 finding 4)
+// ---------------------------------------------------------------------------
+// Investigated: checkInventedFacts()/buildAllowedChordSet() are pure
+// functions of (prose, envelope) with no module-level state, and
+// lesson-runner.js's askCoachAbout() derives lessonChords synchronously from
+// the already-in-memory lesson JSON on every call — so there is no
+// request-ordering/async-population race in the literal sense (nothing here
+// is "not yet populated" by the time of the very first call).
+//
+// The real, reproducible bug: a chord became "known" to the allow-list from
+// three different sources — mastery[], lessonChords[], and the student's own
+// typed question — but only the lessonChords source also licensed the bare
+// root letter (addChordAndRoot in ../src/guardrail.js). The other two only
+// added the exact matched token. A beginner's very first message about a
+// chord is exactly the case where mastery[] is still empty (nothing recorded
+// yet) and lessonChords may not carry it either (e.g. the practice screen,
+// or any question about a chord the current lesson step's own shapes block
+// doesn't happen to list) — so the ONLY source is the question the student
+// just typed. Sage's answer to "How do I play Em?" naturally says "Em is
+// short for E minor," and the bare "E" was rejected as `invented_token:E`
+// on that first ask. Once mastery/lessonChords caught up (e.g. a retry after
+// the lesson's own chords were sent, or the same question asked again once
+// some other call had already widened the list via lessonChords), "E" was
+// licensed and the identical question passed — the exact "rejects first,
+// passes on retry" ordering reported. Fixed by sharing the root-licensing
+// logic across all three sources.
+test('a chord known only via mastery[] (nothing else populated yet) still licenses its root letter', () => {
+  const env = envelope({ mastery: [{ chord: 'Em', label: 'not_started', confidence: 0 }] });
+  const result = checkInventedFacts('Your Em is coming along — remember, Em is short for E minor.', env);
+  assert.equal(result.ok, true);
+});
+
+test('a chord known only via the student\'s own first question still licenses its root letter — reproduces the original invented_token:E ordering', () => {
+  // The exact failing shape: a beginner's very first message about a lesson's
+  // chord, before any mastery or lessonChords fact about it exists — the
+  // chord is known ONLY because the student just typed it.
+  const env = envelope({ mastery: [], lessonChords: [], question: 'How do I play Em?' });
+
+  // Before the fix, this was the ordering that reproduced the flake:
+  //   1st call — chord known only from the question echo (no root license)
+  //   -> the exact same prose was REJECTED with invented_token:E.
+  const firstCallAllowedTokens = extractKnownTokens(env);
+  assert.equal(firstCallAllowedTokens.chords.has('E'), true,
+    'root letter must be licensed on the very first call, not only once mastery/lessonChords catch up');
+
+  const prose = 'Start with Em — that shape is short for E minor, so anchor your middle finger first.';
+  const firstCallResult = checkInventedFacts(prose, env);
+  assert.equal(firstCallResult.ok, true, 'the first legitimate answer must not be rejected');
+
+  // Retrying the identical question/prose must obviously still pass — this is
+  // the "passes on retry" half of the originally reported ordering, and
+  // proves the fix is not merely order-dependent luck.
+  const retryResult = checkInventedFacts(prose, env);
+  assert.equal(retryResult.ok, true);
+});
+
+test('sanity: before the shared root-licensing fix, a question-only chord did NOT license its root (regression guard)', () => {
+  // This pins down the actual pre-fix behavior so a future refactor can't
+  // silently reintroduce the asymmetry: the question-echo path alone (no
+  // addChordAndRoot) only ever added the exact matched token, never its root.
+  const env = envelope({ mastery: [], lessonChords: [], question: 'How do I play Em?' });
+  const set = new Set();
+  for (const token of (env.question.match(/\b[A-G](?:#|b)?(?:maj|min|m|dim|aug|sus|add)?\d{0,2}\b/g) || [])) {
+    set.add(token);
+    set.add(token.toLowerCase());
+    set.add(token.toUpperCase());
+  }
+  // The unfixed widening reaches "Em"/"em"/"EM" but never the bare root "E" —
+  // demonstrating the exact allow-list gap that produced invented_token:E.
+  assert.equal(set.has('Em'), true);
+  assert.equal(set.has('E'), false);
 });

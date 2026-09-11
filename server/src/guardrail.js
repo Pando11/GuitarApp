@@ -23,14 +23,40 @@ function lessonChords(envelope) {
   return raw.filter((s) => s && typeof s.chord === 'string' && s.chord);
 }
 
+// Adds a known chord AND its bare root letter to the allow-list. Naming a
+// chord licenses saying its root out loud — explaining "Em" necessarily means
+// saying "E minor" — and that is true no matter WHICH of the three sources
+// (mastery, the lesson's own verified shapes, or the student's own typed
+// question) is where the chord became known. Before this was shared, only the
+// lessonChords loop below granted the root; a chord known ONLY via mastery[]
+// or ONLY via the student's own question (e.g. a beginner's very first
+// message, before any lesson-chords/mastery fact about it exists yet — "How
+// do I play Em?" followed by an answer that says "Em is short for E minor")
+// still had its bare "E" rejected as `invented_token:E`. Same fact, told from
+// a different one of the three lists, was licensed or not purely by which
+// list happened to carry it — the actual bug behind the "guardrail flake"
+// that rejected one legitimate first answer and then passed the identical
+// question's answer once mastery/lessonChords had caught up. See
+// guardrail.test.mjs's "known only via ..." cases.
+function addChordAndRoot(set, chord) {
+  if (typeof chord !== 'string' || !chord) return;
+  set.add(chord);
+  set.add(chord.toLowerCase());
+  set.add(chord.toUpperCase());
+  const root = chord.match(/^[A-G](?:#|b)?/);
+  if (root) {
+    set.add(root[0]);
+    set.add(root[0].toLowerCase());
+    set.add(root[0].toUpperCase());
+  }
+}
+
 function buildAllowedChordSet(envelope) {
   const set = new Set();
   const mastery = Array.isArray(envelope?.mastery) ? envelope.mastery : [];
   for (const m of mastery) {
     if (m && typeof m.chord === 'string') {
-      set.add(m.chord);
-      set.add(m.chord.toLowerCase());
-      set.add(m.chord.toUpperCase());
+      addChordAndRoot(set, m.chord);
     }
   }
   // The chords the lesson on screen actually teaches (schema.js
@@ -39,30 +65,19 @@ function buildAllowedChordSet(envelope) {
   // Em being the entire subject of that lesson. Naming a chord the lesson
   // itself puts on the page is not inventing a fact about this student.
   for (const shape of lessonChords(envelope)) {
-    const chord = shape.chord;
-    set.add(chord);
-    set.add(chord.toLowerCase());
-    set.add(chord.toUpperCase());
-    // "Em" on the page licenses the bare root "E" in the answer: explaining
-    // Em means saying "E minor" out loud, and the root letter carries no
-    // claim the full name does not already carry.
-    const root = chord.match(/^[A-G](?:#|b)?/);
-    if (root) {
-      set.add(root[0]);
-      set.add(root[0].toLowerCase());
-      set.add(root[0].toUpperCase());
-    }
+    addChordAndRoot(set, shape.chord);
   }
 
   // A student who types "how do I get from G to D?" has named G and D
   // themselves. Echoing those back is answering the question, not inventing a
   // fact, so every chord-shaped token in their own question joins the
-  // allow-list. This widens the list only for the request that carried the
-  // question — it is derived from that request's own input, never stored.
+  // allow-list, WITH the same root-letter license as the other two sources
+  // (see addChordAndRoot above — this used to stop short of the root,
+  // which is the bug this fixes). This widens the list only for the request
+  // that carried the question — it is derived from that request's own input,
+  // never stored.
   for (const token of questionTokens(envelope, CHORD_TOKEN_RE)) {
-    set.add(token);
-    set.add(token.toLowerCase());
-    set.add(token.toUpperCase());
+    addChordAndRoot(set, token);
   }
   return set;
 }
