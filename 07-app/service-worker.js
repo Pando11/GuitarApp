@@ -105,7 +105,12 @@ self.addEventListener("fetch", (event) => {
 function networkFirst(request) {
   return fetch(request)
     .then((response) => {
-      if (response.ok) {
+      // The Cache API only accepts GET requests as keys -- cache.put() on a
+      // POST (e.g. every real /coach and /coach/speak call) throws
+      // "unsupported request method", an unhandled rejection on every single
+      // live coaching request. Nothing GET-able would want a stale POST
+      // response anyway, so there's nothing to cache here.
+      if (response.ok && request.method === "GET") {
         const clone = response.clone();
         caches.open(CACHE).then((cache) => cache.put(request, clone));
       }
