@@ -564,7 +564,7 @@ possible placeholder audio (owner listening, not yet reported back),
 guardrail flake, local-dev dotenv trap. `github/master` and the 8090/8091
 port are resolved — see items 7-8 below.
 
-## Tier 1B — Close the gaps — **TODO**
+## Tier 1B — Close the gaps — **IN PROGRESS**
 
 Plan: [`TIER-1B-close-the-gaps.md`](TIER-1B-close-the-gaps.md). Written
 2026-09-10 from an owner grilling session following that day's redline.
@@ -579,11 +579,11 @@ this tier is gated on finding other testers.
 | Task | Status | Notes |
 |------|--------|-------|
 | 1A Coach deploy prep (Render) | DONE (2026-09-10) | `server/render.yaml` + README steps; dotenv trap fixed (`npm start` alone now loads `.env`); verified live: real `/coach` call returns `source:"model"`, 76/76 server tests green (73 baseline + 3 from 1C's guardrail fix). Independently re-verified by a second agent. Owner still must do the Render signup — see `server/README.md`'s numbered steps |
-| 1B Placeholder audio fix | TODO | trace the real TTS pipeline, regenerate ~60 clips across 25 lessons |
-| 1C Guardrail flake + LOG.md | TODO | |
-| 2A Practice remix wiring | TODO | |
-| 2B Stylistic explorer wiring | TODO | |
-| 2C Celebration wiring | TODO | |
+| 1B Placeholder audio fix | DONE (2026-09-10) | 61/65 `exN_intro` clips regenerated with real kokoro TTS speech (found the working venv at `~/guitar-loadtest/kokoro-venv` — the repo's own `.venv-kokoro` has no model files). All unique, zero collisions with the old placeholder hash. **New follow-up found, not yet fixed:** lessons 06/09/17/19 each have a genuinely missing `ex4_intro` audio file (text exists in JSON, audio never generated at all — a different bug from the placeholder-collision one this task fixed). Independently re-verified by a second agent |
+| 1C Guardrail flake + LOG.md | DONE (2026-09-10) | Root cause: bare-root-letter licensing (`Em`→`E`) only applied to lesson-sourced chords, not mastery- or question-sourced ones, so a chord's first mention from those paths was rejected. Fixed in `server/src/guardrail.js` (plan's OWNS path was wrong — corrected). `docs/plans/LOG.md` started. Independently re-verified |
+| 2A Practice remix wiring | DONE (2026-09-10) | `07-app/core/practiceRemixView.js`, real weak-pair/rate data, honest no-data state. Not yet mounted in the UI (Wave 4). Independently re-verified |
+| 2B Stylistic explorer wiring | DONE (2026-09-10) | `07-app/core/styleExplorerView.js`, progression derived from the lesson's own chords. Not yet mounted (Wave 4). Independently re-verified |
+| 2C Celebration wiring | DONE (2026-09-10) | `07-app/core/celebrationView.js`, real streak/session numbers, never a celebration of zeroes. Not yet mounted (Wave 4). Independently re-verified |
 | 3A Jam session server route + unfreeze | TODO | try fal.ai first (existing live `FAL_KEY`, RunPod already failed once on this project — see WORLDFACTORY-DIAGNOSIS-2026-08-30.md); RunPod only as fallback |
 | 3B Jam session client + UI | TODO | blocked on 3A having a verified working backend |
 | 4 Hub wiring + full verification | TODO | blocked on Waves 2 and 3 |
