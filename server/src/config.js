@@ -1,5 +1,9 @@
 // config.js — every env-derived and constant setting in one place.
 
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
+
 export const PORT = Number(process.env.PORT) || 8787;
 
 export const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
@@ -80,3 +84,58 @@ export const MODEL_TIMEOUT_QUESTION_MS = 12_000;
 
 // Body size cap, bytes. Facts envelopes are small; 16 KB is generous headroom.
 export const MAX_BODY_BYTES = 16 * 1024;
+
+// --- Jam session generation (TIER-1B 3A) — fal.ai / ACE-Step ---
+// The repo's .env already has a live, previously-tested FAL_KEY from the
+// World 1 (Emerald Hollow) fal.ai build (docs/archive/2026-09-pre-tier0/
+// FAL-AI-WORLD1-PLAN.md) — reused here, not re-requested. musicGen.js fails
+// with a typed MusicGenConfigError (not a silent stub) when this is unset.
+//
+// index.js's `dotenv/config` only loads server/.env (which has never held
+// FAL_KEY — that key lives in the repo-root .env, alongside RUNPOD_*, from
+// the World 1 build). This task's file-ownership list doesn't include
+// server/.env or index.js, so rather than writing a secret into a file
+// outside that list, this reads the repo-root .env directly as a fallback —
+// the exact pattern scripts/world-factory/fal_common.py's _ensure_key() and
+// pod_run.py/pod_shell.py already use for this same key. process.env always
+// wins when set; the file is only consulted when it isn't.
+function readFalKeyFromRootEnv() {
+  try {
+    const here = path.dirname(fileURLToPath(import.meta.url)); // server/src
+    const rootEnvPath = path.join(here, '..', '..', '.env'); // repo root
+    const raw = readFileSync(rootEnvPath, 'utf8');
+    for (const line of raw.split('\n')) {
+      const s = line.trim();
+      if (s.startsWith('FAL_KEY=')) return s.slice('FAL_KEY='.length).trim().replace(/^["']|["']$/g, '');
+    }
+  } catch {
+    // repo-root .env not present (e.g. a deployment that ships server/ only) — fine,
+    // FAL_KEY just stays unset and musicGen.js throws MusicGenConfigError.
+  }
+  return '';
+}
+
+export const FAL_KEY = process.env.FAL_KEY || readFalKeyFromRootEnv();
+
+// Verified live against the real fal.ai API 2026-09-10 (see server/README.md
+// "Jam session generation"): `fal-ai/ace-step`, Apache-2.0 upstream license
+// (github.com/ace-step/ACE-Step/blob/main/LICENSE), matching the bound stack
+// named in 02-spec/guitar-app-spec-AMENDMENT-18.md ("...ACE-Step/YuE"). Do
+// not change without re-verifying the replacement model's license.
+export const FAL_ACE_STEP_MODEL = 'fal-ai/ace-step';
+
+// Queue poll cadence/budget for the async fal.ai request (mirrors the
+// submit -> poll-status -> fetch-result pattern fal_stage2.py used for Wan
+// I2V video). Actual inference is ~2-5s, but fal's shared queue wait before
+// a worker even picks up the job is a separate, more variable cost — an
+// independent verification run (2026-09-10) observed ~46-50s of pure queue
+// wait on a live call, which a 45s budget clipped as a false-timeout 502.
+// 120s gives real headroom above that observed worst case; a slow queue
+// should still surface as a clear timeout eventually, not hang forever.
+export const FAL_POLL_INTERVAL_MS = 2000;
+export const FAL_POLL_TIMEOUT_MS = 120_000;
+
+// Response clip length, seconds. ACE-Step is billed at $0.0002/second
+// (fal.ai's own pricing page, checked 2026-09-10), so 20s costs ~$0.004 —
+// short enough to answer a single played phrase without racking up cost.
+export const FAL_MUSICGEN_DURATION_S = 20;

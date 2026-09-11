@@ -104,8 +104,8 @@ Carried forward from the project's existing rules — do not silently break thes
 ### What is explicitly frozen
 
 Do not build, extend, or refactor these until Tier 2 has shipped, no matter how
-tempting the adjacency: Mystery Mode, song-from-hum, voice commands, jam
-session, band engine, style packs (blues/country), teachers T2 and T3, Path A
+tempting the adjacency: Mystery Mode, song-from-hum, voice commands, band
+engine, style packs (blues/country), teachers T2 and T3, Path A
 live duet, encrypted cross-device sync. If a task seems to need one of them, it
 doesn't — report it.
 
@@ -119,3 +119,9 @@ doesn't — report it.
 > the paragraph above remains frozen, including `band-engine.js` and Path A
 > live duet — both of which sit close enough to the world work to look fair
 > game. They are not.
+
+> **Unfrozen 2026-09-10 (owner)** — jam session's generative half only; the
+> rest of the frozen list is unchanged. See
+> [`TIER-1B-close-the-gaps.md`](TIER-1B-close-the-gaps.md) Wave 3 (`3A`/`3B`)
+> for the active work: `server/src/musicGen.js`, the `/jam-session/generate`
+> route, and `07-app/core/jamSession.js`'s `generateResponse`.

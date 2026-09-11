@@ -1,8 +1,9 @@
-// router.js — tiny path/method dispatch. No framework: one real route plus
-// a health check doesn't earn Express.
+// router.js — tiny path/method dispatch. No framework: two real routes plus
+// a health check don't earn Express.
 
 import { sendJson } from './coachHandler.js';
-import { ALLOWED_ORIGINS } from './config.js';
+import { ALLOWED_ORIGINS, MAX_BODY_BYTES } from './config.js';
+import { generateResponse as defaultGenerateResponse, MusicGenConfigError, MusicGenError } from './musicGen.js';
 
 // The app page and this service always sit on different origins (see
 // config.js), so every real call arrives cross-origin and a JSON content type
@@ -19,7 +20,103 @@ function applyCorsHeaders(req, res, allowedOrigins) {
   res.setHeader('Vary', 'Origin');
 }
 
-export function createRouter({ coachHandler, allowedOrigins = ALLOWED_ORIGINS }) {
+// --- POST /jam-session/generate (TIER-1B 3A) ---
+// coachHandler.js owns the /coach request lifecycle (body read, parse,
+// validate, respond) as its own module wired in from index.js; this route
+// follows the same shape but is built here instead of a new handler module,
+// since this task's file-ownership list covers router.js/musicGen.js/
+// config.js and not index.js or a new handler file. createMusicGenHandler
+// takes an injectable `generate` for testability, defaulting to the real
+// musicGen.js client — index.js's existing `createRouter({ coachHandler })`
+// call keeps working unchanged; this route activates with zero index.js
+// changes.
+
+function readBody(req, maxBytes) {
+  return new Promise((resolve, reject) => {
+    let total = 0;
+    const chunks = [];
+    let rejected = false;
+
+    req.on('data', (chunk) => {
+      if (rejected) return;
+      total += chunk.length;
+      if (total > maxBytes) {
+        rejected = true;
+        reject(Object.assign(new Error('payload too large'), { code: 'TOO_LARGE' }));
+        req.destroy();
+        return;
+      }
+      chunks.push(chunk);
+    });
+
+    req.on('end', () => {
+      if (rejected) return;
+      resolve(Buffer.concat(chunks).toString('utf8'));
+    });
+
+    req.on('error', (err) => {
+      if (rejected) return;
+      reject(err);
+    });
+  });
+}
+
+// The emitFacts()-shaped payload (07-app/core/jamSession.js): chordsMatched/
+// chordsMissed are chord-label arrays, accuracy is a 0..1 number. Audio is
+// deliberately never part of this shape (AMENDMENT-05 — audio never leaves
+// the device) — this checks exactly the fields emitFacts() actually emits,
+// not a full schema.js-grade validator, since the envelope is this small.
+function isValidFacts(body) {
+  if (!body || typeof body !== 'object') return false;
+  const { chordsMatched, chordsMissed, accuracy } = body;
+  if (!Array.isArray(chordsMatched) || !Array.isArray(chordsMissed)) return false;
+  if (typeof accuracy !== 'number' || !Number.isFinite(accuracy)) return false;
+  return true;
+}
+
+export function createMusicGenHandler({ generate = defaultGenerateResponse } = {}) {
+  return async function handleMusicGen(req, res) {
+    let rawBody;
+    try {
+      rawBody = await readBody(req, MAX_BODY_BYTES);
+    } catch (err) {
+      if (err && err.code === 'TOO_LARGE') {
+        return sendJson(res, 413, { error: 'payload_too_large' });
+      }
+      return sendJson(res, 400, { error: 'invalid_json' });
+    }
+
+    let parsed;
+    try {
+      parsed = JSON.parse(rawBody);
+    } catch {
+      return sendJson(res, 400, { error: 'invalid_json' });
+    }
+
+    if (!isValidFacts(parsed)) {
+      return sendJson(res, 400, {
+        error: 'schema_validation',
+        details: ['expected {chordsMatched: string[], chordsMissed: string[], accuracy: number}'],
+      });
+    }
+
+    try {
+      const { audioUrl } = await generate(parsed);
+      return sendJson(res, 200, { audioUrl });
+    } catch (err) {
+      if (err instanceof MusicGenConfigError) {
+        // Config genuinely missing — fail clearly, never fake a response.
+        return sendJson(res, 503, { error: 'musicgen_not_configured' });
+      }
+      if (err instanceof MusicGenError) {
+        return sendJson(res, 502, { error: 'musicgen_upstream_failed' });
+      }
+      return sendJson(res, 500, { error: 'musicgen_failed' });
+    }
+  };
+}
+
+export function createRouter({ coachHandler, musicGenHandler = createMusicGenHandler(), allowedOrigins = ALLOWED_ORIGINS }) {
   return function handleRequest(req, res) {
     const url = req.url ? req.url.split('?')[0] : '/';
 
@@ -42,6 +139,10 @@ export function createRouter({ coachHandler, allowedOrigins = ALLOWED_ORIGINS })
 
     if (req.method === 'POST' && url === '/coach') {
       return coachHandler(req, res);
+    }
+
+    if (req.method === 'POST' && url === '/jam-session/generate') {
+      return musicGenHandler(req, res);
     }
 
     return sendJson(res, 404, { error: 'not_found' });

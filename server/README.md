@@ -119,6 +119,167 @@ Non-200 responses:
   tier doc doesn't specify a number, this default was chosen for this build).
 - `404 {error: 'not_found'}` — anything else.
 
+### `POST /jam-session/generate`
+Body: the `emitFacts()`-shaped payload from `07-app/core/jamSession.js`
+(`{chordsMatched: string[], chordsMissed: string[], accuracy: number}`).
+Facts only — never audio (see "Jam session generation" below). On success:
+`200 {audioUrl}`.
+
+Non-200 responses:
+- `400 {error: 'invalid_json'}` — body isn't valid JSON, or wasn't an object.
+- `400 {error: 'schema_validation', details: [...]}` — missing/wrong-typed fields.
+- `413 {error: 'payload_too_large'}` — body exceeded 16 KB.
+- `503 {error: 'musicgen_not_configured'}` — `FAL_KEY` genuinely unset. Never
+  faked; see below.
+- `502 {error: 'musicgen_upstream_failed'}` — fal.ai itself failed, timed out,
+  or returned a shape `musicGen.js` didn't recognize.
+- `404 {error: 'not_found'}` — anything else.
+
+## Jam session generation
+
+The generative half of jam session (`server/src/musicGen.js`, wired at
+`POST /jam-session/generate` in `src/router.js`). Unfrozen 2026-09-10 (owner)
+— see `docs/plans/TIER-1B-close-the-gaps.md` Wave 3, task `3A`.
+
+### Backend chosen: fal.ai (not RunPod), and why
+
+fal.ai was checked **first**, before RunPod, per explicit owner instruction —
+`brand-references/worlds/WORLDFACTORY-DIAGNOSIS-2026-08-30.md` documents a
+real prior RunPod failure on this exact project: a stale hardcoded Jupyter
+proxy port, a dead container, and a genuine zero-GPU-capacity shortage in
+region EU-RO-1 that blocked pod start outright. fal.ai is the managed,
+per-request API World 1's FLUX/Wan build was successfully rebuilt on instead
+(`docs/archive/2026-09-pre-tier0/FAL-AI-WORLD1-PLAN.md`, `fal.md`) — no pod to
+babysit, no GPU-capacity gamble.
+
+Live research against fal.ai's real model catalog (2026-09-10), not just
+marketing copy:
+- `WebSearch`/`WebFetch` against `fal.ai/models/fal-ai/ace-step/api` confirmed
+  a hosted **ACE-Step** endpoint exists: model id `fal-ai/ace-step`, async
+  queue endpoint, input `{tags, lyrics?, duration, ...}` -> output
+  `{audio: {url, content_type, ...}, seed, tags, lyrics}`.
+- License: **Apache-2.0**, confirmed by fetching the upstream project's own
+  `LICENSE` file directly
+  (`https://raw.githubusercontent.com/ace-step/ACE-Step/main/LICENSE`) —
+  fal.ai's own model page does **not** print a license string, so the
+  fal.ai page alone was not treated as sufficient confirmation.
+- This matches the bound commercial-clean stack named in
+  `02-spec/guitar-app-spec-AMENDMENT-18.md` §"DOES NOT" line, which lists
+  `"...Godot + ACE-Step/YuE"` as the locked stack for generative music. No
+  license flag needed — ACE-Step is explicitly one of the two named options.
+- YuE was also researched (`arxiv.org/abs/2503.08638`,
+  `github.com/multimodal-art-projection/YuE`) but no hosted fal.ai endpoint
+  for it was found in the catalog search — ACE-Step was both available and
+  the simpler async-queue integration, so it was chosen and YuE was not
+  pursued further.
+
+Because fal.ai had a usable, correctly-licensed model, **RunPod was not
+needed** for this task — no new pod/volume was created, and the existing
+FLUX/Wan pod/volume (`RUNPOD_POD_ID`/`xgcitppkl4lcm9`, region-locked to
+EU-RO-1) was correctly left untouched, per the task's explicit instruction not
+to reuse it for music generation.
+
+### Model
+
+**`fal-ai/ace-step`** — text-tags(+optional lyrics)-to-audio, async queue
+endpoint. `musicGen.js` builds a `tags` string from the facts payload
+(chord names + a mood word driven by `accuracy`) and leaves `lyrics` unset,
+which fal returns as an instrumental `"[inst]"` track — appropriate for a
+call-and-response musical reply, not a vocal one.
+
+### Env vars
+
+- `FAL_KEY` — required. The same key from the World 1 fal.ai build, already
+  live in the repo-root `.env` (not `server/.env`). `index.js`'s
+  `dotenv/config` only loads `server/.env`, so `config.js`'s `FAL_KEY` export
+  falls back to reading the repo-root `.env` directly when `process.env.FAL_KEY`
+  is unset — the same fallback pattern
+  `scripts/world-factory/fal_common.py`'s `_ensure_key()` and
+  `pod_run.py`/`pod_shell.py` already use for this exact key. If neither
+  source has it, `musicGen.js` throws a typed `MusicGenConfigError` and the
+  route answers `503 {error: 'musicgen_not_configured'}` — confirmed live
+  below, not just asserted.
+
+No RunPod env vars are used by this route.
+
+### Cost
+
+fal.ai bills ACE-Step at **$0.0002 / second of generated audio** (fal's own
+pricing page, checked 2026-09-10). `musicGen.js` requests 20-second response
+clips (`FAL_MUSICGEN_DURATION_S` in `src/config.js`), so each generation costs
+**~$0.004**.
+
+### Live verification (2026-09-10)
+
+**A. Direct queue API, proving fal.ai + ACE-Step actually work**, mirroring
+`fal_stage1.py`'s A2 connectivity test:
+
+```bash
+$ curl -s -X POST "https://queue.fal.run/fal-ai/ace-step" \
+    -H "Authorization: Key $FAL_KEY" -H "Content-Type: application/json" \
+    -d '{"tags":"acoustic guitar, warm, encouraging, folk, major key, gentle strum","duration":10}' \
+    -w "HTTP_STATUS:%{http_code}\n"
+HTTP_STATUS:200
+{"status":"IN_QUEUE","request_id":"01a08e06-6a86-7351-937d-3bb3d8168f2e", ...}
+
+$ curl -s "https://queue.fal.run/fal-ai/ace-step/requests/01a08e06-.../status" -H "Authorization: Key $FAL_KEY"
+{"status":"COMPLETED","request_id":"01a08e06-...","metrics":{"inference_time":1.8870000839233398}}
+
+$ curl -s "https://queue.fal.run/fal-ai/ace-step/requests/01a08e06-..." -H "Authorization: Key $FAL_KEY"
+{"audio":{"url":"https://v3b.fal.media/files/b/0aa9eef6/zdLe_nmmIYxyy0BSAhwcv_SHXmvvX1.wav", "content_type":"audio/wav", ...},"seed":341467325,"tags":"acoustic guitar, warm, encouraging, folk, major key, gentle strum","lyrics":"[inst]"}
+
+$ curl -sI "https://v3b.fal.media/files/b/0aa9eef6/zdLe_nmmIYxyy0BSAhwcv_SHXmvvX1.wav"
+HTTP/1.1 200 OK
+Content-Type: audio/wav
+Content-Length: 1921170
+```
+
+Real 1.9 MB `.wav` file, confirmed fetchable.
+
+**B. The actual `/jam-session/generate` route**, `node src/index.js` running
+locally on `:8787`:
+
+```bash
+$ curl -s -X POST http://localhost:8787/jam-session/generate \
+    -H 'Content-Type: application/json' \
+    -d '{"chordsMatched":["G","C","D"],"chordsMissed":["Em"],"accuracy":0.75}' \
+    -w "\nHTTP_STATUS:%{http_code}\n"
+{"audioUrl":"https://v3b.fal.media/files/b/0aa9ef25/RZAfxPg5tblT_gXPopk0n_P0emGepp.wav"}
+HTTP_STATUS:200
+
+$ curl -sI "https://v3b.fal.media/files/b/0aa9ef25/RZAfxPg5tblT_gXPopk0n_P0emGepp.wav"
+HTTP/1.1 200 OK
+Content-Type: audio/wav
+Content-Length: 3847126
+```
+
+Real 3.8 MB `.wav` file (20s clip, matches `FAL_MUSICGEN_DURATION_S`),
+confirmed fetchable — a genuine end-to-end round trip through the real
+service, not a mocked client.
+
+**C. The typed config-error path**, confirmed live (not just asserted) before
+the repo-root `.env` fallback above was added — with `FAL_KEY` genuinely
+unreachable from the server process:
+
+```bash
+$ curl -s -X POST http://localhost:8787/jam-session/generate \
+    -H 'Content-Type: application/json' \
+    -d '{"chordsMatched":["G","C","D"],"chordsMissed":["Em"],"accuracy":0.75}' \
+    -w "\nHTTP_STATUS:%{http_code}\n"
+{"error":"musicgen_not_configured"}
+HTTP_STATUS:503
+```
+
+**D. Malformed input**, confirmed live:
+
+```bash
+$ curl -s -X POST http://localhost:8787/jam-session/generate -d '{"bad":"shape"}' -H 'Content-Type: application/json'
+{"error":"schema_validation","details":["expected {chordsMatched: string[], chordsMissed: string[], accuracy: number}"]}
+
+$ curl -s -X POST http://localhost:8787/jam-session/generate -d 'not json' -H 'Content-Type: application/json'
+{"error":"invalid_json"}
+```
+
 ## Notable implementation decisions
 
 - **`anonId` is a required top-level field**, added beyond the tier doc's
