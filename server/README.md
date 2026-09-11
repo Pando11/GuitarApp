@@ -135,6 +135,24 @@ Non-200 responses:
   or returned a shape `musicGen.js` didn't recognize.
 - `404 {error: 'not_found'}` — anything else.
 
+### `POST /coach/speak`
+Body: `{text: string (non-empty), voice?: string}`. `text` is prose the
+client already has and already shows (e.g. `/coach`'s `prose` field) — this
+route never calls the Anthropic model itself, it only synthesizes speech
+for text the caller already generated. `voice` is optional and defaults to
+`af_heart` (see "Coach voice" below). On success: `200 {audioUrl}`.
+
+Non-200 responses:
+- `400 {error: 'invalid_json'}` — body isn't valid JSON, or wasn't an object.
+- `400 {error: 'schema_validation', details: [...]}` — `text` missing/empty,
+  or `voice` present but not a string.
+- `413 {error: 'payload_too_large'}` — body exceeded 16 KB.
+- `503 {error: 'voicegen_not_configured'}` — `FAL_KEY` genuinely unset. Never
+  faked; see below.
+- `502 {error: 'voicegen_upstream_failed'}` — fal.ai itself failed, timed out,
+  or returned a shape `voiceGen.js` didn't recognize.
+- `404 {error: 'not_found'}` — anything else.
+
 ## Jam session generation
 
 The generative half of jam session (`server/src/musicGen.js`, wired at
@@ -277,6 +295,149 @@ $ curl -s -X POST http://localhost:8787/jam-session/generate -d '{"bad":"shape"}
 {"error":"schema_validation","details":["expected {chordsMatched: string[], chordsMissed: string[], accuracy: number}"]}
 
 $ curl -s -X POST http://localhost:8787/jam-session/generate -d 'not json' -H 'Content-Type: application/json'
+{"error":"invalid_json"}
+```
+
+## Coach voice
+
+The server-side half of Wave 5, "Sage speaks" (`server/src/voiceGen.js`,
+wired at `POST /coach/speak` in `src/router.js`). Unfrozen/added 2026-09-10
+(owner) — see `docs/plans/TIER-1B-close-the-gaps.md` Wave 5, task `5A`.
+Waves 1-4 fixed the app's *pre-recorded* lesson narration; this closes the
+separate gap that a live coaching answer (`chatEngine.js`'s `askCoach()`,
+rendered as text via `lesson-runner.js`) never came back as speech.
+
+### Route shape: a separate `POST /coach/speak`, not a `speak` flag on `/coach`
+
+The task doc offered two options: extend `/coach` with an optional
+`speak: true` flag so one response carries both `prose` and `audioUrl`, or
+add a standalone `POST /coach/speak` that takes already-generated prose and
+returns just `{audioUrl}`. The task doc's own default recommendation
+(separate endpoint) was followed, for a concrete reason found while reading
+`coachHandler.js`: `/coach` already has two independent failure-absorbing
+paths built in (a model-call timeout and a guardrail rejection both quietly
+fall back to `{prose, source: 'template'}`, never a non-200) specifically
+so the student's text answer is never blocked or broken by something else
+going wrong. Folding voice into that same request would either (a) make a
+slow or failed Kokoro call block/delay the text response the student is
+already waiting on, or (b) require threading a second, differently-shaped
+failure path (`audioUrl` missing/null) through a handler that was
+deliberately built to never surface partial failure. A separate endpoint
+keeps `/coach` completely unchanged — this task's file-ownership list does
+not even include `coachHandler.js` — and makes the voice call's failure
+mode trivial: the client already has and has already shown the text, and a
+failed `POST /coach/speak` call affects nothing but the (still-additive)
+play button. It also matches how 5B is meant to call it: with prose that's
+already on screen, on a tap gesture, not at generation time.
+
+### Model
+
+**`fal-ai/kokoro`** — text-to-speech, async queue endpoint (same
+submit -> poll -> fetch shape as `musicGen.js`/ACE-Step above,
+reimplemented in `voiceGen.js`). Input `{prompt, voice}`, output
+`{audio: {url, content_type: 'audio/wav', ...}}`.
+
+### Voice choice
+
+Default voice: **`af_heart`** — the exact voice already used for the 61
+pre-recorded lesson narration clips fixed in Wave 1B
+(`07-app/audio/l*-voice/*.m4a`), so Sage's scripted lesson lines and live
+spoken coaching answers sound like the same person rather than two
+different voices. `voiceGen.js`'s `generateSpeech(text, {voice})` and the
+`/coach/speak` route's optional `voice` body field both allow overriding
+this — fal.ai's Kokoro model offers 20 voices total (`af_alloy`,
+`af_bella`, `am_adam`, and others), verified live 2026-09-10, in case a
+different voice is ever wanted for a specific surface.
+
+### Env vars
+
+- `FAL_KEY` — required, and **already set**. This reuses the exact same key
+  jam session's `musicGen.js` already uses (see "Jam session generation"
+  above) — no new secret was requested or added. If unset, `voiceGen.js`
+  throws a typed `VoiceGenConfigError` and the route answers
+  `503 {error: 'voicegen_not_configured'}` — confirmed live below, not just
+  asserted.
+
+No new env vars are required for this task. `FAL_KOKORO_MODEL`,
+`FAL_KOKORO_VOICE`, `FAL_TTS_POLL_INTERVAL_MS`, and `FAL_TTS_POLL_TIMEOUT_MS`
+in `src/config.js` are code constants (mirroring `FAL_ACE_STEP_MODEL`/
+`FAL_MUSICGEN_DURATION_S`'s pattern), not environment variables — same
+reasoning as the ACE-Step model id: the model/voice choice is a build-time
+decision, not a per-deployment one.
+
+### Poll timeout: 60s, not musicGen's 120s
+
+`FAL_TTS_POLL_TIMEOUT_MS` is **60,000ms** (`src/config.js`), half of
+`musicGen.js`'s `FAL_POLL_TIMEOUT_MS` (120s). Kokoro's own inference is
+much faster than ACE-Step's — the live test below completed in a couple of
+seconds — so the timeout was shortened to reflect that. It was **not** cut
+down to match the ~2s inference time itself, though: fal's shared
+queue-wait cost before a worker even picks up a job is a separate, more
+variable cost that an earlier independent verification run observed as
+high as ~46-50s on this same account/infrastructure for the ACE-Step route
+(`FAL_POLL_TIMEOUT_MS`'s own comment in `config.js`), and no equivalent
+multi-run sample exists yet for Kokoro specifically to rule out something
+similar. 60s keeps roughly double that observed queue-wait worst case as
+headroom while still meaningfully reflecting that Kokoro is the lighter,
+faster model of the two. `FAL_TTS_POLL_INTERVAL_MS` is 1000ms (vs.
+musicGen's 2000ms) — polling twice as often catches Kokoro's faster
+completion sooner without materially increasing request volume. A slow
+queue still surfaces as a clear `VoiceGenError` timeout, never a hang.
+
+### Cost
+
+fal.ai bills Kokoro at **$0.02 / 1000 characters** (fal's own pricing page,
+checked 2026-09-10). A typical coaching answer (a few hundred characters)
+costs a fraction of a cent — e.g. the ~140-character live test string below
+costs roughly $0.003.
+
+### Live verification (2026-09-11)
+
+**A. The actual `POST /coach/speak` route**, `node src/index.js` running
+locally on `:8787`, with a realistic coaching-answer string:
+
+```bash
+$ curl -s -X POST http://localhost:8787/coach/speak \
+    -H 'Content-Type: application/json' \
+    -d '{"text":"Nice work landing that G-to-C change. Keep your thumb low behind the neck and that buzz on the low E string will clear right up."}' \
+    -w "\nHTTP_STATUS:%{http_code}\n"
+{"audioUrl":"https://v3b.fal.media/files/b/0aaa003a/zUDFE1MMPlyEXEAmbobwx_xn02me2P.wav"}
+HTTP_STATUS:200
+
+$ curl -sI "https://v3b.fal.media/files/b/0aaa003a/zUDFE1MMPlyEXEAmbobwx_xn02me2P.wav"
+HTTP/1.1 200 OK
+Content-Type: audio/wav
+Content-Length: 399502
+cache-control: public, max-age=5184000, immutable
+accept-ranges: bytes
+```
+
+Real ~390 KB `.wav` file, confirmed fetchable — a genuine end-to-end round
+trip through the real service, not a mocked client.
+
+**B. Voice override**, confirming the optional `voice` field is honored end
+to end (not just accepted and ignored):
+
+```bash
+$ curl -s -X POST http://localhost:8787/coach/speak \
+    -d '{"text":"Try again, a little slower this time.","voice":"am_adam"}' \
+    -H 'Content-Type: application/json' -w "\nHTTP_STATUS:%{http_code}\n"
+{"audioUrl":"https://v3b.fal.media/files/b/0aaa003a/q5wQKzNVxLva0kvPx79o4_qHmQGje6.wav"}
+HTTP_STATUS:200
+
+$ curl -sI "https://v3b.fal.media/files/b/0aaa003a/q5wQKzNVxLva0kvPx79o4_qHmQGje6.wav"
+HTTP/1.1 200 OK
+Content-Type: audio/wav
+Content-Length: 149902
+```
+
+**C. Malformed input**, confirmed live:
+
+```bash
+$ curl -s -X POST http://localhost:8787/coach/speak -d '{"bad":"shape"}' -H 'Content-Type: application/json'
+{"error":"schema_validation","details":["expected {text: string (non-empty), voice?: string}"]}
+
+$ curl -s -X POST http://localhost:8787/coach/speak -d 'not json' -H 'Content-Type: application/json'
 {"error":"invalid_json"}
 ```
 

@@ -139,3 +139,34 @@ export const FAL_POLL_TIMEOUT_MS = 120_000;
 // (fal.ai's own pricing page, checked 2026-09-10), so 20s costs ~$0.004 —
 // short enough to answer a single played phrase without racking up cost.
 export const FAL_MUSICGEN_DURATION_S = 20;
+
+// --- Coach voice (TIER-1B Wave 5, 5A) — fal.ai / Kokoro TTS ---
+// Speaks prose Sage has already generated (POST /coach/speak — see
+// router.js). Same FAL_KEY as jam session's ACE-Step generation above; no
+// new secret needed. Verified live 2026-09-10 (see server/README.md "Coach
+// voice"): `fal-ai/kokoro`, real HEAD-confirmed audio/wav returned in ~2s.
+export const FAL_KOKORO_MODEL = 'fal-ai/kokoro';
+
+// af_heart is the exact voice already used for the 61 pre-recorded lesson
+// narration clips (Wave 1B), so Sage's scripted lines and live spoken
+// answers sound like the same person. 20 voices are available from fal.ai's
+// Kokoro model (af_alloy, af_bella, am_adam, ...) if a caller ever wants to
+// override; voiceGen.js's generateSpeech() takes an optional `voice`.
+export const FAL_KOKORO_VOICE = 'af_heart';
+
+// Queue poll cadence/budget for Kokoro. Same submit -> poll-status ->
+// fetch-result shape as FAL_POLL_INTERVAL_MS/FAL_POLL_TIMEOUT_MS above, but
+// Kokoro's own inference is much faster (~2s observed live, vs. ACE-Step's
+// 2-5s) so polling more often (1s vs. 2s) catches completion sooner without
+// meaningfully increasing request volume. The timeout is shortened from
+// musicGen's 120s but not down to the ~2s inference time: fal's shared
+// queue-wait cost (observed up to ~46-50s on a live ACE-Step call, a cost
+// that comes from the shared fal.ai queue infrastructure, not the specific
+// model) can in principle affect Kokoro requests too, and no equivalent
+// multi-run queue-wait sample exists yet for Kokoro specifically. 60s keeps
+// real headroom above the queue-wait worst case observed elsewhere on this
+// same account/infrastructure (roughly double it) while still being half of
+// musicGen's budget, reflecting that Kokoro is the lighter, faster model of
+// the two. A slow queue should still surface as a clear timeout, not hang.
+export const FAL_TTS_POLL_INTERVAL_MS = 1000;
+export const FAL_TTS_POLL_TIMEOUT_MS = 60_000;

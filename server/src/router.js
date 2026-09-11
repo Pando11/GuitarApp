@@ -4,6 +4,7 @@
 import { sendJson } from './coachHandler.js';
 import { ALLOWED_ORIGINS, MAX_BODY_BYTES } from './config.js';
 import { generateResponse as defaultGenerateResponse, MusicGenConfigError, MusicGenError } from './musicGen.js';
+import { generateSpeech as defaultGenerateSpeech, VoiceGenConfigError, VoiceGenError } from './voiceGen.js';
 
 // The app page and this service always sit on different origins (see
 // config.js), so every real call arrives cross-origin and a JSON content type
@@ -116,7 +117,70 @@ export function createMusicGenHandler({ generate = defaultGenerateResponse } = {
   };
 }
 
-export function createRouter({ coachHandler, musicGenHandler = createMusicGenHandler(), allowedOrigins = ALLOWED_ORIGINS }) {
+// --- POST /coach/speak (TIER-1B Wave 5, 5A) ---
+// A separate endpoint, not a `speak: true` flag folded into /coach, chosen
+// deliberately (see server/README.md's "Coach voice" section for the full
+// reasoning): it decouples voice failure from the text response completely
+// — the student's already-generated prose answer is produced and sent by
+// /coach independent of whether this route is ever called or ever
+// succeeds. This route does NOT call the Anthropic model; it only
+// synthesizes speech for text the client already has and already shows.
+
+// { text: string, voice?: string }. `voice` is optional and defaults inside
+// voiceGen.js (FAL_KOKORO_VOICE); only its type is checked here, not its
+// value, so newly-added fal.ai voices work without a code change here.
+function isValidSpeakBody(body) {
+  if (!body || typeof body !== 'object') return false;
+  const { text, voice } = body;
+  if (typeof text !== 'string' || text.trim().length === 0) return false;
+  if (voice !== undefined && typeof voice !== 'string') return false;
+  return true;
+}
+
+export function createVoiceGenHandler({ generate = defaultGenerateSpeech } = {}) {
+  return async function handleVoiceGen(req, res) {
+    let rawBody;
+    try {
+      rawBody = await readBody(req, MAX_BODY_BYTES);
+    } catch (err) {
+      if (err && err.code === 'TOO_LARGE') {
+        return sendJson(res, 413, { error: 'payload_too_large' });
+      }
+      return sendJson(res, 400, { error: 'invalid_json' });
+    }
+
+    let parsed;
+    try {
+      parsed = JSON.parse(rawBody);
+    } catch {
+      return sendJson(res, 400, { error: 'invalid_json' });
+    }
+
+    if (!isValidSpeakBody(parsed)) {
+      return sendJson(res, 400, {
+        error: 'schema_validation',
+        details: ['expected {text: string (non-empty), voice?: string}'],
+      });
+    }
+
+    try {
+      const opts = parsed.voice !== undefined ? { voice: parsed.voice } : undefined;
+      const { audioUrl } = await generate(parsed.text, opts);
+      return sendJson(res, 200, { audioUrl });
+    } catch (err) {
+      if (err instanceof VoiceGenConfigError) {
+        // Config genuinely missing — fail clearly, never fake a response.
+        return sendJson(res, 503, { error: 'voicegen_not_configured' });
+      }
+      if (err instanceof VoiceGenError) {
+        return sendJson(res, 502, { error: 'voicegen_upstream_failed' });
+      }
+      return sendJson(res, 500, { error: 'voicegen_failed' });
+    }
+  };
+}
+
+export function createRouter({ coachHandler, musicGenHandler = createMusicGenHandler(), voiceGenHandler = createVoiceGenHandler(), allowedOrigins = ALLOWED_ORIGINS }) {
   return function handleRequest(req, res) {
     const url = req.url ? req.url.split('?')[0] : '/';
 
@@ -143,6 +207,10 @@ export function createRouter({ coachHandler, musicGenHandler = createMusicGenHan
 
     if (req.method === 'POST' && url === '/jam-session/generate') {
       return musicGenHandler(req, res);
+    }
+
+    if (req.method === 'POST' && url === '/coach/speak') {
+      return voiceGenHandler(req, res);
     }
 
     return sendJson(res, 404, { error: 'not_found' });
