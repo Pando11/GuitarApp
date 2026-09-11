@@ -210,6 +210,57 @@ const STRING_REFERENCE_RE = new RegExp(
   'g',
 );
 
+// Live-verified 2026-09-10: "Why does my Em chord buzz on the low string?"
+// against a real lesson-3 (Em) envelope rejected the model's real, correct
+// reply 3/8 times with `invented_token:A`, even though the reply's actual
+// reference to the A string — e.g. "your finger on the A string" — DID match
+// STRING_REFERENCE_RE above and WAS stripped correctly. Tracing the exact
+// rejected prose (`checkInventedFacts` with logging added temporarily, then
+// removed) against both regexes showed the token that leaked through was a
+// second, unrelated "A": the model likes to open this answer with the
+// sentence "A buzz on the low E usually means...", where "A" is the ordinary
+// English indefinite article, not the chord. CHORD_TOKEN_RE cannot tell
+// those apart — both are a bare capital letter A — and STRING_REFERENCE_RE
+// rightly doesn't try, since this "A" is never followed by "string" at all.
+//
+// The one place English forces "a" to capitalize is sentence-initial
+// position — mid-sentence the article is always lowercase "a", which
+// CHORD_TOKEN_RE's `[A-G]` (uppercase only) already ignores by construction.
+// So the ambiguity exists ONLY at the start of a sentence, which is exactly
+// where "your A is sounding great" (the case this exemption must NOT cover —
+// see the test of the same name in guardrail.test.js) does not occur: a bare
+// chord claim like that is always attached to a preceding word ("your",
+// "the", "that"), never the first word after a full stop.
+//
+// Narrowed further so a genuine invented chord claim opening a sentence
+// still gets caught: the word immediately after "A" must not be "chord",
+// "minor", or "major" — the three words that would make "A" the grammatical
+// subject of a claim about the chord itself ("A chord like that...", "A
+// minor is different from...") rather than a determiner in front of an
+// unrelated noun ("A buzz...", "A common mistake...", "A quick fix...").
+const SENTENCE_INITIAL_ARTICLE_A_RE = /(^|[.!?]\s+|\n+)A(?=\s+(?!chord\b|minor\b|major\b)[a-z])/g;
+
+// Second live-capture finding from the same 2026-09-10 investigation: after
+// the article fix above, re-testing the identical live question still
+// rejected 1/8 replies on `invented_token:A`, this time from "Press straight
+// down on the A fret 2, keep your finger tip rounded..." — the model naming
+// the string by pairing the note letter directly with "fret N" instead of
+// writing out "the A string, fret 2" the way STRING_REFERENCE_RE expects.
+// Same underlying fact (a position on the A string, which standard tuning
+// makes true for every guitar on earth), terser phrasing that never contains
+// the word "string" at all, so STRING_REFERENCE_RE cannot match it.
+//
+// Exempted narrowly: a note letter immediately followed by whitespace and
+// "fret"/"frets" — nothing more. The fret NUMBER itself is checked
+// separately by the existing number allow-list (buildAllowedNumberSet) and
+// is untouched by this: only the letter is stripped from the chord scan, and
+// number-scanning below still runs against the original, unmodified prose.
+// Unlike "string", "fret" is guitar-specific vocabulary with no everyday-
+// English collision — nobody opens a sentence with "A fret is..." the way
+// they open one with "A buzz is..." — so this does not need the
+// sentence-position/word-denylist guards the article exemption above does.
+const STRING_FRET_REFERENCE_RE = new RegExp(String.raw`\b${NOTE_LETTER}(?=\s+frets?\b)`, 'g');
+
 export function checkInventedFacts(prose, envelope) {
   if (typeof prose !== 'string' || !prose.length) {
     return { ok: false, reason: 'invented_token:<empty_prose>' };
@@ -217,7 +268,10 @@ export function checkInventedFacts(prose, envelope) {
 
   const { chords, numbers } = extractKnownTokens(envelope);
 
-  const chordScannable = prose.replace(STRING_REFERENCE_RE, ' ');
+  const chordScannable = prose
+    .replace(STRING_REFERENCE_RE, ' ')
+    .replace(STRING_FRET_REFERENCE_RE, ' ')
+    .replace(SENTENCE_INITIAL_ARTICLE_A_RE, (_match, boundary) => `${boundary} `);
   const chordMatches = chordScannable.match(CHORD_TOKEN_RE) || [];
   for (const token of chordMatches) {
     if (!chords.has(token)) {

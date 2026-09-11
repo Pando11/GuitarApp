@@ -263,6 +263,65 @@ test('a chord known only via the student\'s own first question still licenses it
   assert.equal(retryResult.ok, true);
 });
 
+// --- sentence-initial "A" as the English article, not the chord
+// (2026-09-10) ---------------------------------------------------------
+// Live verification of "Why does my Em chord buzz on the low string?"
+// against a real lesson-3 (Em) envelope rejected the model's real,
+// otherwise-correct reply 3/8 times with `invented_token:A`. The prose
+// below is the ACTUAL captured text from one of those rejections (not a
+// paraphrase) — the model opens with "A buzz on..." as the ordinary
+// indefinite article, which STRING_REFERENCE_RE was never meant to cover
+// (it is never followed by "string") and CHORD_TOKEN_RE cannot tell apart
+// from the chord letter A. See SENTENCE_INITIAL_ARTICLE_A_RE in
+// guardrail.js for the fix and full reasoning.
+const EM_BUZZ_ENVELOPE_2026_09_10 = envelope({
+  mastery: [],
+  lessonId: 'L03-first-chord-em',
+  lessonChords: [EM],
+  question: 'Why does my Em chord buzz on the low string?',
+});
+
+test('the real captured "A buzz on..." reply is not rejected on the sentence-initial article (live repro 2026-09-10)', () => {
+  const prose = "A buzz on that low string usually means your finger on the A string—that's your second finger at fret 2—is leaning in and muting it just slightly, or your hand angle is letting the string sit too close to the fret. Try rolling your finger back a touch so the tip is doing the work at fret 2, and keep your thumb behind the neck relaxed and loose. Give it a strum and listen—that low E should ring clean and open, with nothing touching it.";
+  const result = checkInventedFacts(prose, EM_BUZZ_ENVELOPE_2026_09_10);
+  assert.equal(result.ok, true);
+});
+
+test('a second real captured "A buzz on the low E..." reply is not rejected either (live repro 2026-09-10)', () => {
+  const prose = "A buzz on the low E usually means one of two things: either that finger isn't pressing down hard enough, or your hand is tilting so the string is catching the edge of the fret instead of ringing clear above it. Try pressing your finger 2 on the A string a little firmer, and make sure your fingertips are angled so they hit the strings straight on, not from the side. No rush — give it a few clean presses and listen to how the buzz changes as you adjust.";
+  const result = checkInventedFacts(prose, EM_BUZZ_ENVELOPE_2026_09_10);
+  assert.equal(result.ok, true);
+});
+
+test('a real captured "A fret 2" reply (letter paired with "fret" instead of "string") is not rejected (live repro 2026-09-10)', () => {
+  // Captured on a second live re-test pass, after the article fix above was
+  // already in place: the model still said "the A string" once, but then
+  // switched to the terser "the A fret 2" for the same fact, which never
+  // contains the word "string" at all. See STRING_FRET_REFERENCE_RE.
+  const prose = "The low E string is open, so it should ring clean—that buzz tells you one of your other fingers is touching it by accident. Check your finger 2 on the A string: it's easy to let it lean over and mute the E below. Press straight down on the A fret 2, keep your finger tip rounded, and leave a small gap between your finger and the low E. Give it a try and let me know what you hear. No rush—we will take the next clean strum together.";
+  const result = checkInventedFacts(prose, EM_BUZZ_ENVELOPE_2026_09_10);
+  assert.equal(result.ok, true);
+});
+
+test('a bare letter with no string qualifier is still rejected even at a sentence boundary (narrow-exemption guard)', () => {
+  const env = envelope({ mastery: [], lessonChords: [] });
+  // Not sentence-initial: "your A" is still caught exactly as before.
+  const midSentence = checkInventedFacts('Nice progress today. Your A is sounding great!', env);
+  assert.equal(midSentence.ok, false);
+  assert.match(midSentence.reason, /^invented_token:A$/);
+
+  // Sentence-initial but immediately followed by "chord"/"minor" — the
+  // grammatical subject of a real claim about the chord, not the article —
+  // must still be caught, proving the exemption did not widen to cover it.
+  const chordWord = checkInventedFacts('A chord like that takes practice to get clean.', env);
+  assert.equal(chordWord.ok, false);
+  assert.match(chordWord.reason, /^invented_token:A$/);
+
+  const minorWord = checkInventedFacts('A minor is different from Em in only one note.', env);
+  assert.equal(minorWord.ok, false);
+  assert.match(minorWord.reason, /^invented_token:A$/);
+});
+
 test('sanity: before the shared root-licensing fix, a question-only chord did NOT license its root (regression guard)', () => {
   // This pins down the actual pre-fix behavior so a future refactor can't
   // silently reintroduce the asymmetry: the question-echo path alone (no
