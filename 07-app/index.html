@@ -64,6 +64,46 @@
     .chord-diagram svg{display:block}
     .chord-diagram figcaption{font-size:.78rem;color:#333;font-weight:700}
     .step-chord-diagram{margin:10px 0 0}
+    /* TIER-1B Wave 4 — style explorer / jam session panels (lesson-runner.js
+       mounts these into the containers it renders after the chord gallery). */
+    .style-explorer,.jam-session{margin:16px 0;background:rgba(34,48,39,.6);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+    .style-explorer__heading,.jam-session__heading{margin-top:0}
+    .style-explorer__progression{color:var(--muted);font-size:.85rem;margin:0 0 8px}
+    .style-explorer__tabs{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+    .style-explorer__tab{background:transparent;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:6px 12px;cursor:pointer;font:inherit;font-size:.82rem}
+    .style-explorer__tab.is-active{color:var(--ink);border-color:var(--moss)}
+    .style-explorer__card{margin-top:10px}
+    .style-explorer__card-title{text-transform:capitalize;font-weight:750;color:var(--moss)}
+    .style-explorer__arrows{font-family:Georgia,serif;font-size:1.15rem;margin:4px 0}
+    .style-explorer__counts,.style-explorer__feel{color:var(--muted);font-size:.88rem}
+    .style-explorer--empty,.jam-session--empty{color:var(--muted);font-size:.9rem}
+    .jam-session__sub{color:var(--muted);font-size:.88rem;margin-top:0}
+    .jam-session__chords{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+    .jam-session__chord-btn{background:var(--forest);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:8px 14px;cursor:pointer;font:inherit}
+    .jam-session__chord-btn[disabled]{opacity:.55;cursor:default}
+    .jam-session__status{min-height:1.3em;color:var(--muted);font-size:.88rem}
+    .jam-session__respond{border:0;border-radius:999px;padding:10px 18px;font-weight:750;cursor:pointer;background:var(--moss);color:#111a13;margin-top:4px}
+    .jam-session__respond[disabled]{opacity:.55;cursor:default}
+    .jam-session__result{margin-top:10px}
+    .jam-session__error{color:var(--warm)}
+    /* Practice remix chooser (index.html mounts this above the drill grid). */
+    .practice-remix{margin:14px 0}
+    .practice-remix-empty-text{color:var(--muted)}
+    .practice-remix-heading{font-family:Georgia,serif;font-size:1.1rem;margin:0 0 8px}
+    .practice-remix-cards{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0}
+    .practice-remix-card{background:rgba(34,48,39,.85);border:1px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer;color:inherit;text-align:left;display:flex;flex-direction:column;gap:4px;min-width:150px;font:inherit}
+    .practice-remix-card.is-selected{border-color:var(--moss)}
+    .practice-remix-card-recommended{border-color:var(--warm)}
+    .practice-remix-card-name{font-weight:750}
+    .practice-remix-card-unit,.practice-remix-detail-unit,.practice-remix-detail-note{color:var(--muted);font-size:.85rem}
+    .practice-remix-card-badge{font-size:.72rem;color:var(--warm)}
+    .practice-remix-detail{margin-top:10px}
+    .practice-remix-detail-sequence{padding-left:1.2em;margin:6px 0}
+    /* Celebration card, appended inside #weekly-plan-card. */
+    #weekly-plan-celebration{margin-top:12px}
+    .celebration-card{background:rgba(34,48,39,.7);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+    .celebration-card--empty{color:var(--muted);font-size:.88rem}
+    .celebration-privacy{margin-top:6px;color:var(--muted);font-size:.78rem}
   </style>
 </head>
 <body>
@@ -163,6 +203,11 @@
       <article id="practice-content">
         <h1 id="practice-title">Practice</h1>
         <p class="meta" id="practice-pair-line"></p>
+        <!-- TIER-1B Wave 4 — practice remix chooser (practiceRemixView.js's
+             mountPracticeRemix). Rendered before the drill grid so the
+             student sees the Tempo/Play-along/Calm framing options for the
+             pair they're about to drill before picking a drill. -->
+        <div id="practice-remix-panel" aria-live="polite"></div>
         <div class="grid" id="practice-drill-grid" aria-live="polite"></div>
         <section class="step" id="practice-result" aria-live="polite" hidden></section>
         <section class="step" id="practice-coach" aria-live="polite" hidden>
@@ -391,6 +436,11 @@
     import { getOrGenerateWeeklyPlan } from "./core/weeklyPlan.js";
     import { getStore } from "./core/practiceProgress.js";
     import { getProfile } from "./core/learnerProfile.js";
+    // TIER-1B Wave 4 — celebrationView.js's mountCelebrationFromStore() was
+    // built and unit-tested (Wave 2, 2C) but never had a call site. This is
+    // the seam the building agent named: appended into the weekly-plan card
+    // after its own content is built.
+    import { mountCelebrationFromStore } from "./core/celebrationView.js";
 
     function dayLineText(day) {
       var label = day && day.day ? day.day : "";
@@ -449,6 +499,19 @@
             });
             card.appendChild(ul2);
           }
+        }
+
+        // Celebration card (TIER-1B Wave 4): appended as a child slot after
+        // the plan content above, wrapped in its own try/catch so a
+        // celebration-render failure can't take down the weekly-plan card
+        // that already rendered successfully above it.
+        try {
+          var celebrationSlot = document.createElement("div");
+          celebrationSlot.id = "weekly-plan-celebration";
+          card.appendChild(celebrationSlot);
+          mountCelebrationFromStore(celebrationSlot, getStore());
+        } catch (celebrationError) {
+          console.warn("weekly-plan-card: celebration render failed (non-fatal)", celebrationError);
         }
       } catch (e) {
         console.warn("weekly-plan-card: render failed, hiding card", e);
@@ -906,6 +969,12 @@
     // createLessonRunner({...}) convention.
     import "./core/drillRunner.js";
     import * as practiceProgress from "./core/practiceProgress.js";
+    // TIER-1B Wave 4 — practiceRemixView.js's mountPracticeRemix() was
+    // built and unit-tested (Wave 2, 2A) but never had a call site.
+    // renderDrillMenu() below is the exact seam the building agent named:
+    // where this screen already calls runner.pickPair() (selectPracticePair)
+    // before showing the drill grid.
+    import { mountPracticeRemix } from "./core/practiceRemixView.js";
 
     function esc(value) {
       var node = document.createElement("span");
@@ -988,6 +1057,14 @@
             : (remaining === 1
               ? "One more finished lesson unlocks your first practice pair."
               : "Finish " + remaining + " more lessons to unlock your first practice pair.");
+        }
+      }
+      var remixHost = document.getElementById("practice-remix-panel");
+      if (remixHost) {
+        try {
+          mountPracticeRemix(remixHost, practiceStore);
+        } catch (e) {
+          console.warn("[practice] remix chooser render failed (non-fatal):", e && e.message);
         }
       }
       var menu = runner.pickMenu();
