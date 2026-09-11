@@ -175,13 +175,16 @@ export function defaultJamSessionUrl() {
 }
 
 // fal.ai's ACE-Step call is an async submit -> poll -> fetch-result round
-// trip server-side (server/src/musicGen.js), measured at ~2-4s end-to-end in
-// live testing (server/README.md). This client-side budget stays generous —
-// well above that measured time plus headroom for real network/queue
-// variance — so the service always gets to finish or fail on its own terms
-// rather than being cut off from here, same reasoning as chatEngine.js's
-// DEFAULT_COACH_TIMEOUT_MS.
-const DEFAULT_GEN_TIMEOUT_MS = 45_000;
+// trip server-side (server/src/musicGen.js). Inference itself is ~2-4s, but
+// fal's shared queue wait before a worker picks up the job is separate and
+// far more variable — a live Wave 4 verification run observed 6.7s once and
+// 72.8s another time. The server's own poll budget (FAL_POLL_TIMEOUT_MS,
+// server/src/config.js) is 120s for exactly this reason. This client-side
+// timeout must stay above that server budget plus network-round-trip
+// margin, or a request the server would have finished successfully gets
+// cut off here first — that's what a 45s value did in that verification
+// run (GEN_NETWORK_ERROR from an aborted-but-otherwise-fine request).
+const DEFAULT_GEN_TIMEOUT_MS = 130_000;
 
 /**
  * generateResponse(facts)
