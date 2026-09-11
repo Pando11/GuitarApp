@@ -1,0 +1,50 @@
+# Render Blueprint for the coach service (T1.1 / Tier 1B task 1A).
+#
+# What this is: Render reads this file automatically when the owner picks
+# "New +" -> "Blueprint" in the Render dashboard and points it at this repo.
+# It describes one web service, sourced from the server/ subdirectory of
+# this monorepo, with no Dockerfile — Render's native Node runtime runs
+# `npm install` / `npm start` directly, the same commands documented in
+# server/README.md for local dev.
+#
+# Verified against Render's own docs before writing this (2026-09-10):
+# - A Dockerfile is NOT required for a plain Node service; Render's native
+#   Node runtime handles build/start commands on its own.
+# - Render injects its own PORT env var (default 10000) into the service's
+#   environment. server/src/config.js already reads `process.env.PORT` with
+#   a local-dev-only fallback of 8787 (config.js:3), so no code change was
+#   needed and PORT must NOT be hardcoded below — let Render set it.
+#
+# See server/README.md's "Render" section for the full owner walkthrough
+# (account, connecting the repo, pasting in secrets, getting the URL).
+services:
+  - type: web
+    name: guitarapp-coach
+    runtime: node
+    plan: starter # paid, always-on tier (~$7/mo) — the plan this project chose,
+      # to avoid the free tier's ~30-50s cold start blowing past
+      # MODEL_TIMEOUT_MS/MODEL_TIMEOUT_QUESTION_MS in src/config.js on the
+      # first request after idle (see server/README.md's Deployment section).
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      # sync: false means Render prompts for a value during Blueprint setup
+      # (or later, under the service's own Environment tab) and never stores
+      # or guesses one itself. Never put real values in this file.
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      # Only needed if the real key turns out to be org-level rather than
+      # workspace-scoped — see server/README.md and src/config.js. Leave
+      # blank in the Render dashboard prompt if the key works without it.
+      - key: ANTHROPIC_WORKSPACE_ID
+        sync: false
+      # Must be set to the deployed app's real origin(s) once known (e.g.
+      # the GitHub Pages URL), comma-separated if there is more than one —
+      # see src/config.js's DEFAULT_ALLOWED_ORIGINS, which only covers local
+      # dev ports and will reject every real cross-origin call otherwise.
+      - key: COACH_ALLOWED_ORIGINS
+        sync: false
+      - key: COACH_RATE_LIMIT_PER_MIN
+        value: "10"

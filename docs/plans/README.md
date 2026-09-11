@@ -14,6 +14,7 @@ first, then read the tier file for the lowest tier that is not marked SHIPPED in
 | 0 | [`TIER-0-ship-it.md`](TIER-0-ship-it.md) | Friends can use it on their own devices, and you can see what they did | A friend completes Lesson 3 on their own phone and the event shows up in your log |
 | 1 | [`TIER-1-make-ai-real.md`](TIER-1-make-ai-real.md) | The "AI-individualized" claim becomes true | Two different learner profiles get demonstrably different lesson paths and different coaching prose |
 | 2 | [`TIER-2-business.md`](TIER-2-business.md) | Someone who is not you pays money and it recurs | First non-friend subscriber renews in month 2 |
+| 1B | [`TIER-1B-close-the-gaps.md`](TIER-1B-close-the-gaps.md) | Deploy the coach + world, fix the placeholder-audio bug, wire in the four dormant Wayfinder feature modules, build jam session's real generative half | The owner can use the whole app end-to-end, on phone and desktop, with nothing dead or templated left reachable |
 
 Progress is tracked in [`STATUS.md`](STATUS.md). Update it at the end of every
 working session — it is the only file the next conversation is guaranteed to read.

@@ -564,6 +564,30 @@ possible placeholder audio (owner listening, not yet reported back),
 guardrail flake, local-dev dotenv trap. `github/master` and the 8090/8091
 port are resolved — see items 7-8 below.
 
+## Tier 1B — Close the gaps — **TODO**
+
+Plan: [`TIER-1B-close-the-gaps.md`](TIER-1B-close-the-gaps.md). Written
+2026-09-10 from an owner grilling session following that day's redline.
+Scope: deploy the coach service + confirm desktop works alongside phone,
+fix the placeholder-audio bug (confirmed systemic — ~60 identical clips
+across all 25 lessons, not just 5), wire in all four dormant Wayfinder
+modules (practice remix, stylistic explorer, celebration, jam session), and
+build jam session's real generative half on a cloud GPU. Tier 2 stays out
+of scope. Owner is the sole tester for now by explicit choice — no task in
+this tier is gated on finding other testers.
+
+| Task | Status | Notes |
+|------|--------|-------|
+| 1A Coach deploy prep (Render) | DONE (2026-09-10) | `server/render.yaml` + README steps; dotenv trap fixed (`npm start` alone now loads `.env`); verified live: real `/coach` call returns `source:"model"`, 76/76 server tests green (73 baseline + 3 from 1C's guardrail fix). Independently re-verified by a second agent. Owner still must do the Render signup — see `server/README.md`'s numbered steps |
+| 1B Placeholder audio fix | TODO | trace the real TTS pipeline, regenerate ~60 clips across 25 lessons |
+| 1C Guardrail flake + LOG.md | TODO | |
+| 2A Practice remix wiring | TODO | |
+| 2B Stylistic explorer wiring | TODO | |
+| 2C Celebration wiring | TODO | |
+| 3A Jam session server route + unfreeze | TODO | try fal.ai first (existing live `FAL_KEY`, RunPod already failed once on this project — see WORLDFACTORY-DIAGNOSIS-2026-08-30.md); RunPod only as fallback |
+| 3B Jam session client + UI | TODO | blocked on 3A having a verified working backend |
+| 4 Hub wiring + full verification | TODO | blocked on Waves 2 and 3 |
+
 ## Tier 2 — Business — **BLOCKED (Tier 1)**
 
 | Task | Status | Notes |
