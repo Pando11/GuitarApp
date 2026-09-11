@@ -372,3 +372,85 @@ format as the other tiers) summarizing what shipped, and append the
 session to `docs/plans/LOG.md`. Do not create a new handoff/summary
 document for this — that's exactly the habit Wave 1C's LOG.md was meant to
 end.
+
+---
+
+## Wave 5 — Sage speaks (added 2026-09-10, after Waves 1-4 shipped)
+
+**Why:** Waves 1-4 fixed the app's *pre-recorded* lesson narration, but the
+owner asked a sharper question afterward: when a student asks Sage a real
+question, does the answer come back as a spoken voice, or just text? It's
+text only today — `chatEngine.js`'s `askCoach()` returns prose that lands in
+the DOM via `textContent` (confirmed by reading `lesson-runner.js`), never
+synthesized. This wave closes that gap.
+
+**Investigated and verified live before writing this section** (same
+discipline as Wave 3A's fal.ai research, not assumed): fal.ai hosts Kokoro
+TTS directly (`fal-ai/kokoro`), same account/`FAL_KEY` already in `.env`.
+Live test: submitted a real coaching-style line, completed in ~2s, returned
+real HEAD-confirmed `audio/wav`. It offers voice `af_heart` — the exact
+voice already used for the 61 lesson clips fixed in Wave 1B, so Sage's
+scripted lines and live answers can sound like the same person. Pricing:
+$0.02/1000 characters (~1 cent per typical coaching answer). Latency: ~2s
+added after the existing ~2-4s Haiku response, comfortably inside the
+existing `MODEL_TIMEOUT_QUESTION_MS` (12s) — no timeout bump needed, unlike
+jam session's.
+
+**Decisions locked (owner grilled 2026-09-10):**
+1. **Tap-to-play, not autoplay.** A speaker/play control appears next to
+   the text answer; most mobile browsers block autoplay without a direct
+   gesture anyway, so this is also the more reliable choice, not just the
+   safer one.
+2. **Both surfaces at once** — the lesson chat (`lesson-runner.js`'s
+   `askCoachAbout`) and the practice-screen coach (`drillRunner.js`'s
+   `askCoachAbout`), not just one first.
+
+### 5A — Server-side voice route
+
+**OWNS:** `server/src/voiceGen.js` (new), `server/src/voiceGen.test.mjs`
+(new), `server/src/router.js`, `server/src/config.js`, `server/README.md`.
+
+Build `server/src/voiceGen.js` mirroring `musicGen.js`'s shape closely (same
+fal.ai async queue submit/poll/fetch pattern, same typed-error posture) but
+for `fal-ai/kokoro`: input is prose text (+ optional voice override,
+defaulting to `af_heart`), output is `{ audioUrl }`. New route — extend the
+existing `/coach` response to optionally include an `audioUrl` alongside
+`prose` (add a `speak: true` flag the client can set on the request, so text
+still comes back fast even when the client doesn't want audio yet — e.g. a
+first render before the student taps play), or add a separate
+`POST /coach/speak` endpoint taking already-generated prose and returning
+just `{ audioUrl }` (simpler, decouples voice failure from the text
+response entirely — prefer this shape unless you find a strong reason not
+to, and explain your choice in the report). Mocked test suite following
+`musicGen.test.mjs`'s pattern exactly (queue polling, error paths, no real
+network calls in tests). Document the new route, voice choice, pricing, and
+a live test transcript in `server/README.md`.
+
+**DONE MEANS:** a live test call against the real route returns real,
+HEAD-confirmable `audio/wav`. Full server test baseline green (102 + new
+voiceGen tests).
+
+### 5B — Client wiring, both surfaces (dispatch after 5A is verified)
+
+**OWNS:** `07-app/core/coachSurface.js`, `07-app/core/lesson-runner.js`,
+`07-app/core/drillRunner.js`, `07-app/index.html` (styling for the
+play-button control only).
+
+Add a tap-to-play control next to every rendered coach answer, on both the
+lesson chat and the practice screen. On tap: call the new voice route
+(passing the already-shown prose text — don't regenerate the text answer,
+only synthesize speech for what's already on screen), show a loading state,
+then play the returned audio via a plain `<audio>` element. Handle failure
+honestly (a "couldn't load audio" message, never a silent no-op or fake
+success) — voice is additive, a failure here must never hide or break the
+already-working text answer underneath it.
+
+**DONE MEANS:** real live round trip on both surfaces (lesson chat and
+practice screen), tap → real audio plays, in the exact `af_heart` voice
+used for the app's other narration. Full app-side baseline green
+(`test:app-smoke`, `test:playwright`, all `07-app/core/*.test.mjs`).
+Manual click-through on both viewport widths (mobile + desktop), same
+discipline as Wave 4.
+
+Both 5A and 5B get an independent second-agent verification pass before
+committing, same as every task in Waves 1-4.
