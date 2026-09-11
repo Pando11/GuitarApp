@@ -12,6 +12,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { JSDOM } from 'jsdom';
 
 import {
   selectPracticePair,
@@ -20,6 +21,7 @@ import {
   runnerForDrillId,
   masteryFromSkillMap,
   DRILL_MENU_TO_ID,
+  createDrillRunner,
 } from './drillRunner.js';
 import { DRILL_MENU } from './adaptivePlan.js';
 
@@ -174,6 +176,76 @@ check('runnerForDrillId(garbage) is null, not a throw', runnerForDrillId('nonsen
   check('untried maps to not_started, the service\'s word for it', c && c.label === 'not_started');
   check('untried chord gets 0 confidence, not a guess', c && c.confidence === 0);
   check('masteryFromSkillMap(null) degrades to []', Array.isArray(masteryFromSkillMap(null)) && masteryFromSkillMap(null).length === 0);
+}
+
+// ---------------------------------------------------------------------------
+// TIER-1B Wave 5B gating fix — askCoachAbout()'s speak-control mount guard
+// (~line 357: `... && message.text && message.source === 'model'`) must
+// require a genuine model answer, not just non-empty text. Traced from the
+// real chain: coachSurface.js's getCoachMessage() is a pass-through of
+// chatEngine.js's askCoach(), which resolves `{text, source}` with source
+// either 'model' (a real 200 from the coaching service with
+// data.source === 'model') or 'template' (the service itself answered with
+// a template/boilerplate body — server/src/templateFallback.js's shape — or
+// coachClient() returned null and askCoach() fell back to the caller's own
+// local template text). Both routes are exercised here the same way
+// coachSurface.test.mjs controls chatEngine.js's network seam: via
+// globalThis.fetch, never by hand-rolling a fake message object.
+//
+// Uses jsdom (already a devDependency — see 07-app/test/app-smoke.mjs and
+// 07-app/core/stylisticExplorer.test.mjs) because the mount guard reads the
+// real global `document` (`typeof document !== 'undefined' && ...`), which
+// every OTHER case in this file deliberately leaves unset so as to never
+// touch this DOM-mounting branch at all (see the comment directly above the
+// guard in drillRunner.js).
+// ---------------------------------------------------------------------------
+{
+  function freshDoc() {
+    const dom = new JSDOM('<!doctype html><html><body><div id="practice-coach-text"></div></body></html>');
+    return dom.window.document;
+  }
+  // mountSpeakControlAfter() is reached through an async chain
+  // (getCoachMessage -> askCoach -> coachClient, all awaited already by the
+  // time askCoachAbout() resolves; the mount call itself is synchronous
+  // inside the try block) so no extra microtask flush is needed once
+  // askCoachAbout()'s own promise settles.
+  async function askWithFetch(fetchImpl) {
+    globalThis.document = freshDoc();
+    globalThis.fetch = fetchImpl;
+    try {
+      const runner = createDrillRunner({ practiceIndex: { pairs: [] }, practiceStore: null, telemetry: null });
+      const message = await runner.askCoachAbout({
+        learnerProfile: { ageBand: '18-34' },
+        localTemplate: 'Keep practicing — steady progress beats a rush.',
+      });
+      const mounted = !!document.getElementById('practice-coach-speak');
+      return { message, mounted };
+    } finally {
+      delete globalThis.document;
+      delete globalThis.fetch;
+    }
+  }
+
+  const MODEL_TEXT = 'Real personalized answer from Sage.';
+  const TEMPLATE_TEXT = "I couldn't reach my answer for that one just now.";
+
+  const modelResult = await askWithFetch(async () => ({
+    ok: true,
+    json: async () => ({ prose: MODEL_TEXT, source: 'model' }),
+  }));
+  check('a genuine model-source message renders the real answer', modelResult.message.text === MODEL_TEXT);
+  check('a genuine model-source message DOES mount a speak control', modelResult.mounted === true);
+
+  const serverTemplateResult = await askWithFetch(async () => ({
+    ok: true,
+    json: async () => ({ prose: TEMPLATE_TEXT, source: 'template' }),
+  }));
+  check('a server-side template-source message still renders its text', serverTemplateResult.message.text === TEMPLATE_TEXT);
+  check('a server-side template-source message does NOT mount a speak control', serverTemplateResult.mounted === false);
+
+  const clientFallbackResult = await askWithFetch(async () => { throw new Error('network unreachable'); });
+  check('a client-fetch-failure fallback renders the local template text', clientFallbackResult.message.text === 'Keep practicing — steady progress beats a rush.');
+  check('a client-fetch-failure fallback (source: template) does NOT mount a speak control', clientFallbackResult.mounted === false);
 }
 
 console.log(`\n=== ${passed} passed, ${failed} failed ===\n`);

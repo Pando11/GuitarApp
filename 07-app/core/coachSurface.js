@@ -201,4 +201,290 @@ export async function getCoachMessage(envelope, localTemplate) {
   return { text: result.text, source: result.source };
 }
 
-export default { buildCoachEnvelope, getCoachMessage };
+// ---------------------------------------------------------------------------
+// TIER-1B Wave 5, task 5B — "Sage speaks" client wiring.
+//
+// speakText() calls the /coach/speak route 5A built (server/src/voiceGen.js,
+// server/src/router.js). It never regenerates or rewords the text it's
+// given: the caller passes exactly the prose already rendered on screen
+// (chatEngine.js's askCoach()/coachClient() already produced it; this only
+// synthesizes speech for it), and returns the real generated audio URL.
+//
+// createSpeakControl() is the shared tap-to-play button both coach surfaces
+// (lesson-runner.js's lesson chat, drillRunner.js's practice screen) use for
+// every rendered coach answer. Built once here, per the task doc's own
+// invitation ("if there's an obvious place to share this logic... you may
+// add it to coachSurface.js instead of duplicating it"), because both
+// surfaces need byte-identical behavior and CSS class names — the CSS added
+// to 07-app/index.html for this control targets these exact classes, so two
+// independent implementations would risk the two surfaces visibly
+// diverging over time. This is the first DOM-touching code in this file;
+// everything above stays pure data assembly.
+// ---------------------------------------------------------------------------
+
+// Where the coach service's voice route lives. Resolved the SAME way
+// jamSession.js's defaultJamSessionUrl() resolves its own sibling route off
+// chatEngine.js's defaultCoachUrl() (read as this task's named pattern
+// reference): a deployment sets globalThis.GUITARAPP_COACH_URL to the
+// /coach endpoint, and this derives /coach/speak on the same origin rather
+// than assuming a bare hostname, so it keeps working under the exact same
+// deployment configuration with zero extra wiring. Local development (no
+// GUITARAPP_COACH_URL set) falls back to the loopback address the server
+// listens on by default (server/src/config.js's PORT default, 8787), same
+// as chatEngine.js's FALLBACK_COACH_URL and jamSession.js's
+// FALLBACK_JAM_SESSION_URL.
+const FALLBACK_SPEAK_URL = 'http://127.0.0.1:8787/coach/speak';
+
+export function defaultSpeakUrl() {
+  const configured = (typeof globalThis !== 'undefined') ? globalThis.GUITARAPP_COACH_URL : null;
+  if (typeof configured === 'string' && configured) {
+    // GUITARAPP_COACH_URL is documented (chatEngine.js) as pointing at the
+    // coach service's /coach endpoint; swap that path for this route's own
+    // rather than assuming callers set a bare origin. Identical regex to
+    // jamSession.js's defaultJamSessionUrl().
+    return configured.replace(/\/coach\/?$/, '') + '/coach/speak';
+  }
+  return FALLBACK_SPEAK_URL;
+}
+
+// server/src/config.js's FAL_TTS_POLL_TIMEOUT_MS is 60_000 — this
+// client-side budget stays above it (plus network round-trip margin), same
+// reasoning as jamSession.js's DEFAULT_GEN_TIMEOUT_MS staying above the
+// server's FAL_POLL_TIMEOUT_MS: a request the server would have finished
+// successfully must never get cut off here first.
+const DEFAULT_SPEAK_TIMEOUT_MS = 65_000;
+
+/**
+ * Typed error thrown by speakText() on any failure. `.code` is one of:
+ *   - SPEAK_INVALID_INPUT      — text isn't a non-empty string (caller bug).
+ *   - SPEAK_NO_FETCH           — no fetch implementation in this environment.
+ *   - SPEAK_NETWORK_ERROR      — the request itself failed (offline, DNS,
+ *     aborted/timed out).
+ *   - SPEAK_SERVER_ERROR       — the server responded with a non-200 status.
+ *   - SPEAK_MALFORMED_RESPONSE — a 200 body that wasn't valid JSON, or had
+ *     no usable `audioUrl`.
+ * Mirrors jamSession.js's generateResponse(): a broken speakText() has
+ * nothing safe to fall back to (there is no local template for "here is
+ * some audio"), so this always throws rather than inventing a fake/empty
+ * audioUrl or silently no-op'ing. Callers are expected to catch this and
+ * show an honest "couldn't load audio" state — never to hide it.
+ */
+export class SpeakError extends Error {
+  constructor(message, code, { cause, status } = {}) {
+    super(message);
+    this.name = 'SpeakError';
+    this.code = code;
+    if (cause) this.cause = cause;
+    if (status !== undefined) this.status = status;
+  }
+}
+
+/**
+ * speakText(text, options?) -> Promise<{audioUrl: string}>
+ *
+ * POSTs already-shown coach prose to /coach/speak and resolves to the real
+ * generated audio URL. Never invents a fallback audioUrl: any failure
+ * throws a SpeakError (see above).
+ *
+ * @param {string} text  The exact prose already rendered on screen. Never
+ *   regenerated, trimmed of meaning, or reworded here — passed through
+ *   verbatim (aside from the emptiness check below).
+ * @param {{voice?: string, url?: string, fetchImpl?: Function, timeoutMs?: number}} [options]
+ *   Deployment/test seams, same shape as chatEngine.js's coachClient()
+ *   options and jamSession.js's generateResponse() options.
+ */
+export async function speakText(text, options = {}) {
+  if (typeof text !== 'string' || !text.trim()) {
+    throw new SpeakError('speakText: expected non-empty text', 'SPEAK_INVALID_INPUT');
+  }
+
+  const url = options.url || defaultSpeakUrl();
+  const timeoutMs = typeof options.timeoutMs === 'number' ? options.timeoutMs : DEFAULT_SPEAK_TIMEOUT_MS;
+  const fetchImpl = options.fetchImpl || (typeof fetch === 'function' ? fetch : null);
+  if (!fetchImpl) {
+    throw new SpeakError('speakText: no fetch implementation available in this environment', 'SPEAK_NO_FETCH');
+  }
+
+  const body = JSON.stringify(
+    typeof options.voice === 'string' && options.voice ? { text, voice: options.voice } : { text }
+  );
+
+  const controller = (typeof AbortController === 'function') ? new AbortController() : null;
+  const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
+
+  let res;
+  try {
+    res = await fetchImpl(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body,
+      signal: controller ? controller.signal : undefined,
+    });
+  } catch (err) {
+    throw new SpeakError(`speakText: request to ${url} failed: ${err && err.message}`, 'SPEAK_NETWORK_ERROR', { cause: err });
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+
+  if (!res || !res.ok) {
+    let bodyText = '';
+    try { bodyText = await res.text(); } catch (e) { /* best-effort only */ }
+    throw new SpeakError(
+      `speakText: server responded HTTP ${res ? res.status : 'unknown'}${bodyText ? ` — ${bodyText}` : ''}`,
+      'SPEAK_SERVER_ERROR',
+      { status: res ? res.status : null },
+    );
+  }
+
+  let data;
+  try {
+    data = await res.json();
+  } catch (err) {
+    throw new SpeakError('speakText: server response was not valid JSON', 'SPEAK_MALFORMED_RESPONSE', { cause: err });
+  }
+
+  if (!data || typeof data.audioUrl !== 'string' || !data.audioUrl) {
+    throw new SpeakError('speakText: server response had no usable audioUrl', 'SPEAK_MALFORMED_RESPONSE');
+  }
+
+  return { audioUrl: data.audioUrl };
+}
+
+const SPEAK_IDLE_LABEL = '🔊 Play answer';
+const SPEAK_REPLAY_LABEL = '🔊 Replay';
+const SPEAK_LOADING_LABEL = 'Loading audio…';
+const SPEAK_ERROR_LABEL = "Couldn't load audio — tap to retry";
+
+/**
+ * createSpeakControl(getText, options?) -> HTMLButtonElement | null
+ *
+ * Builds one tap-to-play control (never autoplay, per Wave 5's locked
+ * decision — nothing plays until this button is actually clicked). Both
+ * coach surfaces call this for every rendered coach answer rather than
+ * building their own button, so the feature looks and behaves identically
+ * on the lesson chat and the practice screen.
+ *
+ * Non-destructive by construction: this function only ever creates and
+ * later mutates the button element it returns. It never touches, and has
+ * no reference to, the text node the caller already rendered — a fetch or
+ * playback failure inside the control can only ever change *this button's*
+ * state (to a "couldn't load audio — tap to retry" label), never the
+ * answer text sitting next to it.
+ *
+ * @param {() => string} getText  Called at click/retry time to read the
+ *   exact prose currently on screen. A function rather than a captured
+ *   string so a long-lived control (e.g. the practice screen's control,
+ *   recreated per answer but conceivably reused) always speaks the CURRENT
+ *   text, never a stale closed-over one.
+ * @param {{voice?: string, speak?: Function, AudioCtor?: Function}} [options]
+ *   `speak` defaults to speakText (test seam); `AudioCtor` defaults to the
+ *   global `Audio` (test seam / non-browser environments).
+ * @returns {HTMLButtonElement|null} null when `document` doesn't exist
+ *   (Node tests) — callers must tolerate that, same fail-safe posture as
+ *   every other degrade path in this module.
+ */
+export function createSpeakControl(getText, options = {}) {
+  if (typeof document === 'undefined' || typeof document.createElement !== 'function') return null;
+
+  const speak = typeof options.speak === 'function' ? options.speak : speakText;
+  const AudioCtor = options.AudioCtor || (typeof Audio !== 'undefined' ? Audio : null);
+  const voice = typeof options.voice === 'string' ? options.voice : undefined;
+
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'coach-speak-btn';
+  button.textContent = SPEAK_IDLE_LABEL;
+
+  let cachedUrl = null;
+
+  function setState(state) {
+    button.classList.remove('is-loading', 'is-error', 'is-ready');
+    button.disabled = false;
+    if (state === 'loading') {
+      button.classList.add('is-loading');
+      button.disabled = true;
+      button.textContent = SPEAK_LOADING_LABEL;
+    } else if (state === 'error') {
+      button.classList.add('is-error');
+      button.textContent = SPEAK_ERROR_LABEL;
+    } else if (state === 'ready') {
+      button.classList.add('is-ready');
+      button.textContent = SPEAK_REPLAY_LABEL;
+    } else {
+      button.textContent = SPEAK_IDLE_LABEL;
+    }
+  }
+
+  function playAudio(url) {
+    if (!AudioCtor) return;
+    try {
+      const audio = new AudioCtor(url);
+      const p = audio.play();
+      // A blocked/failed *playback* (a strict autoplay policy even on a
+      // real click, a decode hiccup, ...) is not the same failure as a
+      // failed *fetch* above: the real audioUrl was already obtained, so
+      // this is swallowed rather than flipped to the error state. The
+      // button already shows "Replay" either way.
+      if (p && typeof p.catch === 'function') p.catch(() => {});
+    } catch (e) { /* non-fatal, see above */ }
+  }
+
+  async function handleClick() {
+    if (button.disabled) return;
+    const text = typeof getText === 'function' ? getText() : getText;
+    if (typeof text !== 'string' || !text.trim()) return;
+
+    if (cachedUrl) { playAudio(cachedUrl); return; }
+
+    setState('loading');
+    try {
+      const result = await speak(text, voice ? { voice } : {});
+      const audioUrl = result && result.audioUrl;
+      if (typeof audioUrl !== 'string' || !audioUrl) {
+        throw new Error('speak() resolved with no audioUrl');
+      }
+      cachedUrl = audioUrl;
+      setState('ready');
+      playAudio(cachedUrl);
+    } catch (e) {
+      setState('error'); // honest failure state; the text answer next to this button is untouched.
+    }
+  }
+
+  button.addEventListener('click', handleClick);
+  return button;
+}
+
+/**
+ * mountSpeakControlAfter(anchorEl, id, getText, options?) -> HTMLButtonElement | null
+ *
+ * Small DOM-glue wrapper around createSpeakControl(): removes any earlier
+ * control sharing `id` (so a fresh answer never keeps a stale control's
+ * cached audio/error state), creates a new one, gives it `id`, and inserts
+ * it immediately after `anchorEl`. Shared by both coach surfaces for the
+ * same reason createSpeakControl() itself is shared — identical mount
+ * behavior, not two hand-rolled copies.
+ *
+ * @returns {HTMLButtonElement|null} null under a non-DOM environment or
+ *   when `anchorEl` isn't attached — never throws.
+ */
+export function mountSpeakControlAfter(anchorEl, id, getText, options) {
+  if (typeof document === 'undefined' || !anchorEl || !anchorEl.parentNode) return null;
+  const old = document.getElementById(id);
+  if (old && old.parentNode) old.parentNode.removeChild(old);
+  const control = createSpeakControl(getText, options);
+  if (!control) return null;
+  control.id = id;
+  anchorEl.insertAdjacentElement('afterend', control);
+  return control;
+}
+
+export default {
+  buildCoachEnvelope,
+  getCoachMessage,
+  speakText,
+  SpeakError,
+  defaultSpeakUrl,
+  createSpeakControl,
+  mountSpeakControlAfter,
+};

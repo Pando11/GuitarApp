@@ -36,6 +36,19 @@
     .chat-input{flex:1 1 220px;min-width:0;background:var(--forest);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:12px 16px;font:inherit}
     .chat-input:focus-visible{outline:3px solid var(--warm);outline-offset:2px}
     .chat-input:disabled{opacity:.6}
+    /* TIER-1B Wave 5 (5B) -- tap-to-play control next to a rendered coach
+       answer, on both the lesson chat (.chat-text) and the practice screen
+       (#practice-coach-text). Built/mounted by coachSurface.js's
+       createSpeakControl() (07-app/core/coachSurface.js); this file only
+       supplies the styling -- see that module's header for why. Sized and
+       colored like the rest of the coach UI (.secondary/.chat-* above),
+       never autoplays -- state changes only ever happen from a real click. */
+    .coach-speak-btn{display:inline-flex;align-items:center;gap:6px;margin-top:6px;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--moss);font-size:.8rem;font-weight:700;padding:6px 14px;cursor:pointer}
+    .coach-speak-btn:hover:not(:disabled){border-color:var(--moss)}
+    .coach-speak-btn:focus-visible{outline:3px solid var(--warm);outline-offset:2px}
+    .coach-speak-btn:disabled{cursor:default;opacity:.65}
+    .coach-speak-btn.is-ready{border-color:var(--moss)}
+    .coach-speak-btn.is-error{color:var(--warm);border-color:var(--warm)}
     .tuner-readout{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:14px 0 8px}
     .tuner-note{font-family:Georgia,serif;font-size:clamp(2rem,7vw,3.2rem);line-height:1}
     .tuner-meter{position:relative;height:14px;border:1px solid var(--line);border-radius:999px;background:var(--forest);margin:0 0 16px;overflow:hidden}

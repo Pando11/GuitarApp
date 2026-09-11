@@ -408,6 +408,39 @@
     return rendererState.promise;
   }
 
+  // --- TIER-1B Wave 5 (5B): tap-to-play coach voice --------------------
+  // coachSurface.js's createSpeakControl()/mountSpeakControlAfter() build
+  // the shared tap-to-play button both this file and drillRunner.js use for
+  // every rendered coach answer (see coachSurface.js's own header comment
+  // for why this is shared rather than duplicated in both files — same CSS
+  // class names/behavior on both surfaces). Loaded via a cached dynamic
+  // import(), the same convention loadRendererModule() above already uses
+  // for renderer.js, so this file stays a plain classic <script>.
+  const coachSurfaceModuleState = { promise: null };
+  function loadCoachSurfaceModule() {
+    if (!coachSurfaceModuleState.promise) {
+      coachSurfaceModuleState.promise = import("./coachSurface.js").catch(() => null);
+    }
+    return coachSurfaceModuleState.promise;
+  }
+
+  // Mounts (or re-mounts) a tap-to-play speak control immediately after
+  // `anchorEl` for the given getText() callback. Non-destructive by
+  // construction: a failure anywhere in here (coachSurface.js unreachable,
+  // no DOM, control creation failing) is swallowed and simply leaves no
+  // control mounted — it can never reach back and change `anchorEl`'s own
+  // text, which the caller has already rendered by the time this runs. See
+  // coachSurface.js's createSpeakControl() for why a *voice* failure (after
+  // the control exists) is similarly contained to the button itself.
+  async function mountCoachSpeakControl(anchorEl, id, getText) {
+    if (typeof document === "undefined" || !anchorEl || !anchorEl.parentNode) return;
+    try {
+      const mod = await loadCoachSurfaceModule();
+      if (!mod || typeof mod.mountSpeakControlAfter !== "function") return;
+      mod.mountSpeakControlAfter(anchorEl, id, getText);
+    } catch (e) { /* coachSurface.js unreachable -- no control, text answer untouched. */ }
+  }
+
   function chordDiagramHTML(chord, chordSvgFn, extraClass) {
     if (typeof chordSvgFn !== "function") return "";
     if (!chord || typeof chord !== "object" || !Array.isArray(chord.frets)) return "";
@@ -676,7 +709,7 @@
       const log = document.getElementById("lesson-chat-log");
       if (!log) return;
       log.textContent = "";
-      for (const turn of transcript.turns) {
+      transcript.turns.forEach(function (turn, i) {
         const row = document.createElement("div");
         row.className = "chat-turn chat-turn-" + turn.who;
         const who = document.createElement("span");
@@ -689,8 +722,19 @@
         body.textContent = turn.text;
         row.appendChild(who);
         row.appendChild(body);
+        // TIER-1B Wave 5 (5B): a tap-to-play control next to every REAL
+        // coach answer -- turn.hasAnswer is only ever set true once
+        // askCoachAbout actually resolved with text (see the form
+        // submit handler below), never for the "Thinking…" placeholder or
+        // the "Your coach is unavailable right now." failure text, and
+        // never for the student's own turns. getText reads turn.text (not
+        // a captured copy) so a control always speaks exactly what this
+        // repaint just rendered above it.
+        if (turn.who === "sage" && turn.hasAnswer) {
+          mountCoachSpeakControl(body, "lesson-chat-speak-" + i, function () { return turn.text; });
+        }
         log.appendChild(row);
-      }
+      });
       log.scrollTop = log.scrollHeight;
     }
 
@@ -718,7 +762,22 @@
           if (textEl) textEl.textContent = "Thinking…";
           try {
             const result = await askCoachAbout({ index: index, learnerProfile: profile });
-            if (textEl) textEl.textContent = (result && result.text) || DEFAULT_COACH_FALLBACK;
+            const text = (result && result.text) || DEFAULT_COACH_FALLBACK;
+            if (textEl) textEl.textContent = text;
+            // TIER-1B Wave 5 (5B): tap-to-play control next to this REAL
+            // answer only -- never mounted for the DEFAULT_COACH_FALLBACK
+            // template text below, or the unavailable-message in the catch
+            // branch, matching the transcript's turn.hasAnswer gate above.
+            // result.source === 'model' is required (not just result.text
+            // being truthy): chatEngine.js's askCoach() returns text with
+            // source 'template' (local or server-side template fallback) or
+            // 'local' (off-topic reply.js path) too, and those are canned
+            // filler, not a genuine Sage answer -- see coachSurface.js's
+            // getCoachMessage() and chatEngine.js's askCoach()/
+            // replyWithCoach() for the full set of source values.
+            if (textEl && result && result.text && result.source === 'model') {
+              mountCoachSpeakControl(textEl, "lesson-coach-speak", function () { return text; });
+            }
           } catch (e) {
             if (textEl) textEl.textContent = "Your coach is unavailable right now.";
           } finally {
@@ -734,7 +793,7 @@
           if (!question) return;
 
           transcript.turns.push({ who: "student", text: question });
-          transcript.turns.push({ who: "sage", text: "Thinking…" });
+          transcript.turns.push({ who: "sage", text: "Thinking…", hasAnswer: false });
           const pending = transcript.turns[transcript.turns.length - 1];
           input.value = "";
           paintTranscript();
@@ -744,8 +803,14 @@
           try {
             const result = await askCoachAbout({ index: index, learnerProfile: profile, question: question });
             pending.text = (result && result.text) || DEFAULT_COACH_FALLBACK;
+            // result.source === 'model' required, not just result.text being
+            // truthy -- see the matching comment above wireCoachButton's
+            // "how am I doing" handler for why (template/local fallbacks
+            // have text too, but aren't a genuine Sage answer).
+            pending.hasAnswer = !!(result && result.text && result.source === 'model');
           } catch (e) {
             pending.text = "Your coach is unavailable right now.";
+            pending.hasAnswer = false;
           } finally {
             input.disabled = false;
             if (sendBtn) sendBtn.disabled = false;

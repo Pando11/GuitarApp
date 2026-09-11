@@ -28,7 +28,7 @@ import { DRILL as DRILL_TEMPO, runDrill as runTempo } from './drills/tempoLoop.j
 import { DRILL as DRILL_WAIT, runDrill as runWait } from './drills/waitToPlay.js';
 import { DRILL as DRILL_WEAK, runDrill as runWeak } from './drills/weakPairReview.js';
 import { pairKey, parsePair } from './pairKey.js';
-import { buildCoachEnvelope, getCoachMessage } from './coachSurface.js';
+import { buildCoachEnvelope, getCoachMessage, mountSpeakControlAfter } from './coachSurface.js';
 
 // ---------------------------------------------------------------------------
 // DRILL_MENU display name -> drill module DRILL id. Built by reading each
@@ -321,7 +321,49 @@ export function createDrillRunner({ practiceIndex, practiceStore, telemetry, win
       try { resolvedAnonId = telemetry.getAnonId(); } catch (e) { resolvedAnonId = undefined; }
     }
     const envelope = buildCoachEnvelope({ anonId: resolvedAnonId, learnerProfile, lessonId, mastery, justHappened, recentHistory });
-    return getCoachMessage(envelope, localTemplate);
+    const message = await getCoachMessage(envelope, localTemplate);
+
+    // TIER-1B Wave 5 (5B) — mount a tap-to-play speak control next to the
+    // practice screen's rendered coach answer.
+    //
+    // This file has no DOM-insertion call site of its own for that answer:
+    // the practice screen's inline wiring (07-app/index.html's askCoach(),
+    // which sets #practice-coach-text's textContent right after this
+    // function resolves) lives in a file this wave's OWNS list restricts to
+    // CSS-only changes for this control — no new JS logic there. Mounting
+    // the control here instead, as a side effect of the exact call that
+    // already produces the final answer text, keeps 100% of the
+    // speak-control logic inside owned files (this file + coachSurface.js)
+    // with ZERO changes to index.html's script. index.html only needed the
+    // CSS classes coachSurface.js's createSpeakControl()/
+    // mountSpeakControlAfter() already apply (.coach-speak-btn and its
+    // .is-loading/.is-error/.is-ready modifiers) — see index.html's <style>.
+    //
+    // Non-destructive by construction: `message` (returned below) is fully
+    // computed above and is not read again after this point, so nothing in
+    // this block — including a thrown error — can change what the caller
+    // gets back or what it renders as the text answer. typeof document
+    // guards the Node/test environment (no DOM there; drillRunner.test.mjs
+    // never touches this path), and the inner try/catch is pure belt and
+    // suspenders on top of that.
+    // message.source === 'model' is required (not just message.text being
+    // truthy): coachSurface.js's getCoachMessage() -> chatEngine.js's
+    // askCoach() can resolve with source 'template' (server template
+    // fallback, or the local template when the service is unreachable) or
+    // 'local' (replyWithCoach()'s off-topic reply.js path) too, and those
+    // carry real text that is still canned filler, not a genuine Sage
+    // answer -- see chatEngine.js's askCoach()/coachClient()/
+    // replyWithCoach() for the full set of source values.
+    if (typeof document !== 'undefined' && message && typeof message.text === 'string' && message.text && message.source === 'model') {
+      try {
+        const textEl = document.getElementById('practice-coach-text');
+        if (textEl) {
+          mountSpeakControlAfter(textEl, 'practice-coach-speak', () => message.text);
+        }
+      } catch (e) { /* never let a DOM/mount failure touch the returned message */ }
+    }
+
+    return message;
   }
 
   return {
