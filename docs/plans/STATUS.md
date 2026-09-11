@@ -584,8 +584,8 @@ this tier is gated on finding other testers.
 | 2A Practice remix wiring | DONE (2026-09-10) | `07-app/core/practiceRemixView.js`, real weak-pair/rate data, honest no-data state. Not yet mounted in the UI (Wave 4). Independently re-verified |
 | 2B Stylistic explorer wiring | DONE (2026-09-10) | `07-app/core/styleExplorerView.js`, progression derived from the lesson's own chords. Not yet mounted (Wave 4). Independently re-verified |
 | 2C Celebration wiring | DONE (2026-09-10) | `07-app/core/celebrationView.js`, real streak/session numbers, never a celebration of zeroes. Not yet mounted (Wave 4). Independently re-verified |
-| 3A Jam session server route + unfreeze | TODO | try fal.ai first (existing live `FAL_KEY`, RunPod already failed once on this project — see WORLDFACTORY-DIAGNOSIS-2026-08-30.md); RunPod only as fallback |
-| 3B Jam session client + UI | TODO | blocked on 3A having a verified working backend |
+| 3A Jam session server route + unfreeze | DONE (2026-09-10) | fal.ai ACE-Step chosen (RunPod never needed); Apache-2.0 confirmed against upstream LICENSE; `POST /jam-session/generate`; 22 new tests (98/98 total); live round-trip independently re-verified twice (real audio URL, `HTTP 200 audio/wav`). Verifier caught a real 45s-vs-~50s poll-timeout bug, fixed (now 120s) |
+| 3B Jam session client + UI | TODO | unblocked — 3A has a verified working backend |
 | 4 Hub wiring + full verification | TODO | blocked on Waves 2 and 3 |
 
 ## Tier 2 — Business — **BLOCKED (Tier 1)**
