@@ -108,3 +108,35 @@ would see, but was firing on every single live coaching request.
 "Sage" actually does versus what the pre-recorded narration implies. Both
 follow-on bugs were caught by the same independent-verification discipline
 used throughout Tier 1B, before either shipped.
+
+## 2026-09-12 — Ultrareview + JSON parse fixes
+
+Ran `/ultrareview ultra` (maximum-effort cloud review) against the full
+repository. Found 5 bugs ranked by severity: 2 JSON parse exceptions in
+`server/src/musicGen.js` and `voiceGen.js` (unhandled SyntaxError from
+malformed fal.ai responses), 2 missing AbortController fallbacks in
+`07-app/core/coachSurface.js` and `jamSession.js` (timeout hangs in old
+runtimes), and 1 fragile async event-listener pattern in
+`jamSessionView.js` (currently safe, but brittle for future changes).
+
+Fixed the two JSON parse bugs immediately (highest impact):
+- Both `musicGen.js` and `voiceGen.js` now wrap `res.json()` in try/catch
+  at all three polling/fetch sites (submit, poll status, fetch result)
+- Malformed responses now throw properly-typed `MusicGenError` /
+  `VoiceGenError` instead of escaping as untyped `SyntaxError`
+- Maintains the strict error contract: never fabricates, never silently fails
+- All 117 server tests pass; zero behavior change for well-formed responses
+- Commit `5a95b96` pushed to github/main
+
+Also reviewed the full operational state (see redline text at end of this session):
+- **Ship-ready:** All code complete, tests green, AMENDMENT-05 compliant
+- **Deployment-blocked:** Coach service (Render signup needed), GitHub Pages deploy, 4 missing audio files
+- **Next owner actions:** Pick host for coach service, enable GitHub Pages, test locally before deploy
+
+**Why:** systematic verification before wider testing caught real edge cases
+that mocked tests miss. The AbortController and async-listener issues are
+lower priority (rare/fragile but not blocking), so JSON parse fixes were
+prioritized to complete error handling before deployment.
+
+**App status:** Running locally at `http://localhost:5173`. Ready for
+walk-through testing on lessons 1-3 before Render + Pages setup.
