@@ -83,7 +83,13 @@ async function submit(text, voice) {
     const body = await res.text().catch(() => '');
     throw new VoiceGenError(`fal kokoro submit failed: HTTP ${res.status} ${body}`);
   }
-  return res.json();
+  let body;
+  try {
+    body = await res.json();
+  } catch (err) {
+    throw new VoiceGenError(`fal kokoro submit returned invalid JSON: ${err.message}`, { cause: err });
+  }
+  return body;
 }
 
 async function pollUntilComplete(statusUrl) {
@@ -99,7 +105,12 @@ async function pollUntilComplete(statusUrl) {
       const body = await res.text().catch(() => '');
       throw new VoiceGenError(`fal kokoro status check failed: HTTP ${res.status} ${body}`);
     }
-    const status = await res.json();
+    let status;
+    try {
+      status = await res.json();
+    } catch (err) {
+      throw new VoiceGenError(`fal kokoro status returned invalid JSON: ${err.message}`, { cause: err });
+    }
     if (status.status === 'COMPLETED') return status;
     if (status.status === 'ERROR' || status.status === 'FAILED') {
       throw new VoiceGenError(`fal kokoro generation failed: ${JSON.stringify(status)}`);
@@ -144,7 +155,12 @@ export async function generateSpeech(text, { voice = FAL_KOKORO_VOICE } = {}) {
     const body = await res.text().catch(() => '');
     throw new VoiceGenError(`fal kokoro result fetch failed: HTTP ${res.status} ${body}`);
   }
-  const result = await res.json();
+  let result;
+  try {
+    result = await res.json();
+  } catch (err) {
+    throw new VoiceGenError(`fal kokoro result returned invalid JSON: ${err.message}`, { cause: err });
+  }
   const audioUrl = result && result.audio && result.audio.url;
   if (!audioUrl) {
     throw new VoiceGenError(`fal kokoro result had no audio.url: ${JSON.stringify(result)}`);
