@@ -322,6 +322,41 @@
   // used on the practice screen (see index.html's askCoach()).
   const DEFAULT_COACH_FALLBACK = "Keep practicing — steady progress beats a rush.";
 
+  // --- Ticket 11 (issue #14): degraded path — coaching server down, no key,
+  // or no internet -------------------------------------------------------
+  //
+  // askCoachAbout() below always resolves with SOME text (chatEngine.js's
+  // askCoach() never throws — see its own header), but when
+  // `message.source !== 'model'` that text came from a template, not live
+  // model prose. Per issue #14, Sage still needs to speak out loud in that
+  // case, through the browser's own built-in voice (app.js's speak(),
+  // reached here as window.GuitarApp.speak — never the server-backed
+  // /coach/speak route coachSurface.js's speakText() calls, which needs the
+  // very service this path exists because is unreachable), and say once
+  // (not every message) that he "can't think out loud today."
+  //
+  // OFFLINE_NOTICE_KEY is the SAME sessionStorage key drillRunner.js's own
+  // degraded-path notice uses (see that file's announceCoachOffline), so in
+  // a real browser session the line is said at most once across BOTH
+  // coaching surfaces (the lesson chat here and the practice screen there),
+  // not once per surface. Falls back to a module-level in-memory flag when
+  // sessionStorage isn't available (Node tests) — "once" then means "once
+  // per process", the same degrade drillRunner.js's own announcer accepts.
+  const OFFLINE_NOTICE_KEY = "guitarapp.coach.offlineNoticeAnnounced.v1";
+  let offlineNoticeMemoryFlag = false;
+  function announceCoachOfflineOnce() {
+    try {
+      if (typeof window !== "undefined" && window.sessionStorage) {
+        if (window.sessionStorage.getItem(OFFLINE_NOTICE_KEY) === "1") return false;
+        window.sessionStorage.setItem(OFFLINE_NOTICE_KEY, "1");
+        return true;
+      }
+    } catch (e) { /* fall through to the in-memory flag below */ }
+    if (offlineNoticeMemoryFlag) return false;
+    offlineNoticeMemoryFlag = true;
+    return true;
+  }
+
   function escAttr(value) {
     return esc(value).replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
@@ -698,6 +733,39 @@
       return null;
     }
 
+    // Ticket 11 (issue #14) — speaks Sage's degraded-mode line through
+    // app.js's own speak() (browser TTS). Built from ONLY two real sources:
+    // the deterministic number-citing sageCoach.js coachLine() (against
+    // this runner's own resolvePracticeStore(), same store the opening
+    // greeting already cites) and the open lesson's authored copy
+    // (model.avatarCopy.intro — resolveAvatarCopy() already picked the
+    // right copyVariant for this learner). Never invents a line of its own;
+    // when neither source is available it falls back to whatever text
+    // askCoachAbout already resolved (the local template), so the student
+    // is never left silent. Non-destructive by construction: this is a
+    // fire-and-forget side effect of a resolved coach reply, never awaited
+    // by the caller, and any failure inside is swallowed rather than
+    // touching the text answer askCoachAbout already returned.
+    async function speakOfflineCoachLine(model, messageText) {
+      if (typeof window === "undefined" || !window.GuitarApp || typeof window.GuitarApp.speak !== "function") return;
+      try {
+        const parts = [];
+        if (announceCoachOfflineOnce()) parts.push("I can't think out loud today, but I can still teach.");
+        try {
+          const sageCoachMod = await import("./sageCoach.js");
+          const store = resolvePracticeStore();
+          if (store && typeof sageCoachMod.coachLine === "function" && typeof sageCoachMod.snapshotFromStore === "function") {
+            parts.push(sageCoachMod.coachLine(sageCoachMod.snapshotFromStore(store)));
+          }
+        } catch (e) { /* coachLine is additive, never required */ }
+        const authored = model && model.avatarCopy && typeof model.avatarCopy.intro === "string" ? model.avatarCopy.intro : "";
+        if (authored) parts.push(authored);
+        else if (typeof messageText === "string" && messageText) parts.push(messageText);
+        const spoken = parts.filter(Boolean).join(" ");
+        if (spoken) window.GuitarApp.speak(spoken);
+      } catch (e) { /* never let the offline-voice path break the coach reply */ }
+    }
+
     // A PracticeTimer instance, if the caller has one running. KNOWN GAP
     // (documented, not guessed): nothing in the shipped app shell currently
     // wires a persisted PracticeTimer instance anywhere (see
@@ -801,6 +869,11 @@
       const o = opts || {};
       const idx = Number.isInteger(o.index) ? o.index : openIndex.value;
       let lessonId = null;
+      // Kept for the Ticket 11 (issue #14) offline-voice path below, which
+      // needs this lesson's own authored copy (model.avatarCopy) — never
+      // recomputed there, just the same normalizeLesson() result this
+      // function already produces for lessonChords.
+      let modelForOfflineVoice = null;
       // The chord shapes this lesson actually teaches, read off the lesson's
       // own verified `chords` block (its keys are the chord names; `_schema`
       // is the documentation entry, not a chord). Sent so the coaching
@@ -812,6 +885,7 @@
       if (Number.isInteger(idx) && idx >= 0 && idx < lessons.length) {
         const profileForModel = o.learnerProfile !== undefined ? o.learnerProfile : options.learnerProfile;
         const model = normalizeLesson(lessons[idx], idx, profileForModel);
+        modelForOfflineVoice = model;
         lessonId = model.lessonId || null;
         const raw = lessons[idx] && lessons[idx].chords;
         if (raw && typeof raw === "object") {
@@ -886,7 +960,21 @@
         actionContext.diagram = { chord: first.chord, frets: first.frets, fingers: first.fingers };
       }
 
-      return coachSurface.getCoachMessage(envelope, localTemplate, actionContext);
+      const message = await coachSurface.getCoachMessage(envelope, localTemplate, actionContext);
+
+      // Ticket 11 (issue #14) — coaching server down/no key/no internet.
+      // Additive only: never changes `message` itself (the on-screen text
+      // and the existing hasAnswer/mount-speak-control gating in
+      // wireCoachButton, which both already require source === 'model',
+      // are unaffected), it only ALSO speaks a real-numbers line through
+      // the browser's own voice. Fire-and-forget — never awaited, so a
+      // slow/failing offline-voice path can never delay the text answer
+      // the caller is waiting on.
+      if (message && message.source && message.source !== "model") {
+        speakOfflineCoachLine(modelForOfflineVoice, message.text).catch(function () {});
+      }
+
+      return message;
     }
 
     // Wires the "Ask your coach" button rendered into the lesson HTML (see

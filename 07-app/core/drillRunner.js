@@ -28,12 +28,13 @@ import { DRILL as DRILL_TEMPO, runDrill as runTempo } from './drills/tempoLoop.j
 import { DRILL as DRILL_WAIT, runDrill as runWait } from './drills/waitToPlay.js';
 import { DRILL as DRILL_WEAK, runDrill as runWeak } from './drills/weakPairReview.js';
 import { pairKey, parsePair } from './pairKey.js';
-import { buildCoachEnvelope, getCoachMessage, mountSpeakControlAfter } from './coachSurface.js';
+import { buildCoachEnvelope, getCoachMessage, buildActions, mountSpeakControlAfter } from './coachSurface.js';
 import { chordSVG } from './renderer.js';
 import { createMetronome } from './metronome.js';
 import { AdviceLedger } from './adviceLedger.js';
 import { applyCoachActions } from './actionHandler.js';
 import { StruggleLadder, RUNG_KINDS } from './struggleLadder.js';
+import { coachLine, snapshotFromStore } from './sageCoach.js';
 
 // ---------------------------------------------------------------------------
 // DRILL_MENU display name -> drill module DRILL id. Built by reading each
@@ -216,6 +217,121 @@ function createMicPermissionFlow(win) {
 }
 
 // ---------------------------------------------------------------------------
+// Ticket 11 (issue #14) — degraded paths: mic denied/unavailable.
+//
+// Session-scoped "say this once" helper, shared shape/intent with
+// micFlow's own sessionStorage use above. Falls back to an in-memory flag
+// (closed over per createDrillRunner() call) when sessionStorage isn't
+// available (Node tests, a locked-down browser) — "once" then means "once
+// per runner instance" rather than "once per browser tab", which is the
+// same degrade every other sessionStorage read in this file already
+// accepts. Uses its OWN key per call site (see the two call sites below) so
+// the mic-unavailable notice and the coach-offline notice (added further
+// down) are independent announcements, each said at most once.
+// ---------------------------------------------------------------------------
+function createOnceAnnouncer(win, storageKey) {
+  const w = win || (typeof window !== 'undefined' ? window : null);
+  let memoryFlag = false;
+  return function announceOnce() {
+    try {
+      if (w && w.sessionStorage) {
+        if (w.sessionStorage.getItem(storageKey) === '1') return false;
+        w.sessionStorage.setItem(storageKey, '1');
+        return true;
+      }
+    } catch (e) { /* fall through to the in-memory flag below */ }
+    if (memoryFlag) return false;
+    memoryFlag = true;
+    return true;
+  };
+}
+
+// classifySelfReport(answer) -> 'pass' | 'fail' | 'unsure'
+//
+// A tiny, honest keyword read of the student's own words ("did all six
+// ring, or was there a buzz?") — never a musical judgment of its own, and
+// never treated as anything but a self-report. An answer this can't
+// confidently place either way (missing, empty, ambiguous) degrades to
+// 'unsure', which struggleLadder.js's own contract already treats as a
+// no-op (neither advances nor resets the fail streak) — the safe default
+// when we genuinely don't know what the student meant.
+const SELF_REPORT_FAIL_WORDS = /\b(buzz\w*|mut(?:e|ed|ing)|dead|no|not|nothing|silent|didn'?t|can'?t)\b/i;
+const SELF_REPORT_PASS_WORDS = /\b(clean|clear|yes|good|great|fine|all six|rang|ringing|rung)\b/i;
+export function classifySelfReport(answer) {
+  if (typeof answer !== 'string') return 'unsure';
+  const a = answer.trim();
+  if (!a) return 'unsure';
+  if (SELF_REPORT_FAIL_WORDS.test(a)) return 'fail';
+  if (SELF_REPORT_PASS_WORDS.test(a)) return 'pass';
+  return 'unsure';
+}
+
+const MIC_UNAVAILABLE_ANNOUNCE_KEY = 'guitarapp.drillRunner.micUnavailableAnnounced.v1';
+export const MIC_UNAVAILABLE_PROMPT = 'Did all six strings ring, or was there a buzz?';
+const MIC_UNAVAILABLE_INTRO = "I can't hear your guitar right now — tap the mic icon and I'll listen in. ";
+
+// gatherSelfReport(...) — the mic-denied/unavailable degraded path (issue
+// #14, Ticket 11). Runs whenever a drill that WOULD have used real mic
+// input didn't get one this time (mic denied, no device, permission never
+// granted) and isn't already one of the sim-sourced drills (those were
+// never going to hear anything real regardless of the mic toggle — see
+// SIM_SOURCED_DRILL_IDS above).
+//
+// Nothing here is ever simulated: `answer` is either the student's own
+// typed/spoken words (via `requestSelfReport`, a caller-supplied UI hook)
+// or nothing at all when no such hook is wired up yet — never a
+// fabricated "heard" event. The verdict this derives is fed to the SAME
+// struggleLadder instance the real-mic path uses (issue #9's ladder is
+// explicitly required to run on self-reports too, never gated behind real
+// mic data), and is recorded via telemetry ONLY, tagged
+// `source: 'self-report'` — it never reaches practiceStore.recordDrillResult
+// (the hard gate above already reserves that call for real mic data), so a
+// self-report can never be cited downstream as a clean/verified number.
+async function gatherSelfReport({ win, chords, pKey, drillId, requestSelfReport, telemetry, lessonId, struggleLadder, adviceLedger, announceMicUnavailable }) {
+  const w = win || (typeof window !== 'undefined' ? window : null);
+  const firstTime = announceMicUnavailable();
+  const spoken = (firstTime ? MIC_UNAVAILABLE_INTRO : '') + MIC_UNAVAILABLE_PROMPT;
+  try {
+    if (w && w.GuitarApp && typeof w.GuitarApp.speak === 'function') {
+      w.GuitarApp.speak(spoken);
+    }
+  } catch (e) { /* never let the voice path block the lesson */ }
+
+  let answer = null;
+  if (typeof requestSelfReport === 'function') {
+    try {
+      const raw = await requestSelfReport(MIC_UNAVAILABLE_PROMPT);
+      answer = typeof raw === 'string' ? raw : null;
+    } catch (e) { answer = null; }
+  }
+  const verdict = classifySelfReport(answer);
+
+  if (telemetry && typeof telemetry.log === 'function') {
+    try {
+      telemetry.log('self_report', {
+        lessonId,
+        payload: { source: 'self-report', drillId, pairKey: pKey, answer, verdict },
+      });
+    } catch (e) { /* telemetry must never break the drill flow */ }
+  }
+
+  // Issue #9's struggle ladder runs on self-reports too — same per-chord
+  // verdict fan-out the real-mic path uses below (drills report one
+  // whole-pair verdict, not a per-chord breakdown; see that block's own
+  // comment for why both chords of the pair get the same verdict).
+  const escalations = [];
+  if (struggleLadder && Array.isArray(chords)) {
+    for (const chord of chords) {
+      if (typeof chord !== 'string' || !chord) continue;
+      const outcome = struggleLadder.recordVerdict(chord, verdict, adviceLedger);
+      if (outcome && outcome.rung) escalations.push({ chord, rung: outcome.rung });
+    }
+  }
+
+  return { source: 'self-report', announcedMicUnavailable: !!firstTime, prompt: MIC_UNAVAILABLE_PROMPT, answer, verdict, escalations };
+}
+
+// ---------------------------------------------------------------------------
 // Mastery-shape adaptation for the coach envelope.
 //
 // coachSurface.buildCoachEnvelope wants mastery: [{chord, label, confidence}].
@@ -294,6 +410,24 @@ function chordShapeFromCatalog(win, chordName) {
 export function createDrillRunner({ practiceIndex, practiceStore, telemetry, win } = {}) {
   const micFlow = createMicPermissionFlow(win);
 
+  // Ticket 11 (issue #14) — degraded-path "say this once" announcers. Two
+  // independent notices (mic-unavailable, coach-offline), each fired at
+  // most once per browser session (or per runner instance without
+  // sessionStorage — see createOnceAnnouncer's own header).
+  const announceMicUnavailable = createOnceAnnouncer(win, MIC_UNAVAILABLE_ANNOUNCE_KEY);
+  const announceCoachOffline = createOnceAnnouncer(win, 'guitarapp.coach.offlineNoticeAnnounced.v1');
+  // Set true the first time a coaching call resolves with a non-model
+  // source (server down / no key / no internet — chatEngine.js collapses
+  // all three into source !== 'model', see coachSurface.js's own header on
+  // the real source vocabulary). Once known, the reframe-physical rung
+  // (struggleLadder.js's rung 3, the one whose wording would otherwise be
+  // handed to the model to re-voice) stops attempting a network call at
+  // all for the rest of this runner's lifetime — there's nothing to word
+  // that the ladder's own fixed rung.message doesn't already say, and a
+  // known-offline session gains nothing from waiting out that timeout
+  // again. See askCoachAbout() below.
+  let offlineModeKnown = false;
+
   // Ticket 4 (issue #7) follow-on — one metronome instance and one advice
   // ledger per runner, lazily/eagerly created here so askCoachAbout()'s
   // set_metronome/log_advice actions have a real engine to act on rather
@@ -319,7 +453,7 @@ export function createDrillRunner({ practiceIndex, practiceStore, telemetry, win
     return availableDrillMenu();
   }
 
-  async function runSelectedDrill({ menuName, drillParams, requestMic, lessonId } = {}) {
+  async function runSelectedDrill({ menuName, drillParams, requestMic, lessonId, requestSelfReport } = {}) {
     const drillId = drillIdForMenuName(menuName);
     if (!drillId) {
       return { ok: false, error: 'no implementation for "' + menuName + '"' };
@@ -414,7 +548,32 @@ export function createDrillRunner({ practiceIndex, practiceStore, telemetry, win
       } catch (e) { /* telemetry must never break the drill flow */ }
     }
 
-    return { ok: true, drillId, pair, result, usedMic: useMic, recordedToPracticeStore: isRealMicData };
+    // Ticket 11 (issue #14) — mic denied/unavailable degraded path. Any
+    // drill that would have needed real mic input but didn't get one (and
+    // isn't already a sim-sourced drill, which never needed one) falls
+    // back to asking the student directly what they heard, rather than
+    // ending the drill or leaving the ladder starved of data. Never runs
+    // for the sim-sourced drills: their output is fake by construction
+    // regardless of the mic toggle, and asking "what did you hear" about a
+    // metronome/tempo drill that never listened at all would invent a
+    // question that doesn't apply.
+    let selfReport = null;
+    if (!isSimSourcedDrill && !isRealMicData) {
+      selfReport = await gatherSelfReport({
+        win,
+        chords: pair ? [pair.a, pair.b] : [],
+        pKey,
+        drillId,
+        requestSelfReport,
+        telemetry,
+        lessonId,
+        struggleLadder,
+        adviceLedger: actionAdviceLedger,
+        announceMicUnavailable,
+      });
+    }
+
+    return { ok: true, drillId, pair, result, usedMic: useMic, recordedToPracticeStore: isRealMicData, selfReport };
   }
 
   async function askCoachAbout({ learnerProfile, lessonId, recentHistory, justHappened, localTemplate, anonId } = {}) {
@@ -475,12 +634,14 @@ export function createDrillRunner({ practiceIndex, practiceStore, telemetry, win
     // re-voice the underlying facts when the service IS reachable, but the
     // rung choice itself is never exposed to it as something to pick.
     let effectiveLocalTemplate = localTemplate;
+    let pendingRungKind = null;
     if (currentPair) {
       const pendingChord = [currentPair.a, currentPair.b].find((c) => struggleLadder.peekPendingRung(c));
       if (pendingChord) {
         const rung = struggleLadder.consumePendingRung(pendingChord);
         if (rung) {
           effectiveLocalTemplate = rung.message;
+          pendingRungKind = rung.kind;
           // Rung 1 ("slow down / drop tempo or remove the metronome") uses
           // the existing set_metronome action rather than inventing a new
           // mechanism (per issue #9's own pointer to actionHandler.js).
@@ -501,7 +662,54 @@ export function createDrillRunner({ practiceIndex, practiceStore, telemetry, win
       }
     }
 
-    const message = await getCoachMessage(envelope, effectiveLocalTemplate, actionContext);
+    // Ticket 11 (issue #14) — coaching server down/no key/no internet.
+    // Once this session has already seen a non-model coaching response
+    // (offlineModeKnown), the reframe-physical rung (struggleLadder.js's
+    // rung 3) skips attempting a model call entirely: that rung's wording
+    // needs the model to word a fresh physical image, which a known-offline
+    // session can't get anyway, and struggleLadder.js already has its own
+    // fixed rung text (rung.message, captured above as
+    // effectiveLocalTemplate) to fall back to. Every other coach call still
+    // tries the network normally — this skip is scoped to exactly the one
+    // rung issue #14 names.
+    let message;
+    if (offlineModeKnown && pendingRungKind === RUNG_KINDS.REFRAME_PHYSICAL) {
+      message = { text: effectiveLocalTemplate, source: 'template', actions: buildActions(actionContext) };
+    } else {
+      message = await getCoachMessage(envelope, effectiveLocalTemplate, actionContext);
+    }
+
+    // Sage still speaks even when the coaching service didn't answer with
+    // live model prose (server down, no key, no internet — see the
+    // offlineModeKnown comment above for why chatEngine.js collapses all
+    // three into a non-'model' source). This is additive: it never changes
+    // `message` itself (the on-screen text and the speak-control gating
+    // above are unaffected), it only ALSO speaks a line built from real
+    // stored numbers (sageCoach.js's coachLine(), never invented) plus
+    // whatever deterministic text `message` already carries (the rung's
+    // own fixed wording, or the caller's local template) through the
+    // browser's own built-in voice (app.js's speak(), reached here as
+    // win.GuitarApp.speak — never the server-backed /coach/speak route,
+    // which needs the very service this path exists because is
+    // unreachable). The "I can't think out loud today" line is said at
+    // most once per session (announceCoachOffline).
+    if (message && message.source && message.source !== 'model') {
+      offlineModeKnown = true;
+      try {
+        const w = win || (typeof window !== 'undefined' ? window : null);
+        if (w && w.GuitarApp && typeof w.GuitarApp.speak === 'function') {
+          const parts = [];
+          if (announceCoachOffline()) parts.push("I can't think out loud today, but I can still teach.");
+          try {
+            const snapshot = practiceStore ? snapshotFromStore(practiceStore) : null;
+            if (snapshot) parts.push(coachLine(snapshot));
+          } catch (e) { /* coachLine is additive, never required */ }
+          if (typeof message.text === 'string' && message.text) parts.push(message.text);
+          const spoken = parts.filter(Boolean).join(' ');
+          if (spoken) w.GuitarApp.speak(spoken);
+        }
+      } catch (e) { /* never let the offline-voice path break the coach reply */ }
+    }
 
     // TIER-1B Wave 5 (5B) — mount a tap-to-play speak control next to the
     // practice screen's rendered coach answer.
@@ -610,5 +818,7 @@ if (typeof window !== 'undefined') {
     runnerForDrillId,
     masteryFromSkillMap,
     DRILL_MENU_TO_ID,
+    classifySelfReport,
+    MIC_UNAVAILABLE_PROMPT,
   };
 }
