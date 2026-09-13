@@ -6,8 +6,9 @@
 //
 // RUN: node 07-app/core/chatEngine.test.mjs
 
-import { CHORD_NAME, isOnTopic, askCoach } from "./chatEngine.js";
+import { CHORD_NAME, isOnTopic, askCoach, reply, replyWithCoach, deriveActionsFromReply, setLessons } from "./chatEngine.js";
 import * as telemetry from "./telemetry.js";
+import { PracticeStore } from "./practiceStore.js";
 
 let passed = 0;
 let failed = 0;
@@ -114,6 +115,45 @@ check(
 );
 
 telemetry._resetTelemetry();
+
+// ---------------------------------------------------------------------------
+// Ticket 4 (issue #7) — deriveActionsFromReply() / replyWithCoach() actions.
+// Actions are always locally derived from reply()'s own already-verified
+// drill lookup (Ban 6) — never produced by the model.
+// ---------------------------------------------------------------------------
+console.log("\nchatEngine — deriveActionsFromReply / replyWithCoach actions");
+
+check("deriveActionsFromReply(null) does not throw and returns []", (() => { try { return deriveActionsFromReply(null).length === 0; } catch (e) { return false; } })());
+check("deriveActionsFromReply({}) (no drill) returns []", deriveActionsFromReply({}).length === 0);
+
+const fakeReplyWithDrill = {
+  persona: "Sage",
+  offTopic: false,
+  text: "Let's work on your Em.",
+  drill: { lessonId: "L05", lessonTitle: "Lesson 5", exerciseName: "Anchor drill", coaching: "Find the anchor finger first.", chordPair: ["Em", "C"], isStepDrill: true },
+};
+const actions = deriveActionsFromReply(fakeReplyWithDrill);
+check("a matched drill produces exactly one start_drill action", actions.length === 1 && actions[0].type === "start_drill");
+check("the start_drill action carries the real lessonId/exerciseName/chordPair", actions[0].lessonId === "L05" && actions[0].exerciseName === "Anchor drill" && JSON.stringify(actions[0].chordPair) === JSON.stringify(["Em", "C"]));
+check("the drillId is composed from real fields, not invented content", actions[0].drillId === "L05:Anchor drill");
+
+setLessons([
+  { lessonId: "L05", title: "Lesson 5", exercises: [{ name: "Anchor drill", coaching: "Find the anchor finger first.", params: { chord_pair: ["Em", "C"] } }] },
+]);
+const store = new PracticeStore({});
+const localOnly = reply(store, "T1", "my Em is buzzing and hard to hold");
+check("reply() found the real curriculum drill for a struggle signal + named chord", !!localOnly.drill);
+
+const coachedWithModel = await replyWithCoach(store, "T1", "my Em is buzzing and hard to hold", { learnerProfile: {}, lessonId: "L05", mastery: [] }, {
+  fetchImpl: async () => ({ ok: true, json: async () => ({ prose: "Slow your Em down and let it ring.", source: "model" }) }),
+});
+check("replyWithCoach uses the model's text when the service answers", coachedWithModel.text === "Slow your Em down and let it ring." && coachedWithModel.source === "model");
+check("replyWithCoach's actions are locally derived even when the text came from the model", coachedWithModel.actions.length === 1 && coachedWithModel.actions[0].type === "start_drill" && coachedWithModel.actions[0].exerciseName === "Anchor drill");
+
+const offTopicResult = await replyWithCoach(store, "T1", "what's the weather like today", {}, {});
+check("an off-topic message never produces an action and never calls the network", offTopicResult.offTopic === true && offTopicResult.actions.length === 0);
+
+setLessons([]);
 
 console.log(`\nCHAT ENGINE GATE: ${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

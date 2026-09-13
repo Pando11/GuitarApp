@@ -163,10 +163,109 @@ function pickQuestion(raw) {
   return (trimmed.length > 0 && trimmed.length <= MAX_QUESTION_LEN) ? trimmed : undefined;
 }
 
+// ---------------------------------------------------------------------------
+// Ticket 4 (issue #7) — storeSnapshot/adviceLedger/tempoMemory pickers.
+// Same posture as everything above: copy only fields literally present and
+// of the right shape, never throw, never invent. Mirrors server/src/
+// schema.js's validateStoreSnapshot/validateAdviceLedger/validateTempoMemory
+// field-for-field so a well-formed input here is never rejected server-side.
+// ---------------------------------------------------------------------------
+
+const MAX_STORE_CHORDS = 60;
+const MAX_ADVICE_ITEMS = 100;
+const MAX_TEMPO_ITEMS = 100;
+const ADVICE_STATUSES = ['pending', 'worked', 'failed'];
+
+function isNonNegInt(v) {
+  return typeof v === 'number' && Number.isInteger(v) && v >= 0;
+}
+
+function pickPerChordStats(raw) {
+  if (!isPlainObject(raw)) return null;
+  const out = {};
+  for (const key of ['clean', 'fail', 'unsure', 'tries']) {
+    if (!isNonNegInt(raw[key])) return null;
+    out[key] = raw[key];
+  }
+  return out;
+}
+
+// Returns undefined when there is nothing valid to send (caller omits the
+// field entirely, same as every other optional field on this envelope).
+function pickStoreSnapshot(raw) {
+  if (!isPlainObject(raw)) return undefined;
+  const out = {};
+
+  if (Array.isArray(raw.chords)) {
+    const chords = raw.chords.filter((c) => typeof c === 'string' && c && c.length <= 12).slice(0, MAX_STORE_CHORDS);
+    if (chords.length) out.chords = chords;
+  }
+
+  if (isPlainObject(raw.perChord)) {
+    const perChord = {};
+    for (const key of Object.keys(raw.perChord).slice(0, MAX_STORE_CHORDS)) {
+      if (typeof key !== 'string' || !key || key.length > 12) continue;
+      const stats = pickPerChordStats(raw.perChord[key]);
+      if (stats) perChord[key] = stats;
+    }
+    if (Object.keys(perChord).length) out.perChord = perChord;
+  }
+
+  for (const field of ['currentStreak', 'longestStreak', 'practiceMinutes', 'lessonsCompleted', 'helpRequests']) {
+    if (isNonNegInt(raw[field])) out[field] = raw[field];
+  }
+
+  if (typeof raw.lastTempo === 'number' && Number.isFinite(raw.lastTempo) && raw.lastTempo > 0) {
+    out.lastTempo = raw.lastTempo;
+  } else if (raw.lastTempo === null) {
+    out.lastTempo = null;
+  }
+
+  return Object.keys(out).length ? out : undefined;
+}
+
+function pickAdviceEntry(raw) {
+  if (!isPlainObject(raw)) return null;
+  if (typeof raw.chord !== 'string' || !raw.chord || raw.chord.length > 12) return null;
+  if (typeof raw.kind !== 'string' || !raw.kind) return null;
+  if (!ADVICE_STATUSES.includes(raw.status)) return null;
+  if (!isNonNegInt(raw.verdictsCount)) return null;
+  return { chord: raw.chord, kind: raw.kind, status: raw.status, verdictsCount: raw.verdictsCount };
+}
+
+function pickAdviceLedger(raw) {
+  if (!Array.isArray(raw)) return [];
+  const out = [];
+  for (const item of raw) {
+    const v = pickAdviceEntry(item);
+    if (v) out.push(v);
+    if (out.length >= MAX_ADVICE_ITEMS) break;
+  }
+  return out;
+}
+
+function pickTempoEntry(raw) {
+  if (!isPlainObject(raw)) return null;
+  if (typeof raw.key !== 'string' || !raw.key) return null;
+  if (typeof raw.bpm !== 'number' || !Number.isFinite(raw.bpm) || raw.bpm <= 0) return null;
+  return { key: raw.key, bpm: raw.bpm };
+}
+
+function pickTempoMemory(raw) {
+  if (!Array.isArray(raw)) return [];
+  const out = [];
+  for (const item of raw) {
+    const v = pickTempoEntry(item);
+    if (v) out.push(v);
+    if (out.length >= MAX_TEMPO_ITEMS) break;
+  }
+  return out;
+}
+
 // buildCoachEnvelope — pure, never throws. Assembles exactly the facts
 // envelope shape server/src/schema.js validates, passing through only
 // fields literally present on the input. Never invents a field.
-export function buildCoachEnvelope({ anonId, learnerProfile, lessonId, lessonChords, mastery, justHappened, recentHistory, question } = {}) {
+export function buildCoachEnvelope({ anonId, learnerProfile, lessonId, lessonChords, mastery, justHappened, recentHistory, question, storeSnapshot, adviceLedger, tempoMemory } = {}) {
   const envelope = {};
 
   const id = pickAnonId(anonId);
@@ -189,16 +288,108 @@ export function buildCoachEnvelope({ anonId, learnerProfile, lessonId, lessonCho
 
   envelope.recentHistory = pickRecentHistory(recentHistory);
 
+  const snap = pickStoreSnapshot(storeSnapshot);
+  if (snap) envelope.storeSnapshot = snap;
+
+  const ledger = pickAdviceLedger(adviceLedger);
+  if (ledger.length) envelope.adviceLedger = ledger;
+
+  const tempo = pickTempoMemory(tempoMemory);
+  if (tempo.length) envelope.tempoMemory = tempo;
+
   return envelope;
 }
 
+// ---------------------------------------------------------------------------
+// Ticket 4 (issue #7) — structured coaching output: spoken text + actions.
+//
+// Actions are NEVER produced by the model: server/src/modelClient.js's
+// system prompt requires prose-only output (no JSON, no lists), and asking
+// an LLM to also decide which drill to start or which BPM to set would be
+// exactly the kind of invented fact Rule 5 exists to forbid. buildActions()
+// instead assembles the action list deterministically from real data the
+// caller already has — a matched drill, the lesson's own verified chord
+// shape, a stored tempo, a just-logged advice entry, an explicit
+// open-the-tuner flag — and only ever echoes fields it was handed, the same
+// "never invents" contract as buildCoachEnvelope() above.
+//
+// Five action types (per issue #7): set_metronome, show_diagram, open_tuner,
+// start_drill, log_advice. Every field on an emitted action is copied
+// verbatim from the caller's input; nothing here computes a new value.
+// ---------------------------------------------------------------------------
+
+function isSixEntryArray(v) {
+  return Array.isArray(v) && v.length === 6;
+}
+
+/**
+ * buildActions({ diagram, metronome, tuner, drill, advice }) -> Action[]
+ *
+ * @param {object} [opts]
+ * @param {{chord: string, frets?: number[], fingers?: number[]}} [opts.diagram]
+ *   The lesson's own verified chord shape (07-app/content/lessons/*.json's
+ *   `chords` block) — never a guessed fingering.
+ * @param {{bpm: number}} [opts.metronome] A stored tempo (practiceStore.js's
+ *   lastPracticeTempoFor/recordPracticeTempo), never a value invented here.
+ * @param {boolean} [opts.tuner] Set true by the caller when Sage's tuning
+ *   check should open the tuner.
+ * @param {{drillId: string, lessonId?: string, exerciseName?: string, chordPair?: string[]}} [opts.drill]
+ *   A real drill match, same shape chatEngine.js's findDrillForChord() /
+ *   drillForStruggle() already produce (drillId supplied by the caller —
+ *   this module has no curriculum-wide id scheme of its own).
+ * @param {{chord: string, kind: string}} [opts.advice] An advice-ledger
+ *   entry the caller actually just logged (07-app/core/adviceLedger.js).
+ * @returns {Array<object>} Never throws; omits any action whose required
+ *   fields are missing/malformed rather than emitting a partial/guessed one.
+ */
+export function buildActions({ diagram, metronome, tuner, drill, advice } = {}) {
+  const actions = [];
+
+  if (isPlainObject(diagram) && typeof diagram.chord === 'string' && diagram.chord) {
+    const action = { type: 'show_diagram', chord: diagram.chord };
+    if (isSixEntryArray(diagram.frets)) action.frets = diagram.frets.slice();
+    if (isSixEntryArray(diagram.fingers)) action.fingers = diagram.fingers.slice();
+    actions.push(action);
+  }
+
+  if (isPlainObject(metronome) && typeof metronome.bpm === 'number' && Number.isFinite(metronome.bpm) && metronome.bpm > 0) {
+    actions.push({ type: 'set_metronome', bpm: metronome.bpm });
+  }
+
+  if (tuner === true) {
+    actions.push({ type: 'open_tuner' });
+  }
+
+  if (isPlainObject(drill) && typeof drill.drillId === 'string' && drill.drillId) {
+    const action = { type: 'start_drill', drillId: drill.drillId };
+    if (typeof drill.lessonId === 'string' && drill.lessonId) action.lessonId = drill.lessonId;
+    if (typeof drill.exerciseName === 'string' && drill.exerciseName) action.exerciseName = drill.exerciseName;
+    if (Array.isArray(drill.chordPair)) {
+      const pair = drill.chordPair.filter((c) => typeof c === 'string' && c);
+      if (pair.length) action.chordPair = pair;
+    }
+    actions.push(action);
+  }
+
+  if (isPlainObject(advice) && typeof advice.chord === 'string' && advice.chord && typeof advice.kind === 'string' && advice.kind) {
+    actions.push({ type: 'log_advice', chord: advice.chord, kind: advice.kind });
+  }
+
+  return actions;
+}
+
 // getCoachMessage — calls chatEngine.js's askCoach(envelope, localTemplate, {})
-// and returns just {text, source}. Never throws: askCoach itself never
+// and returns {text, source, actions}. Never throws: askCoach itself never
 // throws (coachClient swallows all network/parse errors) and falls back to
 // localTemplate whenever the service is unreachable/errors/times out.
-export async function getCoachMessage(envelope, localTemplate) {
+//
+// `actionContext` (optional, third arg) is passed straight through to
+// buildActions() above — the spoken text always comes from askCoach
+// (model or template), and the actions always come from real local data,
+// regardless of which source answered the text.
+export async function getCoachMessage(envelope, localTemplate, actionContext) {
   const result = await askCoach(envelope, localTemplate, {});
-  return { text: result.text, source: result.source };
+  return { text: result.text, source: result.source, actions: buildActions(actionContext) };
 }
 
 // ---------------------------------------------------------------------------
@@ -481,6 +672,7 @@ export function mountSpeakControlAfter(anchorEl, id, getText, options) {
 
 export default {
   buildCoachEnvelope,
+  buildActions,
   getCoachMessage,
   speakText,
   SpeakError,

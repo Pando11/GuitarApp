@@ -79,7 +79,45 @@ function buildAllowedChordSet(envelope) {
   for (const token of questionTokens(envelope, CHORD_TOKEN_RE)) {
     addChordAndRoot(set, token);
   }
+
+  // Ticket 4 (issue #7) — storeSnapshot/adviceLedger/tempoMemory. Naming a
+  // chord that appears in the student's OWN stored practice history (or an
+  // advice entry logged against it, or a tempo held for it) is reading the
+  // snapshot handed to the model aloud, not inventing a fact about the
+  // student. Same root-letter license as every other source above.
+  for (const chord of storeSnapshotChords(envelope)) {
+    addChordAndRoot(set, chord);
+  }
+  for (const entry of adviceLedgerEntries(envelope)) {
+    if (entry && typeof entry.chord === 'string') addChordAndRoot(set, entry.chord);
+  }
+  for (const entry of tempoMemoryEntries(envelope)) {
+    // tempoMemory keys are a single canonical chord or an unordered pair
+    // joined with "::" (practiceStore.js's resolveTempoKey/canonPairKey) —
+    // split on that separator so a pair's tempo also licenses both chords.
+    if (!entry || typeof entry.key !== 'string') continue;
+    for (const part of entry.key.split('::')) {
+      if (part) addChordAndRoot(set, part);
+    }
+  }
+
   return set;
+}
+
+// Shared readers for the three new (all-optional) envelope sections. Each
+// returns [] on anything malformed/absent — same fail-safe posture as every
+// other reader in this file.
+function storeSnapshotChords(envelope) {
+  const snap = envelope && envelope.storeSnapshot;
+  return (snap && Array.isArray(snap.chords)) ? snap.chords.filter((c) => typeof c === 'string' && c) : [];
+}
+
+function adviceLedgerEntries(envelope) {
+  return Array.isArray(envelope?.adviceLedger) ? envelope.adviceLedger : [];
+}
+
+function tempoMemoryEntries(envelope) {
+  return Array.isArray(envelope?.tempoMemory) ? envelope.tempoMemory : [];
 }
 
 // Pull the tokens a given pattern finds inside the student's typed question.
@@ -147,6 +185,42 @@ function buildAllowedNumberSet(envelope) {
   // 3rd fret?") is theirs, and repeating it back is not an invented fact.
   for (const token of questionTokens(envelope, NUMBER_TOKEN_RE)) {
     set.add(token);
+  }
+
+  // Ticket 4 (issue #7) — storeSnapshot (sageCoach.js's snapshotFromStore):
+  // per-chord clean/fail/unsure/tries, streaks, practice minutes, lessons
+  // completed, help requests, last tempo. These are the exact numbers Sage's
+  // struggle-ladder/advice reasoning is built on ("your Em shows 2 fails and
+  // 4 cleans over 6 tries") — without this the model could never cite them
+  // without being rejected as inventing a fact, even though they were
+  // literally handed to it.
+  const snap = envelope && envelope.storeSnapshot;
+  if (snap && typeof snap === 'object') {
+    for (const field of ['currentStreak', 'longestStreak', 'practiceMinutes', 'lessonsCompleted', 'helpRequests']) {
+      if (typeof snap[field] === 'number') addNumber(snap[field]);
+    }
+    addNumber(snap.lastTempo);
+    const perChord = (snap.perChord && typeof snap.perChord === 'object') ? snap.perChord : {};
+    for (const key of Object.keys(perChord)) {
+      const stats = perChord[key];
+      if (!stats || typeof stats !== 'object') continue;
+      for (const field of ['clean', 'fail', 'unsure', 'tries']) {
+        if (typeof stats[field] === 'number') addNumber(stats[field]);
+      }
+    }
+  }
+
+  // adviceLedger — how many verdicts have come in since a suggestion was
+  // given ("you've tried that twice already") is a real, stored count.
+  for (const entry of adviceLedgerEntries(envelope)) {
+    if (entry && typeof entry.verdictsCount === 'number') addNumber(entry.verdictsCount);
+  }
+
+  // tempoMemory — the BPM actually held cleanly at a chord or pair
+  // ("you were at 60, let's try 65" — the 60 is this; the 65 is a rung
+  // chosen elsewhere in code, not by the model).
+  for (const entry of tempoMemoryEntries(envelope)) {
+    if (entry && typeof entry.bpm === 'number') addNumber(entry.bpm);
   }
 
   // The lesson's own id. "Lesson l03" reads back as the number 03, and the

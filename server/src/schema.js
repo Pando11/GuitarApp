@@ -328,6 +328,222 @@ function validateRecentHistory(raw, errors) {
   return ok ? out : null;
 }
 
+// ---------------------------------------------------------------------------
+// Ticket 4 (issue #7) — structured coaching output additions.
+//
+// Three new optional envelope sections, all whitelisted and bounded the same
+// way as everything above: storeSnapshot (07-app/core/sageCoach.js's
+// snapshotFromStore() output — per-chord clean/fail/unsure/tries, streaks,
+// practice minutes, lessons completed, help requests, last tempo),
+// adviceLedger (07-app/core/adviceLedger.js's per-chord suggestion history,
+// reduced to what a coaching line could honestly cite: chord, kind, status,
+// how many verdicts have come in), and tempoMemory (practiceStore.js's
+// per-pair tempo memory — a resolved key string and the BPM held cleanly at
+// it). guardrail.js widens its number/chord allow-lists from these same
+// three sections, so the model may cite a store number ONLY when it was
+// actually handed to it here — never a number that merely happens to be
+// true of the student but wasn't included in this request.
+// ---------------------------------------------------------------------------
+
+const MAX_STORE_CHORDS = 60;
+const ADVICE_STATUSES = ['pending', 'worked', 'failed'];
+const MAX_ADVICE_ITEMS = 100;
+const MAX_TEMPO_ITEMS = 100;
+
+function isNonNegInt(v) {
+  return typeof v === 'number' && Number.isInteger(v) && v >= 0;
+}
+
+function validatePerChordStats(raw, path, errors) {
+  if (!isPlainObject(raw)) {
+    pushError(errors, path, 'must be an object');
+    return null;
+  }
+  const out = {};
+  for (const key of ['clean', 'fail', 'unsure', 'tries']) {
+    if (!isNonNegInt(raw[key])) {
+      pushError(errors, `${path}.${key}`, 'required non-negative integer');
+      return null;
+    }
+    out[key] = raw[key];
+  }
+  return out;
+}
+
+// null (valid, absent) | object (valid, present) | undefined (invalid).
+function validateStoreSnapshot(raw, errors) {
+  if (raw === undefined || raw === null) return null;
+  if (!isPlainObject(raw)) {
+    pushError(errors, 'storeSnapshot', 'must be an object when present');
+    return undefined;
+  }
+  const out = {};
+  let ok = true;
+
+  if (raw.chords !== undefined) {
+    if (!Array.isArray(raw.chords) || raw.chords.length > MAX_STORE_CHORDS) {
+      pushError(errors, 'storeSnapshot.chords', `must be an array of at most ${MAX_STORE_CHORDS} strings`);
+      ok = false;
+    } else {
+      const chords = [];
+      for (const c of raw.chords) {
+        if (!isNonEmptyString(c, MAX_CHORD_NAME_LEN)) { ok = false; break; }
+        chords.push(c);
+      }
+      if (ok) out.chords = chords;
+      else pushError(errors, 'storeSnapshot.chords', `each entry must be a string of 1-${MAX_CHORD_NAME_LEN} chars`);
+    }
+  }
+
+  if (ok && raw.perChord !== undefined) {
+    if (!isPlainObject(raw.perChord)) {
+      pushError(errors, 'storeSnapshot.perChord', 'must be an object');
+      ok = false;
+    } else {
+      const keys = Object.keys(raw.perChord);
+      if (keys.length > MAX_STORE_CHORDS) {
+        pushError(errors, 'storeSnapshot.perChord', `too many entries (max ${MAX_STORE_CHORDS})`);
+        ok = false;
+      } else {
+        const perChord = {};
+        for (const key of keys) {
+          if (!isNonEmptyString(key, MAX_CHORD_NAME_LEN)) { ok = false; break; }
+          const stats = validatePerChordStats(raw.perChord[key], `storeSnapshot.perChord.${key}`, errors);
+          if (!stats) { ok = false; break; }
+          perChord[key] = stats;
+        }
+        if (ok) out.perChord = perChord;
+      }
+    }
+  }
+
+  for (const field of ['currentStreak', 'longestStreak', 'practiceMinutes', 'lessonsCompleted', 'helpRequests']) {
+    if (ok && raw[field] !== undefined) {
+      if (!isNonNegInt(raw[field])) {
+        pushError(errors, `storeSnapshot.${field}`, 'must be a non-negative integer');
+        ok = false;
+      } else {
+        out[field] = raw[field];
+      }
+    }
+  }
+
+  if (ok && raw.lastTempo !== undefined) {
+    if (raw.lastTempo !== null && (typeof raw.lastTempo !== 'number' || !Number.isFinite(raw.lastTempo) || raw.lastTempo <= 0)) {
+      pushError(errors, 'storeSnapshot.lastTempo', 'must be a positive number or null');
+      ok = false;
+    } else {
+      out.lastTempo = raw.lastTempo;
+    }
+  }
+
+  return ok ? out : undefined;
+}
+
+function validateAdviceEntry(raw, index, errors) {
+  if (!isPlainObject(raw)) {
+    pushError(errors, `adviceLedger[${index}]`, 'must be an object');
+    return null;
+  }
+  let ok = true;
+  const out = {};
+
+  if (!isNonEmptyString(raw.chord, MAX_CHORD_NAME_LEN)) {
+    pushError(errors, `adviceLedger[${index}].chord`, `required string of 1-${MAX_CHORD_NAME_LEN} chars`);
+    ok = false;
+  } else {
+    out.chord = raw.chord;
+  }
+
+  if (!isNonEmptyString(raw.kind, MAX_STRING_LEN)) {
+    pushError(errors, `adviceLedger[${index}].kind`, 'required string');
+    ok = false;
+  } else {
+    out.kind = raw.kind;
+  }
+
+  if (!ADVICE_STATUSES.includes(raw.status)) {
+    pushError(errors, `adviceLedger[${index}].status`, `must be one of ${ADVICE_STATUSES.join(', ')}`);
+    ok = false;
+  } else {
+    out.status = raw.status;
+  }
+
+  if (!isNonNegInt(raw.verdictsCount)) {
+    pushError(errors, `adviceLedger[${index}].verdictsCount`, 'required non-negative integer');
+    ok = false;
+  } else {
+    out.verdictsCount = raw.verdictsCount;
+  }
+
+  return ok ? out : null;
+}
+
+function validateAdviceLedger(raw, errors) {
+  if (raw === undefined || raw === null) return [];
+  if (!Array.isArray(raw)) {
+    pushError(errors, 'adviceLedger', 'must be an array');
+    return null;
+  }
+  if (raw.length > MAX_ADVICE_ITEMS) {
+    pushError(errors, 'adviceLedger', `too many items (max ${MAX_ADVICE_ITEMS})`);
+    return null;
+  }
+  const out = [];
+  let ok = true;
+  raw.forEach((item, i) => {
+    const v = validateAdviceEntry(item, i, errors);
+    if (v === null) ok = false;
+    else out.push(v);
+  });
+  return ok ? out : null;
+}
+
+function validateTempoEntry(raw, index, errors) {
+  if (!isPlainObject(raw)) {
+    pushError(errors, `tempoMemory[${index}]`, 'must be an object');
+    return null;
+  }
+  let ok = true;
+  const out = {};
+
+  if (!isNonEmptyString(raw.key, MAX_STRING_LEN)) {
+    pushError(errors, `tempoMemory[${index}].key`, 'required string');
+    ok = false;
+  } else {
+    out.key = raw.key;
+  }
+
+  if (typeof raw.bpm !== 'number' || !Number.isFinite(raw.bpm) || raw.bpm <= 0) {
+    pushError(errors, `tempoMemory[${index}].bpm`, 'required positive number');
+    ok = false;
+  } else {
+    out.bpm = raw.bpm;
+  }
+
+  return ok ? out : null;
+}
+
+function validateTempoMemory(raw, errors) {
+  if (raw === undefined || raw === null) return [];
+  if (!Array.isArray(raw)) {
+    pushError(errors, 'tempoMemory', 'must be an array');
+    return null;
+  }
+  if (raw.length > MAX_TEMPO_ITEMS) {
+    pushError(errors, 'tempoMemory', `too many items (max ${MAX_TEMPO_ITEMS})`);
+    return null;
+  }
+  const out = [];
+  let ok = true;
+  raw.forEach((item, i) => {
+    const v = validateTempoEntry(item, i, errors);
+    if (v === null) ok = false;
+    else out.push(v);
+  });
+  return ok ? out : null;
+}
+
 /**
  * Validate + whitelist a raw parsed-JSON body into a sanitized facts
  * envelope. Never forwards unknown fields. Returns {ok, value, errors}.
@@ -407,6 +623,19 @@ export function validateFactsEnvelope(body) {
 
   const recentHistory = validateRecentHistory(body.recentHistory, errors);
   if (recentHistory !== null) out.recentHistory = recentHistory;
+
+  // storeSnapshot/adviceLedger/tempoMemory — see the block above this
+  // function for what these are and why guardrail.js needs them handed
+  // through unmodified. validateStoreSnapshot returns undefined on invalid
+  // input (an error was already pushed), same convention as justHappened.
+  const storeSnapshot = validateStoreSnapshot(body.storeSnapshot, errors);
+  if (storeSnapshot !== undefined && storeSnapshot !== null) out.storeSnapshot = storeSnapshot;
+
+  const adviceLedger = validateAdviceLedger(body.adviceLedger, errors);
+  if (adviceLedger !== null) out.adviceLedger = adviceLedger;
+
+  const tempoMemory = validateTempoMemory(body.tempoMemory, errors);
+  if (tempoMemory !== null) out.tempoMemory = tempoMemory;
 
   if (errors.length) {
     return { ok: false, value: null, errors };

@@ -441,6 +441,83 @@
     } catch (e) { /* coachSurface.js unreachable -- no control, text answer untouched. */ }
   }
 
+  // ---------------------------------------------------------------------
+  // Ticket 4 (issue #7) follow-on — actionHandler.js/metronome.js/
+  // adviceLedger.js, loaded the same cached-dynamic-import way as
+  // coachSurface.js/renderer.js above (this file is a classic <script>, not
+  // a module, so it cannot statically import ES modules). One metronome
+  // instance and one advice ledger for the whole lesson screen (module-level
+  // singletons, same lifetime as rendererState/coachSurfaceModuleState
+  // above) — a fresh instance per coach reply would restart the click on
+  // every question and forget every earlier suggestion.
+  // ---------------------------------------------------------------------
+  const actionHandlerModuleState = { promise: null };
+  function loadActionHandlerModule() {
+    if (!actionHandlerModuleState.promise) {
+      actionHandlerModuleState.promise = import("./actionHandler.js").catch(() => null);
+    }
+    return actionHandlerModuleState.promise;
+  }
+
+  const metronomeModuleState = { promise: null, instance: null };
+  function loadLessonMetronome() {
+    if (!metronomeModuleState.promise) {
+      metronomeModuleState.promise = import("./metronome.js")
+        .then((mod) => { metronomeModuleState.instance = mod.createMetronome({}); return metronomeModuleState.instance; })
+        .catch(() => null);
+    }
+    return metronomeModuleState.promise;
+  }
+
+  const adviceLedgerModuleState = { promise: null, instance: null };
+  function loadLessonAdviceLedger() {
+    if (!adviceLedgerModuleState.promise) {
+      adviceLedgerModuleState.promise = import("./adviceLedger.js")
+        .then((mod) => { adviceLedgerModuleState.instance = new mod.AdviceLedger(); return adviceLedgerModuleState.instance; })
+        .catch(() => null);
+    }
+    return adviceLedgerModuleState.promise;
+  }
+
+  // Dispatches a coach reply's `actions` array (coachSurface.js's
+  // getCoachMessage() return) against the real engines/DOM this screen has.
+  // Runs regardless of the reply's text `source`: buildActions() only ever
+  // emits an action from real local data (see coachSurface.js's own header
+  // comment), never from the model, so an action is just as real when the
+  // text itself fell back to a template. Non-destructive by construction —
+  // every failure path below is swallowed; `anchorEl`'s own text is never
+  // touched by this function.
+  async function applyLessonCoachActions(actions, anchorEl, idPrefix) {
+    if (typeof document === "undefined" || !anchorEl || !anchorEl.parentNode) return;
+    if (!Array.isArray(actions) || !actions.length) return;
+    try {
+      const [handlerMod, rendererMod, metronome, adviceLedger] = await Promise.all([
+        loadActionHandlerModule(),
+        loadRendererModule(),
+        loadLessonMetronome(),
+        loadLessonAdviceLedger(),
+      ]);
+      if (!handlerMod || typeof handlerMod.applyCoachActions !== "function") return;
+      handlerMod.applyCoachActions(actions, {
+        anchorEl: anchorEl,
+        diagramId: idPrefix + "-diagram",
+        metronomeStatusId: idPrefix + "-metronome",
+        chordSvgFn: rendererMod ? rendererMod.chordSVG : null,
+        metronome: metronome,
+        adviceLedger: adviceLedger,
+        openTuner: function () {
+          try {
+            if (typeof window !== "undefined" && window.GuitarApp && window.GuitarApp.ListenView
+                && typeof window.GuitarApp.ListenView.openListenView === "function") {
+              window.GuitarApp.ListenView.openListenView();
+            }
+          } catch (e) { /* non-fatal */ }
+        },
+        startDrill: function () { /* no live seam yet from a curriculum drillId to this screen — see drillRunner.js's matching note. */ },
+      });
+    } catch (e) { /* action dispatch must never break the coach reply. */ }
+  }
+
   function chordDiagramHTML(chord, chordSvgFn, extraClass) {
     if (typeof chordSvgFn !== "function") return "";
     if (!chord || typeof chord !== "object" || !Array.isArray(chord.frets)) return "";
@@ -683,7 +760,20 @@
         question: typeof o.question === "string" ? o.question : undefined,
       });
 
-      return coachSurface.getCoachMessage(envelope, localTemplate);
+      // Ticket 4 (issue #7) follow-on — actionContext for buildActions().
+      // The only real, already-verified fact this file has on hand for a
+      // diagram is the open lesson's own taught chord shape (lessonChords,
+      // built above off the lesson's own `chords` block) — never a guessed
+      // fingering. Uses the first taught chord; when the lesson teaches none
+      // (or hasn't loaded yet), lessonChords is [] and no diagram action is
+      // requested, same "never invent" degrade as every other field here.
+      const actionContext = {};
+      if (lessonChords.length) {
+        const first = lessonChords[0];
+        actionContext.diagram = { chord: first.chord, frets: first.frets, fingers: first.fingers };
+      }
+
+      return coachSurface.getCoachMessage(envelope, localTemplate, actionContext);
     }
 
     // Wires the "Ask your coach" button rendered into the lesson HTML (see
@@ -778,6 +868,11 @@
             if (textEl && result && result.text && result.source === 'model') {
               mountCoachSpeakControl(textEl, "lesson-coach-speak", function () { return text; });
             }
+            // Ticket 4 (issue #7) follow-on — actually DO result.actions,
+            // regardless of source (see applyLessonCoachActions' own header).
+            if (textEl && result && Array.isArray(result.actions) && result.actions.length) {
+              applyLessonCoachActions(result.actions, textEl, "lesson-coach-action");
+            }
           } catch (e) {
             if (textEl) textEl.textContent = "Your coach is unavailable right now.";
           } finally {
@@ -808,6 +903,12 @@
             // "how am I doing" handler for why (template/local fallbacks
             // have text too, but aren't a genuine Sage answer).
             pending.hasAnswer = !!(result && result.text && result.source === 'model');
+            // Ticket 4 (issue #7) follow-on: stashed here, not dispatched
+            // yet -- paintTranscript() below rebuilds the whole log (fresh
+            // DOM nodes for every turn), so the anchor to mount a
+            // diagram/metronome-status after doesn't exist until after that
+            // repaint runs.
+            pending.pendingActions = (result && Array.isArray(result.actions)) ? result.actions : [];
           } catch (e) {
             pending.text = "Your coach is unavailable right now.";
             pending.hasAnswer = false;
@@ -815,6 +916,19 @@
             input.disabled = false;
             if (sendBtn) sendBtn.disabled = false;
             paintTranscript();
+            // Actually DO pending.pendingActions now that paintTranscript()
+            // has (re)built this turn's DOM node. Dispatched at most once
+            // per turn (cleared right after) so a later repaint of the same
+            // transcript (e.g. a subsequent question) never re-starts the
+            // metronome or re-mounts the same diagram.
+            if (pending.pendingActions && pending.pendingActions.length) {
+              const actionsToApply = pending.pendingActions;
+              pending.pendingActions = [];
+              const log = document.getElementById("lesson-chat-log");
+              const lastRow = log ? log.lastElementChild : null;
+              const anchor = lastRow ? lastRow.querySelector(".chat-text") : null;
+              if (anchor) applyLessonCoachActions(actionsToApply, anchor, "lesson-chat-action");
+            }
             // Focus back in the box so a follow-up question needs no clicking.
             if (typeof input.focus === "function") input.focus();
           }

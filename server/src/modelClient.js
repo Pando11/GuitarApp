@@ -207,6 +207,41 @@ export function buildUserMessage(envelope) {
     lines.push(`Recent lessons: ${parts.join(', ')}.`);
   }
 
+  // Ticket 4 (issue #7) — storeSnapshot/adviceLedger/tempoMemory. These are
+  // the same numbers guardrail.js's allow-list was widened to accept (see
+  // that file's buildAllowedNumberSet/buildAllowedChordSet) — rendered here
+  // so the model actually has them to cite, never so it has to guess them.
+  const snap = envelope.storeSnapshot;
+  if (snap && typeof snap === 'object') {
+    const perChord = (snap.perChord && typeof snap.perChord === 'object') ? snap.perChord : {};
+    const chordParts = Object.keys(perChord).map((chord) => {
+      const s = perChord[chord];
+      return `${chord}: ${s.clean} clean, ${s.fail} fail, ${s.unsure} unsure over ${s.tries} tries`;
+    });
+    if (chordParts.length) lines.push(`Stored per-chord history: ${chordParts.join('; ')}.`);
+
+    const streakParts = [];
+    if (typeof snap.currentStreak === 'number') streakParts.push(`current streak ${snap.currentStreak} days`);
+    if (typeof snap.longestStreak === 'number') streakParts.push(`longest streak ${snap.longestStreak} days`);
+    if (typeof snap.practiceMinutes === 'number') streakParts.push(`${snap.practiceMinutes} total practice minutes`);
+    if (typeof snap.lessonsCompleted === 'number') streakParts.push(`${snap.lessonsCompleted} lessons completed`);
+    if (typeof snap.helpRequests === 'number') streakParts.push(`${snap.helpRequests} open help requests`);
+    if (typeof snap.lastTempo === 'number') streakParts.push(`last practice tempo ${readable(snap.lastTempo)} BPM`);
+    if (streakParts.length) lines.push(`Stored practice record: ${streakParts.join(', ')}.`);
+  }
+
+  const adviceLedger = Array.isArray(envelope.adviceLedger) ? envelope.adviceLedger : [];
+  if (adviceLedger.length) {
+    const parts = adviceLedger.map((a) => `${a.chord}: "${a.kind}" (${a.status}, ${a.verdictsCount} verdicts so far)`);
+    lines.push(`Advice already given this student (never repeat a failed suggestion; escalate instead): ${parts.join('; ')}.`);
+  }
+
+  const tempoMemory = Array.isArray(envelope.tempoMemory) ? envelope.tempoMemory : [];
+  if (tempoMemory.length) {
+    const parts = tempoMemory.map((t) => `${t.key.replace('::', '/')} held cleanly at ${readable(t.bpm)} BPM`);
+    lines.push(`Stored tempo memory: ${parts.join('; ')}.`);
+  }
+
   // Last, and clearly delimited: the student's own words. Kept at the end so
   // the stored facts always read as the established context and the question
   // as the thing being answered. Quoted rather than merged into the prose

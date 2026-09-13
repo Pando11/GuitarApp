@@ -225,3 +225,101 @@ test('too many lessonChords entries is rejected', () => {
   assert.equal(result.ok, false);
   assert.ok(result.errors.some((e) => e.includes('lessonChords')));
 });
+
+// --- Ticket 4 (issue #7): storeSnapshot / adviceLedger / tempoMemory -------
+
+test('a valid storeSnapshot passes through intact', () => {
+  const snapshot = {
+    chords: ['Em', 'C'],
+    perChord: { Em: { clean: 4, fail: 2, unsure: 0, tries: 6 } },
+    currentStreak: 3,
+    longestStreak: 5,
+    practiceMinutes: 42,
+    lessonsCompleted: 2,
+    helpRequests: 1,
+    lastTempo: 60,
+  };
+  const result = validateFactsEnvelope(fullEnvelope({ storeSnapshot: snapshot }));
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.value.storeSnapshot, snapshot);
+});
+
+test('storeSnapshot is entirely optional and absent by default', () => {
+  const result = validateFactsEnvelope(fullEnvelope());
+  assert.equal(result.ok, true);
+  assert.equal('storeSnapshot' in result.value, false);
+});
+
+test('storeSnapshot.lastTempo:null is preserved', () => {
+  const result = validateFactsEnvelope(fullEnvelope({ storeSnapshot: { lastTempo: null } }));
+  assert.equal(result.ok, true);
+  assert.equal(result.value.storeSnapshot.lastTempo, null);
+});
+
+test('storeSnapshot that is not an object is rejected', () => {
+  const result = validateFactsEnvelope(fullEnvelope({ storeSnapshot: 'not-an-object' }));
+  assert.equal(result.ok, false);
+  assert.ok(result.errors.some((e) => e.includes('storeSnapshot')));
+});
+
+test('a storeSnapshot.perChord entry missing a required stat is rejected', () => {
+  const result = validateFactsEnvelope(fullEnvelope({ storeSnapshot: { perChord: { Em: { clean: 1, fail: 0, unsure: 0 } } } } ));
+  assert.equal(result.ok, false);
+  assert.ok(result.errors.some((e) => e.includes('storeSnapshot.perChord.Em.tries')));
+});
+
+test('a negative storeSnapshot number is rejected', () => {
+  const result = validateFactsEnvelope(fullEnvelope({ storeSnapshot: { currentStreak: -1 } }));
+  assert.equal(result.ok, false);
+  assert.ok(result.errors.some((e) => e.includes('storeSnapshot.currentStreak')));
+});
+
+test('a valid adviceLedger passes through intact and defaults to [] when absent', () => {
+  const ledger = [{ chord: 'Em', kind: 'slow_down', status: 'pending', verdictsCount: 2 }];
+  const result = validateFactsEnvelope(fullEnvelope({ adviceLedger: ledger }));
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.value.adviceLedger, ledger);
+
+  const absent = validateFactsEnvelope(fullEnvelope());
+  assert.equal(absent.ok, true);
+  assert.deepEqual(absent.value.adviceLedger, []);
+});
+
+test('an adviceLedger entry with an invalid status is rejected', () => {
+  const result = validateFactsEnvelope(fullEnvelope({ adviceLedger: [{ chord: 'Em', kind: 'slow_down', status: 'maybe', verdictsCount: 1 }] }));
+  assert.equal(result.ok, false);
+  assert.ok(result.errors.some((e) => e.includes('adviceLedger[0].status')));
+});
+
+test('an adviceLedger entry missing verdictsCount is rejected', () => {
+  const result = validateFactsEnvelope(fullEnvelope({ adviceLedger: [{ chord: 'Em', kind: 'slow_down', status: 'pending' }] }));
+  assert.equal(result.ok, false);
+  assert.ok(result.errors.some((e) => e.includes('adviceLedger[0].verdictsCount')));
+});
+
+test('a valid tempoMemory passes through intact and defaults to [] when absent', () => {
+  const tempo = [{ key: 'Em::C', bpm: 65 }];
+  const result = validateFactsEnvelope(fullEnvelope({ tempoMemory: tempo }));
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.value.tempoMemory, tempo);
+
+  const absent = validateFactsEnvelope(fullEnvelope());
+  assert.equal(absent.ok, true);
+  assert.deepEqual(absent.value.tempoMemory, []);
+});
+
+test('a tempoMemory entry with a non-positive bpm is rejected', () => {
+  const result = validateFactsEnvelope(fullEnvelope({ tempoMemory: [{ key: 'Em', bpm: 0 }] }));
+  assert.equal(result.ok, false);
+  assert.ok(result.errors.some((e) => e.includes('tempoMemory[0].bpm')));
+});
+
+test('too many adviceLedger/tempoMemory entries are rejected', () => {
+  const manyAdvice = Array.from({ length: 101 }, () => ({ chord: 'Em', kind: 'slow_down', status: 'pending', verdictsCount: 0 }));
+  const resultAdvice = validateFactsEnvelope(fullEnvelope({ adviceLedger: manyAdvice }));
+  assert.equal(resultAdvice.ok, false);
+
+  const manyTempo = Array.from({ length: 101 }, () => ({ key: 'Em', bpm: 60 }));
+  const resultTempo = validateFactsEnvelope(fullEnvelope({ tempoMemory: manyTempo }));
+  assert.equal(resultTempo.ok, false);
+});

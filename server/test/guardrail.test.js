@@ -322,6 +322,87 @@ test('a bare letter with no string qualifier is still rejected even at a sentenc
   assert.match(minorWord.reason, /^invented_token:A$/);
 });
 
+// --- Ticket 4 (issue #7): storeSnapshot / adviceLedger / tempoMemory -------
+// The guardrail's job description ("rejects any number the model states
+// that isn't present in the store snapshot handed to it") widens to cover
+// the fuller snapshot (sageCoach.js's snapshotFromStore), the advice ledger,
+// and per-pair tempo memory — not just mastery/justHappened/recentHistory.
+
+test('a chord known only via storeSnapshot.chords licenses its root letter', () => {
+  const env = envelope({ mastery: [], storeSnapshot: { chords: ['Em'] } });
+  const result = checkInventedFacts('Your Em is coming along — Em is short for E minor.', env);
+  assert.equal(result.ok, true);
+});
+
+test('per-chord clean/fail/unsure/tries counts from storeSnapshot are allowed numbers', () => {
+  const env = envelope({ mastery: [], storeSnapshot: { chords: ['Em'], perChord: { Em: { clean: 4, fail: 2, unsure: 1, tries: 7 } } } });
+  const result = checkInventedFacts('Your Em shows 2 fails and 4 cleans over 7 tries.', env);
+  assert.equal(result.ok, true);
+});
+
+test('a fail count not actually stored is still rejected', () => {
+  const env = envelope({ mastery: [], storeSnapshot: { chords: ['Em'], perChord: { Em: { clean: 4, fail: 2, unsure: 1, tries: 7 } } } });
+  const result = checkInventedFacts('Your Em shows 9 fails.', env);
+  assert.equal(result.ok, false);
+  assert.match(result.reason, /^invented_token:9$/);
+});
+
+test('streak/practice-minutes/lessons/help-request/lastTempo numbers from storeSnapshot are allowed', () => {
+  const env = envelope({
+    mastery: [],
+    storeSnapshot: { currentStreak: 3, longestStreak: 5, practiceMinutes: 42, lessonsCompleted: 2, helpRequests: 1, lastTempo: 60 },
+  });
+  const result = checkInventedFacts('You are on a 3 day streak (best is 5), with 42 minutes logged across 2 lessons, 1 open help request, and your last tempo was 60.', env);
+  assert.equal(result.ok, true);
+});
+
+test('a chord known only via an advice-ledger entry licenses its root letter, and its verdict count is allowed', () => {
+  const env = envelope({ mastery: [], adviceLedger: [{ chord: 'Em', kind: 'slow_down', status: 'pending', verdictsCount: 2 }] });
+  assert.equal(checkInventedFacts('Your Em is coming along, and Em is short for E minor.', env).ok, true);
+  assert.equal(checkInventedFacts('You have tried that suggestion 2 times so far.', env).ok, true);
+});
+
+test('a verdict count not actually stored is still rejected', () => {
+  const env = envelope({ mastery: [], adviceLedger: [{ chord: 'Em', kind: 'slow_down', status: 'pending', verdictsCount: 2 }] });
+  const result = checkInventedFacts('You have tried that suggestion 9 times so far.', env);
+  assert.equal(result.ok, false);
+  assert.match(result.reason, /^invented_token:9$/);
+});
+
+test('tempoMemory licenses both chords in a pair key and the stored bpm', () => {
+  const env = envelope({ mastery: [], tempoMemory: [{ key: 'Em::C', bpm: 65 }] });
+  assert.equal(checkInventedFacts('Your Em to C change held clean at 65.', env).ok, true);
+});
+
+test('a tempo not actually stored is still rejected', () => {
+  const env = envelope({ mastery: [], tempoMemory: [{ key: 'Em::C', bpm: 65 }] });
+  const result = checkInventedFacts('Your Em to C change held clean at 90.', env);
+  assert.equal(result.ok, false);
+  assert.match(result.reason, /^invented_token:90$/);
+});
+
+test('an absent/malformed storeSnapshot/adviceLedger/tempoMemory changes nothing (fail-safe)', () => {
+  assert.equal(checkInventedFacts('Try Em next.', envelope({ mastery: [], storeSnapshot: 'not-an-object' })).ok, false);
+  assert.equal(checkInventedFacts('Try Em next.', envelope({ mastery: [], adviceLedger: 'not-an-array' })).ok, false);
+  assert.equal(checkInventedFacts('Try Em next.', envelope({ mastery: [], tempoMemory: 'not-an-array' })).ok, false);
+});
+
+// Fret/finger/string claims stay scoped to the lesson JSON's `chords` block
+// ONLY — a chord being known via storeSnapshot/adviceLedger/tempoMemory
+// licenses saying its NAME, but never a fret/finger number for it, since
+// none of those three sections carries fret/finger data at all.
+test('storeSnapshot/adviceLedger/tempoMemory never license a fret/finger number — only lessonChords does', () => {
+  const env = envelope({
+    mastery: [],
+    storeSnapshot: { chords: ['Em'], perChord: { Em: { clean: 4, fail: 2, unsure: 0, tries: 6 } } },
+    adviceLedger: [{ chord: 'Em', kind: 'press_nearer_fret', status: 'pending', verdictsCount: 1 }],
+    tempoMemory: [{ key: 'Em', bpm: 60 }],
+  });
+  const result = checkInventedFacts('Put your finger on fret 9 of the Em shape.', env);
+  assert.equal(result.ok, false);
+  assert.match(result.reason, /^invented_token:9$/);
+});
+
 test('sanity: before the shared root-licensing fix, a question-only chord did NOT license its root (regression guard)', () => {
   // This pins down the actual pre-fix behavior so a future refactor can't
   // silently reintroduce the asymmetry: the question-echo path alone (no

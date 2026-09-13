@@ -253,15 +253,50 @@ export async function askCoach(envelope, localTemplate, options = {}) {
   return { text: fallbackText, source: 'template', latencyMs };
 }
 
+// ---------------------------------------------------------------------------
+// Ticket 4 (issue #7) — structured coaching output.
+//
+// deriveActionsFromReply() is the LOCAL half of the actions list: reply()
+// above already does real, Ban-6-safe curriculum lookup (findDrillForChord/
+// drillForStruggle) to find a REAL drill in the lesson data before it ever
+// mentions one in text. This turns that same already-verified drill into a
+// `start_drill` action, so the UI can actually start it rather than the
+// student having to find it themselves. Never invents a drillId: the
+// curriculum has no id field of its own, so one is composed here from two
+// fields reply() already put on the result (lessonId, exerciseName) — a
+// label, not a new fact. Nothing here talks to the model; see
+// coachSurface.js's buildActions() for why actions are never asked of it.
+// ---------------------------------------------------------------------------
+export function deriveActionsFromReply(result) {
+  if (!result || typeof result !== 'object' || !result.drill) return [];
+  const d = result.drill;
+  if (!d || typeof d.exerciseName !== 'string' || !d.exerciseName) return [];
+  const lessonId = typeof d.lessonId === 'string' && d.lessonId ? d.lessonId : 'lesson';
+  const action = {
+    type: 'start_drill',
+    drillId: `${lessonId}:${d.exerciseName}`,
+    lessonId: lessonId,
+    exerciseName: d.exerciseName,
+  };
+  if (Array.isArray(d.chordPair)) {
+    const pair = d.chordPair.filter((c) => typeof c === 'string' && c);
+    if (pair.length) action.chordPair = pair;
+  }
+  return [action];
+}
+
 // Convenience wrapper: same shape as reply(), but tries the coaching service
 // first for the final text of an on-topic response, falling back to reply()'s
 // existing local logic untouched. Off-topic replies never hit the network —
-// there is nothing coachable about them.
+// there is nothing coachable about them. `actions` is always locally derived
+// (see deriveActionsFromReply above) regardless of whether the text itself
+// came from the model, the server's template, or the local template.
 export async function replyWithCoach(store, teacherId, message, envelope, options = {}) {
   const local = reply(store, teacherId, message);
-  if (local.offTopic) return { ...local, source: 'local' };
+  const actions = deriveActionsFromReply(local);
+  if (local.offTopic) return { ...local, source: 'local', actions: [] };
   const coached = await askCoach(envelope, local.text, options);
-  return { ...local, text: coached.text, source: coached.source, latencyMs: coached.latencyMs };
+  return { ...local, text: coached.text, source: coached.source, latencyMs: coached.latencyMs, actions };
 }
 
 export function reply(store, teacherId, message) {
@@ -309,5 +344,5 @@ export function reply(store, teacherId, message) {
 
 export default {
   reply, isOnTopic, PERSONA, findDrillForChord, drillForStruggle, loadLessons, setLessons, getLessons,
-  coachClient, askCoach, replyWithCoach,
+  coachClient, askCoach, replyWithCoach, deriveActionsFromReply,
 };

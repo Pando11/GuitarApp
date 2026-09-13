@@ -8,8 +8,9 @@
 //
 // Feeds FAKE but well-formed numbers — no real student data, no network.
 
-import { coachLine, sageCoach, snapshotFromStore, BANNED_PHRASES } from './sageCoach.js';
+import { coachLine, sageCoach, snapshotFromStore, BANNED_PHRASES, adviceLedgerForEnvelope, tempoMemoryForEnvelope } from './sageCoach.js';
 import { PracticeStore } from './practiceStore.js';
+import { AdviceLedger } from './adviceLedger.js';
 
 let passed = 0;
 let failed = 0;
@@ -118,6 +119,34 @@ check('E (real store) line has NO banned opinion', hasBannedOpinion(lineE) === n
 // ---------------------------------------------------------------------------
 const controlLine = "You're a natural, a great musician — prodigy talent!";
 check('negative control: banned scan DETECTS freelanced opinion', hasBannedOpinion(controlLine) !== null);
+
+// ---------------------------------------------------------------------------
+// Ticket 4 (issue #7) — adviceLedgerForEnvelope / tempoMemoryForEnvelope.
+// The other two pieces handed to the model alongside snapshotFromStore(),
+// reduced to exactly the shape coachSurface.js/server's schema.js accept.
+// ---------------------------------------------------------------------------
+console.log('\n=== adviceLedgerForEnvelope / tempoMemoryForEnvelope ===');
+
+const ledger = new AdviceLedger();
+ledger.logAdvice({ chord: 'Em', kind: 'slow_down' });
+ledger.recordVerdictSinceAdvice('Em', 'pass');
+ledger.recordVerdictSinceAdvice('Em', 'fail');
+const ledgerEnvelope = adviceLedgerForEnvelope(ledger);
+check('adviceLedgerForEnvelope produces one entry for one logged suggestion', ledgerEnvelope.length === 1);
+check('adviceLedgerForEnvelope entry carries chord/kind/status/verdictsCount', ledgerEnvelope[0].chord === 'Em' && ledgerEnvelope[0].kind === 'slow_down' && ledgerEnvelope[0].status === 'pending' && ledgerEnvelope[0].verdictsCount === 2);
+check('adviceLedgerForEnvelope never returns the raw verdicts array (only a count)', !('verdicts' in ledgerEnvelope[0]));
+check('adviceLedgerForEnvelope(null) does not throw and returns []', (() => { try { return Array.isArray(adviceLedgerForEnvelope(null)); } catch (e) { return false; } })());
+check('adviceLedgerForEnvelope({}) (no toJSON) does not throw and returns []', (() => { try { return adviceLedgerForEnvelope({}).length === 0; } catch (e) { return false; } })());
+
+const tempoStore = new PracticeStore({ sessions: [{ id: 's1', lessonId: 'L05', ts: Date.now(), durationSec: 300, completed: true, attempts: [] }] });
+tempoStore.recordPracticeTempo('s1', 65, ['Em', 'C']);
+tempoStore.recordPracticeTempo('s1', 70, 'G');
+const tempoEnvelope = tempoMemoryForEnvelope(tempoStore, [['Em', 'C'], 'G', 'D']);
+check('tempoMemoryForEnvelope returns only the keys that actually have a stored tempo', tempoEnvelope.length === 2);
+check('tempoMemoryForEnvelope carries the exact stored bpm for a pair key', tempoEnvelope.some((e) => e.bpm === 65 && e.key.includes('Em') && e.key.includes('C')));
+check('tempoMemoryForEnvelope carries the exact stored bpm for a single-chord key', tempoEnvelope.some((e) => e.bpm === 70 && e.key === 'G'));
+check('tempoMemoryForEnvelope(store, non-array) does not throw and returns []', (() => { try { return tempoMemoryForEnvelope(tempoStore, 'not-an-array').length === 0; } catch (e) { return false; } })());
+check('tempoMemoryForEnvelope(null, [...]) does not throw and returns []', (() => { try { return tempoMemoryForEnvelope(null, ['Em']).length === 0; } catch (e) { return false; } })());
 
 console.log(`\nRESULT: ${passed} passed, ${failed} failed`);
 if (failed === 0) { console.log('OVERALL: PASS'); process.exit(0); }

@@ -119,6 +119,60 @@ export function sageCoach(store) {
 // unaffected.
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Ticket 4 (issue #7) — the other two pieces the model is handed alongside
+// snapshotFromStore()'s output: the advice ledger (07-app/core/
+// adviceLedger.js, Wave 1) and per-pair tempo memory (practiceStore.js's
+// tempoByKey extension, Wave 1). Both reduced to exactly the shape
+// coachSurface.js's buildCoachEnvelope() / server/src/schema.js's
+// validateAdviceLedger()/validateTempoMemory() accept — never the raw
+// store/ledger objects, and never a number/label neither actually holds.
+// ---------------------------------------------------------------------------
+
+// adviceLedgerForEnvelope(ledger) -> [{chord, kind, status, verdictsCount}]
+// verdictsCount is verdicts.length, not the verdicts themselves — the model
+// needs to know how many attempts have come in since a suggestion, not to
+// re-grade them itself. Reads only AdviceLedger's own toJSON(); never mutates.
+export function adviceLedgerForEnvelope(ledger) {
+  if (!ledger || typeof ledger.toJSON !== 'function') return [];
+  let raw;
+  try { raw = ledger.toJSON(); } catch (e) { return []; }
+  const entries = (raw && raw.ledger && typeof raw.ledger === 'object') ? raw.ledger : {};
+  const out = [];
+  for (const chord of Object.keys(entries)) {
+    const list = Array.isArray(entries[chord]) ? entries[chord] : [];
+    for (const e of list) {
+      if (!e || typeof e.kind !== 'string' || !e.kind || typeof e.status !== 'string') continue;
+      out.push({
+        chord,
+        kind: e.kind,
+        status: e.status,
+        verdictsCount: Array.isArray(e.verdicts) ? e.verdicts.length : 0,
+      });
+    }
+  }
+  return out;
+}
+
+// tempoMemoryForEnvelope(store, keys) -> [{key, bpm}]
+// Only for the chord/pair keys the caller names (typically the current
+// lesson's own chords) — never the whole stored tempo map, so a coaching
+// call about lesson 3 does not leak tempo memory for unrelated chords.
+export function tempoMemoryForEnvelope(store, keys) {
+  if (!store || typeof store.lastPracticeTempoFor !== 'function' || !Array.isArray(keys)) return [];
+  const out = [];
+  for (const key of keys) {
+    if (!key) continue;
+    let bpm;
+    try { bpm = store.lastPracticeTempoFor(key); } catch (e) { continue; }
+    if (typeof bpm !== 'number' || !Number.isFinite(bpm) || bpm <= 0) continue;
+    const label = Array.isArray(key) ? key.filter((k) => typeof k === 'string').join('::') : String(key);
+    if (!label) continue;
+    out.push({ key: label, bpm });
+  }
+  return out;
+}
+
 export async function sageCoachWithModel(store, envelope, options = {}) {
   const localLine = sageCoach(store);
   try {
@@ -132,4 +186,7 @@ export async function sageCoachWithModel(store, envelope, options = {}) {
   }
 }
 
-export default { BANNED_PHRASES, snapshotFromStore, coachLine, sageCoach, sageCoachWithModel };
+export default {
+  BANNED_PHRASES, snapshotFromStore, coachLine, sageCoach, sageCoachWithModel,
+  adviceLedgerForEnvelope, tempoMemoryForEnvelope,
+};

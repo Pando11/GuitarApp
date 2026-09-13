@@ -29,6 +29,10 @@ import { DRILL as DRILL_WAIT, runDrill as runWait } from './drills/waitToPlay.js
 import { DRILL as DRILL_WEAK, runDrill as runWeak } from './drills/weakPairReview.js';
 import { pairKey, parsePair } from './pairKey.js';
 import { buildCoachEnvelope, getCoachMessage, mountSpeakControlAfter } from './coachSurface.js';
+import { chordSVG } from './renderer.js';
+import { createMetronome } from './metronome.js';
+import { AdviceLedger } from './adviceLedger.js';
+import { applyCoachActions } from './actionHandler.js';
 
 // ---------------------------------------------------------------------------
 // DRILL_MENU display name -> drill module DRILL id. Built by reading each
@@ -252,10 +256,51 @@ export function masteryFromSkillMap(skillMap) {
 }
 
 // ---------------------------------------------------------------------------
+// Ticket 4 (issue #7) follow-on — actionHandler.js wiring support.
+//
+// chordShapeFromCatalog(win, chordName) reads the SAME catalog listenView.js's
+// chordCatalog() already reads (window.__APP__.CATALOG.lessons, each entry's
+// own `chords` block, or its `raw.chords` when the catalog stores the parsed
+// lesson JSON under `raw`) — the project's one verified source for fret
+// shapes. Never invents a shape: returns null when the catalog has nothing
+// for this chord yet (e.g. it hasn't loaded), same fail-safe posture as
+// every other "never invent" picker in this codebase.
+// ---------------------------------------------------------------------------
+function chordShapeFromCatalog(win, chordName) {
+  const w = win || (typeof window !== 'undefined' ? window : null);
+  if (!w || typeof chordName !== 'string' || !chordName) return null;
+  const lessons = (w.__APP__ && w.__APP__.CATALOG && Array.isArray(w.__APP__.CATALOG.lessons))
+    ? w.__APP__.CATALOG.lessons
+    : [];
+  for (const entry of lessons) {
+    const chords = (entry && entry.chords) || (entry && entry.raw && entry.raw.chords);
+    if (!chords || typeof chords !== 'object') continue;
+    const shape = chords[chordName];
+    if (shape && Array.isArray(shape.frets) && shape.frets.length === 6) {
+      return {
+        chord: chordName,
+        frets: shape.frets.slice(),
+        fingers: Array.isArray(shape.fingers) ? shape.fingers.slice() : undefined,
+      };
+    }
+  }
+  return null;
+}
+
+// ---------------------------------------------------------------------------
 // Factory — mirrors lesson-runner.js's createLessonRunner({...}) convention.
 // ---------------------------------------------------------------------------
 export function createDrillRunner({ practiceIndex, practiceStore, telemetry, win } = {}) {
   const micFlow = createMicPermissionFlow(win);
+
+  // Ticket 4 (issue #7) follow-on — one metronome instance and one advice
+  // ledger per runner, lazily/eagerly created here so askCoachAbout()'s
+  // set_metronome/log_advice actions have a real engine to act on rather
+  // than a per-call throwaway (a fresh metronome every reply would restart
+  // the click on every "Ask your coach" tap; a fresh ledger would never
+  // remember what was already suggested).
+  const actionMetronome = createMetronome({});
+  const actionAdviceLedger = new AdviceLedger();
 
   function pickPair() {
     return selectPracticePair(practiceIndex, practiceStore);
@@ -361,7 +406,30 @@ export function createDrillRunner({ practiceIndex, practiceStore, telemetry, win
       try { resolvedAnonId = telemetry.getAnonId(); } catch (e) { resolvedAnonId = undefined; }
     }
     const envelope = buildCoachEnvelope({ anonId: resolvedAnonId, learnerProfile, lessonId, mastery, justHappened, recentHistory });
-    const message = await getCoachMessage(envelope, localTemplate);
+
+    // Ticket 4 (issue #7) follow-on — actionContext for buildActions().
+    // Sourced from the SAME real data this screen already has on hand: the
+    // pair currently selected for practice (pickPair(), the same call
+    // renderDrillMenu()/runOneDrill() already make) and whatever tempo the
+    // student has actually held cleanly for that pair before
+    // (practiceStore.lastPracticeTempoFor — never a guessed BPM). Neither
+    // field is invented here; when there is no pair yet, or no stored tempo
+    // for it, that field is simply omitted, same as every other "never
+    // invent" picker in this codebase.
+    const actionContext = {};
+    const currentPair = pickPair();
+    if (currentPair) {
+      const diagram = chordShapeFromCatalog(win, currentPair.a);
+      if (diagram) actionContext.diagram = diagram;
+      try {
+        const bpm = (practiceStore && typeof practiceStore.lastPracticeTempoFor === 'function')
+          ? practiceStore.lastPracticeTempoFor([currentPair.a, currentPair.b])
+          : null;
+        if (typeof bpm === 'number' && bpm > 0) actionContext.metronome = { bpm };
+      } catch (e) { /* no stored tempo for this pair yet — omit, never guess */ }
+    }
+
+    const message = await getCoachMessage(envelope, localTemplate, actionContext);
 
     // TIER-1B Wave 5 (5B) — mount a tap-to-play speak control next to the
     // practice screen's rendered coach answer.
@@ -403,6 +471,48 @@ export function createDrillRunner({ practiceIndex, practiceStore, telemetry, win
       } catch (e) { /* never let a DOM/mount failure touch the returned message */ }
     }
 
+    // Ticket 4 (issue #7) follow-on — actually DO what message.actions says,
+    // via actionHandler.js's applyCoachActions(). Unlike the speak control
+    // above, this runs regardless of message.source: buildActions() only
+    // ever emits an action from real local data (a stored tempo, the
+    // lesson's own verified chord shape, ...), never from the model, so an
+    // action is just as real when the text happened to fall back to a
+    // template. Same non-destructive posture as the speak-control block:
+    // `message` is fully computed above and not touched by anything below.
+    if (typeof document !== 'undefined' && message && Array.isArray(message.actions) && message.actions.length) {
+      try {
+        const textEl = document.getElementById('practice-coach-text');
+        if (textEl) {
+          applyCoachActions(message.actions, {
+            anchorEl: textEl,
+            diagramId: 'practice-coach-diagram',
+            metronomeStatusId: 'practice-coach-metronome',
+            chordSvgFn: chordSVG,
+            metronome: actionMetronome,
+            adviceLedger: actionAdviceLedger,
+            openTuner: function () {
+              try {
+                const w = win || (typeof window !== 'undefined' ? window : null);
+                if (w && w.GuitarApp && w.GuitarApp.ListenView && typeof w.GuitarApp.ListenView.openListenView === 'function') {
+                  w.GuitarApp.ListenView.openListenView();
+                }
+              } catch (e) { /* non-fatal */ }
+            },
+            startDrill: function (action) {
+              // No live seam yet from an action's opaque drillId to this
+              // screen's own DRILL_MENU_TO_ID vocabulary — see this file's
+              // header note by DRILL_MENU_TO_ID for why the two "drill"
+              // concepts (a curriculum exercise vs. a drills/*.js module)
+              // don't share an id scheme. Recorded, not silently dropped.
+              if (telemetry && typeof telemetry.log === 'function') {
+                try { telemetry.log('coach_action_start_drill_unhandled', { payload: { drillId: action && action.drillId } }); } catch (e) { /* non-fatal */ }
+              }
+            },
+          });
+        }
+      } catch (e) { /* never let action dispatch break the coach flow */ }
+    }
+
     return message;
   }
 
@@ -412,6 +522,8 @@ export function createDrillRunner({ practiceIndex, practiceStore, telemetry, win
     runSelectedDrill,
     askCoachAbout,
     micFlow,
+    getMetronome: function () { return actionMetronome; },
+    getAdviceLedger: function () { return actionAdviceLedger; },
   };
 }
 
