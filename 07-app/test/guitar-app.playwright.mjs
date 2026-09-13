@@ -225,36 +225,29 @@ async function runTests() {
     });
     logTest('All lesson cards are button elements', allCardsClickable);
 
-    // TEST 11: Emerald Hollow — the world holds the lesson (Wave 7).
-    // The world used to live only in the Godot project, so a lesson could
-    // never be entered from it. These assert the join, not the artwork.
-    console.log('\n=== EMERALD HOLLOW ===');
+    // TEST 11: Emerald Hollow — cinematic arrival (Slice 1 ticket 7,
+    // 2026-09-13). The door-grid porch this block used to assert
+    // (WorldBridge.listDoors -> #world-doors -> click a door -> open a
+    // lesson) was deliberately deleted: the owner ruled the student does
+    // not control the walk, so the world is a camera-driven cinematic, not
+    // an explorable level with doors. worldView.js's playArrival()/
+    // skipArrival() are built and tested at the module level
+    // (07-app/core/worldView.js), but wiring onArrivalComplete() to an
+    // actual lesson-open call is intentionally not done yet (a later
+    // ticket) — so this block only asserts what exists today: the view
+    // opens, the always-present skip control works without erroring, no
+    // door grid renders, and leaving the world returns to the catalog.
+    console.log('\n=== EMERALD HOLLOW (cinematic arrival) ===');
     await page.click('#start-world');
     await page.waitForTimeout(600);
     logTest('World view opens', await page.locator('#world-view').isVisible());
 
+    const doorCount = await page.locator('#world-doors .world-door').count();
+    logTest('No door grid renders (deleted — arrival is cinematic, not explorable)', doorCount === 0, `doors: ${doorCount}`);
+
     await page.click('#world-skip-coldopen');
     await page.waitForTimeout(400);
-    const doorCount = await page.locator('#world-doors .world-door:not([disabled])').count();
-    logTest('Porch shows a door per unlocked lesson', doorCount === 5, `doors: ${doorCount}`);
-
-    await page.click('#world-doors .world-door:not([disabled])');
-    await page.waitForTimeout(800);
-    const lessonFromDoor = await page.evaluate(() => ({
-      lessonOpen: document.getElementById('lesson-view')?.hidden === false,
-      worldHidden: document.getElementById('world-view')?.hidden === true,
-      title: (document.querySelector('#lesson-content h1')?.textContent || '').length,
-    }));
-    logTest('A door opens the real lesson', lessonFromDoor.lessonOpen && lessonFromDoor.title > 0);
-    logTest('Entering a lesson leaves the world', lessonFromDoor.worldHidden);
-    logTest('The exit points back to the world',
-      (await page.locator('#back-home').textContent()).includes('Emerald Hollow'));
-
-    await page.click('#back-home');
-    await page.waitForTimeout(600);
-    logTest('Leaving a lesson returns to the porch', await page.evaluate(() =>
-      document.getElementById('world-view')?.hidden === false &&
-      document.getElementById('world-porch')?.hidden === false));
+    logTest('Skip control ends the arrival without error', await page.locator('#world-view').isVisible());
 
     await page.click('#world-back-home');
     await page.waitForTimeout(300);

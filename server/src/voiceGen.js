@@ -41,6 +41,26 @@ import {
   FAL_TTS_POLL_INTERVAL_MS,
   FAL_TTS_POLL_TIMEOUT_MS,
 } from './config.js';
+// FAL_KOKORO_VOICE_SAGE is read via a namespace import rather than a named
+// one: voiceGen.test.mjs's existing "FAL_KEY unset" test (child process,
+// --experimental-test-module-mocks) mocks config.js with an exports object
+// that predates this constant, and a static named import of a binding the
+// mock doesn't provide is a hard SyntaxError at module load — it would break
+// that existing test, which this ticket's file-ownership list doesn't allow
+// editing. A namespace property read simply comes back undefined when
+// absent, so this stays additive/back-compatible with that mock.
+import * as configNS from './config.js';
+const FAL_KOKORO_VOICE_SAGE = configNS.FAL_KOKORO_VOICE_SAGE;
+
+// Named speaker -> voice ID lookup, additive to the raw `voice` override
+// generateSpeech() already accepted. Lets callers ask for "sage" without
+// having to import/know the specific fal.ai voice ID constant. Only 'sage'
+// exists today (this ticket's scope); other teachers keep using the default
+// FAL_KOKORO_VOICE (af_heart) via the existing plain `voice` override, or no
+// override at all.
+const SPEAKER_VOICES = {
+  sage: FAL_KOKORO_VOICE_SAGE,
+};
 
 const QUEUE_BASE = 'https://queue.fal.run';
 
@@ -126,18 +146,24 @@ async function pollUntilComplete(statusUrl) {
  * @param {string} text The already-generated coaching prose to speak. This
  *   function never calls the Anthropic model — it only synthesizes speech
  *   for text the caller already has.
- * @param {{voice?: string}} [opts] Optional voice override; defaults to
- *   FAL_KOKORO_VOICE ('af_heart' — the same voice used for the app's
- *   pre-recorded lesson narration).
+ * @param {{voice?: string, speaker?: 'sage'}} [opts] Optional voice
+ *   override. Defaults to FAL_KOKORO_VOICE ('af_heart' — the same voice used
+ *   for the app's pre-recorded lesson narration by other teachers); that
+ *   default is unchanged by this option. Pass an explicit fal.ai voice ID
+ *   via `voice` (e.g. 'am_adam'), or the shorthand `speaker: 'sage'` to get
+ *   Sage's male voice (FAL_KOKORO_VOICE_SAGE) without needing to know its
+ *   raw voice ID. If both are given, `voice` wins.
  * @returns {Promise<{audioUrl: string}>}
  * @throws {VoiceGenConfigError} if FAL_KEY is unset.
  * @throws {VoiceGenError} if fal.ai fails, times out, or returns an
  *   unrecognized shape. Never fabricates a fallback audioUrl.
  */
-export async function generateSpeech(text, { voice = FAL_KOKORO_VOICE } = {}) {
+export async function generateSpeech(text, { voice, speaker } = {}) {
   if (!FAL_KEY) throw new VoiceGenConfigError();
 
-  const submitted = await submit(text, voice);
+  const resolvedVoice = voice || (speaker && SPEAKER_VOICES[speaker]) || FAL_KOKORO_VOICE;
+
+  const submitted = await submit(text, resolvedVoice);
   const { status_url: statusUrl, response_url: responseUrl } = submitted || {};
   if (!statusUrl || !responseUrl) {
     throw new VoiceGenError(`fal kokoro submit returned no status_url/response_url: ${JSON.stringify(submitted)}`);
@@ -168,4 +194,4 @@ export async function generateSpeech(text, { voice = FAL_KOKORO_VOICE } = {}) {
   return { audioUrl };
 }
 
-export default { generateSpeech, VoiceGenConfigError, VoiceGenError };
+export default { generateSpeech, VoiceGenConfigError, VoiceGenError, SPEAKER_VOICES };

@@ -6,7 +6,7 @@
 // the same musical chord; without canon they split into two memory slots and
 // the weak-pair review moat fragments. All aggregation now keys by canonChord().
 
-import { canonChord, displayChord } from './chord-canon.js';
+import { canonChord, canonPairKey, displayChord } from './chord-canon.js';
 import { createPracticeFluencyBridge } from './practiceFluencyBridge.js';
 
 // Default storage key for the per-pair fluency bridge. The bridge itself does
@@ -16,6 +16,25 @@ import { createPracticeFluencyBridge } from './practiceFluencyBridge.js';
 const DEFAULT_FLUENCY_STORAGE_KEY = 'guitarapp.practiceFluency';
 
 const STRUGGLE_WINDOW = 5;
+
+// Per-chord-or-pair tempo memory (extends recordPracticeTempo/lastPracticeTempo,
+// does not replace them): resolves a tempo key to a single canonical string so
+// "Em" and "Em-C"/"Em::C"/["Em","C"] all key consistently regardless of how a
+// caller spells a pair. A single chord canonicalizes via canonChord(); a pair
+// (array, or a string using the "::" separator already used by
+// recordDrillResult's pairKey, or the "-" separator from this ticket's
+// example) canonicalizes via canonPairKey() so key order doesn't matter.
+function resolveTempoKey(key) {
+  if (Array.isArray(key)) return canonPairKey(key[0], key[1]);
+  if (typeof key === 'string') {
+    const sep = key.includes('::') ? '::' : (key.includes('-') ? '-' : null);
+    if (sep) {
+      const [a, b] = key.split(sep);
+      if (a && b) return canonPairKey(a.trim(), b.trim());
+    }
+  }
+  return canonChord(key);
+}
 function parseKey(k) { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d); }
 export function todayKey(ts) { const d = new Date(ts); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
 function dayBefore(key) { const d = parseKey(key); d.setDate(d.getDate() - 1); return todayKey(d.getTime()); }
@@ -39,6 +58,10 @@ export class PracticeStore {
     this.helpRequests = Array.isArray(i.helpRequests) ? i.helpRequests.map(r => ({ ...r })) : [];
     this._nextId = i._nextId || 1;
     this.currentTeacherId = i.currentTeacherId || 'T1';
+    // Per-chord-or-pair tempo memory: last BPM the student held CLEANLY,
+    // keyed by resolveTempoKey() (a single chord or an unordered pair). See
+    // recordPracticeTempo()/lastPracticeTempoFor() below.
+    this.tempoByKey = { ...(i.tempoByKey || {}) };
     // Per-pair fluency (Wave 2 task E): a bridge instance composing
     // fluencyStore.js + practiceLoop.js + reviewScheduler.js (see
     // practiceFluencyBridge.js). We reach it only through its public API —
@@ -116,15 +139,27 @@ export class PracticeStore {
     return null;
   }
   practiceMinutesTotal() { return Math.round(this.sessions.reduce((acc, s) => acc + (s.durationSec || 0), 0) / 60); }
-  recordPracticeTempo(sessionId, bpm) {
+  // `key` is optional and additive: a single chord name, an unordered pair
+  // (either ['Em','C'], 'Em-C', or 'Em::C'), identifying what this BPM was
+  // held cleanly for. When given, it's also remembered per-key in
+  // `tempoByKey` (see lastPracticeTempoFor) on top of the existing
+  // per-session `practiceBpm` behavior, which is unchanged.
+  recordPracticeTempo(sessionId, bpm, key) {
     const s = this.sessions.find(x => x.id === sessionId);
     if (!s) throw new Error('unknown session ' + sessionId);
     const n = Number(bpm);
     if (!isFinite(n) || n < 30 || n > 240) throw new Error('bpm out of range: ' + bpm);
     s.practiceBpm = Math.round(n);
+    if (key) this.tempoByKey[resolveTempoKey(key)] = s.practiceBpm;
     return s.practiceBpm;
   }
   lastPracticeTempo() { for (let i = this.sessions.length - 1; i >= 0; i--) if (this.sessions[i].practiceBpm != null) return this.sessions[i].practiceBpm; return null; }
+  // The BPM the student last held cleanly for a single chord or chord-pair.
+  // `key` accepts the same shapes as recordPracticeTempo's `key` arg.
+  lastPracticeTempoFor(key) {
+    const resolved = resolveTempoKey(key);
+    return resolved in this.tempoByKey ? this.tempoByKey[resolved] : null;
+  }
   lessonCompleted(lessonId) { return !!(this.lessonCompletion[lessonId] && this.lessonCompletion[lessonId].completed); }
   completedLessonCount() { return Object.keys(this.lessonCompletion).filter(k => this.lessonCompletion[k].completed).length; }
   _activeDays() { const set = new Set(this.sessions.map(s => todayKey(s.ts))); return Array.from(set).sort(); }
@@ -209,7 +244,70 @@ export class PracticeStore {
     return this.practiceFluencyBridge.getWeakPairs(k);
   }
   toJSON() {
-    return { sessions: this.sessions, lessonCompletion: this.lessonCompletion, mute: this.mute, messageLog: this.messageLog, helpRequests: this.helpRequests, _nextId: this._nextId, currentTeacherId: this.currentTeacherId, practiceFluency: this.practiceFluencyBridge.toJSON() };
+    return { sessions: this.sessions, lessonCompletion: this.lessonCompletion, mute: this.mute, messageLog: this.messageLog, helpRequests: this.helpRequests, _nextId: this._nextId, currentTeacherId: this.currentTeacherId, practiceFluency: this.practiceFluencyBridge.toJSON(), tempoByKey: this.tempoByKey };
   }
   static fromJSON(o) { return new PracticeStore(o); }
+}
+
+// ---------------------------------------------------------------------------
+// wipeAllStoredData() — on-device store-wipe utility.
+//
+// Added alongside the drillRunner.js mic-provenance gate fix (2026-09-13):
+// that fix stops NEW simulated drill results from being written, but does
+// nothing about simulated results that may already be sitting in a device's
+// localStorage from before the fix. This clears them so a fresh, honest
+// first session can start with zero prior (possibly simulator-tainted) data.
+//
+// Additive-only change; does not touch anything else in this file.
+//
+// Known localStorage keys wiped (cross-referenced against every localStorage
+// write site under 07-app/ as of this ticket):
+//   'guitarapp.practiceStore.v1'   — practiceProgress.js's single-writer key
+//                                    for the shared PracticeStore instance
+//                                    (getSkillMap/getWeakPairs/sessions/etc.
+//                                    — the numbers the AI coach cites).
+//   'guitarapp.sync.practiceStore' — app.js's Wave2 live-sync local mirror
+//                                    of the same PracticeStore.
+//   DEFAULT_FLUENCY_STORAGE_KEY ('guitarapp.practiceFluency') — this file's
+//                                    own default fluency-bridge storage key
+//                                    constant, wiped defensively in case a
+//                                    future caller namespaces persistence
+//                                    through it directly (see this file's own
+//                                    "ASSUMPTION" comment above).
+//
+// fluencyStore.js and storyMemory.js do NOT do their own localStorage I/O:
+// fluencyStore.js's persistence is reached only through
+// PracticeStore.toJSON()'s `practiceFluency` field (covered by the keys
+// above, via practiceFluencyBridge.js), and storyMemory.js just reads a
+// PracticeStore instance in memory with no storage of its own. So wiping the
+// PracticeStore-related keys above clears both honestly, with nothing left
+// behind to be cited later.
+//
+// Browser-only: localStorage doesn't exist under the Node test runner, so
+// this is a safe no-op there (returns { cleared: [] }).
+export function wipeAllStoredData() {
+  const KEYS = [
+    'guitarapp.practiceStore.v1',
+    'guitarapp.sync.practiceStore',
+    DEFAULT_FLUENCY_STORAGE_KEY,
+  ];
+  const cleared = [];
+  try {
+    if (typeof localStorage === 'undefined' || !localStorage) return { cleared };
+    for (const key of KEYS) {
+      try {
+        if (localStorage.getItem(key) !== null) {
+          localStorage.removeItem(key);
+          cleared.push(key);
+        }
+      } catch (e) { /* skip this key, keep going */ }
+    }
+  } catch (e) { /* localStorage entirely unavailable — nothing to clear */ }
+  return { cleared };
+}
+
+if (typeof window !== 'undefined') {
+  window.GuitarApp = window.GuitarApp || {};
+  window.GuitarApp.PracticeStore = window.GuitarApp.PracticeStore || {};
+  window.GuitarApp.PracticeStore.wipeAllStoredData = wipeAllStoredData;
 }

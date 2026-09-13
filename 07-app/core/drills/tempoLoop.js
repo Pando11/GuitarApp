@@ -2,6 +2,16 @@
 // PORTED 1:1 from 06-prototypes/practice-engine/drills/tempo-loop.mjs,
 // do not change behavior, fidelity.mjs diffs it.
 //
+// SIMULATION-ONLY (do not wire this to student-facing storage): runDrill()
+// below always sources its chord-change events from listenerSim.js's
+// simulateStrumStream — a seeded-RNG FAKE listener, never real microphone
+// audio. drillRunner.js's SIM_SOURCED_DRILL_IDS hard-gates this drill's
+// output out of practiceStore.recordDrillResult() for exactly this reason
+// (CLAUDE.md non-negotiable: "the teacher cites stored numbers and never
+// invents a musical diagnosis"). If a future edit ever gives this drill a
+// real-mic code path, that gate in drillRunner.js must be updated too — do
+// not just start writing results here without doing so.
+//
 // Loops the HARD bar (the chord change) at a scaled tempo so the student can
 // drill the difficult transition slowly, then speed up. Pure: uses the
 // deterministic listener-sim to fake the audio and the 30/60 sensor to score.

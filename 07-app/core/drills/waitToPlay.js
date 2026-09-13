@@ -2,6 +2,16 @@
 // PORTED 1:1 from 06-prototypes/practice-engine/drills/wait-to-play.mjs,
 // do not change behavior, fidelity.mjs diffs it.
 //
+// SIMULATION-ONLY (do not wire this to student-facing storage): runDrill()
+// below always sources its heard-chord events from listenerSim.js's
+// simulateStrumStream — a seeded-RNG FAKE listener, never real microphone
+// audio. drillRunner.js's SIM_SOURCED_DRILL_IDS hard-gates this drill's
+// output out of practiceStore.recordDrillResult() for exactly this reason
+// (CLAUDE.md non-negotiable: "the teacher cites stored numbers and never
+// invents a musical diagnosis"). If a future edit ever gives this drill a
+// real-mic code path, that gate in drillRunner.js must be updated too — do
+// not just start writing results here without doing so.
+//
 // A CONSTRAINED-listener discipline drill: the student must NOT strum until the
 // listener is confident it hears the TARGET chord. We simulate the heard stream,
 // then measure discipline (false starts before the target is heard) and

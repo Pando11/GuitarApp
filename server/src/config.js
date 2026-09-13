@@ -154,6 +154,18 @@ export const FAL_KOKORO_MODEL = 'fal-ai/kokoro';
 // override; voiceGen.js's generateSpeech() takes an optional `voice`.
 export const FAL_KOKORO_VOICE = 'af_heart';
 
+// Sage's voice (additive — does not replace FAL_KOKORO_VOICE above, which
+// stays the default for other teachers' pre-recorded narration). Sage is a
+// male coach character for this slice and needs a male voice; `am_adam` is
+// one of the 20 real fal.ai Kokoro voices already named and verified live in
+// this same file's FAL_KOKORO_VOICE comment above and in voiceGen.js's
+// header (2026-09-10 live test against `fal-ai/kokoro`, same model/account —
+// see server/README.md "Coach voice"), so this is not a guessed voice ID.
+// Callers opt into it explicitly via generateSpeech(text, { voice:
+// FAL_KOKORO_VOICE_SAGE }) or generateSpeech(text, { speaker: 'sage' });
+// nothing here changes the default for existing callers.
+export const FAL_KOKORO_VOICE_SAGE = 'am_adam';
+
 // Queue poll cadence/budget for Kokoro. Same submit -> poll-status ->
 // fetch-result shape as FAL_POLL_INTERVAL_MS/FAL_POLL_TIMEOUT_MS above, but
 // Kokoro's own inference is much faster (~2s observed live, vs. ACE-Step's

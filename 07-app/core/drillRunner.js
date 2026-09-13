@@ -66,6 +66,21 @@ const RUNNERS_BY_ID = Object.freeze({
   [DRILL_WEAK]: runWeak,
 });
 
+// ---------------------------------------------------------------------------
+// SAFETY: drills whose runDrill() always sources its strum/chord-recognition
+// events from 07-app/core/listenerSim.js (a seeded-RNG FAKE listener), with
+// no code path in this repo that can ever feed them real microphone audio.
+// See metronomeLadder.js / tempoLoop.js / waitToPlay.js headers. A result
+// produced by one of these drill IDs is simulated data by construction,
+// regardless of the mic-permission toggle's state — it must never be written
+// to practiceStore (see the hard gate in runSelectedDrill() below).
+// ---------------------------------------------------------------------------
+const SIM_SOURCED_DRILL_IDS = Object.freeze(new Set([
+  DRILL_METRONOME,
+  DRILL_TEMPO,
+  DRILL_WAIT,
+]));
+
 // Menu entries that actually have an implementation — what the UI should
 // render as selectable (the rest are grayed out / omitted).
 export function availableDrillMenu() {
@@ -266,7 +281,8 @@ export function createDrillRunner({ practiceIndex, practiceStore, telemetry, win
     // deterministic (sim) event streams internally via listenerSim.js's
     // simulateStrumStream, so `useMic` here only marks provenance on the
     // returned envelope (whether the toggle preferred mic input) — it never
-    // blocks completion when a mic is unavailable.
+    // blocks completion when a mic is unavailable. It DOES, however, gate
+    // whether the result is allowed to reach practiceStore — see below.
 
     const pair = pickPair();
     const params = Object.assign({}, drillParams);
@@ -276,7 +292,31 @@ export function createDrillRunner({ practiceIndex, practiceStore, telemetry, win
 
     const pKey = pair ? pairKey(pair.a, pair.b) : (params.pair ? pairKey(params.pair[0], params.pair[1]) : null);
 
-    if (practiceStore && typeof practiceStore.recordDrillResult === 'function') {
+    // -------------------------------------------------------------------
+    // HARD GATE — never persist simulated drill results.
+    //
+    // practiceStore is student-facing, persistent storage: sageCoach.js later
+    // cites its stored numbers verbatim, and CLAUDE.md's non-negotiable rule
+    // is "the teacher cites stored numbers and never invents a musical
+    // diagnosis." A result may reach practiceStore.recordDrillResult() only
+    // when BOTH hold:
+    //   1. useMic === true — the mic-permission flow actually resolved to
+    //      real microphone input for this run, not the sim fallback (see
+    //      createMicPermissionFlow()/resolveUseMic() above).
+    //   2. drillId is NOT one of SIM_SOURCED_DRILL_IDS — metronomeLadder.js,
+    //      tempoLoop.js, and waitToPlay.js call listenerSim.js's
+    //      simulateStrumStream() unconditionally, with no wiring anywhere in
+    //      this repo to listenerReal.js, so their output can never be
+    //      genuine student data no matter what the toggle says.
+    //
+    // Previously `useMic` only marked provenance on the returned envelope
+    // (see NOTE above) while the write below ran UNCONDITIONALLY — so a
+    // fully-simulated result could be persisted and later cited by the AI
+    // coach as if it were real. This is the fix.
+    const isSimSourcedDrill = SIM_SOURCED_DRILL_IDS.has(drillId);
+    const isRealMicData = useMic === true && !isSimSourcedDrill;
+
+    if (isRealMicData && practiceStore && typeof practiceStore.recordDrillResult === 'function') {
       practiceStore.recordDrillResult({
         pairKey: pKey,
         ratePerMin: result.ratePerMin,
@@ -301,7 +341,7 @@ export function createDrillRunner({ practiceIndex, practiceStore, telemetry, win
       } catch (e) { /* telemetry must never break the drill flow */ }
     }
 
-    return { ok: true, drillId, pair, result, usedMic: useMic };
+    return { ok: true, drillId, pair, result, usedMic: useMic, recordedToPracticeStore: isRealMicData };
   }
 
   async function askCoachAbout({ learnerProfile, lessonId, recentHistory, justHappened, localTemplate, anonId } = {}) {
