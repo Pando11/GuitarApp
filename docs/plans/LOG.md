@@ -361,3 +361,90 @@ paths — undefined. A builder would have filled those gaps with guesses again.
 **Why:** the prior session ended with three explicit next actions (install
 `gh`, publish the spec, cut tickets) and this session did all three so
 building can start against a real tracker instead of another markdown file.
+
+---
+
+## 2026-09-13 (second session) — Slice 1 Wave 1 built: 5 parallel tickets, committed `8463470`
+
+- **Owner directive:** stop trying to recover the original truncated ticket
+  list (a `SendMessage` to the cloud session named as its source went out
+  but cannot reply back into this session) and instead build against the
+  tickets as cut, using subagents in parallel. Ticket 0 (issue #3, real
+  guitar + real mic + `verifyChord()`) cannot be done by any agent — it
+  needs the owner to physically play a real E minor into a real mic — and
+  was not attempted.
+- **Five tickets built as file-isolated parallel subagents**, per
+  `docs/plans/README.md`'s orchestration contract (no two agents write the
+  same file in the same wave):
+  - **Metronome** (`core/metronome.js`, new): audible click, 30-240 BPM,
+    start/stop, `onBeat()` callback for a UI to build a visual indicator on.
+    Not wired into any UI yet. Ticket 2 / issue #5.
+  - **Memory stores** (`core/adviceLedger.js`, `studentNotes.js`,
+    `practiceTimer.js`, all new; `practiceStore.js` extended additively for
+    per-pair tempo memory): advice ledger judges a suggestion by its next 5
+    verdicts (3+ passes = worked), off the table for the rest of the
+    session plus 3 more sessions on that chord if not; per-pair tempo keys
+    resolve order- and alias-independent via the existing `canonPairKey`.
+    Ticket 5 / issue #8.
+  - **Cinematic arrival** (`core/worldView.js`, rewritten): sequences
+    existing video/still/voice assets from
+    `assets/worlds/emerald-hollow/` into one continuous ~75s arrival,
+    Ken Burns zoom on stills, crossfades between beats. **Deletes the old
+    door-grid porch entirely** (`WorldBridge.listDoors`, `#world-doors`) —
+    matches the owner's "the student does not control the walk" decision.
+    Always-reachable skip control (relabeled existing
+    `#world-skip-coldopen` button) ends the arrival from any beat. Exposes
+    `onArrivalComplete()`/`playArrival()` as the seam for a caller to
+    transition to the lesson — **that wiring does not exist yet**, is not
+    in this ticket's scope, and is needed before the arrival does anything
+    beyond play and stop. **No ambient music asset exists anywhere in the
+    repo** — the fade-out-at-Sage logic is built but is currently a no-op
+    until a music file is added. Ticket 7 / issue #10.
+  - **Cut the simulator leak** (`drillRunner.js`): drill results now only
+    write to `practiceStore` when sourced from a real mic; the three
+    sim-driven drills (`metronomeLadder.js`, `tempoLoop.js`,
+    `waitToPlay.js`) are gated unconditionally and marked
+    `SIMULATION-ONLY` in their headers. Added
+    `practiceStore.wipeAllStoredData()` (owner runs
+    `window.GuitarApp.PracticeStore.wipeAllStoredData()` in the browser
+    console when ready to start Slice 1 clean). **New finding, not
+    previously known:** `listenerReal.js` (the real-mic module) is fully
+    built but is never imported or called anywhere in the running app —
+    today, zero drills produce real mic data; they're either pure
+    computation or simulator-driven. Wiring `listenerReal.js` into an
+    actual drill is now a known missing piece, not an assumption. Ticket 1
+    / issue #4.
+  - **Male Sage voice** (`server/src/config.js`, `voiceGen.js`): added
+    `FAL_KOKORO_VOICE_SAGE = 'am_adam'` additively alongside the existing
+    `af_heart`; `generateSpeech(text, { speaker: 'sage' })` resolves to it.
+    New `core/normalizeForTTS.js` converts chord symbols to spoken form
+    ("Em" → "E minor") and strips specific AI-ism phrases. **Real Kokoro
+    synthesis was not exercised** — verification is mocked-fetch unit
+    tests only, trusting `am_adam`'s validity from this repo's own prior
+    2026-09-10 documented live test (`server/README.md`), not a fresh
+    call. Worth a real synthesis check before trusting audio actually
+    comes out. Ticket 3 / issue #6.
+- **Lead-agent integration:** the arrival rebuild broke
+  `07-app/test/guitar-app.playwright.mjs`'s Emerald Hollow block, which
+  asserted the deleted door-grid flow (click a door → open a lesson). Fixed
+  in place to assert what exists now (view opens, no door grid renders, skip
+  works, leaving returns to the catalog) rather than leaving it red or
+  deleting coverage. Full suite green: 28/28 smoke
+  (`npm run test:app-smoke`), 122/122 server (`cd server && npm test`),
+  32/32 Playwright (`npm run test:playwright`). Committed `8463470`.
+- **Deliberately not started this wave:** tickets 4, 6, 8, 9, 10 (issues
+  #7, #9, #11, #12, #13) and 11 (issue #14) all touch the shared coaching
+  pipeline (`coachSurface.js`, `chatEngine.js`, `guardrail.js`,
+  `sageCoach.js`, `app.js`) or `drillRunner.js` again — running them in
+  parallel with each other risks overwriting one another's edits, so they
+  wait for a later wave, sequenced by their `Depends on:` links on each
+  issue.
+- **Not done:** ticket 0 (issue #3) — still needs the owner, physically,
+  with a real guitar and a real mic. Nothing downstream of it (the
+  teach-E-minor integration ticket, the real practice drill ticket) can be
+  honestly called done until it passes.
+
+**Why:** the owner explicitly said to stop chasing the missing original
+ticket text and build against what exists, in parallel where safe. This
+session did that while still honoring the repo's own file-ownership rule
+(`docs/plans/README.md`) rather than trading speed for a corrupted merge.
