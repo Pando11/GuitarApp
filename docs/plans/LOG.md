@@ -448,3 +448,77 @@ building can start against a real tracker instead of another markdown file.
 ticket text and build against what exists, in parallel where safe. This
 session did that while still honoring the repo's own file-ownership rule
 (`docs/plans/README.md`) rather than trading speed for a corrupted merge.
+
+---
+
+## 2026-09-13 (third session) — Issues #10–#14 reviewed and corrected; Wave 2 built: structured coaching output + action wiring, committed `4c71cee`
+
+- **Owner-directed mic investigation, resolved as OS-level, not app-level:** the
+  owner's new mini PC couldn't use its mic in the GuitarApp or in Claude Code's
+  own `/voice` dictation. Windows was checked directly: the USB mic shows
+  `Status: OK`, both the global and per-app microphone privacy consent keys are
+  `Allow`, and the owner confirmed the Windows input level meter moves when
+  talking. Claude Code's own `/voice` dictation was confirmed working
+  afterward. **What's still unconfirmed:** whether the browser has granted
+  microphone permission to `http://localhost:5173` specifically (a per-site
+  permission, separate from the OS-level checks done here) — that's the
+  remaining likely blocker for ticket 0 (issue #3, the real-guitar test),
+  which is still not done and still owner-only.
+- **Issues #10–#14 (tickets 7–11, the ones derived from spec rather than
+  transcribed from the owner) independently reviewed against issue #2 and this
+  log's own decisions**, by an agent other than any builder. Verdict: content
+  is accurate on all five — no scope creep, no missing acceptance detail,
+  near-verbatim matches of spec language. **One real, repeated bug found and
+  fixed on GitHub:** `Depends on:` lines and inline `(#N)` references in #11–#14
+  were written using *ticket numbers* (0–11) instead of *GitHub issue numbers*
+  (ticket + 3), so every such link pointed at the wrong or a nonexistent issue.
+  Also found, past what the reviewing agent caught: #13's "the live teaching
+  moment in #9" should have been #12 (#9 is the struggle ladder, unrelated).
+  All corrected in place on GitHub (#11, #12, #13, #14) — #12's fix also
+  restored a dropped dependency (Ticket 3 / issue #6, male voice + speech
+  wiring, was named in #12's body text but missing from its own `Depends on:`
+  line).
+- **Issue #7 (Ticket 4, structured coaching output) built and wired, committed
+  `4c71cee`.** Two subagents, sequential (second depended on the first's
+  output shape):
+  - Build: `getCoachMessage()`/`replyWithCoach()` now return
+    `{text, source, actions}`. Actions (`set_metronome`, `show_diagram`,
+    `open_tuner`, `start_drill`, `log_advice`) are assembled **deterministically
+    in code** from real stored data (store snapshot, advice ledger, tempo
+    memory) — the model never chooses an action, since that would itself be an
+    invented fact. `server/src/guardrail.js` extended to reject any number/fact
+    not in the new envelope sections. Files: `coachSurface.js`, `chatEngine.js`,
+    `sageCoach.js`, `server/src/{schema,guardrail,modelClient}.js`.
+  - Wiring: a new `07-app/core/actionHandler.js` dispatches those actions
+    against the real fretboard renderer, `metronome.js`, and `adviceLedger.js`
+    from both `drillRunner.js` and `lesson-runner.js`. **Live-verified with
+    Playwright against the real running dev server**, not just unit tests — a
+    real coaching reply actually mounted a chord diagram and started a running
+    metronome in the DOM.
+  - **Known gaps, reported rather than papered over:** `chatEngine.js`'s
+    `replyWithCoach()` has no live UI caller yet — only `getCoachMessage()`
+    (called from `drillRunner.js`/`lesson-runner.js`) is wired in. Its
+    `start_drill` actions are keyed to a lesson's free-text `exercises` entries,
+    a different vocabulary from `drillRunner.js`'s `DRILL_MENU_TO_ID`; no bridge
+    exists, so `start_drill` handlers currently log a telemetry event rather
+    than invent a mapping. `set_metronome` and `log_advice` wiring is proven
+    correct in isolation but has no live producer yet — nothing in the running
+    app currently calls `recordPracticeTempo()` or supplies real advice context
+    outside tests.
+  - 28/28 smoke, 144/144 server, 32/32 Playwright, all re-run and confirmed
+    green by the lead agent before committing (not just self-reported by the
+    builders).
+- **Not done, per the owner's standing rule:** this wave has not yet had its
+  live owner-facing walkthrough by a verification agent separate from both
+  builders — that's the next step before this ticket can be called closed.
+- **Next tickets, in corrected dependency order:** #9 (struggle ladder) and
+  #11 (Sage's opening) are both buildable now (their dependencies — #4, #6,
+  #7, #8 — are all done). #14 (degraded paths) needs #9 built first. #12 and
+  #13 remain blocked on #3 (ticket 0, the owner's real-guitar test) and cannot
+  be honestly closed until it passes, though code groundwork (wiring
+  `listenerReal.js`) can proceed independently.
+
+**Why:** the owner asked for issues #10–#14 checked for accuracy before more
+was built on top of them, and for the coaching-actions ticket to actually
+reach the running UI (not just pass isolated tests) before calling it done,
+with independent verification throughout rather than self-reported success.
