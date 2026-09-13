@@ -522,3 +522,70 @@ session did that while still honoring the repo's own file-ownership rule
 was built on top of them, and for the coaching-actions ticket to actually
 reach the running UI (not just pass isolated tests) before calling it done,
 with independent verification throughout rather than self-reported success.
+
+---
+
+## 2026-09-13 (fourth session) — Wave 2 continued: struggle ladder (#9), Sage's opening (#11), degraded paths (#14) — committed `6b654d5`, `f114d50`
+
+- **#9 (Ticket 6, struggle-ladder policy) built.** New `core/struggleLadder.js`
+  (17/17 own tests): deterministic 5-consecutive-fail trigger per chord
+  (`unsure` never counts toward it), rung choice reads the advice ledger's
+  real history so a new session starts one rung higher, never back at rung 1,
+  ladder order slow-down → isolate-finger → reframe-physical →
+  change-exercise → pivot (Slice 1 pivot: tuning check → open-string
+  strumming → back to E minor), hard-banned from ever ending/pausing the
+  session (asserted structurally, not just by convention). Wired into
+  `drillRunner.js` only, gated by the same real-mic flag that already
+  protects `practiceStore` — simulated results still cannot trigger it.
+  **Known gap:** "worded by the model" only holds in the offline
+  template-fallback path; the live model has no schema field to receive
+  "which rung to voice" as a citable fact. Fixing that means touching
+  `coachSurface.js`/`schema.js`/`modelClient.js`, out of scope for this
+  ticket — flagged as a follow-on, not silently worked around.
+- **#11 (Ticket 8, Sage's opening) built.** New `core/openingGreeting.js`
+  (23/23 own tests), a pure DOM-free module citing only real `PracticeStore`
+  numbers: first-time greeting (the actual post-wipe Slice-1 state),
+  recent-history greeting (last chord + this week's attempts), or
+  returning-after-≥3-days-absence greeting, optionally folding in practice-
+  timer state. Wired into `lesson-runner.js`: the tuning check is phrased as
+  Sage's own dialogue inside his greeting panel, and its control opens the
+  real tuner (`ListenView.openListenView()`) directly — no separate menu
+  item, matching the removal of the old four-button home-screen hero.
+  `sageCoach.js`, `tuner-engine.js`, `listenView.js`, `index.html` all needed
+  no change — the tuner entrance reuses an already-global API.
+- **#14 (Ticket 11, degraded paths) built.** Mic denied/unavailable:
+  `drillRunner.js` gained a self-report path — Sage says he can't hear the
+  guitar, asks what the student heard, feeds the answer into the same
+  `StruggleLadder`/`AdviceLedger` instances the real-mic path uses, and it is
+  never written to `practiceStore` as clean data (the existing `isRealMicData`
+  gate already reserves that write for real mic results). Server
+  down/no-key/no-internet: both `drillRunner.js` and `lesson-runner.js` now
+  speak an offline notice (`app.js`'s browser-TTS `speak()`) built from
+  `sageCoach.coachLine()` plus the lesson's own authored copy, exactly once
+  per session across both surfaces, whenever a coaching reply's source isn't
+  `"model"`; a pending reframe-physical rung skips the network attempt
+  entirely once a session is known offline. `struggleLadder.js` needed no
+  change — confirmed already source-agnostic with fixed, non-model rung text.
+  **Limitation flagged:** `chatEngine.js`'s `askCoach()` collapses "server
+  reachable but replied from its own template" and "truly unreachable" into
+  the same `source: 'template'` value, so the offline voice line fires on any
+  non-model source — matches the ticket's own framing but isn't a true
+  online/offline distinction.
+- **Two GitHub numbering bugs corrected in this same session, before these
+  three tickets were built** (see the entry above): #11–#14's `Depends on:`
+  links, plus #13's "the live teaching moment in #9" (should have been #12).
+- Each ticket was built by its own subagent with a disjoint, explicitly
+  scoped file-ownership list (per `docs/plans/README.md`'s orchestration
+  contract); the lead agent re-ran all three suites after each ticket landed,
+  before committing — nothing here is self-reported by a builder alone.
+- **Full wave now built and committed:** #7 (`4c71cee`), #9 + #11
+  (`6b654d5`), #14 (`f114d50`). **Not yet done:** the owner's required live
+  walkthrough by an agent other than any builder — that's the next step
+  before any of #7/#9/#11/#14 can be called closed. #12 and #13 remain
+  blocked on #3 (Ticket 0, the owner's real-guitar-into-real-mic test) and
+  were not attempted.
+
+**Why:** the owner asked to keep building through the wave as long as no
+open question blocked a ticket, with independent verification still required
+at the end rather than treating three more green test runs as sufficient on
+their own.
