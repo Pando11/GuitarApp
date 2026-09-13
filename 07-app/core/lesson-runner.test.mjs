@@ -59,6 +59,8 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { readFileSync } from 'node:fs';
 import { JSDOM } from 'jsdom';
+import { PracticeStore } from './practiceStore.js';
+import { TUNING_ENTRY_ID } from './openingGreeting.js';
 
 const require = createRequire(import.meta.url);
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -212,6 +214,106 @@ const SERVER_TEMPLATE_TEXT = "I couldn't reach my answer for that one just now, 
   check('client-side fetch failure: button speak control is NOT mounted', result.buttonSpeakMounted === false);
   check('client-side fetch failure: chat log renders the fallback text', result.chatLogText.includes(DEFAULT_COACH_FALLBACK));
   check('client-side fetch failure: chat speak control is NOT mounted', result.chatSpeakMounted === false);
+}
+
+// ---------------------------------------------------------------------------
+// Ticket 8 (issue #11) — Sage's opening greeting + the spoken tuner entrance.
+// Integration coverage through the REAL openLesson()/renderLessonHTML()
+// path (not just openingGreeting.js's own pure unit tests), proving:
+//   (a) the greeting actually lands in the DOM on the first lesson opened,
+//   (b) it cites the real stored history handed in via options.getPracticeStore,
+//   (c) the tuning-check control it renders is reachable by clicking it —
+//       and that click reaches the SAME window.GuitarApp.ListenView.
+//       openListenView() the coach-action tuner entrance already uses —
+//       never a separate menu item.
+// ---------------------------------------------------------------------------
+console.log('\n=== Ticket 8 (issue #11): Sage\'s opening greeting ===');
+
+async function flushMore(times = 20) {
+  for (let i = 0; i < times; i++) await Promise.resolve();
+}
+
+{
+  globalThis.document = freshDoc();
+  let openedTuner = 0;
+  globalThis.window = {
+    GuitarApp: {
+      ListenView: { openListenView: () => { openedTuner++; } },
+    },
+  };
+  globalThis.fetch = async () => { throw new Error('no network in this scenario'); };
+  try {
+    const fakeStore = new PracticeStore({
+      sessions: [
+        {
+          id: 's1', lessonId: 'L03', ts: Date.now() - 86400000, durationSec: 300, completed: true,
+          attempts: [
+            { chordName: 'Em', verdict: 'fail', ts: Date.now() - 86400000 },
+            { chordName: 'Em', verdict: 'pass', ts: Date.now() - 86400000 + 1000 },
+          ],
+        },
+      ],
+    });
+
+    const runner = createLessonRunner({
+      lessons: [rawLesson],
+      strict: false,
+      render: (payload) => { document.getElementById('lesson-content-host').innerHTML = payload.html; },
+      getPracticeStore: () => fakeStore,
+    });
+
+    // freshDoc() (defined above) has no #lesson-content-host; give the
+    // greeting somewhere real to land without touching freshDoc() itself.
+    const host = document.createElement('div');
+    host.id = 'lesson-content-host';
+    document.body.appendChild(host);
+
+    runner.openLesson(0, { ageBand: '18-34', experience: 'never-held-one' });
+    await flushMore();
+
+    const greetingSection = document.getElementById('sage-opening');
+    check('Sage\'s opening greeting panel is in the DOM after the first lesson open', !!greetingSection);
+    check('greeting panel cites the real stored chord (Em)', !!greetingSection && greetingSection.textContent.includes('Em'));
+
+    const tuningBtn = document.getElementById(TUNING_ENTRY_ID);
+    check('the tuning-check control is inside Sage\'s own greeting panel, not a separate element', !!tuningBtn && greetingSection.contains(tuningBtn));
+    check('the tuning-check control is phrased as Sage speaking, not a bare menu label', /tuning/i.test(tuningBtn.textContent) && !/^tune\s*&\s*listen$/i.test(tuningBtn.textContent.trim()));
+
+    tuningBtn.onclick();
+    check('clicking Sage\'s tuning line opens the real tuner (openListenView), not a menu screen', openedTuner === 1);
+  } finally {
+    delete globalThis.document;
+    delete globalThis.window;
+    delete globalThis.fetch;
+  }
+}
+
+// A second runner instance must get its own fresh greeting (proves the
+// "shown once per runner" state isn't a module-level leak across runners —
+// each app lifecycle/instance gets exactly one opening).
+{
+  globalThis.document = freshDoc();
+  globalThis.window = { GuitarApp: { ListenView: { openListenView: () => {} } } };
+  globalThis.fetch = async () => { throw new Error('no network in this scenario'); };
+  try {
+    const host = document.createElement('div');
+    host.id = 'lesson-content-host2';
+    document.body.appendChild(host);
+    const runner2 = createLessonRunner({
+      lessons: [rawLesson],
+      strict: false,
+      render: (payload) => { document.getElementById('lesson-content-host2').innerHTML = payload.html; },
+      getPracticeStore: () => new PracticeStore({}), // fresh/post-wipe: no history
+    });
+    runner2.openLesson(0, { ageBand: '18-34', experience: 'never-held-one' });
+    await flushMore();
+    const greetingSection2 = document.getElementById('sage-opening');
+    check('a fresh runner (post-wipe store) still gets its own clean first-time greeting', !!greetingSection2 && /first session/i.test(greetingSection2.textContent));
+  } finally {
+    delete globalThis.document;
+    delete globalThis.window;
+    delete globalThis.fetch;
+  }
 }
 
 console.log(`\n=== ${passed} passed, ${failed} failed ===\n`);

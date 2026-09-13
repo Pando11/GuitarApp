@@ -479,6 +479,24 @@
     return adviceLedgerModuleState.promise;
   }
 
+  // --- Ticket 8 (issue #11): Sage's opening greeting -----------------------
+  // openingGreeting.js is a pure ES module (see its own header); loaded via
+  // the same cached-dynamic-import convention every other ES module this
+  // classic script depends on already uses above. The module itself is a
+  // stateless code load, so caching the import promise at module scope (like
+  // metronomeModuleState/adviceLedgerModuleState above) is safe to share
+  // across every runner instance; the actual "have we greeted yet" state
+  // lives per-runner-instance inside createLessonRunner(), below, since each
+  // instance represents one fresh app lifecycle (and so that tests creating
+  // multiple runners get independent greetings).
+  const openingGreetingModuleState = { promise: null };
+  function loadOpeningGreetingModule() {
+    if (!openingGreetingModuleState.promise) {
+      openingGreetingModuleState.promise = import("./openingGreeting.js").catch(() => null);
+    }
+    return openingGreetingModuleState.promise;
+  }
+
   // Dispatches a coach reply's `actions` array (coachSurface.js's
   // getCoachMessage() return) against the real engines/DOM this screen has.
   // Runs regardless of the reply's text `source`: buildActions() only ever
@@ -552,13 +570,22 @@
     return chordDiagramHTML(model.chords && model.chords[ref], chordSvgFn, "step-chord-diagram");
   }
 
-  function renderLessonHTML(model, manifestData, chordSvgFn) {
+  function renderLessonHTML(model, manifestData, chordSvgFn, openingGreetingHTML) {
     const lid = lessonManifestId(model.lessonNumber);
     const lessonClips = manifestData && typeof manifestData === "object" ? manifestData[lid] : null;
     const introClip = findNamedClip(lessonClips, lid, "00-intro");
     const wrapClip = findNamedClip(lessonClips, lid, "99-wrap");
 
     return [
+      // Ticket 8 (issue #11) — Sage's opening greeting, when one has been
+      // resolved for this runner (see openLesson's resolveOpeningGreeting()
+      // below). Sits before the lesson intro itself: greet first, THEN
+      // teach. Empty string on every lesson after the first one this runner
+      // opens, and on the very first render before the greeting's async
+      // dynamic import of openingGreeting.js has resolved (see
+      // resolveOpeningGreeting's own header for why that's a re-render, not
+      // a blocked first paint).
+      typeof openingGreetingHTML === "string" ? openingGreetingHTML : "",
       `<div class="lesson-intro">`,
       `<div class="eyebrow">Lesson ${String(model.lessonNumber).padStart(2, "0")}</div>`,
       `<h1 id="lesson-title">${esc(model.title)}</h1>`,
@@ -641,6 +668,92 @@
     const strict = options.strict !== false; // Default to strict mode
     // Use passed audioManifest, or fall back to manifestState.data if loaded
     const passedAudioManifest = options.audioManifest;
+
+    // Ticket 8 (issue #11) — Sage's opening greeting. Resolved at most once
+    // per runner instance (i.e. once per app lifecycle, not once per lesson
+    // open) and then reused verbatim on this lesson's later re-renders
+    // (audio-manifest/renderer follow-ups, below) so the numbers it cites
+    // don't shift mid-render. `html` stays null until resolveOpeningGreeting
+    // resolves; every renderLessonHTML call passes it through regardless, so
+    // an unresolved greeting is simply omitted rather than blocking the
+    // lesson's own first paint.
+    const openingGreetingState = { shown: false, html: null };
+
+    // The real PracticeStore this runner cites, if any. Prefers an explicit
+    // caller-supplied getter (tests, or a future caller with its own
+    // connection); otherwise falls back to the same shared, persisted store
+    // practiceProgress.js already exposes globally (window.GuitarApp.
+    // PracticeProgress.getStore()) — the same store getMastery()/
+    // recordLessonComplete() above already read/write. Never invented: a
+    // missing store just means openingGreeting.js gets `store: undefined`,
+    // which it already treats as "no history yet" (see its own header).
+    function resolvePracticeStore() {
+      if (typeof options.getPracticeStore === "function") {
+        try { return options.getPracticeStore(); } catch (e) { return null; }
+      }
+      if (typeof window !== "undefined" && window.GuitarApp && window.GuitarApp.PracticeProgress
+          && typeof window.GuitarApp.PracticeProgress.getStore === "function") {
+        try { return window.GuitarApp.PracticeProgress.getStore(); } catch (e) { return null; }
+      }
+      return null;
+    }
+
+    // A PracticeTimer instance, if the caller has one running. KNOWN GAP
+    // (documented, not guessed): nothing in the shipped app shell currently
+    // wires a persisted PracticeTimer instance anywhere (see
+    // practiceTimer.js's own header) — no options.getPracticeTimer means
+    // this simply returns null, and openingGreeting.js's own degrade path
+    // (no timer -> no timer line) is exactly what fires.
+    function resolvePracticeTimer() {
+      if (typeof options.getPracticeTimer === "function") {
+        try { return options.getPracticeTimer(); } catch (e) { return null; }
+      }
+      return null;
+    }
+
+    // Resolves Sage's opening-greeting HTML exactly once for this runner's
+    // lifetime (a per-lesson greeting would repeat on every lesson open,
+    // which reads as nagging rather than an "opening"). Returns a Promise
+    // that resolves to an HTML string, or null the first time only if
+    // openingGreeting.js itself is unreachable (never blocks/throws).
+    function resolveOpeningGreeting() {
+      if (openingGreetingState.shown) return Promise.resolve(openingGreetingState.html);
+      return loadOpeningGreetingModule().then(function (mod) {
+        if (openingGreetingState.shown) return openingGreetingState.html; // already settled by a racing call
+        openingGreetingState.shown = true;
+        if (!mod || typeof mod.buildOpeningGreeting !== "function" || typeof mod.renderOpeningGreetingHTML !== "function") {
+          return null;
+        }
+        const greeting = mod.buildOpeningGreeting({ store: resolvePracticeStore(), timer: resolvePracticeTimer() });
+        openingGreetingState.html = mod.renderOpeningGreetingHTML(greeting, esc);
+        return openingGreetingState.html;
+      });
+    }
+
+    // Wires Sage's own dialogue as the entrance into the tuner: the button
+    // rendered by openingGreeting.js's renderOpeningGreetingHTML(), never a
+    // standalone menu item (issue #11's explicit requirement — the old
+    // four-button home-screen hero that hosted "Tune & listen" is being
+    // removed in this rebuild). Reuses the exact same
+    // window.GuitarApp.ListenView.openListenView() call
+    // applyLessonCoachActions' own openTuner() callback already uses above,
+    // so this is the one real tuner entrance, reached two ways now.
+    function wireOpeningGreeting() {
+      if (typeof document === "undefined") return;
+      loadOpeningGreetingModule().then(function (mod) {
+        const id = (mod && mod.TUNING_ENTRY_ID) || "sage-tuning-entry";
+        const btn = document.getElementById(id);
+        if (!btn) return;
+        btn.onclick = function () {
+          try {
+            if (window.GuitarApp && window.GuitarApp.ListenView
+                && typeof window.GuitarApp.ListenView.openListenView === "function") {
+              window.GuitarApp.ListenView.openListenView();
+            }
+          } catch (e) { /* non-fatal — the greeting text itself is unaffected */ }
+        };
+      });
+    }
 
     // Validate all lessons on initialization
     const validationResults = lessons.map((lesson, i) => ({
@@ -988,15 +1101,34 @@
       const audioData = passedAudioManifest || manifestState.data;
       const rendererModule = rendererState.data;
       const chordSvgFn = rendererModule ? rendererModule.chordSVG : null;
-      const html = renderLessonHTML(model, audioData, chordSvgFn);
+      const html = renderLessonHTML(model, audioData, chordSvgFn, openingGreetingState.html);
 
       if (typeof options.render === "function") {
         options.render({ model, html });
       }
       wireCoachButton(index, profile);
       mountLessonPanels(model);
+      if (openingGreetingState.html) wireOpeningGreeting();
 
       openIndex.value = index;
+
+      // Sage's opening greeting (Ticket 8 / issue #11): resolved at most
+      // once per runner (see resolveOpeningGreeting's own header). Not yet
+      // shown the first time any lesson is opened this runner's lifetime —
+      // re-render once it resolves, same "may still be in flight, catch up
+      // once it lands" pattern the audio-manifest and renderer blocks below
+      // already use, and for the same reason: a synchronous dynamic import
+      // would block this lesson's very first paint.
+      if (!openingGreetingState.shown) {
+        resolveOpeningGreeting().then((greetingHTML) => {
+          if (openIndex.value !== index || typeof options.render !== "function" || !greetingHTML) return;
+          const updatedHtml = renderLessonHTML(model, passedAudioManifest || manifestState.data, rendererState.data ? rendererState.data.chordSVG : null, greetingHTML);
+          options.render({ model, html: updatedHtml });
+          wireCoachButton(index, profile);
+          mountLessonPanels(model);
+          wireOpeningGreeting();
+        });
+      }
 
       // Audio manifest may still be in flight (T0.5). Re-render once it
       // resolves so audio elements appear without forcing a synchronous
@@ -1006,13 +1138,14 @@
       if (!audioData) {
         loadAudioManifest().then((data) => {
           if (openIndex.value !== index || typeof options.render !== "function") return;
-          const updatedHtml = renderLessonHTML(model, data, rendererState.data ? rendererState.data.chordSVG : null);
+          const updatedHtml = renderLessonHTML(model, data, rendererState.data ? rendererState.data.chordSVG : null, openingGreetingState.html);
           options.render({ model, html: updatedHtml });
           // The re-render above replaced #lesson-ask-coach with a fresh,
           // unwired element (options.render does root.innerHTML = ...) — wire
           // it again so the coaching entry point survives the manifest swap.
           wireCoachButton(index, profile);
           mountLessonPanels(model);
+          if (openingGreetingState.html) wireOpeningGreeting();
         });
       }
 
@@ -1024,10 +1157,11 @@
       if (!rendererModule) {
         loadRendererModule().then((mod) => {
           if (openIndex.value !== index || typeof options.render !== "function" || !mod) return;
-          const updatedHtml = renderLessonHTML(model, passedAudioManifest || manifestState.data, mod.chordSVG);
+          const updatedHtml = renderLessonHTML(model, passedAudioManifest || manifestState.data, mod.chordSVG, openingGreetingState.html);
           options.render({ model, html: updatedHtml });
           wireCoachButton(index, profile);
           mountLessonPanels(model);
+          if (openingGreetingState.html) wireOpeningGreeting();
         });
       }
 

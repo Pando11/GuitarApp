@@ -145,6 +145,47 @@ async function runTests() {
     const sagePanel = await page.locator('#sage-panel').isVisible().catch(() => false);
     logTest('Sage coach panel mounts', sagePanel);
 
+    // TEST 4b: Sage's opening greeting + the spoken tuning-check entrance
+    // (issue #11 / Ticket 8). This is a fresh browser context (no prior
+    // localStorage), so it must get the honest first-time greeting, not a
+    // reference to history that doesn't exist. The tuning check must be
+    // reachable by clicking a control inside Sage's own greeting panel —
+    // never a standalone menu item — and that click must open the real
+    // tuner view (listenView.js), not a placeholder.
+    console.log('\n=== SAGE OPENING + TUNING CHECK (issue #11) ===');
+    try {
+      await page.waitForSelector('#sage-opening', { timeout: 5000 });
+      logTest('Sage opening greeting panel renders on the first lesson open', true);
+    } catch {
+      logTest('Sage opening greeting panel renders on the first lesson open', false, 'timeout or not found');
+    }
+
+    const openingText = await page.locator('#sage-opening').textContent().catch(() => '');
+    logTest('fresh install (no stored history) gets an honest first-time greeting', /first session/i.test(openingText || ''), `text: ${openingText}`);
+
+    const tuningBtnVisible = await page.locator('#sage-tuning-entry').isVisible().catch(() => false);
+    logTest('the tuning-check control lives inside Sage’s own greeting panel', tuningBtnVisible);
+
+    const tuningBtnInsidePanel = await page.locator('#sage-opening #sage-tuning-entry').count().catch(() => 0);
+    logTest('the tuning-check control is NOT a separate menu item (it is nested in the greeting)', tuningBtnInsidePanel === 1);
+
+    await page.click('#sage-tuning-entry');
+    try {
+      await page.waitForSelector('#listen-view:not([hidden])', { timeout: 5000 });
+      logTest('Sage’s spoken tuning line opens the real tuner view', true);
+    } catch {
+      logTest('Sage’s spoken tuning line opens the real tuner view', false, 'timeout or not found');
+    }
+    const tunerPanelVisible = await page.locator('#tuner-panel').isVisible().catch(() => false);
+    logTest('the actual tuner panel is visible after Sage’s entrance', tunerPanelVisible);
+
+    // Return to the lesson so the rest of the existing lesson-flow
+    // assertions (audio elements, back-home) exercise the lesson view
+    // exactly as they did before this addition.
+    await page.click('#listen-back-home');
+    await page.click('#start-l01');
+    await page.waitForSelector('#lesson-view:not([hidden])', { timeout: 5000 }).catch(() => {});
+
     // TEST 5: Audio elements
     console.log('\n=== AUDIO ===');
     const audioElements = await page.locator('audio').count();

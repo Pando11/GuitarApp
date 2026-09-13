@@ -33,6 +33,7 @@ import { chordSVG } from './renderer.js';
 import { createMetronome } from './metronome.js';
 import { AdviceLedger } from './adviceLedger.js';
 import { applyCoachActions } from './actionHandler.js';
+import { StruggleLadder, RUNG_KINDS } from './struggleLadder.js';
 
 // ---------------------------------------------------------------------------
 // DRILL_MENU display name -> drill module DRILL id. Built by reading each
@@ -302,6 +303,14 @@ export function createDrillRunner({ practiceIndex, practiceStore, telemetry, win
   const actionMetronome = createMetronome({});
   const actionAdviceLedger = new AdviceLedger();
 
+  // Ticket 6 (issue #9) — the struggle-ladder policy module. One instance
+  // per runner, same lifetime reasoning as actionAdviceLedger above: it
+  // needs to remember fail streaks across drill runs within a session, and
+  // it reads/writes the SAME actionAdviceLedger instance (never a second,
+  // disconnected ledger) so "start one rung higher next time, not back at
+  // the top" actually holds.
+  const struggleLadder = new StruggleLadder();
+
   function pickPair() {
     return selectPracticePair(practiceIndex, practiceStore);
   }
@@ -372,6 +381,25 @@ export function createDrillRunner({ practiceIndex, practiceStore, telemetry, win
       });
     }
 
+    // Ticket 6 (issue #9) — feed the struggle ladder a real verdict for each
+    // chord in this pair. Same hard gate as practiceStore above (and for the
+    // same reason: this repo's non-negotiable that nothing simulated ever
+    // reaches ladder state as if it were real) — a sim-sourced or
+    // mic-toggle-off result must never advance/trigger the ladder.
+    //
+    // Drills report only a whole-pair verdict (result.passed: true | false |
+    // null — see e.g. drills/anchorPivot.js), never a per-chord breakdown, so
+    // both chords of the practiced pair receive the same verdict here. This
+    // is the same granularity practiceStore.recordDrillResult already works
+    // at (one verdict per drill run), not a fabricated finer-grained fact.
+    if (isRealMicData && pair) {
+      const verdict = result.passed === true ? 'pass' : (result.passed === false ? 'fail' : 'unsure');
+      for (const chord of [pair.a, pair.b]) {
+        if (typeof chord !== 'string' || !chord) continue;
+        struggleLadder.recordVerdict(chord, verdict, actionAdviceLedger);
+      }
+    }
+
     if (telemetry && typeof telemetry.log === 'function') {
       try {
         telemetry.log('drill_result', {
@@ -418,18 +446,62 @@ export function createDrillRunner({ practiceIndex, practiceStore, telemetry, win
     // invent" picker in this codebase.
     const actionContext = {};
     const currentPair = pickPair();
+    let storedBpm = null;
     if (currentPair) {
       const diagram = chordShapeFromCatalog(win, currentPair.a);
       if (diagram) actionContext.diagram = diagram;
       try {
-        const bpm = (practiceStore && typeof practiceStore.lastPracticeTempoFor === 'function')
+        storedBpm = (practiceStore && typeof practiceStore.lastPracticeTempoFor === 'function')
           ? practiceStore.lastPracticeTempoFor([currentPair.a, currentPair.b])
           : null;
-        if (typeof bpm === 'number' && bpm > 0) actionContext.metronome = { bpm };
-      } catch (e) { /* no stored tempo for this pair yet — omit, never guess */ }
+        if (typeof storedBpm === 'number' && storedBpm > 0) actionContext.metronome = { bpm: storedBpm };
+      } catch (e) { /* no stored tempo for this pair yet — omit, never guess */ storedBpm = null; }
     }
 
-    const message = await getCoachMessage(envelope, localTemplate, actionContext);
+    // Ticket 6 (issue #9) — surface a struggle-ladder rung that fired during
+    // an earlier runSelectedDrill() call. The trigger and the surfacing can
+    // happen at different times (the ladder fires the moment the 5th
+    // consecutive fail is recorded; the student may not tap "ask your
+    // coach" until afterward), so this checks BOTH chords of the currently
+    // selected pair for a pending rung via struggleLadder.js's own
+    // peek/consume API — never re-deriving or second-guessing the rung
+    // choice here, only reading what the (code-only) policy module already
+    // decided.
+    //
+    // This overrides localTemplate — the text callers see whenever the
+    // coaching service is unreachable, which is exactly the "worded by the
+    // model, not chosen by it" seam available from this file: rung.message
+    // is the deterministic, code-authored wording; the model may still
+    // re-voice the underlying facts when the service IS reachable, but the
+    // rung choice itself is never exposed to it as something to pick.
+    let effectiveLocalTemplate = localTemplate;
+    if (currentPair) {
+      const pendingChord = [currentPair.a, currentPair.b].find((c) => struggleLadder.peekPendingRung(c));
+      if (pendingChord) {
+        const rung = struggleLadder.consumePendingRung(pendingChord);
+        if (rung) {
+          effectiveLocalTemplate = rung.message;
+          // Rung 1 ("slow down / drop tempo or remove the metronome") uses
+          // the existing set_metronome action rather than inventing a new
+          // mechanism (per issue #9's own pointer to actionHandler.js).
+          // The dropped tempo is pure arithmetic off a REAL stored tempo
+          // (never a guessed BPM) — same "never invent a number" posture as
+          // every other actionContext field in this function. With no
+          // stored tempo for this pair yet, the metronome action is simply
+          // omitted, same fail-safe default as everywhere else here.
+          if (rung.kind === RUNG_KINDS.SLOW_DOWN && typeof storedBpm === 'number' && storedBpm > 0) {
+            const dropped = Math.max(40, Math.round(storedBpm * 0.75));
+            actionContext.metronome = { bpm: dropped };
+          }
+          // Rung 5 (pivot) opens with a tuning check.
+          if (rung.kind === RUNG_KINDS.PIVOT) {
+            actionContext.tuner = true;
+          }
+        }
+      }
+    }
+
+    const message = await getCoachMessage(envelope, effectiveLocalTemplate, actionContext);
 
     // TIER-1B Wave 5 (5B) — mount a tap-to-play speak control next to the
     // practice screen's rendered coach answer.
@@ -524,6 +596,7 @@ export function createDrillRunner({ practiceIndex, practiceStore, telemetry, win
     micFlow,
     getMetronome: function () { return actionMetronome; },
     getAdviceLedger: function () { return actionAdviceLedger; },
+    getStruggleLadder: function () { return struggleLadder; },
   };
 }
 
